@@ -234,7 +234,7 @@
 	  <Folder Include="Views\Edit\" />
 	  <Folder Include="Views\Sync\" />
 	  <Folder Include="Views\SpellCheck\" />
-	  <Folder Include="Views\Tools\" />
+	  <Folder Include="Views\Translate\" />
 	</ItemGroup>
 
 </Project>

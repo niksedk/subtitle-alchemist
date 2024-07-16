@@ -1,4 +1,5 @@
 ﻿using SubtitleAlchemist.Views.Options.Settings;
+using SubtitleAlchemist.Views.Tools.AdjustDuration;
 using SubtitleAlchemist.Views.Translate;
 using SubtitleAlchemist.Views.Video.AudioToTextWhisper;
 
@@ -13,6 +14,7 @@ namespace SubtitleAlchemist
             Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
             Routing.RegisterRoute(nameof(AudioToTextWhisperPage), typeof(AudioToTextWhisperPage));
             Routing.RegisterRoute(nameof(TranslatePage), typeof(TranslatePage));
+            Routing.RegisterRoute(nameof(AdjustDurationPage), typeof(AdjustDurationPage));
         }
     }
 }

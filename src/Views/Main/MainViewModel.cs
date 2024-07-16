@@ -13,6 +13,10 @@ using SubtitleAlchemist.Views.LayoutPicker;
 using SubtitleAlchemist.Views.Options.Settings;
 using System.Collections;
 using System.Text;
+using SubtitleAlchemist.Views.Options.DownloadFfmpeg;
+using SubtitleAlchemist.Views.Tools.AdjustDuration;
+using SubtitleAlchemist.Views.Translate;
+using SubtitleAlchemist.Views.Video.AudioToTextWhisper;
 
 namespace SubtitleAlchemist.Views.Main
 {
@@ -396,6 +400,51 @@ namespace SubtitleAlchemist.Views.Main
                     ? EncodingPicker.SelectedItem.ToString()
                     : Configuration.Settings.General.DefaultEncoding));
             }
+        }
+
+        [RelayCommand]
+        private async Task VideoAudioToTextWhisper()
+        {
+            var ffmpegOk = await RequireFfmpegOk();
+            if (!ffmpegOk)
+            {
+                return;
+            }
+
+            await Shell.Current.GoToAsync(nameof(AudioToTextWhisperPage));
+        }
+
+        [RelayCommand]
+        private async Task AutoTranslateShow()
+        {
+            await Shell.Current.GoToAsync(nameof(TranslatePage));
+        }
+
+        [RelayCommand]
+        private async Task AdjustDurationsShow()
+        {
+            await Shell.Current.GoToAsync(nameof(AdjustDurationPage));
+        }
+
+        private async Task<bool> RequireFfmpegOk()
+        {
+            if (Configuration.IsRunningOnWindows && (string.IsNullOrWhiteSpace(Configuration.Settings.General.FFmpegLocation) || !File.Exists(Configuration.Settings.General.FFmpegLocation)))
+            {
+                var answer = await MainPage.DisplayAlert(
+                    "Download ffmpeg?",
+                    $"{Environment.NewLine}\"Audio to text\" requires ffmpeg.{Environment.NewLine}{Environment.NewLine}Download and use ffmpeg?",
+                    "Yes",
+                    "No");
+
+                if (!answer)
+                {
+                    return false;
+                }
+
+                var result = await _popupService.ShowPopupAsync<DownloadFfmpegModel>(CancellationToken.None);
+            }
+
+            return true;
         }
     }
 }

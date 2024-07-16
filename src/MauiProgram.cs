@@ -6,7 +6,9 @@ using SubtitleAlchemist.Services;
 using SubtitleAlchemist.Views.Help.About;
 using SubtitleAlchemist.Views.LayoutPicker;
 using SubtitleAlchemist.Views.Main;
+using SubtitleAlchemist.Views.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Views.Options.Settings;
+using SubtitleAlchemist.Views.Tools.AdjustDuration;
 using SubtitleAlchemist.Views.Translate;
 using SubtitleAlchemist.Views.Video.AudioToTextWhisper;
 
@@ -37,9 +39,12 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<AudioToTextWhisperModel>();
             builder.Services.AddTransient<TranslatePage>();
             builder.Services.AddTransient<TranslateModel>();
+            builder.Services.AddTransient<AdjustDurationPage>();
+            builder.Services.AddTransient<AdjustDurationModel>();
 
             builder.Services.AddTransientPopup<AboutPopup, AboutModel>();
             builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerModel>();
+            builder.Services.AddTransientPopup<DownloadFfmpegPopup, DownloadFfmpegModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
 

@@ -119,6 +119,7 @@
             menu.Add(new MenuFlyoutItem
             {
                 Text = "Adjust durations",
+                Command = vm.AdjustDurationsShowCommand,
             });
 
             return menu;
@@ -164,6 +165,7 @@
             menu.Add(new MenuFlyoutItem
             {
                 Text = "Audio to text (Whisper)...",
+                Command = vm.VideoAudioToTextWhisperCommand,
             });
             menu.Add(new MenuFlyoutItem
             {
@@ -192,6 +194,7 @@
             menu.Add(new MenuFlyoutItem
             {
                 Text = "Auto-translate",
+                Command = vm.AutoTranslateShowCommand,
             });
 
             return menu;
