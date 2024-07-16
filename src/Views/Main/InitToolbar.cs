@@ -4,9 +4,27 @@ namespace SubtitleAlchemist.Views.Main
 {
     internal static class InitToolbar
     {
-        internal static StackLayout CreateToolbarBar(MainPage page, MainViewModel viewModel)
+        internal static StackLayout CreateToolbarBar(MainPage page, MainViewModel vm)
         {
             var imagePath = Path.Combine("Resources", "Images", "DarkTheme");
+
+            vm.SubtitleFormatPicker = new Picker
+            {
+                ItemsSource = MainViewModel.SubtitleFormatNames,
+                SelectedIndex = 0,
+                WidthRequest = 225,
+                HeightRequest = 16,
+                Margin = new Thickness(5, 0),
+            };
+
+            vm.EncodingPicker = new Picker
+            {
+                ItemsSource = MainViewModel.EncodingNames,
+                SelectedIndex = 0,
+                WidthRequest = 225,
+                HeightRequest = 16,
+                Margin = new Thickness(5, 0),
+            };
 
             var stackLayout = new StackLayout
             {
@@ -21,7 +39,7 @@ namespace SubtitleAlchemist.Views.Main
                         HeightRequest = 16,
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
-                        Command = new Command(viewModel.SubtitleNew)
+                        Command = vm.SubtitleNewCommand,
                     },
                     new ImageButton
                     {
@@ -31,7 +49,7 @@ namespace SubtitleAlchemist.Views.Main
                         HeightRequest = 16,
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
-                        Command = new Command(async () => await viewModel.SubtitleOpen())
+                        Command = vm.SubtitleOpenCommand,
                     },
                     new ImageButton
                     {
@@ -41,6 +59,7 @@ namespace SubtitleAlchemist.Views.Main
                         HeightRequest = 16,
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
+                        Command = vm.SubtitleSaveCommand,
                     },
                     new ImageButton
                     {
@@ -50,7 +69,7 @@ namespace SubtitleAlchemist.Views.Main
                         HeightRequest = 16,
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
-                        Command = viewModel.SubtitleSaveAsCommand,
+                        Command = vm.SubtitleSaveAsCommand,
                     },
                     new ImageButton
                     {
@@ -87,7 +106,7 @@ namespace SubtitleAlchemist.Views.Main
                         HeightRequest = 16,
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
-                        Command = new Command(async () => await viewModel.ShowLayoutPicker())
+                        Command = vm.ShowLayoutPickerCommand,
                     },
                     new Label
                     {
@@ -96,13 +115,7 @@ namespace SubtitleAlchemist.Views.Main
                         Padding = new Thickness(30, 0, 0, 7),
                         HeightRequest = 16,
                     },
-                    new Picker
-                    {
-                        Items = { "SubRip", "Advanced Sub Station Alpha", "EBU stl", "PAC", "More..." },
-                        SelectedIndex = 0,
-                        WidthRequest = 100,
-                        HeightRequest = 16,
-                    },
+                    vm.SubtitleFormatPicker,
                     new Label
                     {
                         Text = "Encoding",
@@ -110,13 +123,7 @@ namespace SubtitleAlchemist.Views.Main
                         Padding = new Thickness(30, 0, 0, 7),
                         HeightRequest = 16,
                     },
-                    new Picker
-                    {
-                        Items = { "UTF-8", "UTF-8 with BOM", "More..." },
-                        SelectedIndex = 0,
-                        WidthRequest = 100,
-                        HeightRequest = 16,
-                    },
+                    vm.EncodingPicker,
                 }
             };
 

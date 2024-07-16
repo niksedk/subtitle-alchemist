@@ -15,19 +15,19 @@
             page.MenuBarItems.Add(MakeHelpMenu(viewModel));
         }
 
-        private static MenuBarItem MakeFileMenu(MainViewModel mainViewModel)
+        private static MenuBarItem MakeFileMenu(MainViewModel vm)
         {
             var menu = new MenuBarItem { Text = "File" };
 
             menu.Add(new MenuFlyoutItem
             {
                 Text = "New",
-                Command = mainViewModel.SubtitleNewCommand,
+                Command = vm.SubtitleNewCommand,
             });
             menu.Add(new MenuFlyoutItem
             {
                 Text = "Open",
-                Command = mainViewModel.SubtitleOpenCommand,
+                Command = vm.SubtitleOpenCommand,
             });
             menu.Add(new MenuFlyoutItem
             {
@@ -36,10 +36,12 @@
             menu.Add(new MenuFlyoutItem
             {
                 Text = "Save",
+                Command = vm.SubtitleSaveCommand,
             });
             menu.Add(new MenuFlyoutItem
             {
                 Text = "Save as...",
+                Command = vm.SubtitleSaveAsCommand,
             });
             menu.Add(new MenuFlyoutItem
             {
@@ -60,7 +62,7 @@
             return menu;
         }
 
-        private static MenuBarItem MakeEditMenu(MainViewModel viewModel)
+        private static MenuBarItem MakeEditMenu(MainViewModel vm)
         {
             var menu = new MenuBarItem { Text = "Edit" };
 
@@ -110,7 +112,7 @@
             return menu;
         }
 
-        private static MenuBarItem MakeToolsMenu(MainViewModel viewModel)
+        private static MenuBarItem MakeToolsMenu(MainViewModel vm)
         {
             var menu = new MenuBarItem { Text = "Tools" };
 
@@ -122,7 +124,7 @@
             return menu;
         }
 
-        private static MenuBarItem MakeSpellCheckMenu(MainViewModel viewModel)
+        private static MenuBarItem MakeSpellCheckMenu(MainViewModel vm)
         {
             var menu = new MenuBarItem { Text = "Spell check" };
 
@@ -140,13 +142,14 @@
             return menu;
         }
 
-        private static MenuBarItem MakeVideoMenu(MainViewModel viewModel)
+        private static MenuBarItem MakeVideoMenu(MainViewModel vm)
         {
             var menu = new MenuBarItem { Text = "Video" };
 
             menu.Add(new MenuFlyoutItem
             {
                 Text = "Open video file...",
+                Command = vm.VideoOpenCommand,
             });
             menu.Add(new MenuFlyoutItem
             {
@@ -155,6 +158,7 @@
             menu.Add(new MenuFlyoutItem
             {
                 Text = "Close video file",
+                Command = vm.VideoCloseCommand,
             });
             menu.Add(new MenuFlyoutSeparator());
             menu.Add(new MenuFlyoutItem
@@ -169,7 +173,7 @@
             return menu;
         }
 
-        private static MenuBarItem MakeSynchronizationMenu(MainViewModel viewModel)
+        private static MenuBarItem MakeSynchronizationMenu(MainViewModel vm)
         {
             var menu = new MenuBarItem { Text = "Synchronization" };
 
@@ -181,7 +185,7 @@
             return menu;
         }
 
-        private static MenuBarItem MakeTranslateMenu(MainViewModel viewModel)
+        private static MenuBarItem MakeTranslateMenu(MainViewModel vm)
         {
             var menu = new MenuBarItem { Text = "Auto-translate" };
 
@@ -193,20 +197,20 @@
             return menu;
         }
 
-        private static MenuBarItem MakeOptionsMenu(MainViewModel viewModel)
+        private static MenuBarItem MakeOptionsMenu(MainViewModel vm)
         {
             var menu = new MenuBarItem { Text = "Options" };
 
             menu.Add(new MenuFlyoutItem
             {
                 Text = "Settings",
-                Command = viewModel.ShowOptionsSettingsCommand,
+                Command = vm.ShowOptionsSettingsCommand,
             });
 
             return menu;
         }
 
-        private static MenuBarItem MakeHelpMenu(MainViewModel viewModel)
+        private static MenuBarItem MakeHelpMenu(MainViewModel vm)
         {
             var menu = new MenuBarItem { Text = "Help" };
 
@@ -223,7 +227,7 @@
             menu.Add(new MenuFlyoutItem
             {
                 Text = "About...",
-                Command = viewModel.ShowAboutCommand,
+                Command = vm.ShowAboutCommand,
             });
 
             return menu;

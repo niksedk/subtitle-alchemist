@@ -10,6 +10,8 @@ using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Views.Help.About;
 using SubtitleAlchemist.Views.LayoutPicker;
 using SubtitleAlchemist.Views.Options.Settings;
+using System.Collections;
+using System.Text;
 
 namespace SubtitleAlchemist.Views.Main
 {
@@ -24,8 +26,13 @@ namespace SubtitleAlchemist.Views.Main
         public AudioVisualizer AudioVisualizer { get; set; }
         public CollectionView SubtitleList { get; set; }
         public Grid ListViewAndEditBox { get; set; }
+        public static IList SubtitleFormatNames => SubtitleFormat.AllSubtitleFormats.Select(p => p.Name).ToList();
 
-        [ObservableProperty] 
+        public Picker? SubtitleFormatPicker { get; internal set; }
+        public Picker? EncodingPicker { get; internal set; }
+        public static IList EncodingNames => EncodingHelper.GetEncodings().Select(p => p.DisplayName).ToList();
+
+        [ObservableProperty]
         private string _selectedLineInfo;
 
         [ObservableProperty]
@@ -192,7 +199,7 @@ namespace SubtitleAlchemist.Views.Main
 
             if (FindVideoFileName.TryFindVideoFileName(subtitleFileName, out var videoFileName))
             {
-                VideoOpen(videoFileName);
+                VideoOpenFile(videoFileName);
             }
 
             _timer.Start();
@@ -203,6 +210,7 @@ namespace SubtitleAlchemist.Views.Main
         {
             _timer.Stop();
             _subtitleFileName = string.Empty;
+            _videoFileName = string.Empty;
             _subtitle = new Subtitle();
             Paragraphs = new List<Paragraph>();
             if (VideoPlayer != null)
@@ -221,21 +229,81 @@ namespace SubtitleAlchemist.Views.Main
         [RelayCommand]
         private async Task SubtitleSaveAs()
         {
+            if (Paragraphs.Count == 0)
+            {
+                StatusText = "Nothing to save";
+                return;
+            }
+
             var fileHelper = new FileHelper();
             var subtitleFileName = await fileHelper.SaveSubtitleFileAs(
                 "Save subtitle file as",
                 _videoFileName,
-                new SubRip(),
+                CurrentSubtitleFormat,
                 _subtitle);
 
             if (!string.IsNullOrEmpty(subtitleFileName))
             {
+                var text = _subtitle.ToText(CurrentSubtitleFormat);
+                File.WriteAllText(subtitleFileName, text, CurrentEncoding); //TODO: BOM or not...
+
                 _subtitleFileName = subtitleFileName;
+                if (Window != null)
+                {
+                    Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
+                }
             }
         }
 
         [RelayCommand]
-        private void VideoOpen(string videoFileName)
+        private async Task SubtitleSave()
+        {
+            if (Paragraphs.Count == 0)
+            {
+                StatusText = "Nothing to save";
+                return;
+            }
+
+            if (string.IsNullOrEmpty(_subtitleFileName))
+            {
+                await SubtitleSaveAs();
+                return;
+            }
+
+            var fileHelper = new FileHelper();
+            var subtitleFileName = await fileHelper.SaveSubtitleFileAs(
+                "Save subtitle file as",
+                _videoFileName,
+                CurrentSubtitleFormat,
+                _subtitle);
+
+            if (!string.IsNullOrEmpty(subtitleFileName))
+            {
+                var text = _subtitle.ToText(CurrentSubtitleFormat);
+                File.WriteAllText(subtitleFileName, text);
+
+                _subtitleFileName = subtitleFileName;
+                if (Window != null)
+                {
+                    Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
+                }
+            }
+        }
+
+        [RelayCommand]
+        private async Task VideoOpen()
+        {
+            var fileHelper = new FileHelper();
+            var videoFileName = await fileHelper.PickAndShowVideoFile("Open video file");
+            if (string.IsNullOrEmpty(videoFileName) || !File.Exists(videoFileName))
+            {
+                return;
+            }
+
+            VideoOpenFile(videoFileName);
+        }
+
+        private void VideoOpenFile(string videoFileName)
         {
             if (VideoPlayer == null)
             {
@@ -271,8 +339,52 @@ namespace SubtitleAlchemist.Views.Main
                 AudioVisualizer.WavePeaks = wavePeaks;
             }
 
-            // _mediaPlayerStartAt = DateTime.UtcNow.Ticks;
             _videoFileName = videoFileName;
+        }
+
+        [RelayCommand]
+        private void VideoClose()
+        {
+            if (VideoPlayer != null)
+            {
+                VideoPlayer.Source = null;
+            }
+
+            AudioVisualizer.WavePeaks = null;
+            _videoFileName = string.Empty;
+        }
+
+        public SubtitleFormat CurrentSubtitleFormat
+        {
+            get
+            {
+                return SubtitleFormat.AllSubtitleFormats
+                    .First(p => p.Name == (SubtitleFormatPicker != null 
+                    ? SubtitleFormatPicker.SelectedItem.ToString() 
+                    : Configuration.Settings.General.DefaultSubtitleFormat));
+            }
+        }
+
+        public Encoding CurrentEncoding
+        {
+            get
+            {
+                return EncodingHelper.GetEncodings()
+                    .First(p => p.DisplayName == (EncodingPicker != null
+                    ? EncodingPicker.SelectedItem.ToString()
+                    : Configuration.Settings.General.DefaultEncoding)).Encoding;
+            }
+        }
+
+        public TextEncoding CurrentTextEncoding
+        {
+            get
+            {
+                return EncodingHelper.GetEncodings()
+                    .First(p => p.DisplayName == (EncodingPicker != null
+                    ? EncodingPicker.SelectedItem.ToString()
+                    : Configuration.Settings.General.DefaultEncoding));
+            }
         }
     }
 }
