@@ -7,10 +7,12 @@ namespace SubtitleAlchemist.Views.Main;
 
 public class MainPage : ContentPage
 {
-    private readonly MainViewModel _viewModel = new();
+    private readonly MainViewModel _viewModel;
 
-    public MainPage()
+    public MainPage(MainViewModel vm)
     {
+        _viewModel = vm;
+
         ICollection<ResourceDictionary>? mergedDictionaries = Application.Current?.Resources?.MergedDictionaries;
         if (mergedDictionaries != null)
         {

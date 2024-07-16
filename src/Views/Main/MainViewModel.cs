@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -46,8 +47,12 @@ namespace SubtitleAlchemist.Views.Main
         private string _videoFileName;
         private readonly System.Timers.Timer _timer;
 
-        public MainViewModel()
+
+        private readonly IPopupService _popupService;
+
+        public MainViewModel(IPopupService popupService)
         {
+            _popupService = popupService;
             VideoPlayer = new MediaElement { BackgroundColor = Colors.Orange, ZIndex = -10000 };
             SubtitleList = new CollectionView();
             _timer = new System.Timers.Timer(19);
@@ -57,6 +62,15 @@ namespace SubtitleAlchemist.Views.Main
             {
                 AudioVisualizer.OnVideoPositionChanged += AudioVisualizer_OnVideoPositionChanged;
             }
+
+            _statusText = string.Empty;
+            _selectedLineInfo = string.Empty;
+            _videoFileName = string.Empty;
+            _subtitleFileName = string.Empty;
+            _subtitle = new Subtitle();
+            _paragraphs = new List<Paragraph>();
+            AudioVisualizer = new AudioVisualizer();
+            ListViewAndEditBox = new Grid();
         }
 
         private void SetTimer()
@@ -154,9 +168,8 @@ namespace SubtitleAlchemist.Views.Main
         [RelayCommand]
         public async Task ShowLayoutPicker()
         {
-            var model = new LayoutPickerModel(SelectedLayout);
-            var popup = new LayoutPickerPopup(model);
-            var result = await Shell.Current.ShowPopupAsync(popup);
+            var result = await _popupService.ShowPopupAsync<LayoutPickerModel>(onPresenting: viewModel => viewModel.SelectedLayout = SelectedLayout, CancellationToken.None);
+
             if (result is LayoutPickerPopupResult popupResult)
             {
                 SelectedLayout = popupResult.SelectedLayout;
@@ -168,9 +181,7 @@ namespace SubtitleAlchemist.Views.Main
         [RelayCommand]
         public async Task ShowAbout()
         {
-            var model = new AboutModel();
-            var popup = new AboutPopup(model);
-            var result = await Shell.Current.ShowPopupAsync(popup);
+            await _popupService.ShowPopupAsync<AboutModel>(CancellationToken.None);
         }
 
         [RelayCommand]
@@ -280,7 +291,7 @@ namespace SubtitleAlchemist.Views.Main
             if (!string.IsNullOrEmpty(subtitleFileName))
             {
                 var text = _subtitle.ToText(CurrentSubtitleFormat);
-                File.WriteAllText(subtitleFileName, text);
+                await File.WriteAllTextAsync(subtitleFileName, text);
 
                 _subtitleFileName = subtitleFileName;
                 if (Window != null)
@@ -359,8 +370,8 @@ namespace SubtitleAlchemist.Views.Main
             get
             {
                 return SubtitleFormat.AllSubtitleFormats
-                    .First(p => p.Name == (SubtitleFormatPicker != null 
-                    ? SubtitleFormatPicker.SelectedItem.ToString() 
+                    .First(p => p.Name == (SubtitleFormatPicker != null
+                    ? SubtitleFormatPicker.SelectedItem.ToString()
                     : Configuration.Settings.General.DefaultSubtitleFormat));
             }
         }

@@ -77,8 +77,10 @@ namespace SubtitleAlchemist.Views.LayoutPicker
 
         public LayoutPickerPopup? Popup { get; set; }
 
-        public LayoutPickerModel(int selectedLayout)
+        public LayoutPickerModel()
         {
+            var selectedLayout = 0;
+
             var fileName = System.Reflection.Assembly.GetExecutingAssembly()?.Location;
             var applicationPath = string.IsNullOrEmpty(fileName) ? string.Empty : Path.GetDirectoryName(fileName) ?? string.Empty;
             var imagePath = Path.Combine(applicationPath, "Resources", "Images", "Layouts");
