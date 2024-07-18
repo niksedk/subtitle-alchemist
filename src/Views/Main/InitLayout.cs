@@ -104,7 +104,7 @@ namespace SubtitleAlchemist.Views.Main
                 }
             };
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)Row.ListViewAndVideo);
@@ -152,7 +152,7 @@ namespace SubtitleAlchemist.Views.Main
 
             grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)Row.ListViewAndVideo);
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Right, (int)Row.ListViewAndVideo);
@@ -195,7 +195,7 @@ namespace SubtitleAlchemist.Views.Main
                 }
             };
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)Row.ListViewAndVideo);
@@ -240,7 +240,7 @@ namespace SubtitleAlchemist.Views.Main
                 }
             };
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Right, (int)Row.ListViewAndVideo);
@@ -289,7 +289,7 @@ namespace SubtitleAlchemist.Views.Main
 
             grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout4.Video);
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout4.ListView);
@@ -329,7 +329,7 @@ namespace SubtitleAlchemist.Views.Main
                 }
             };
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout5.ListView);
@@ -369,7 +369,7 @@ namespace SubtitleAlchemist.Views.Main
                 }
             };
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout6.ListViewAndVideo);
@@ -411,7 +411,7 @@ namespace SubtitleAlchemist.Views.Main
                 }
             };
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout7.ListView);
@@ -453,7 +453,7 @@ namespace SubtitleAlchemist.Views.Main
 
             grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout8.Video);
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout8.ListView);
@@ -494,7 +494,7 @@ namespace SubtitleAlchemist.Views.Main
 
             grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout9.VideoAndWaveformAndText);
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout9.ListView);
@@ -539,7 +539,7 @@ namespace SubtitleAlchemist.Views.Main
             grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout10.Video);
             grid.Add(viewModel.AudioVisualizer, (int)Column.Left, (int)RowLayout10.WaveForm);
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout10.ListView);
@@ -576,7 +576,7 @@ namespace SubtitleAlchemist.Views.Main
                 }
             };
 
-            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox();
+            viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
             viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
             viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
             grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout11.ListView);
@@ -587,8 +587,12 @@ namespace SubtitleAlchemist.Views.Main
             mainPage.Content = grid;
         }
 
-        private static Grid MakeDefaultListViewAndEditBox()
+        private static Grid MakeDefaultListViewAndEditBox(MainViewModel vm)
         {
+            var editor = new Editor { TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Row(1)
+                .Column(1).Bind("CurrentText");
+            editor.TextChanged += vm.CurrentTextChanged;
+            
             return new Grid
             {
                 HorizontalOptions = LayoutOptions.Fill,
@@ -604,10 +608,7 @@ namespace SubtitleAlchemist.Views.Main
                     new(Star),
                     new(100),
                 },
-                Children =
-                {
-                    new Entry {  TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Row(1).Column(1).Bind("CurrentText"),
-                }
+                Children = { editor }
             };
         }
 

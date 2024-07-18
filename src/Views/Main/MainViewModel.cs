@@ -44,12 +44,31 @@ namespace SubtitleAlchemist.Views.Main
         private string _statusText;
 
         [ObservableProperty]
-        private List<Paragraph> _paragraphs;
+        private List<DisplayParagraph> _paragraphs;
+
+        [ObservableProperty]
+        private string _currentText;
+
+        private DisplayParagraph? _currentParagraph;
+
+
+        private Subtitle UpdatedSubtitle
+        {
+            get
+            {
+                var subtitle = new Subtitle(_subtitle);
+                subtitle.Paragraphs.Clear();
+                subtitle.Paragraphs.AddRange(Paragraphs.Select(p => p.P));
+                return subtitle;
+            }
+        }
 
         private Subtitle _subtitle;
+
         private string _subtitleFileName;
         private string _videoFileName;
         private readonly System.Timers.Timer _timer;
+        private bool _updating;
 
 
         private readonly IPopupService _popupService;
@@ -72,7 +91,8 @@ namespace SubtitleAlchemist.Views.Main
             _videoFileName = string.Empty;
             _subtitleFileName = string.Empty;
             _subtitle = new Subtitle();
-            _paragraphs = new List<Paragraph>();
+            _paragraphs = new List<DisplayParagraph>();
+            _currentText = string.Empty;
             AudioVisualizer = new AudioVisualizer();
             ListViewAndEditBox = new Grid();
         }
@@ -177,7 +197,7 @@ namespace SubtitleAlchemist.Views.Main
             if (result is LayoutPickerPopupResult popupResult)
             {
                 SelectedLayout = popupResult.SelectedLayout;
-                StatusText = $"Selected layout: {SelectedLayout + 1}";
+                ShowStatus($"Selected layout: {SelectedLayout + 1}");
                 MainPage.MakeLayout(SelectedLayout);
             }
         }
@@ -205,7 +225,7 @@ namespace SubtitleAlchemist.Views.Main
             }
 
             _subtitle = Subtitle.Parse(subtitleFileName);
-            Paragraphs = _subtitle.Paragraphs;
+            Paragraphs = _subtitle.Paragraphs.Select(p => new DisplayParagraph(p)).ToList();
             _subtitleFileName = subtitleFileName;
             if (Window != null)
             {
@@ -227,7 +247,9 @@ namespace SubtitleAlchemist.Views.Main
             _subtitleFileName = string.Empty;
             _videoFileName = string.Empty;
             _subtitle = new Subtitle();
-            Paragraphs = new List<Paragraph>();
+            Paragraphs = new List<DisplayParagraph>();
+            _currentParagraph = null;
+            CurrentText = string.Empty;
             if (VideoPlayer != null)
             {
                 VideoPlayer.Source = null;
@@ -246,7 +268,7 @@ namespace SubtitleAlchemist.Views.Main
         {
             if (Paragraphs.Count == 0)
             {
-                StatusText = "Nothing to save";
+                ShowStatus("Nothing to save");
                 return;
             }
 
@@ -259,8 +281,8 @@ namespace SubtitleAlchemist.Views.Main
 
             if (!string.IsNullOrEmpty(subtitleFileName))
             {
-                var text = _subtitle.ToText(CurrentSubtitleFormat);
-                File.WriteAllText(subtitleFileName, text, CurrentEncoding); //TODO: BOM or not...
+                var text = UpdatedSubtitle.ToText(CurrentSubtitleFormat);
+                await File.WriteAllTextAsync(subtitleFileName, text, CurrentEncoding); //TODO: BOM or not...
 
                 _subtitleFileName = subtitleFileName;
                 if (Window != null)
@@ -275,7 +297,7 @@ namespace SubtitleAlchemist.Views.Main
         {
             if (Paragraphs.Count == 0)
             {
-                StatusText = "Nothing to save";
+                ShowStatus("Nothing to save");
                 return;
             }
 
@@ -285,24 +307,14 @@ namespace SubtitleAlchemist.Views.Main
                 return;
             }
 
-            var fileHelper = new FileHelper();
-            var subtitleFileName = await fileHelper.SaveSubtitleFileAs(
-                "Save subtitle file as",
-                _videoFileName,
-                CurrentSubtitleFormat,
-                _subtitle);
+            var text = UpdatedSubtitle.ToText(CurrentSubtitleFormat);
+            await File.WriteAllTextAsync(_subtitleFileName, text);
+            ShowStatus("Saved: " + _subtitleFileName);
+        }
 
-            if (!string.IsNullOrEmpty(subtitleFileName))
-            {
-                var text = _subtitle.ToText(CurrentSubtitleFormat);
-                await File.WriteAllTextAsync(subtitleFileName, text);
-
-                _subtitleFileName = subtitleFileName;
-                if (Window != null)
-                {
-                    Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
-                }
-            }
+        private void ShowStatus(string statusText)
+        {
+            StatusText = statusText;
         }
 
         [RelayCommand]
@@ -402,6 +414,44 @@ namespace SubtitleAlchemist.Views.Main
             }
         }
 
+        public void OnCollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            _updating = true;
+            var previous = e.PreviousSelection;
+            foreach (var item in previous)
+            {
+                if (item is DisplayParagraph paragraph)
+                {
+                    paragraph.IsSelected = false;
+                    paragraph.BackgroundColor = Colors.Black;
+                }
+            }
+
+            var current = e.CurrentSelection;
+            var paragraphs = new List<DisplayParagraph>();
+            var first = true;
+            foreach (var item in current)
+            {
+                if (item is DisplayParagraph paragraph)
+                {
+                    if (first)
+                    {
+                        CurrentText = paragraph.Text;
+                        _currentParagraph = paragraph;
+                        first = false;
+                    }
+
+                    paragraph.IsSelected = true;
+                    paragraph.BackgroundColor = Colors.DarkGreen;
+                    paragraphs.Add(paragraph);
+                }
+            }
+
+            _updating = false;
+            ShowStatus("Selecting " + current.Count + " paragraphs: " + string.Join(',', paragraphs.Select(p => p.Number)));
+            //            SelectedLineInfo = $"Selected: {paragraph.Number} {paragraph.Start} {paragraph.End} {paragraph.Duration}";
+        }
+
         [RelayCommand]
         private async Task VideoAudioToTextWhisper()
         {
@@ -445,6 +495,20 @@ namespace SubtitleAlchemist.Views.Main
             }
 
             return true;
+        }
+
+        public void CurrentTextChanged(object? sender, TextChangedEventArgs e)
+        {
+            if (_updating)
+            {
+                return;
+            }
+
+            if (_currentParagraph != null && e.NewTextValue != _currentParagraph.Text)
+            {
+                _currentParagraph.Text = e.NewTextValue;
+                _currentParagraph.P.Text = e.NewTextValue;
+            }
         }
     }
 }
