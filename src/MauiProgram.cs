@@ -11,6 +11,7 @@ using SubtitleAlchemist.Views.Options.Settings;
 using SubtitleAlchemist.Views.Tools.AdjustDuration;
 using SubtitleAlchemist.Views.Translate;
 using SubtitleAlchemist.Views.Video.AudioToTextWhisper;
+using System.Text;
 
 namespace SubtitleAlchemist
 {
@@ -51,6 +52,8 @@ namespace SubtitleAlchemist
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
+
+            //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             return builder.Build();
         }
