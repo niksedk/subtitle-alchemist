@@ -10,19 +10,24 @@ using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Views.Help.About;
 using SubtitleAlchemist.Views.LayoutPicker;
-using SubtitleAlchemist.Views.Options.Settings;
-using System.Collections;
-using System.Text;
 using SubtitleAlchemist.Views.Options.DownloadFfmpeg;
+using SubtitleAlchemist.Views.Options.Settings;
 using SubtitleAlchemist.Views.Tools.AdjustDuration;
 using SubtitleAlchemist.Views.Translate;
 using SubtitleAlchemist.Views.Video.AudioToTextWhisper;
+using System.Collections;
+using System.Collections.ObjectModel;
+using System.Text;
+using CommunityToolkit.Maui.Core.Extensions;
 
 namespace SubtitleAlchemist.Views.Main
 {
     public partial class MainViewModel : ObservableObject
     {
         public int SelectedLayout { get; set; }
+
+        public List<MenuFlyoutItem> SubtitleListViewContextMenuItems { get; set; }
+        public MenuFlyout SubtitleListViewContextMenu { get; set; }
 
         public static Window? Window { get; set; }
 
@@ -44,7 +49,7 @@ namespace SubtitleAlchemist.Views.Main
         private string _statusText;
 
         [ObservableProperty]
-        private List<DisplayParagraph> _paragraphs;
+        private ObservableCollection<DisplayParagraph> _paragraphs;
 
         [ObservableProperty]
         private string _currentText;
@@ -91,7 +96,7 @@ namespace SubtitleAlchemist.Views.Main
             _videoFileName = string.Empty;
             _subtitleFileName = string.Empty;
             _subtitle = new Subtitle();
-            _paragraphs = new List<DisplayParagraph>();
+            _paragraphs = new ObservableCollection<DisplayParagraph>();
             _currentText = string.Empty;
             AudioVisualizer = new AudioVisualizer();
             ListViewAndEditBox = new Grid();
@@ -225,7 +230,7 @@ namespace SubtitleAlchemist.Views.Main
             }
 
             _subtitle = Subtitle.Parse(subtitleFileName);
-            Paragraphs = _subtitle.Paragraphs.Select(p => new DisplayParagraph(p)).ToList();
+            Paragraphs = _subtitle.Paragraphs.Select(p => new DisplayParagraph(p)).ToObservableCollection();
             _subtitleFileName = subtitleFileName;
             if (Window != null)
             {
@@ -247,7 +252,7 @@ namespace SubtitleAlchemist.Views.Main
             _subtitleFileName = string.Empty;
             _videoFileName = string.Empty;
             _subtitle = new Subtitle();
-            Paragraphs = new List<DisplayParagraph>();
+            Paragraphs = new ObservableCollection<DisplayParagraph>();
             _currentParagraph = null;
             CurrentText = string.Empty;
             if (VideoPlayer != null)
@@ -266,7 +271,7 @@ namespace SubtitleAlchemist.Views.Main
         [RelayCommand]
         private async Task SubtitleSaveAs()
         {
-            if (Paragraphs.Count == 0)
+            if (!Paragraphs.Any())
             {
                 ShowStatus("Nothing to save");
                 return;
@@ -295,7 +300,7 @@ namespace SubtitleAlchemist.Views.Main
         [RelayCommand]
         private async Task SubtitleSave()
         {
-            if (Paragraphs.Count == 0)
+            if (!Paragraphs.Any())
             {
                 ShowStatus("Nothing to save");
                 return;
@@ -418,13 +423,10 @@ namespace SubtitleAlchemist.Views.Main
         {
             _updating = true;
             var previous = e.PreviousSelection;
-            foreach (var item in previous)
+            foreach (var item in Paragraphs)
             {
-                if (item is DisplayParagraph paragraph)
-                {
-                    paragraph.IsSelected = false;
-                    paragraph.BackgroundColor = Colors.Black;
-                }
+                item.IsSelected = false;
+                item.BackgroundColor = Colors.Black;
             }
 
             var current = e.CurrentSelection;
@@ -449,7 +451,23 @@ namespace SubtitleAlchemist.Views.Main
 
             _updating = false;
             ShowStatus("Selecting " + current.Count + " paragraphs: " + string.Join(',', paragraphs.Select(p => p.Number)));
-            //            SelectedLineInfo = $"Selected: {paragraph.Number} {paragraph.Start} {paragraph.End} {paragraph.Duration}";
+
+            const int contextMenuDeleteOneLine = 0;
+            const int contextMenuInsertBefore = 1;
+            const int contextMenuInsertAfter = 2;
+            const int contextMenuItalic = 4;
+            if (current.Count == 1)
+            {
+                SubtitleListViewContextMenuItems[contextMenuDeleteOneLine].Text = "Delete one line";
+            }
+            else if (current.Count > 1)
+            {
+                SubtitleListViewContextMenuItems[contextMenuDeleteOneLine].Text = "Delete selected lines";
+            }
+            SubtitleListViewContextMenuItems[contextMenuDeleteOneLine].IsEnabled = current.Count == 1;
+            SubtitleListViewContextMenuItems[contextMenuInsertBefore].IsEnabled = current.Count == 1;
+            SubtitleListViewContextMenuItems[contextMenuInsertAfter].IsEnabled = current.Count == 1;
+            SubtitleListViewContextMenuItems[contextMenuItalic].IsEnabled = current.Count == 1;
         }
 
         [RelayCommand]
@@ -508,6 +526,169 @@ namespace SubtitleAlchemist.Views.Main
             {
                 _currentParagraph.Text = e.NewTextValue;
                 _currentParagraph.P.Text = e.NewTextValue;
+            }
+        }
+
+        [RelayCommand]
+        private async Task DeleteSelectedLines()
+        {
+            var selectedParagraphs = Paragraphs.Where(p => p.IsSelected).ToList();
+            var text = selectedParagraphs.Count > 1
+                ? $"Delete {selectedParagraphs.Count} lines?"
+                : $"Delete line {selectedParagraphs.First().Number}?";
+            var title = selectedParagraphs.Count > 1
+                ? "Delete selected lines"
+                : "Delete one line";
+
+            var answer = await MainPage.DisplayAlert(
+                title,
+                $"{Environment.NewLine}{text}",
+                "Yes",
+                "No");
+            if (!answer)
+            {
+                return;
+            }
+
+            SubtitleList.BatchBegin();
+            var firstIdx = -1;
+            foreach (var displayParagraph in selectedParagraphs)
+            {
+                if (firstIdx < 0)
+                {
+                    firstIdx = Paragraphs.IndexOf(displayParagraph);
+                }
+
+                Paragraphs.Remove(displayParagraph);
+            }
+
+            if (firstIdx > Paragraphs.Count)
+            {
+                firstIdx = Paragraphs.Count - 1;
+            }
+
+            if (firstIdx >= 0)
+            {
+                Paragraphs[firstIdx].IsSelected = true;
+                Paragraphs[firstIdx].BackgroundColor = Colors.DarkGreen;
+
+                _currentParagraph = Paragraphs[firstIdx];
+            }
+
+            Renumber();
+
+            SubtitleList.BatchCommit();
+
+            if (firstIdx >= 0)
+            {
+                SubtitleList.ScrollTo(firstIdx, 1, ScrollToPosition.Center, false);
+                SubtitleList.ScrollTo(firstIdx, 1, ScrollToPosition.Center, false);
+                SubtitleList.ScrollTo(firstIdx, 1, ScrollToPosition.Center, false);
+                SubtitleList.ScrollTo(firstIdx, 1, ScrollToPosition.Center, false);
+
+                SubtitleList.SelectedItem = Paragraphs[firstIdx];
+            }
+        }
+
+        private void Renumber()
+        {
+            for (var index = 0; index < Paragraphs.Count; index++)
+            {
+                var displayParagraph = Paragraphs[index];
+                displayParagraph.Number = index + 1;
+            }
+        }
+
+        [RelayCommand]
+        private async Task InsertBefore()
+        {
+            if (_currentParagraph == null)
+            {
+                return;
+            }
+
+            var p = Paragraphs.FirstOrDefault(p => p.P == _currentParagraph.P);
+            if (p == null)
+            {
+                return;
+            }
+
+            var idx = Paragraphs.IndexOf(p);
+
+            SubtitleList.BatchBegin();
+            var newParagraph = new DisplayParagraph(new Paragraph());
+            Paragraphs.Insert(idx, newParagraph);
+            foreach (var displayParagraph in Paragraphs)
+            {
+                displayParagraph.IsSelected = displayParagraph == newParagraph;
+                displayParagraph.BackgroundColor = displayParagraph == newParagraph ? Colors.DarkGreen : Colors.Black;
+            }
+
+            Renumber();
+
+            _currentParagraph = newParagraph;
+
+            SubtitleList.BatchCommit();
+
+            SubtitleList.ScrollTo(idx, 1, ScrollToPosition.Center);
+            SubtitleList.ScrollTo(idx, 1, ScrollToPosition.Center);
+            SubtitleList.ScrollTo(idx, 1, ScrollToPosition.Center);
+            SubtitleList.ScrollTo(idx, 1, ScrollToPosition.Center);
+
+            SubtitleList.SelectedItem = _currentParagraph;
+        }
+
+        [RelayCommand]
+        private async Task InsertAfter()
+        {
+            if (_currentParagraph == null)
+            {
+                return;
+            }
+
+            var p = Paragraphs.FirstOrDefault(p => p.P == _currentParagraph.P);
+            if (p == null)
+            {
+                return;
+            }
+
+            var idx = Paragraphs.IndexOf(p);
+
+            SubtitleList.BatchBegin();
+            var newParagraph = new DisplayParagraph(new Paragraph());
+            Paragraphs.Insert(idx + 1, newParagraph);
+
+            foreach (var displayParagraph in Paragraphs)
+            {
+                displayParagraph.IsSelected = displayParagraph == newParagraph;
+                displayParagraph.BackgroundColor = displayParagraph == newParagraph ? Colors.DarkGreen : Colors.Black;
+            }
+
+            Renumber();
+
+            SubtitleList.BatchCommit();
+
+            _currentParagraph = newParagraph;
+
+            SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
+            SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
+            SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
+            SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
+
+            SubtitleList.SelectedItem = _currentParagraph;
+        }
+
+        [RelayCommand]
+        private async Task Italic()
+        {
+            foreach (var displayParagraph in Paragraphs)
+            {
+                if (displayParagraph.IsSelected)
+                {
+                    displayParagraph.P.Text = $"<i>{displayParagraph.P.Text}</i>";
+                    displayParagraph.Text = displayParagraph.P.Text;
+                    //_currentText = displayParagraph.P.Text;
+                }
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Markup;
-using static Microsoft.Maui.Controls.VisualStateManager;
 
 namespace SubtitleAlchemist.Views.Main
 {
@@ -83,7 +82,6 @@ namespace SubtitleAlchemist.Views.Main
             };
 
             view.SetBinding(ItemsView.ItemsSourceProperty, "Paragraphs");
-         //   view.SetBinding(SelectableItemsView.SelectedItemsProperty, "SelectedParagraphs");
             view.SelectionChanged += vm.OnCollectionViewSelectionChanged;
 
             //// Make a Setter with property background color and value light sky blue
@@ -98,7 +96,21 @@ namespace SubtitleAlchemist.Views.Main
             //// Add the style to the resource dictionary
             //vm.MainPage.Resources.Add(style);
 
-
+            vm.SubtitleListViewContextMenu = new MenuFlyout();
+            vm.SubtitleListViewContextMenuItems = new List<MenuFlyoutItem>
+            {
+                new MenuFlyoutItem { Text = "Delete x lines?", Command = vm.DeleteSelectedLinesCommand },
+                new MenuFlyoutItem { Text = "Insert line before", Command = vm.InsertBeforeCommand },
+                new MenuFlyoutItem { Text = "Insert line after", Command = vm.InsertAfterCommand },
+                new MenuFlyoutSeparator(),
+                new MenuFlyoutItem { Text = "Italic", Command = vm.ItalicCommand },
+            };
+            foreach (var item in vm.SubtitleListViewContextMenuItems)
+            {
+                vm.SubtitleListViewContextMenu.Add(item);
+            }
+            FlyoutBase.SetContextFlyout(view, vm.SubtitleListViewContextMenu);
+            
             return view;
         }
     }

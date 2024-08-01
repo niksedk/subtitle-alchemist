@@ -9,7 +9,7 @@ public class AboutPopup : Popup
     {
         BindingContext = model;
 
-        Content = new ContentView()
+        Content = new ContentView
         {
             BackgroundColor = Colors.DarkGray,
             Content = new StackLayout

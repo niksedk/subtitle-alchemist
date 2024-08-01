@@ -5,7 +5,6 @@ namespace SubtitleAlchemist.Views.Main;
 
 public partial class DisplayParagraph : ObservableObject
 {
-    public int Number => P.Number;
     public string Start => P.StartTime.ToDisplayString();
     public string End => P.EndTime.ToDisplayString();
     public string Duration => P.Duration.ToShortDisplayString();
@@ -15,6 +14,9 @@ public partial class DisplayParagraph : ObservableObject
 
     [ObservableProperty] 
     private bool _isSelected;
+
+    [ObservableProperty]
+    private int _number;
 
     public Paragraph P { get; set; }
 
@@ -27,5 +29,6 @@ public partial class DisplayParagraph : ObservableObject
         Text = paragraph.Text;
         BackgroundColor = Colors.Black;
         IsSelected = false;
+        Number = paragraph.Number;
     }
 }
