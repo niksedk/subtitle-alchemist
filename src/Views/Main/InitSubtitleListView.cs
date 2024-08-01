@@ -84,18 +84,6 @@ namespace SubtitleAlchemist.Views.Main
             view.SetBinding(ItemsView.ItemsSourceProperty, "Paragraphs");
             view.SelectionChanged += vm.OnCollectionViewSelectionChanged;
 
-            //// Make a Setter with property background color and value light sky blue
-            //Setter backgroundColorSetter = new() { Property = VisualElement.BackgroundColorProperty, Value = Colors.LightSkyBlue };
-            //VisualState stateSelected = new() { Name = CommonStates.Selected, Setters = { backgroundColorSetter } };
-            //VisualState stateNormal = new() { Name = CommonStates.Normal };
-            //VisualStateGroup visualStateGroup = new() { Name = nameof(CommonStates), States = { stateSelected, stateNormal } };
-            //VisualStateGroupList visualStateGroupList = new() { visualStateGroup };
-            //Setter vsgSetter = new() { Property = VisualStateGroupsProperty, Value = visualStateGroupList };
-            //Style style = new(typeof(Grid)) { Setters = { vsgSetter } };
-
-            //// Add the style to the resource dictionary
-            //vm.MainPage.Resources.Add(style);
-
             vm.SubtitleListViewContextMenu = new MenuFlyout();
             vm.SubtitleListViewContextMenuItems = new List<MenuFlyoutItem>
             {
@@ -103,14 +91,21 @@ namespace SubtitleAlchemist.Views.Main
                 new MenuFlyoutItem { Text = "Insert line before", Command = vm.InsertBeforeCommand },
                 new MenuFlyoutItem { Text = "Insert line after", Command = vm.InsertAfterCommand },
                 new MenuFlyoutSeparator(),
-                new MenuFlyoutItem { Text = "Italic", Command = vm.ItalicCommand },
+                new MenuFlyoutItem { Text = "Italic", Command = vm.ItalicCommand, KeyboardAccelerators =
+                {
+                    new KeyboardAccelerator
+                    {
+                        Modifiers = KeyboardAcceleratorModifiers.Ctrl,
+                        Key = "I",
+                    }
+                }},
             };
             foreach (var item in vm.SubtitleListViewContextMenuItems)
             {
                 vm.SubtitleListViewContextMenu.Add(item);
             }
             FlyoutBase.SetContextFlyout(view, vm.SubtitleListViewContextMenu);
-            
+
             return view;
         }
     }

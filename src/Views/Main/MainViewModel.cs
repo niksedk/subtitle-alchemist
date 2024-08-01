@@ -350,10 +350,8 @@ namespace SubtitleAlchemist.Views.Main
                 var tempWaveFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.wav");
                 var process = WaveFileExtractor.GetCommandLineProcess(videoFileName, -1, tempWaveFileName, Configuration.Settings.General.VlcWaveTranscodeSettings, out _);
                 process.Start();
-                while (!process.HasExited)
-                {
-
-                }
+                var token = new CancellationTokenSource().Token;
+                process.WaitForExitAsync(token);
 
                 if (File.Exists(tempWaveFileName))
                 {
@@ -681,15 +679,47 @@ namespace SubtitleAlchemist.Views.Main
         [RelayCommand]
         private async Task Italic()
         {
+            var tag = "i";
+            var isAssa = false;
+
+            ToggleTag(tag, isAssa);
+        }
+
+        private void ToggleTag(string tag, bool isAssa)
+        {
+            var first = true;
+            var toggleOn = true;
+
+            SubtitleList.BatchBegin();
+
             foreach (var displayParagraph in Paragraphs)
             {
                 if (displayParagraph.IsSelected)
                 {
-                    displayParagraph.P.Text = $"<i>{displayParagraph.P.Text}</i>";
-                    displayParagraph.Text = displayParagraph.P.Text;
-                    //_currentText = displayParagraph.P.Text;
+                    if (first)
+                    {
+                        _currentParagraph = displayParagraph;
+                        toggleOn = !HtmlUtil.IsTagOn(displayParagraph.Text, tag, true, isAssa);
+                        first = false;
+                    }
+
+                    if (toggleOn)
+                    {
+                        displayParagraph.Text = HtmlUtil.TagOn(displayParagraph.Text, tag, true, isAssa);
+                    }
+                    else
+                    {
+                        displayParagraph.Text = HtmlUtil.TagOff(displayParagraph.Text, tag, true, isAssa);
+                    }
+
+                    if (_currentParagraph == displayParagraph)
+                    {
+                        CurrentText = displayParagraph.Text;
+                    }
                 }
             }
+
+            SubtitleList.BatchCommit();
         }
     }
 }
