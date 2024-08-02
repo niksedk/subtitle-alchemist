@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Markup;
+using SkiaSharp;
 
 namespace SubtitleAlchemist.Views.Main
 {
@@ -84,29 +85,84 @@ namespace SubtitleAlchemist.Views.Main
             view.SetBinding(ItemsView.ItemsSourceProperty, "Paragraphs");
             view.SelectionChanged += vm.OnCollectionViewSelectionChanged;
 
+            MakeContextMenu(vm, view);
+
+            return view;
+        }
+
+        private static void MakeContextMenu(MainViewModel vm, CollectionView view)
+        {
+            var imagePath = Path.Combine("Resources", "Images", "Menu");
+
             vm.SubtitleListViewContextMenu = new MenuFlyout();
             vm.SubtitleListViewContextMenuItems = new List<MenuFlyoutItem>
             {
-                new MenuFlyoutItem { Text = "Delete x lines?", Command = vm.DeleteSelectedLinesCommand },
-                new MenuFlyoutItem { Text = "Insert line before", Command = vm.InsertBeforeCommand },
-                new MenuFlyoutItem { Text = "Insert line after", Command = vm.InsertAfterCommand },
-                new MenuFlyoutSeparator(),
-                new MenuFlyoutItem { Text = "Italic", Command = vm.ItalicCommand, KeyboardAccelerators =
+                new MenuFlyoutItem
                 {
-                    new KeyboardAccelerator
+                    Text = "Delete x lines?",
+                    Command = vm.DeleteSelectedLinesCommand,
+                    IconImageSource = ImageSource.FromFile(Path.Combine(imagePath,"Delete.png")),
+                },
+                new MenuFlyoutItem
+                {
+                    Text = "Insert line before",
+                    Command = vm.InsertBeforeCommand,
+                    IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Add.png")),
+                },
+                new MenuFlyoutItem
+                {
+                    Text = "Insert line after",
+                    Command = vm.InsertAfterCommand,
+                    IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Add.png")),
+                },
+                new MenuFlyoutSeparator(),
+                new MenuFlyoutItem
+                {
+                    Text = "Italic",
+                    Command = vm.ItalicCommand, KeyboardAccelerators =
                     {
-                        Modifiers = KeyboardAcceleratorModifiers.Ctrl,
-                        Key = "I",
-                    }
-                }},
+                        new KeyboardAccelerator
+                        {
+                            Modifiers = KeyboardAcceleratorModifiers.Ctrl,
+                            Key = "I",
+                        }
+                    },
+                    IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Italic.png")),
+                },
             };
+
             foreach (var item in vm.SubtitleListViewContextMenuItems)
             {
                 vm.SubtitleListViewContextMenu.Add(item);
             }
-            FlyoutBase.SetContextFlyout(view, vm.SubtitleListViewContextMenu);
 
-            return view;
+            FlyoutBase.SetContextFlyout(view, vm.SubtitleListViewContextMenu);
+        }
+
+        private static ImageSource ConvertSvgToImageSource(byte[] svgData)
+        {
+            using var stream = new MemoryStream(svgData);
+            var svgDocument = new SkiaSharp.Extended.Svg.SKSvg();
+            svgDocument.Load(stream);
+
+            var bitmap = new SKBitmap((int)svgDocument.Picture.CullRect.Width, (int)svgDocument.Picture.CullRect.Height);
+
+            using (var surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height)))
+            {
+                var canvas = surface.Canvas;
+                canvas.Clear(SKColors.Transparent);
+                canvas.DrawPicture(svgDocument.Picture);
+                surface.Canvas.Flush();
+
+                var image = surface.Snapshot();
+                bitmap = SKBitmap.FromImage(image);
+                var data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
+
+                var imageStream = new MemoryStream(data.ToArray());
+                var imageSource = ImageSource.FromStream(() => imageStream);
+
+                return imageSource;
+            }
         }
     }
 }
