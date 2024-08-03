@@ -7,14 +7,24 @@ namespace SubtitleAlchemist.Logic
         public static readonly TaskPoolGlobalHook Hook = new();
         private static bool _loaded;
 
-        private static readonly Stack<List<EventHandler<KeyboardHookEventArgs>?>> _stack = new();
+        private static readonly Stack<List<EventHandler<KeyboardHookEventArgs>>> StackKeyPressed = new();
+        private static readonly List<EventHandler<KeyboardHookEventArgs>> CurrentKeyPressedEventHandlers = new();
 
-        public static EventHandler<KeyboardHookEventArgs>? KeyPressed { get; set; }
-        public static EventHandler<MouseHookEventArgs>? MouseClicked { get; set; }
+        public static void AddKeyPressed(EventHandler<KeyboardHookEventArgs> keyboardHookEventArgs)
+        {
+            CurrentKeyPressedEventHandlers.Add(keyboardHookEventArgs);
+        }
+
+        private static readonly Stack<List<EventHandler<MouseHookEventArgs>>> StackMouseClicked = new();
+        private static readonly List<EventHandler<MouseHookEventArgs>> CurrentMouseClickedEventHandlers = new();
+        public static void AddMouseClicked(EventHandler<MouseHookEventArgs> mouseHookEventArgs)
+        {
+            CurrentMouseClickedEventHandlers.Add(mouseHookEventArgs);
+        }
 
         public static async Task RunAsync()
         {
-          //  if (_loaded)
+            if (_loaded)
             {
                 return;
             }
@@ -23,12 +33,18 @@ namespace SubtitleAlchemist.Logic
 
             Hook.KeyPressed += (s, e) =>
             {
-                KeyPressed?.Invoke(s, e);
+                foreach (var handler in CurrentKeyPressedEventHandlers)
+                {
+                    handler?.Invoke(s, e);
+                }
             };
 
             Hook.MouseClicked += (s, e) =>
             {
-                MouseClicked?.Invoke(s, e);
+                foreach (var handler in CurrentMouseClickedEventHandlers)
+                {
+                    handler?.Invoke(s, e);
+                }
             };
 
             await Hook.RunAsync();
@@ -36,30 +52,35 @@ namespace SubtitleAlchemist.Logic
 
         public static void Clear()
         {
-            KeyPressed = null;
+            CurrentKeyPressedEventHandlers.Clear();
+            CurrentMouseClickedEventHandlers.Clear();
         }
 
         public static void Push()
         {
-            _stack.Push(new List<EventHandler<KeyboardHookEventArgs>?>
-            {
-                KeyPressed
-            });
+            StackKeyPressed.Push(CurrentKeyPressedEventHandlers);
+            StackMouseClicked.Push(CurrentMouseClickedEventHandlers);
+            Clear();
         }
 
         public static void Pop()
         {
-            if (_stack.Count == 0)
+            Clear();
+
+            if (StackKeyPressed.Count > 0)
             {
-                return;
+                CurrentKeyPressedEventHandlers.AddRange(StackKeyPressed.Pop());
             }
 
-            var list = _stack.Pop();
-            KeyPressed = list[0];
+            if (StackMouseClicked.Count > 0)
+            {
+                CurrentMouseClickedEventHandlers.AddRange(StackMouseClicked.Pop());
+            }
         }
 
         public static void Dispose()
         {
+            Clear();
             Hook.Dispose();
         }
     }

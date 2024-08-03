@@ -675,14 +675,14 @@ namespace SubtitleAlchemist.Features.Main
         }
 
         [RelayCommand]
-        private async Task InsertBefore()
+        private void InsertBefore()
         {
             if (_currentParagraph == null)
             {
                 return;
             }
 
-            var p = Enumerable.FirstOrDefault<DisplayParagraph>(Paragraphs, p => p.P == _currentParagraph.P);
+            var p = Paragraphs.FirstOrDefault<DisplayParagraph>(p => p.P == _currentParagraph.P);
             if (p == null)
             {
                 return;
@@ -710,14 +710,14 @@ namespace SubtitleAlchemist.Features.Main
         }
 
         [RelayCommand]
-        private async Task InsertAfter()
+        private void InsertAfter()
         {
             if (_currentParagraph == null)
             {
                 return;
             }
 
-            var p = Enumerable.FirstOrDefault<DisplayParagraph>(Paragraphs, p => p.P == _currentParagraph.P);
+            var p = Paragraphs.FirstOrDefault<DisplayParagraph>(p => p.P == _currentParagraph.P);
             if (p == null)
             {
                 return;
@@ -744,7 +744,7 @@ namespace SubtitleAlchemist.Features.Main
         }
 
         [RelayCommand]
-        private async Task Italic()
+        private void Italic()
         {
             var tag = "i";
             var isAssa = false;

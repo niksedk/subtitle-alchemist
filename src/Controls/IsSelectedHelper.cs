@@ -2,7 +2,7 @@
 
 namespace SubtitleAlchemist.Controls
 {
-    internal class IsSelectedHelper
+    public class IsSelectedHelper
     {
         private readonly SelectionRange[] _ranges;
         private int _lastPosition = int.MaxValue;

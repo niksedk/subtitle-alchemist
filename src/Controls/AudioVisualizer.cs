@@ -1,25 +1,13 @@
-﻿using System.Runtime.CompilerServices;
+﻿using MauiCursor;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.Forms;
 using SkiaSharp;
 using SkiaSharp.Views.Maui.Controls;
-using SkiaSharp.Views.Maui.Handlers;
+using System.Runtime.CompilerServices;
 using SKPaintSurfaceEventArgs = SkiaSharp.Views.Maui.SKPaintSurfaceEventArgs;
 
 namespace SubtitleAlchemist.Controls
 {
-    public static class Registration
-    {
-        public static MauiAppBuilder UseAudioVisualizer(this MauiAppBuilder builder)
-        {
-            builder.ConfigureMauiHandlers(h =>
-            {
-                h.AddHandler<AudioVisualizer, SKCanvasViewHandler>();
-            });
-
-            return builder;
-        }
-    }
-
     public class AudioVisualizer : SKCanvasView
     {
         private readonly object _lock = new();
@@ -31,31 +19,67 @@ namespace SubtitleAlchemist.Controls
         private SKImageInfo _info;
 
         public WavePeakData? WavePeaks { get; set; }
+        public bool AllowOverlap { get; set; }
 
         public const double ZoomMinimum = 0.1;
         public const double ZoomMaximum = 2.5;
         private double _zoomFactor = 1.0; // 1.0=no zoom
         private long _lastMouseWheelScroll = -1;
+        private const int MinimumSelectionMilliseconds = 100;
+        public int ClosenessForBorderSelection { get; set; } = 15;
+        public int ShotChangeSnapPixels = 8;
         private Subtitle _subtitle = new Subtitle();
         private readonly List<Paragraph> _displayableParagraphs = new List<Paragraph>();
         private readonly List<Paragraph> _allSelectedParagraphs = new List<Paragraph>();
         public Paragraph? SelectedParagraph { get; private set; }
         public Paragraph? NewSelectionParagraph { get; set; }
+        public Paragraph RightClickedParagraph { get; private set; }
+        public bool AllowNewSelection { get; set; }
 
-        // mouse down helpers
+        public KeyboardModifierKeys ModifierKeys { get; set; } = new KeyboardModifierKeys();
+        public MouseStatus MouseStatus { get; set; } = new MouseStatus();
+
+        // Mouse down helpers
+        private bool _firstMove = true;
         private int _mouseMoveLastX = -1;
         private int _mouseMoveStartX = -1;
         private double _moveWholeStartDifferenceMilliseconds = -1;
         private int _mouseMoveEndX = -1;
         private bool _mouseDown;
         private bool _mouseOver;
+        private Paragraph _prevParagraph;
+        private Paragraph _nextParagraph;
+        private Paragraph _oldParagraph;
+        private Paragraph _mouseDownParagraph;
+        private Paragraph[] _mouseDownParagraphs;
+        private MouseDownParagraphType _mouseDownParagraphType = MouseDownParagraphType.Start;
+        private double _wholeParagraphMinMilliseconds;
+        private double _wholeParagraphMaxMilliseconds = double.MaxValue;
+        private double _gapAtStart = -1;
+
+        // Mouse down 
+        private long _buttonDownTimeTicks;
+        private bool _noClear;
+        public double RightClickedSeconds { get; private set; }
+
+
+        private List<double> _shotChanges = new List<double>();
 
         public bool ShowGridLines { get; set; } = true;
 
         private double _currentVideoPositionSeconds = -1;
 
+        public delegate void ParagraphEventHandler(object sender, ParagraphEventArgs e);
+
         public event PositionEventHandler OnVideoPositionChanged;
         public event PositionEventHandler OnDoubleTapped;
+        public event ParagraphEventHandler OnPositionSelected;
+        public event ParagraphEventHandler OnTimeChanged;
+        public event ParagraphEventHandler OnStartTimeChanged;
+        public event ParagraphEventHandler OnTimeChangedAndOffsetRest;
+        public event ParagraphEventHandler OnNewSelectionRightClicked;
+        public event ParagraphEventHandler OnParagraphRightClicked;
+        public event ParagraphEventHandler OnNonParagraphRightClicked;
 
         public class PositionEventArgs : EventArgs
         {
@@ -199,7 +223,6 @@ namespace SubtitleAlchemist.Controls
             pointerGestureRecognizer.PointerExited += PointerExited;
             GestureRecognizers.Add(pointerGestureRecognizer);
 
-
             //TODO: test mpv player with _canvas.Handle
         }
 
@@ -211,21 +234,834 @@ namespace SubtitleAlchemist.Controls
         private void PointerEntered(object? sender, PointerEventArgs e)
         {
             _mouseOver = true;
+            MouseStatus.MouseButton1 = false;
+            MouseStatus.MouseButton2 = false;
         }
 
         private void PointerPressed(object? sender, PointerEventArgs e)
         {
             _mouseDown = true;
+            MouseStatus.MouseButton1 = true;
+
+            if (WavePeaks == null)
+            {
+                return;
+            }
+
+            var point = e.GetPosition(this);
+            if (point == null)
+            {
+                return;
+            }
+
+            var x = (int)Math.Round(point.Value.X, MidpointRounding.AwayFromZero);
+            var y = (int)Math.Round(point.Value.Y, MidpointRounding.AwayFromZero);
+
+            Paragraph? oldMouseDownParagraph = null;
+            _mouseDownParagraphType = MouseDownParagraphType.None;
+            _gapAtStart = -1;
+            _firstMove = true;
+            if (MouseStatus.MouseButton1) // left
+            {
+                _buttonDownTimeTicks = DateTime.UtcNow.Ticks;
+
+                SetCursor(CursorIcon.IBeam); // VSplit
+
+                double seconds = RelativeXPositionToSeconds(x);
+                var milliseconds = (int)(seconds * TimeCode.BaseUnit);
+
+                if (SetParagraphBorderHit(milliseconds, NewSelectionParagraph))
+                {
+                    if (_mouseDownParagraph != null)
+                    {
+                        oldMouseDownParagraph = new Paragraph(_mouseDownParagraph);
+                    }
+
+                    if (_mouseDownParagraphType == MouseDownParagraphType.Start)
+                    {
+                        if (_mouseDownParagraph != null)
+                        {
+                            _mouseDownParagraph.StartTime.TotalMilliseconds = milliseconds;
+                            OnTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph, _mouseDownParagraphType, AllowMovePrevOrNext));
+                        }
+
+                        NewSelectionParagraph.StartTime.TotalMilliseconds = milliseconds;
+                        _mouseMoveStartX = x;
+                        _mouseMoveEndX = SecondsToXPosition(NewSelectionParagraph.EndTime.TotalSeconds - _startPositionSeconds);
+                    }
+                    else
+                    {
+                        if (_mouseDownParagraph != null)
+                        {
+                            _mouseDownParagraph.EndTime.TotalMilliseconds = milliseconds;
+                            OnTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph, _mouseDownParagraphType, AllowMovePrevOrNext));
+                        }
+
+                        NewSelectionParagraph.EndTime.TotalMilliseconds = milliseconds;
+                        _mouseMoveStartX = SecondsToXPosition(NewSelectionParagraph.StartTime.TotalSeconds - _startPositionSeconds);
+                        _mouseMoveEndX = x;
+                    }
+                    SetMinMaxViaSeconds(seconds);
+                }
+                else if (SetParagraphBorderHit(milliseconds, SelectedParagraph) || SetParagraphBorderHit(milliseconds, _displayableParagraphs))
+                {
+                    NewSelectionParagraph = null;
+                    if (_mouseDownParagraph != null)
+                    {
+                        oldMouseDownParagraph = new Paragraph(_mouseDownParagraph);
+                        var curIdx = _subtitle.Paragraphs.IndexOf(_mouseDownParagraph);
+                        if (_mouseDownParagraphType == MouseDownParagraphType.Start && !ModifierKeys.Alt)
+                        {
+                            if (curIdx > 0)
+                            {
+                                var prev = _subtitle.Paragraphs[curIdx - 1];
+                                if (prev.EndTime.TotalMilliseconds + Configuration.Settings.General.MinimumMillisecondsBetweenLines < milliseconds)
+                                {
+                                    _mouseDownParagraph.StartTime.TotalMilliseconds = milliseconds;
+                                    OnTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph, _mouseDownParagraphType, AllowMovePrevOrNext));
+                                }
+                            }
+                            else
+                            {
+                                _mouseDownParagraph.StartTime.TotalMilliseconds = milliseconds;
+                                OnTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph, _mouseDownParagraphType, AllowMovePrevOrNext));
+                            }
+                        }
+                    }
+                    SetMinAndMax();
+                }
+                else
+                {
+                    var p = GetParagraphAtMilliseconds(milliseconds);
+                    if (p != null)
+                    {
+                        _oldParagraph = new Paragraph(p);
+                        _mouseDownParagraph = p;
+                        oldMouseDownParagraph = new Paragraph(_mouseDownParagraph);
+                        _mouseDownParagraphType = MouseDownParagraphType.Whole;
+                        _moveWholeStartDifferenceMilliseconds = (RelativeXPositionToSeconds(x) * TimeCode.BaseUnit) - p.StartTime.TotalMilliseconds;
+                        SetCursor(CursorIcon.Hand); // Hand
+                        SetMinAndMax();
+                    }
+                    else if (!AllowNewSelection)
+                    {
+                        SetCursor(CursorIcon.Arrow); // Default;
+                    }
+                    if (p == null)
+                    {
+                        SetMinMaxViaSeconds(seconds);
+                    }
+
+                    NewSelectionParagraph = null;
+                    _mouseMoveStartX = x;
+                    _mouseMoveEndX = x;
+                }
+                if (_mouseDownParagraphType == MouseDownParagraphType.Start)
+                {
+                    if (_subtitle != null && _mouseDownParagraph != null)
+                    {
+                        var curIdx = _subtitle.Paragraphs.IndexOf(_mouseDownParagraph);
+                        if (curIdx > 0 && oldMouseDownParagraph != null)
+                        {
+                            _gapAtStart = oldMouseDownParagraph.StartTime.TotalMilliseconds - _subtitle.Paragraphs[curIdx - 1].EndTime.TotalMilliseconds;
+                        }
+                    }
+                }
+                else if (_mouseDownParagraphType == MouseDownParagraphType.End)
+                {
+                    if (_subtitle != null && _mouseDownParagraph != null)
+                    {
+                        var curIdx = _subtitle.Paragraphs.IndexOf(_mouseDownParagraph);
+                        if (curIdx >= 0 && curIdx < _subtitle.Paragraphs.Count - 1 && oldMouseDownParagraph != null)
+                        {
+                            _gapAtStart = _subtitle.Paragraphs[curIdx + 1].StartTime.TotalMilliseconds - oldMouseDownParagraph.EndTime.TotalMilliseconds;
+                        }
+                    }
+                }
+                _mouseDown = true;
+            }
+            else
+            {
+                if (MouseStatus.MouseButton2) // Right
+                {
+                    var seconds = RelativeXPositionToSeconds(x);
+                    var milliseconds = (int)(seconds * TimeCode.BaseUnit);
+
+                    if (OnNewSelectionRightClicked != null && NewSelectionParagraph != null)
+                    {
+                        OnNewSelectionRightClicked.Invoke(this, new ParagraphEventArgs(NewSelectionParagraph));
+                        RightClickedParagraph = null;
+                        _noClear = true;
+                    }
+                    else
+                    {
+                        var p = GetParagraphAtMilliseconds(milliseconds);
+                        RightClickedParagraph = p;
+                        RightClickedSeconds = seconds;
+                        if (p != null)
+                        {
+                            if (OnParagraphRightClicked != null)
+                            {
+                                NewSelectionParagraph = null;
+                                OnParagraphRightClicked.Invoke(this, new ParagraphEventArgs(seconds, p));
+                            }
+                        }
+                        else
+                        {
+                            OnNonParagraphRightClicked?.Invoke(this, new ParagraphEventArgs(seconds, null));
+                        }
+                    }
+                }
+
+                SetCursor(CursorIcon.Arrow); // Default
+            }
+        }
+
+        private void SetMinMaxViaSeconds(double seconds)
+        {
+            _wholeParagraphMinMilliseconds = 0;
+            _wholeParagraphMaxMilliseconds = double.MaxValue;
+            if (_subtitle != null)
+            {
+                Paragraph prev = null;
+                Paragraph next = null;
+                var paragraphs = _subtitle.Paragraphs.OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
+                for (var i = 0; i < paragraphs.Count; i++)
+                {
+                    var p2 = paragraphs[i];
+                    if (p2.StartTime.TotalSeconds < seconds)
+                    {
+                        prev = p2;
+                    }
+                    else if (p2.EndTime.TotalSeconds > seconds)
+                    {
+                        next = p2;
+                        break;
+                    }
+                }
+
+                if (prev != null)
+                {
+                    _wholeParagraphMinMilliseconds = prev.EndTime.TotalMilliseconds + Configuration.Settings.General.MinimumMillisecondsBetweenLines;
+                }
+
+                if (next != null)
+                {
+                    _wholeParagraphMaxMilliseconds = next.StartTime.TotalMilliseconds - Configuration.Settings.General.MinimumMillisecondsBetweenLines;
+                }
+            }
+        }
+
+        private void SetMinAndMax()
+        {
+            _wholeParagraphMinMilliseconds = 0;
+            _wholeParagraphMaxMilliseconds = double.MaxValue;
+            if (_subtitle != null && _mouseDownParagraph != null)
+            {
+                var paragraphs = _subtitle.Paragraphs.OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
+                var curIdx = paragraphs.IndexOf(_mouseDownParagraph);
+                if (curIdx >= 0)
+                {
+                    if (curIdx > 0)
+                    {
+                        _wholeParagraphMinMilliseconds = paragraphs[curIdx - 1].EndTime.TotalMilliseconds + Configuration.Settings.General.MinimumMillisecondsBetweenLines;
+                    }
+
+                    if (curIdx < _subtitle.Paragraphs.Count - 1)
+                    {
+                        _wholeParagraphMaxMilliseconds = paragraphs[curIdx + 1].StartTime.TotalMilliseconds - Configuration.Settings.General.MinimumMillisecondsBetweenLines;
+                    }
+                }
+            }
+        }
+
+        private bool SetParagraphBorderHit(int milliseconds, List<Paragraph> paragraphs)
+        {
+            foreach (var p in paragraphs)
+            {
+                var hit = SetParagraphBorderHit(milliseconds, p);
+                if (hit)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool SetParagraphBorderHit(int milliseconds, Paragraph paragraph)
+        {
+            if (paragraph == null)
+            {
+                return false;
+            }
+
+            if (IsParagraphBorderStartHit(milliseconds, paragraph.StartTime.TotalMilliseconds))
+            {
+                var idx = _displayableParagraphs.IndexOf(paragraph);
+                if (idx > 0)
+                {
+                    var prev = _displayableParagraphs[idx - 1];
+                    if (IsParagraphBorderStartHit(milliseconds, prev.EndTime.TotalMilliseconds) && !ModifierKeys.Alt)
+                    {
+                        _mouseDownParagraph = null;
+                        _mouseDownParagraphs = new List<Paragraph> { prev, paragraph }.ToArray();
+                        _mouseDownParagraphType = MouseDownParagraphType.StartOrEnd;
+                        return true;
+                    }
+                }
+
+                _oldParagraph = new Paragraph(paragraph);
+                _mouseDownParagraph = paragraph;
+                _mouseDownParagraphs = null;
+                _mouseDownParagraphType = MouseDownParagraphType.Start;
+                return true;
+            }
+
+            if (IsParagraphBorderEndHit(milliseconds, paragraph.EndTime.TotalMilliseconds))
+            {
+                var idx = _displayableParagraphs.IndexOf(paragraph);
+                if (idx < _displayableParagraphs.Count - 2 && !ModifierKeys.Alt)
+                {
+                    var next = _displayableParagraphs[idx + 1];
+                    if (IsParagraphBorderStartHit(milliseconds, next.StartTime.TotalMilliseconds))
+                    {
+                        _mouseDownParagraph = null;
+                        _mouseDownParagraphs = new List<Paragraph> { paragraph, next }.ToArray();
+                        _mouseDownParagraphType = MouseDownParagraphType.StartOrEnd;
+                        return true;
+                    }
+                }
+
+                _oldParagraph = new Paragraph(paragraph);
+                _mouseDownParagraph = paragraph;
+                _mouseDownParagraphs = null;
+                _mouseDownParagraphType = MouseDownParagraphType.End;
+                return true;
+            }
+
+            return false;
         }
 
         private void PointerReleased(object? sender, PointerEventArgs e)
         {
             _mouseDown = false;
+            MouseStatus.MouseButton1 = false;
+            MouseStatus.MouseButton2 = false;
         }
+
         private void PointerMoved(object? sender, PointerEventArgs e)
         {
+            if (WavePeaks == null)
+            {
+                return;
+            }
 
+            var point = e.GetPosition(this);
+            if (point == null)
+            {
+                return;
+            }
+
+            var x = (int) Math.Round(point.Value.X, MidpointRounding.AwayFromZero);
+            var y = (int)Math.Round(point.Value.Y, MidpointRounding.AwayFromZero);
+
+            var oldMouseMoveLastX = _mouseMoveLastX;
+            if (x < 0 && _startPositionSeconds > 0.1 && _mouseDown)
+            {
+                if (x < _mouseMoveLastX)
+                {
+                    StartPositionSeconds -= 0.1;
+                    if (_mouseDownParagraph == null && _mouseDownParagraphs == null)
+                    {
+                        _mouseMoveEndX = 0;
+                        _mouseMoveStartX += (int)(WavePeaks.SampleRate * 0.1);
+                        OnPositionSelected?.Invoke(this, new ParagraphEventArgs(_startPositionSeconds, null));
+                    }
+                }
+                _mouseMoveLastX = x;
+                //Invalidate();
+                return;
+            }
+            if (x > Width && _startPositionSeconds + 0.1 < WavePeaks.LengthInSeconds && _mouseDown)
+            {
+                StartPositionSeconds += 0.1;
+                if (_mouseDownParagraph == null && _mouseDownParagraphs == null)
+                {
+                    _mouseMoveEndX = (int)Width;
+                    _mouseMoveStartX -= (int)(WavePeaks.SampleRate * 0.1);
+                    OnPositionSelected?.Invoke(this, new ParagraphEventArgs(_startPositionSeconds, null));
+                }
+                _mouseMoveLastX = x;
+                //Invalidate();
+                return;
+            }
+            _mouseMoveLastX = x;
+
+            if (x < 0 || x > Width)
+            {
+                return;
+            }
+
+            if (MouseStatus.MouseButtonNone)
+            {
+                var seconds = RelativeXPositionToSeconds(x);
+                var milliseconds = (int)(seconds * TimeCode.BaseUnit);
+
+                if (IsParagraphBorderHit(milliseconds, NewSelectionParagraph))
+                {
+                    SetCursor(CursorIcon.SizeAll); // VSplit
+                }
+                else if (IsParagraphBorderHit(milliseconds, SelectedParagraph) ||
+                         IsParagraphBorderHit(milliseconds, _displayableParagraphs))
+                {
+                    SetCursor(CursorIcon.SizeAll); // VSplit;
+                }
+                else
+                {
+                    SetCursor(CursorIcon.Arrow); // Default;
+                }
+            }
+            else if (MouseStatus.MouseButton1)
+            {
+                if (oldMouseMoveLastX == x)
+                {
+                    return; // no horizontal movement
+                }
+
+                if (_mouseDown)
+                {
+                    if (_mouseDownParagraphType == MouseDownParagraphType.StartOrEnd && _firstMove && !ModifierKeys.Alt)
+                    {
+                        var seconds = RelativeXPositionToSeconds(x);
+                        var milliseconds = (int)(seconds * TimeCode.BaseUnit);
+
+                        if (_firstMove && Math.Abs(oldMouseMoveLastX - x) < Configuration.Settings.General.MinimumMillisecondsBetweenLines && GetParagraphAtMilliseconds(milliseconds) == null)
+                        {
+                            if (_mouseDownParagraphType == MouseDownParagraphType.StartOrEnd && _mouseDownParagraphs?.Length == 2 && Math.Abs(_mouseDownParagraphs[0].StartTime.TotalMilliseconds - _mouseDownParagraphs[0].EndTime.TotalMilliseconds) <= ClosenessForBorderSelection + 15)
+                            {
+                                return; // do not decide which paragraph to move yet
+                            }
+
+                            if (_mouseDownParagraphType == MouseDownParagraphType.StartOrEnd && _mouseDownParagraphs?.Length == 2 && Math.Abs(_mouseDownParagraphs[1].EndTime.TotalMilliseconds - _mouseDownParagraphs[1].StartTime.TotalMilliseconds) <= ClosenessForBorderSelection + 15)
+                            {
+                                return; // do not decide which paragraph to move yet
+                            }
+                        }
+
+                        if (_mouseDownParagraphs?.Length == 2)
+                        {
+                            // decide which paragraph to move
+                            if (_firstMove && x > oldMouseMoveLastX)
+                            {
+                                if (milliseconds >= _mouseDownParagraphs[1].StartTime.TotalMilliseconds && milliseconds < _mouseDownParagraphs[1].EndTime.TotalMilliseconds)
+                                {
+                                    _mouseDownParagraph = _mouseDownParagraphs[1];
+                                    _mouseDownParagraphType = MouseDownParagraphType.Start;
+                                    _mouseDownParagraphs = null;
+                                    _oldParagraph = new Paragraph(_mouseDownParagraph);
+                                    _firstMove = false;
+                                }
+                            }
+                            else if (_firstMove && x < oldMouseMoveLastX)
+                            {
+                                if (milliseconds <= _mouseDownParagraphs[0].EndTime.TotalMilliseconds && milliseconds > _mouseDownParagraphs[0].StartTime.TotalMilliseconds)
+                                {
+                                    _mouseDownParagraph = _mouseDownParagraphs[0];
+                                    _mouseDownParagraphType = MouseDownParagraphType.End;
+                                    _mouseDownParagraphs = null;
+                                    _oldParagraph = new Paragraph(_mouseDownParagraph);
+                                    _firstMove = false;
+                                }
+                            }
+
+                            return;
+                        }
+                    }
+
+                    if (_mouseDownParagraph != null)
+                    {
+                        var seconds = RelativeXPositionToSeconds(x);
+                        var milliseconds = (int)(seconds * TimeCode.BaseUnit);
+                        var subtitleIndex = _subtitle.Paragraphs.IndexOf(_mouseDownParagraph);
+                        _prevParagraph = _subtitle.GetParagraphOrDefault(subtitleIndex - 1);
+                        _nextParagraph = _subtitle.GetParagraphOrDefault(subtitleIndex + 1);
+
+                        if (_firstMove && Math.Abs(oldMouseMoveLastX - x) < Configuration.Settings.General.MinimumMillisecondsBetweenLines && GetParagraphAtMilliseconds(milliseconds) == null)
+                        {
+                            if (_mouseDownParagraphType == MouseDownParagraphType.StartOrEnd && _prevParagraph != null && Math.Abs(_mouseDownParagraph.StartTime.TotalMilliseconds - _prevParagraph.EndTime.TotalMilliseconds) <= ClosenessForBorderSelection + 15)
+                            {
+                                return; // do not decide which paragraph to move yet
+                            }
+
+                            if (_mouseDownParagraphType == MouseDownParagraphType.StartOrEnd && _nextParagraph != null && Math.Abs(_mouseDownParagraph.EndTime.TotalMilliseconds - _nextParagraph.StartTime.TotalMilliseconds) <= ClosenessForBorderSelection + 15)
+                            {
+                                return; // do not decide which paragraph to move yet
+                            }
+                        }
+
+                        if (_firstMove && !ModifierKeys.Alt && !ModifierKeys.Shift &&
+                            !Configuration.Settings.VideoControls.WaveformAllowOverlap)
+                        {
+                            // decide which paragraph to move
+                            if (_firstMove && x > oldMouseMoveLastX && _nextParagraph != null && _mouseDownParagraphType == MouseDownParagraphType.End)
+                            {
+                                if (milliseconds >= _nextParagraph.StartTime.TotalMilliseconds && milliseconds < _nextParagraph.EndTime.TotalMilliseconds)
+                                {
+                                    _mouseDownParagraph = _nextParagraph;
+                                    _mouseDownParagraphType = MouseDownParagraphType.Start;
+                                }
+                            }
+                            else if (_firstMove && x < oldMouseMoveLastX && _prevParagraph != null && _mouseDownParagraphType == MouseDownParagraphType.Start)
+                            {
+                                if (milliseconds <= _prevParagraph.EndTime.TotalMilliseconds && milliseconds > _prevParagraph.StartTime.TotalMilliseconds)
+                                {
+                                    _mouseDownParagraph = _prevParagraph;
+                                    _mouseDownParagraphType = MouseDownParagraphType.End;
+                                }
+                            }
+                        }
+                        _firstMove = false;
+
+                        if (_mouseDownParagraphType == MouseDownParagraphType.Start)
+                        {
+                            if (_mouseDownParagraph.EndTime.TotalMilliseconds - milliseconds > MinimumSelectionMilliseconds)
+                            {
+                                if (AllowMovePrevOrNext)
+                                {
+                                    SetMinAndMaxMoveStart();
+                                }
+                                else
+                                {
+                                    SetMinAndMax();
+                                }
+
+                                _mouseDownParagraph.StartTime.TotalMilliseconds = milliseconds;
+
+                                if (Configuration.Settings.VideoControls.WaveformSnapToShotChanges && !ModifierKeys.Shift &&
+                                    _shotChanges?.Count > 0)
+                                {
+                                    var nearestShotChange = ShotChangeHelper.GetClosestShotChange(_shotChanges, new TimeCode(milliseconds));
+                                    if (nearestShotChange != null && Math.Abs(x - SecondsToXPosition(nearestShotChange.Value - _startPositionSeconds)) < ShotChangeSnapPixels)
+                                    {
+                                        _mouseDownParagraph.StartTime.TotalMilliseconds = (nearestShotChange.Value * 1000) + TimeCodesBeautifierUtils.GetInCuesGapMs();
+                                    }
+                                }
+
+                                if (PreventOverlap && _mouseDownParagraph.StartTime.TotalMilliseconds <= _wholeParagraphMinMilliseconds)
+                                {
+                                    _mouseDownParagraph.StartTime.TotalMilliseconds = _wholeParagraphMinMilliseconds + 1;
+                                }
+
+                                if (NewSelectionParagraph != null)
+                                {
+                                    NewSelectionParagraph.StartTime.TotalMilliseconds = milliseconds;
+
+                                    if (Configuration.Settings.VideoControls.WaveformSnapToShotChanges && !ModifierKeys.Shift)
+                                    {
+                                        var nearestShotChange = ShotChangeHelper.GetClosestShotChange(_shotChanges, new TimeCode(milliseconds));
+                                        if (nearestShotChange != null && Math.Abs(x - SecondsToXPosition(nearestShotChange.Value - _startPositionSeconds)) < ShotChangeSnapPixels)
+                                        {
+                                            NewSelectionParagraph.StartTime.TotalMilliseconds = (nearestShotChange.Value * 1000) + TimeCodesBeautifierUtils.GetInCuesGapMs();
+                                        }
+                                    }
+
+                                    if (PreventOverlap && NewSelectionParagraph.StartTime.TotalMilliseconds <= _wholeParagraphMinMilliseconds)
+                                    {
+                                        NewSelectionParagraph.StartTime.TotalMilliseconds = _wholeParagraphMinMilliseconds + 1;
+                                    }
+
+                                    _mouseMoveStartX = x;
+                                }
+                                else
+                                {
+                                    OnTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph, _mouseDownParagraphType, AllowMovePrevOrNext));
+                                    return;
+                                }
+                            }
+                        }
+                        else if (_mouseDownParagraphType == MouseDownParagraphType.End)
+                        {
+                            if (milliseconds - _mouseDownParagraph.StartTime.TotalMilliseconds > MinimumSelectionMilliseconds)
+                            {
+                                if (AllowMovePrevOrNext)
+                                {
+                                    SetMinAndMaxMoveEnd();
+                                }
+                                else
+                                {
+                                    SetMinAndMax();
+                                }
+
+                                _mouseDownParagraph.EndTime.TotalMilliseconds = milliseconds;
+
+                                if (Configuration.Settings.VideoControls.WaveformSnapToShotChanges && !ModifierKeys.Shift)
+                                {
+                                    var nearestShotChange = ShotChangeHelper.GetClosestShotChange(_shotChanges, new TimeCode(milliseconds));
+                                    if (nearestShotChange != null && Math.Abs(x - SecondsToXPosition(nearestShotChange.Value - _startPositionSeconds)) < ShotChangeSnapPixels)
+                                    {
+                                        _mouseDownParagraph.EndTime.TotalMilliseconds = (nearestShotChange.Value * 1000) - TimeCodesBeautifierUtils.GetOutCuesGapMs();
+                                    }
+                                }
+
+                                if (PreventOverlap && _mouseDownParagraph.EndTime.TotalMilliseconds >= _wholeParagraphMaxMilliseconds)
+                                {
+                                    _mouseDownParagraph.EndTime.TotalMilliseconds = _wholeParagraphMaxMilliseconds - 1;
+                                }
+
+                                if (NewSelectionParagraph != null)
+                                {
+                                    NewSelectionParagraph.EndTime.TotalMilliseconds = milliseconds;
+
+                                    if (Configuration.Settings.VideoControls.WaveformSnapToShotChanges && !ModifierKeys.Shift)
+                                    {
+                                        var nearestShotChange = ShotChangeHelper.GetClosestShotChange(_shotChanges, new TimeCode(milliseconds));
+                                        if (nearestShotChange != null && Math.Abs(x - SecondsToXPosition(nearestShotChange.Value - _startPositionSeconds)) < ShotChangeSnapPixels)
+                                        {
+                                            NewSelectionParagraph.EndTime.TotalMilliseconds = (nearestShotChange.Value * 1000) - TimeCodesBeautifierUtils.GetOutCuesGapMs();
+                                        }
+                                    }
+
+                                    if (PreventOverlap && NewSelectionParagraph.EndTime.TotalMilliseconds >= _wholeParagraphMaxMilliseconds)
+                                    {
+                                        NewSelectionParagraph.EndTime.TotalMilliseconds = _wholeParagraphMaxMilliseconds - 1;
+                                    }
+
+                                    _mouseMoveEndX = x;
+                                }
+                                else
+                                {
+                                    OnTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph, _mouseDownParagraphType, AllowMovePrevOrNext));
+                                    return;
+                                }
+                            }
+                        }
+                        else if (_mouseDownParagraphType == MouseDownParagraphType.Whole)
+                        {
+                            var durationMilliseconds = _mouseDownParagraph.DurationTotalMilliseconds;
+                            var oldStart = _mouseDownParagraph.StartTime.TotalMilliseconds;
+                            _mouseDownParagraph.StartTime.TotalMilliseconds = milliseconds - _moveWholeStartDifferenceMilliseconds;
+                            _mouseDownParagraph.EndTime.TotalMilliseconds = _mouseDownParagraph.StartTime.TotalMilliseconds + durationMilliseconds;
+
+                            if (Configuration.Settings.VideoControls.WaveformSnapToShotChanges && !ModifierKeys.Shift)
+                            {
+                                var nearestShotChangeInFront = ShotChangeHelper.GetClosestShotChange(_shotChanges, _mouseDownParagraph.StartTime);
+                                var nearestShotChangeInBack = ShotChangeHelper.GetClosestShotChange(_shotChanges, _mouseDownParagraph.EndTime);
+
+                                if (nearestShotChangeInFront != null && Math.Abs(SecondsToXPosition(_mouseDownParagraph.StartTime.TotalSeconds - _startPositionSeconds) - SecondsToXPosition(nearestShotChangeInFront.Value - _startPositionSeconds)) < ShotChangeSnapPixels)
+                                {
+                                    var nearestShotChangeInFrontMs = (nearestShotChangeInFront.Value * 1000) + TimeCodesBeautifierUtils.GetInCuesGapMs();
+                                    _mouseDownParagraph.StartTime.TotalMilliseconds = nearestShotChangeInFrontMs;
+                                    _mouseDownParagraph.EndTime.TotalMilliseconds = nearestShotChangeInFrontMs + durationMilliseconds;
+                                }
+                                else if (nearestShotChangeInBack != null && Math.Abs(SecondsToXPosition(_mouseDownParagraph.EndTime.TotalSeconds - _startPositionSeconds) - SecondsToXPosition(nearestShotChangeInBack.Value - _startPositionSeconds)) < ShotChangeSnapPixels)
+                                {
+                                    var nearestShotChangeInBackMs = (nearestShotChangeInBack.Value * 1000) - TimeCodesBeautifierUtils.GetOutCuesGapMs();
+                                    _mouseDownParagraph.EndTime.TotalMilliseconds = nearestShotChangeInBackMs;
+                                    _mouseDownParagraph.StartTime.TotalMilliseconds = nearestShotChangeInBackMs - durationMilliseconds;
+                                }
+                            }
+
+                            if (PreventOverlap && _mouseDownParagraph.EndTime.TotalMilliseconds >= _wholeParagraphMaxMilliseconds)
+                            {
+                                _mouseDownParagraph.EndTime.TotalMilliseconds = _wholeParagraphMaxMilliseconds - 1;
+                                _mouseDownParagraph.StartTime.TotalMilliseconds = _mouseDownParagraph.EndTime.TotalMilliseconds - durationMilliseconds;
+                            }
+                            else if (PreventOverlap && _mouseDownParagraph.StartTime.TotalMilliseconds <= _wholeParagraphMinMilliseconds)
+                            {
+                                _mouseDownParagraph.StartTime.TotalMilliseconds = _wholeParagraphMinMilliseconds + 1;
+                                _mouseDownParagraph.EndTime.TotalMilliseconds = _mouseDownParagraph.StartTime.TotalMilliseconds + durationMilliseconds;
+                            }
+
+                            if (PreventOverlap &&
+                                (_mouseDownParagraph.StartTime.TotalMilliseconds <= _wholeParagraphMinMilliseconds ||
+                                 _mouseDownParagraph.EndTime.TotalMilliseconds >= _wholeParagraphMaxMilliseconds))
+                            {
+                                _mouseDownParagraph.StartTime.TotalMilliseconds = oldStart;
+                                _mouseDownParagraph.EndTime.TotalMilliseconds = oldStart + durationMilliseconds;
+                                return;
+                            }
+
+                            OnTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph, _mouseDownParagraphType) { AdjustMs = _mouseDownParagraph.StartTime.TotalMilliseconds - oldStart });
+                        }
+                    }
+                    else
+                    {
+                        _mouseMoveEndX = x;
+                        if (NewSelectionParagraph == null && Math.Abs(_mouseMoveEndX - _mouseMoveStartX) > 2)
+                        {
+                            if (AllowNewSelection)
+                            {
+                                NewSelectionParagraph = new Paragraph();
+                            }
+                        }
+
+                        if (NewSelectionParagraph != null)
+                        {
+                            var start = Math.Min(_mouseMoveStartX, _mouseMoveEndX);
+                            var end = Math.Max(_mouseMoveStartX, _mouseMoveEndX);
+
+                            var startTotalSeconds = RelativeXPositionToSeconds(start);
+                            var endTotalSeconds = RelativeXPositionToSeconds(end);
+
+                            NewSelectionParagraph.StartTime.TotalSeconds = startTotalSeconds;
+                            NewSelectionParagraph.EndTime.TotalSeconds = endTotalSeconds;
+
+                            if (Configuration.Settings.VideoControls.WaveformSnapToShotChanges && !ModifierKeys.Shift)
+                            {
+                                var nearestShotChangeInFront = ShotChangeHelper.GetClosestShotChange(_shotChanges, TimeCode.FromSeconds(startTotalSeconds));
+                                var nearestShotChangeInBack = ShotChangeHelper.GetClosestShotChange(_shotChanges, TimeCode.FromSeconds(endTotalSeconds));
+
+                                if (nearestShotChangeInFront != null && Math.Abs(SecondsToXPosition(NewSelectionParagraph.StartTime.TotalSeconds - _startPositionSeconds) - SecondsToXPosition(nearestShotChangeInFront.Value - _startPositionSeconds)) < ShotChangeSnapPixels)
+                                {
+                                    NewSelectionParagraph.StartTime.TotalMilliseconds = (nearestShotChangeInFront.Value * 1000) + TimeCodesBeautifierUtils.GetInCuesGapMs();
+                                    //Invalidate();
+                                }
+                                if (nearestShotChangeInBack != null && Math.Abs(SecondsToXPosition(NewSelectionParagraph.EndTime.TotalSeconds - _startPositionSeconds) - SecondsToXPosition(nearestShotChangeInBack.Value - _startPositionSeconds)) < ShotChangeSnapPixels)
+                                {
+                                    NewSelectionParagraph.EndTime.TotalMilliseconds = (nearestShotChangeInBack.Value * 1000) - TimeCodesBeautifierUtils.GetOutCuesGapMs();
+                                    //Invalidate();
+                                }
+                            }
+
+                            if (PreventOverlap && endTotalSeconds * TimeCode.BaseUnit >= _wholeParagraphMaxMilliseconds)
+                            {
+                                NewSelectionParagraph.EndTime.TotalMilliseconds = _wholeParagraphMaxMilliseconds - 1;
+                                //Invalidate();
+                            }
+                            if (PreventOverlap && startTotalSeconds * TimeCode.BaseUnit <= _wholeParagraphMinMilliseconds)
+                            {
+                                NewSelectionParagraph.StartTime.TotalMilliseconds = _wholeParagraphMinMilliseconds + 1;
+                                //Invalidate();
+                            }
+                        }
+                    }
+                    //Invalidate();
+                }
+            }
         }
+
+        private void SetCursor(CursorIcon cursor)
+        {
+            //CursorExtensions.SetCustomCursor(this, cursor, null);
+        }
+
+        private Paragraph GetParagraphAtMilliseconds(int milliseconds)
+        {
+            Paragraph p = null;
+            if (IsParagraphHit(milliseconds, SelectedParagraph))
+            {
+                p = SelectedParagraph;
+            }
+
+            if (p == null)
+            {
+                foreach (var pNext in _displayableParagraphs)
+                {
+                    if (IsParagraphHit(milliseconds, pNext))
+                    {
+                        p = pNext;
+                        break;
+                    }
+                }
+            }
+
+            return p;
+        }
+
+        private static bool IsParagraphHit(int milliseconds, Paragraph paragraph)
+        {
+            if (paragraph == null)
+            {
+                return false;
+            }
+
+            return milliseconds >= paragraph.StartTime.TotalMilliseconds && milliseconds <= paragraph.EndTime.TotalMilliseconds;
+        }
+
+        private void SetMinAndMaxMoveStart()
+        {
+            _wholeParagraphMinMilliseconds = 0;
+            _wholeParagraphMaxMilliseconds = double.MaxValue;
+            if (_subtitle != null && _mouseDownParagraph != null)
+            {
+                var paragraphs = _subtitle.Paragraphs.OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
+                var curIdx = paragraphs.IndexOf(_mouseDownParagraph);
+                if (curIdx >= 0)
+                {
+                    var gap = Math.Abs(paragraphs[curIdx - 1].EndTime.TotalMilliseconds - paragraphs[curIdx].StartTime.TotalMilliseconds);
+                    _wholeParagraphMinMilliseconds = paragraphs[curIdx - 1].StartTime.TotalMilliseconds + gap + 200;
+                }
+            }
+        }
+
+        private void SetMinAndMaxMoveEnd()
+        {
+            _wholeParagraphMinMilliseconds = 0;
+            _wholeParagraphMaxMilliseconds = double.MaxValue;
+            if (_subtitle != null && _mouseDownParagraph != null)
+            {
+                var paragraphs = _subtitle.Paragraphs.OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
+                var curIdx = paragraphs.IndexOf(_mouseDownParagraph);
+                if (curIdx >= 0)
+                {
+                    if (curIdx < _subtitle.Paragraphs.Count - 1)
+                    {
+                        var gap = Math.Abs(paragraphs[curIdx].EndTime.TotalMilliseconds - paragraphs[curIdx + 1].StartTime.TotalMilliseconds);
+                        _wholeParagraphMaxMilliseconds = paragraphs[curIdx + 1].EndTime.TotalMilliseconds - gap - 200;
+                    }
+                }
+            }
+        }
+
+        private bool IsParagraphBorderHit(int milliseconds, Paragraph paragraph)
+        {
+            if (paragraph == null)
+            {
+                return false;
+            }
+
+            return IsParagraphBorderStartHit(milliseconds, paragraph.StartTime.TotalMilliseconds) ||
+                   IsParagraphBorderEndHit(milliseconds, paragraph.EndTime.TotalMilliseconds);
+        }
+
+        private bool IsParagraphBorderHit(int milliseconds, List<Paragraph> paragraphs)
+        {
+            foreach (var p in paragraphs)
+            {
+                var hit = IsParagraphBorderHit(milliseconds, p);
+                if (hit)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsParagraphBorderStartHit(double milliseconds, double startMs)
+        {
+            return Math.Abs(milliseconds - (startMs - 5)) - 10 <= ClosenessForBorderSelection / ZoomFactor;
+        }
+
+        private bool IsParagraphBorderEndHit(double milliseconds, double endMs)
+        {
+            return Math.Abs(milliseconds - (endMs - 22)) - 7 <= ClosenessForBorderSelection / ZoomFactor;
+        }
+
+        private bool PreventOverlap
+        {
+            get
+            {
+                if (ModifierKeys.Shift)
+                {
+                    return AllowOverlap;
+                }
+
+                return !AllowOverlap;
+            }
+        }
+
+        private bool AllowMovePrevOrNext => _gapAtStart is >= 0 and < 500 && ModifierKeys.Alt;
 
         protected override void OnHandlerChanged()
         {

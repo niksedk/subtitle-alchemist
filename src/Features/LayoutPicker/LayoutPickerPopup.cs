@@ -17,7 +17,7 @@ public class LayoutPickerPopup : Popup
         bool wasDismissedByTappingOutsideOfPopup,
         CancellationToken token = new CancellationToken())
     {
-        SharpHookHandler.KeyPressed -= _model.KeyPressed;
+        SharpHookHandler.AddKeyPressed(_model.KeyPressed);
         return base.OnClosed(result, wasDismissedByTappingOutsideOfPopup, token);
     }
 
@@ -134,7 +134,7 @@ public class LayoutPickerPopup : Popup
             }
         };
 
-        SharpHookHandler.KeyPressed += model.KeyPressed;
+        SharpHookHandler.AddKeyPressed(model.KeyPressed);
         model.Popup = this;
     }
 
