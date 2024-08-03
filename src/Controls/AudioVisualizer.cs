@@ -30,7 +30,7 @@ namespace SubtitleAlchemist.Controls
         // holds information about the dimensions, etc.
         private SKImageInfo _info;
 
-        public WavePeakData WavePeaks { get; set; }
+        public WavePeakData? WavePeaks { get; set; }
 
         public const double ZoomMinimum = 0.1;
         public const double ZoomMaximum = 2.5;
@@ -39,13 +39,23 @@ namespace SubtitleAlchemist.Controls
         private Subtitle _subtitle = new Subtitle();
         private readonly List<Paragraph> _displayableParagraphs = new List<Paragraph>();
         private readonly List<Paragraph> _allSelectedParagraphs = new List<Paragraph>();
-        public Paragraph SelectedParagraph { get; private set; }
+        public Paragraph? SelectedParagraph { get; private set; }
+        public Paragraph? NewSelectionParagraph { get; set; }
+
+        // mouse down helpers
+        private int _mouseMoveLastX = -1;
+        private int _mouseMoveStartX = -1;
+        private double _moveWholeStartDifferenceMilliseconds = -1;
+        private int _mouseMoveEndX = -1;
+        private bool _mouseDown;
+        private bool _mouseOver;
 
         public bool ShowGridLines { get; set; } = true;
 
         private double _currentVideoPositionSeconds = -1;
 
         public event PositionEventHandler OnVideoPositionChanged;
+        public event PositionEventHandler OnDoubleTapped;
 
         public class PositionEventArgs : EventArgs
         {
@@ -169,8 +179,6 @@ namespace SubtitleAlchemist.Controls
             TextSize = 14,
         };
 
-        readonly PointerGestureRecognizer _pointerGestureRecognizer = new PointerGestureRecognizer();
-
         public AudioVisualizer()
         {
             var tapGestureRecognizerSingle = new TapGestureRecognizer();
@@ -183,13 +191,13 @@ namespace SubtitleAlchemist.Controls
             tapGestureRecognizerDouble.Tapped += TappedDouble;
             GestureRecognizers.Add(tapGestureRecognizerDouble);
 
-            _pointerGestureRecognizer = new PointerGestureRecognizer();
-            _pointerGestureRecognizer.PointerMoved += PointerMoved;
-            _pointerGestureRecognizer.PointerPressed += PointerPressed;
-            _pointerGestureRecognizer.PointerReleased += PointerReleased;
-            _pointerGestureRecognizer.PointerEntered += PointerEntered;
-            _pointerGestureRecognizer.PointerExited += PointerExited;
-            GestureRecognizers.Add(_pointerGestureRecognizer);
+            var pointerGestureRecognizer = new PointerGestureRecognizer();
+            pointerGestureRecognizer.PointerMoved += PointerMoved;
+            pointerGestureRecognizer.PointerPressed += PointerPressed;
+            pointerGestureRecognizer.PointerReleased += PointerReleased;
+            pointerGestureRecognizer.PointerEntered += PointerEntered;
+            pointerGestureRecognizer.PointerExited += PointerExited;
+            GestureRecognizers.Add(pointerGestureRecognizer);
 
 
             //TODO: test mpv player with _canvas.Handle
@@ -197,22 +205,26 @@ namespace SubtitleAlchemist.Controls
 
         private void PointerExited(object? sender, PointerEventArgs e)
         {
+            _mouseOver = false;
         }
 
         private void PointerEntered(object? sender, PointerEventArgs e)
         {
-        }
-
-        private void PointerReleased(object? sender, PointerEventArgs e)
-        {
+            _mouseOver = true;
         }
 
         private void PointerPressed(object? sender, PointerEventArgs e)
         {
+            _mouseDown = true;
         }
 
+        private void PointerReleased(object? sender, PointerEventArgs e)
+        {
+            _mouseDown = false;
+        }
         private void PointerMoved(object? sender, PointerEventArgs e)
         {
+
         }
 
         protected override void OnHandlerChanged()
@@ -246,6 +258,7 @@ namespace SubtitleAlchemist.Controls
             var positionInSeconds = RelativeXPositionToSeconds(point.Value.X);
             OnVideoPositionChanged?.Invoke(this, new PositionEventArgs { PositionInSeconds = positionInSeconds });
         }
+
         private void TappedDouble(object? sender, TappedEventArgs e)
         {
             if (WavePeaks == null)
@@ -260,7 +273,7 @@ namespace SubtitleAlchemist.Controls
             }
 
             var positionInSeconds = RelativeXPositionToSeconds(point.Value.X);
-            OnVideoPositionChanged?.Invoke(this, new PositionEventArgs { PositionInSeconds = positionInSeconds });
+            OnDoubleTapped?.Invoke(this, new PositionEventArgs { PositionInSeconds = positionInSeconds });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -387,7 +400,7 @@ namespace SubtitleAlchemist.Controls
                     _allSelectedParagraphs.Add(primaryParagraph);
                 }
 
-                foreach (int index in selectedIndexes)
+                foreach (var index in selectedIndexes)
                 {
                     var p = subtitle.GetParagraphOrDefault(index);
                     if (p != null && !p.StartTime.IsMaxTime)
@@ -501,7 +514,7 @@ namespace SubtitleAlchemist.Controls
 
         private readonly SKPaint _paintPenSelected = new SKPaint
         {
-            Color = SKColor.Parse("#ff88ffff"),
+            Color = SKColor.Parse("#ffff8888"),
             StrokeWidth = 1,
             IsAntialias = true,
             Style = SKPaintStyle.Stroke,
@@ -517,9 +530,8 @@ namespace SubtitleAlchemist.Controls
             var _showWaveform = true;
             if (_showWaveform)
             {
-
                 var waveformHeight = _info.Height;
-                //  var isSelectedHelper = new IsSelectedHelper(_allSelectedParagraphs, _wavePeaks.SampleRate);
+                var isSelectedHelper = new IsSelectedHelper(_allSelectedParagraphs, WavePeaks.SampleRate);
                 var baseHeight = (int)(WavePeaks.HighestPeak / _verticalZoomFactor);
                 var halfWaveformHeight = waveformHeight / 2;
 
@@ -543,8 +555,8 @@ namespace SubtitleAlchemist.Controls
                     var min = peak0.Min * pos0Weight + peak1.Min * pos1Weight;
                     var yMax = CalculateY(max, baseHeight, halfWaveformHeight);
                     var yMin = Math.Max(CalculateY(min, baseHeight, halfWaveformHeight), yMax + 0.1F);
-                    //var pen = isSelectedHelper.IsSelected(pos0) ? penSelected : penNormal;
-                    _canvas.DrawLine(x, yMax, x, yMin, _paintWaveform);
+                    var pen = isSelectedHelper.IsSelected(pos0) ? _paintPenSelected : _paintWaveform;
+                    _canvas.DrawLine(x, yMax, x, yMin, pen);
                 }
             }
         }

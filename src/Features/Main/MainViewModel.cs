@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.ObjectModel;
-using System.Text;
-using System.Windows.Input;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
@@ -21,6 +17,9 @@ using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Media;
+using System.Collections;
+using System.Collections.ObjectModel;
+using System.Text;
 
 namespace SubtitleAlchemist.Features.Main
 {
@@ -100,6 +99,7 @@ namespace SubtitleAlchemist.Features.Main
             ListViewAndEditBox = new Grid();
 
             _audioVisualizer.OnVideoPositionChanged += AudioVisualizer_OnVideoPositionChanged;
+            _audioVisualizer.OnDoubleTapped += AudioVisualizer_OnDoubleTapped;
             SetTimer();
         }
 
@@ -125,22 +125,22 @@ namespace SubtitleAlchemist.Features.Main
 
                         if (mediaPlayerSeconds > _audioVisualizer.EndPositionSeconds || mediaPlayerSeconds < _audioVisualizer.StartPositionSeconds)
                         {
-                            _audioVisualizer?.SetPosition(startPos, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
+                            _audioVisualizer?.SetPosition(startPos, _subtitle, mediaPlayerSeconds, 0, GetSelectedIndexes());
                         }
                         else
                         {
-                            _audioVisualizer?.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
+                            _audioVisualizer?.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
                         }
                     }
                     else
                     {
                         if (mediaPlayerSeconds > _audioVisualizer.EndPositionSeconds || mediaPlayerSeconds < _audioVisualizer.StartPositionSeconds)
                         {
-                            _audioVisualizer?.SetPosition(mediaPlayerSeconds, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
+                            _audioVisualizer?.SetPosition(mediaPlayerSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
                         }
                         else
                         {
-                            _audioVisualizer?.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
+                            _audioVisualizer?.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
                         }
                     }
 
@@ -161,6 +161,35 @@ namespace SubtitleAlchemist.Features.Main
             _timer.Enabled = true;
         }
 
+        private int GetFirstSelectedIndex()
+        {
+            for (var index = 0; index < Paragraphs.Count; index++)
+            {
+                var displayParagraph = Paragraphs[index];
+                if (displayParagraph.IsSelected)
+                {
+                    return index;
+                }
+            }
+
+            return -1;
+        }
+
+        private int[] GetSelectedIndexes()
+        {
+            var list = new List<int>();
+            for (var index = 0; index < Paragraphs.Count; index++)
+            {
+                var displayParagraph = Paragraphs[index];
+                if (displayParagraph.IsSelected)
+                {
+                    list.Add(index);
+                }
+            }
+
+            return list.ToArray();
+        }
+
         private readonly MediaElementState[] _allowUpdatePositionStates = new[]
         {
             MediaElementState.Playing,
@@ -178,6 +207,54 @@ namespace SubtitleAlchemist.Features.Main
                     VideoPlayer.SeekTo(timeSpan);
                     _audioVisualizer.InvalidateSurface();
                 }
+            });
+        }
+
+        private void SelectParagraph(int index)
+        {
+            if (index < 0 || index >= Paragraphs.Count)
+            {
+                return;
+            }
+
+            var paragraph = Paragraphs[index];
+            SelectParagraph(paragraph);
+        }
+
+        private void SelectParagraph(DisplayParagraph? paragraph)
+        {
+            if (paragraph == null)
+            {
+                return;
+            }
+
+            foreach (var item in Paragraphs)
+            {
+                item.IsSelected = false;
+                item.BackgroundColor = Colors.Black;
+            }
+
+            paragraph.IsSelected = true;
+            paragraph.BackgroundColor = Colors.DarkGreen;
+            _currentParagraph = paragraph;
+            CurrentText = paragraph.Text;
+        }
+
+        private void AudioVisualizer_OnDoubleTapped(object sender, AudioVisualizer.PositionEventArgs e)
+        {
+            var timeSpan = TimeSpan.FromSeconds(e.PositionInSeconds);
+            var ms = e.PositionInSeconds * 1000.0;
+            var paragraph = Paragraphs.FirstOrDefault(p => p.P.StartTime.TotalMilliseconds <= ms && p.P.EndTime.TotalMilliseconds >= ms);
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (VideoPlayer != null && _allowUpdatePositionStates.Contains(VideoPlayer.CurrentState))
+                {
+                    VideoPlayer.SeekTo(timeSpan);
+                    _audioVisualizer.InvalidateSurface();
+                }
+
+                SelectParagraph(paragraph);
             });
         }
 
@@ -418,12 +495,9 @@ namespace SubtitleAlchemist.Features.Main
             }
         }
 
-        public ICommand ListViewPointerExitedCommand { get; set; }
-
         public void OnCollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             _updating = true;
-            var previous = e.PreviousSelection;
             foreach (var item in Paragraphs)
             {
                 item.IsSelected = false;
@@ -619,11 +693,7 @@ namespace SubtitleAlchemist.Features.Main
             SubtitleList.BatchBegin();
             var newParagraph = new DisplayParagraph(new Paragraph());
             Paragraphs.Insert(idx, newParagraph);
-            foreach (var displayParagraph in Paragraphs)
-            {
-                displayParagraph.IsSelected = displayParagraph == newParagraph;
-                displayParagraph.BackgroundColor = displayParagraph == newParagraph ? Colors.DarkGreen : Colors.Black;
-            }
+            SelectParagraph(newParagraph);
 
             Renumber();
 
@@ -658,13 +728,7 @@ namespace SubtitleAlchemist.Features.Main
             SubtitleList.BatchBegin();
             var newParagraph = new DisplayParagraph(new Paragraph());
             Paragraphs.Insert(idx + 1, newParagraph);
-
-            foreach (var displayParagraph in Paragraphs)
-            {
-                displayParagraph.IsSelected = displayParagraph == newParagraph;
-                displayParagraph.BackgroundColor = displayParagraph == newParagraph ? Colors.DarkGreen : Colors.Black;
-            }
-
+            SelectParagraph(newParagraph);
             Renumber();
 
             SubtitleList.BatchCommit();
