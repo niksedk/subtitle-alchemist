@@ -241,10 +241,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Views\Edit\" />
-	  <Folder Include="Views\Sync\" />
-	  <Folder Include="Views\SpellCheck\" />
-	  <Folder Include="Views\Translate\" />
+	  <Folder Include="Features\Edit\" />
+	  <Folder Include="Features\Sync\" />
+	  <Folder Include="Features\SpellCheck\" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">

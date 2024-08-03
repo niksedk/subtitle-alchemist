@@ -3,7 +3,7 @@
     x:Class="SubtitleAlchemist.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:SubtitleAlchemist.Views.Main"
+    xmlns:local="clr-namespace:SubtitleAlchemist.Features.Main"
     Shell.FlyoutBehavior="Disabled"
     Title="Untitled - Subtitle Alchemist">
     <ShellContent ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />

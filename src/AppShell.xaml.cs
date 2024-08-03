@@ -1,7 +1,7 @@
-﻿using SubtitleAlchemist.Views.Options.Settings;
-using SubtitleAlchemist.Views.Tools.AdjustDuration;
-using SubtitleAlchemist.Views.Translate;
-using SubtitleAlchemist.Views.Video.AudioToTextWhisper;
+﻿using SubtitleAlchemist.Features.Options.Settings;
+using SubtitleAlchemist.Features.Tools.AdjustDuration;
+using SubtitleAlchemist.Features.Translate;
+using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
 namespace SubtitleAlchemist
 {

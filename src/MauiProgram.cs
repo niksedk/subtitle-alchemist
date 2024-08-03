@@ -2,16 +2,15 @@
 using CommunityToolkit.Maui.Markup;
 using Microsoft.Extensions.Logging;
 using SubtitleAlchemist.Controls;
+using SubtitleAlchemist.Features.Help.About;
+using SubtitleAlchemist.Features.LayoutPicker;
+using SubtitleAlchemist.Features.Main;
+using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
+using SubtitleAlchemist.Features.Options.Settings;
+using SubtitleAlchemist.Features.Tools.AdjustDuration;
+using SubtitleAlchemist.Features.Translate;
+using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Services;
-using SubtitleAlchemist.Views.Help.About;
-using SubtitleAlchemist.Views.LayoutPicker;
-using SubtitleAlchemist.Views.Main;
-using SubtitleAlchemist.Views.Options.DownloadFfmpeg;
-using SubtitleAlchemist.Views.Options.Settings;
-using SubtitleAlchemist.Views.Tools.AdjustDuration;
-using SubtitleAlchemist.Views.Translate;
-using SubtitleAlchemist.Views.Video.AudioToTextWhisper;
-using System.Text;
 
 namespace SubtitleAlchemist
 {

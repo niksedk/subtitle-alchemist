@@ -1,4 +1,4 @@
-﻿using SubtitleAlchemist.Views.Main;
+﻿using MainViewModel = SubtitleAlchemist.Features.Main.MainViewModel;
 
 namespace SubtitleAlchemist
 {
