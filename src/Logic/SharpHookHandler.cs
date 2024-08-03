@@ -10,10 +10,11 @@ namespace SubtitleAlchemist.Logic
         private static readonly Stack<List<EventHandler<KeyboardHookEventArgs>?>> _stack = new();
 
         public static EventHandler<KeyboardHookEventArgs>? KeyPressed { get; set; }
+        public static EventHandler<MouseHookEventArgs>? MouseClicked { get; set; }
 
         public static async Task RunAsync()
         {
-            // if (_loaded)
+          //  if (_loaded)
             {
                 return;
             }
@@ -23,6 +24,11 @@ namespace SubtitleAlchemist.Logic
             Hook.KeyPressed += (s, e) =>
             {
                 KeyPressed?.Invoke(s, e);
+            };
+
+            Hook.MouseClicked += (s, e) =>
+            {
+                MouseClicked?.Invoke(s, e);
             };
 
             await Hook.RunAsync();

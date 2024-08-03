@@ -36,50 +36,7 @@ namespace SubtitleAlchemist.Views.Main
                         new Label { Text = "Text", TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(4)
                     }
                 },
-                ItemTemplate = new DataTemplate(() =>
-                    new Grid
-                    {
-                        ColumnDefinitions = new ColumnDefinitionCollection
-                        {
-                            new(50),
-                            new(95),
-                            new(95),
-                            new(95),
-                            new(GridLength.Star)
-                        },
-                        Children =
-                        {
-                            new BoxView
-                            {
-                                BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
-                            }.Column(0).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                            new Label { TextColor =(Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(0).Bind("Number"),
-
-                            new BoxView
-                            {
-                                BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
-                            }.Column(1).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                            new Label { TextColor =(Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(1).Bind("StartTime"),
-
-                            new BoxView
-                            {
-                                BackgroundColor =(Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
-                            }.Column(2).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                            new Label { TextColor =(Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(2).Bind("EndTime"),
-
-                            new BoxView
-                            {
-                                BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
-                            }.Column(3).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                            new Label { TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(3).Bind("Duration"),
-
-                            new BoxView
-                            {
-                                BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
-                            }.Column(4).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                            new Label { TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(4).Bind("Text")
-                        }
-                    })
+                ItemTemplate = new DataTemplate(() => MakeGrid(vm))
             };
 
             view.SetBinding(ItemsView.ItemsSourceProperty, "Paragraphs");
@@ -88,6 +45,66 @@ namespace SubtitleAlchemist.Views.Main
             MakeContextMenu(vm, view);
 
             return view;
+        }
+
+        private static Grid MakeGrid(MainViewModel vm)
+        {
+            var grid = new Grid
+            {
+                ColumnDefinitions = new ColumnDefinitionCollection
+                {
+                    new(50),
+                    new(95),
+                    new(95),
+                    new(95),
+                    new(GridLength.Star)
+                },
+                Children =
+                {
+                    new BoxView
+                    {
+                        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
+                    }.Column(0).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
+                    new Label { TextColor =(Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(0).Bind("Number"),
+
+                    new BoxView
+                    {
+                        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
+                    }.Column(1).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
+                    new Label { TextColor =(Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(1).Bind("StartTime"),
+
+                    new BoxView
+                    {
+                        BackgroundColor =(Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
+                    }.Column(2).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
+                    new Label { TextColor =(Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(2).Bind("EndTime"),
+
+                    new BoxView
+                    {
+                        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
+                    }.Column(3).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
+                    new Label { TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(3).Bind("Duration"),
+
+                    new BoxView
+                    {
+                        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
+                    }.Column(4).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
+                    new Label { TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(4).Bind("Text")
+                }
+            };
+
+            var pointerGestureRecognizer = new PointerGestureRecognizer();
+            grid.GestureRecognizers.Add(pointerGestureRecognizer);
+
+            var tapGestureRecognizer = new TapGestureRecognizer();
+            tapGestureRecognizer.NumberOfTapsRequired = 2;
+            tapGestureRecognizer.Tapped += vm.ListViewDoubleTapped;
+            tapGestureRecognizer.CommandParameter = "";
+            tapGestureRecognizer.SetBinding(TapGestureRecognizer.CommandParameterProperty, ".");
+            grid.GestureRecognizers.Add(tapGestureRecognizer);
+
+
+            return grid;
         }
 
         private static void MakeContextMenu(MainViewModel vm, CollectionView view)

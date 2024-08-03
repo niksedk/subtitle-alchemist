@@ -56,6 +56,8 @@ public class MainPage : ContentPage
 
         Unloaded += OnUnloaded!;
         Loaded += OnLoaded!;
+
+        SharpHookHandler.KeyPressed += vm.KeyPressed;
     }
 
     public void MakeLayout(int layoutNumber)

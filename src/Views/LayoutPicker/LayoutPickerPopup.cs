@@ -10,12 +10,24 @@ public class LayoutPickerPopup : Popup
     private enum Row { Row0, Row1, Row2 }
     private enum Column { Column0, Column1, Column2, Column3 }
 
+    private readonly LayoutPickerModel _model;
+
+    protected override Task OnClosed(
+        object? result, 
+        bool wasDismissedByTappingOutsideOfPopup,
+        CancellationToken token = new CancellationToken())
+    {
+        SharpHookHandler.KeyPressed -= _model.KeyPressed;
+        return base.OnClosed(result, wasDismissedByTappingOutsideOfPopup, token);
+    }
+
     public LayoutPickerPopup(LayoutPickerModel model)
     {
         const int columnWidth = 220;
         const int columnHeight = 160;
 
         BindingContext = model;
+        _model = model;
 
         Content = new Grid
         {

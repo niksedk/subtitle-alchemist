@@ -1,10 +1,12 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using SharpHook;
 using SubtitleAlchemist.Controls;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Media;
@@ -18,7 +20,7 @@ using SubtitleAlchemist.Views.Video.AudioToTextWhisper;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Text;
-using CommunityToolkit.Maui.Core.Extensions;
+using System.Windows.Input;
 
 namespace SubtitleAlchemist.Views.Main
 {
@@ -417,6 +419,8 @@ namespace SubtitleAlchemist.Views.Main
             }
         }
 
+        public ICommand ListViewPointerExitedCommand { get; set; }
+
         public void OnCollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             _updating = true;
@@ -448,7 +452,7 @@ namespace SubtitleAlchemist.Views.Main
             }
 
             _updating = false;
-            ShowStatus("Selecting " + current.Count + " paragraphs: " + string.Join(',', paragraphs.Select(p => p.Number)));
+            //ShowStatus("Selecting " + current.Count + " paragraphs: " + string.Join(',', paragraphs.Select(p => p.Number)));
 
             const int contextMenuDeleteOneLine = 0;
             const int contextMenuInsertBefore = 1;
@@ -720,6 +724,29 @@ namespace SubtitleAlchemist.Views.Main
             }
 
             SubtitleList.BatchCommit();
+        }
+
+        public void KeyPressed(object? sender, KeyboardHookEventArgs e)
+        {
+            ShowStatus(e.Data.ToString());
+        }
+
+        public void ListViewDoubleTapped(object? sender, TappedEventArgs e)
+        {
+            var point = e.GetPosition(sender as Element);
+            if (point.HasValue)
+            {
+                if (e.Parameter is DisplayParagraph paragraph)
+                {
+                   // ShowStatus("Double tab at " + (int)point.Value.X + "," + (int)point.Value.Y + "  " + paragraph.Number + ": " + paragraph.Text.Replace(Environment.NewLine, "<br />"));
+                   // TODO: make customizable
+                    if (VideoPlayer is { IsLoaded: true })
+                    {
+                        VideoPlayer.SeekTo(TimeSpan.FromSeconds(paragraph.P.StartTime.TotalSeconds));
+                    }
+                }
+               
+            }
         }
     }
 }
