@@ -3,9 +3,10 @@ using MauiCursor;
 using Microsoft.Maui.Platform;
 using UIKit;
 
-namespace SubtitleAlchemist.Platforms.MacCatalyst;
+// ReSharper disable once CheckNamespace
+namespace SubtitleAlchemist; // Do not change this line as this namespace is required for platform code
 
-public static class CursorExtensions
+public static class CursorExtensions 
 {
 	public static void SetCustomCursor(this VisualElement visualElement, CursorIcon cursor, IMauiContext? mauiContext)
 	{
@@ -43,6 +44,7 @@ public static class CursorExtensions
 			CursorIcon.Arrow => NSCursor.ArrowCursor,
 			CursorIcon.SizeAll => NSCursor.ResizeUpCursor,
 			CursorIcon.Wait => NSCursor.OperationNotAllowedCursor,
+			CursorIcon.ResizeLeftRight => NSCursor.ResizeLeftRightCursor,
 			_ => NSCursor.ArrowCursor,
 		};
 	}

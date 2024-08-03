@@ -4,7 +4,8 @@ using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Platform;
 using UIKit;
 
-namespace SubtitleAlchemist.Platforms.iOS;
+// ReSharper disable once CheckNamespace
+namespace SubtitleAlchemist; // Do not change this line as this namespace is required for platform code
 
 public static class CursorExtensions
 {

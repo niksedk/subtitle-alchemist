@@ -7,5 +7,6 @@ public enum CursorIcon
 	Arrow,
 	IBeam,
 	Cross,
-	SizeAll
+	SizeAll,
+    ResizeLeftRight,
 }

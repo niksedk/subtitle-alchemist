@@ -3,7 +3,8 @@ using MauiCursor;
 using Microsoft.Maui.Platform;
 using Application = Android.App.Application;
 
-namespace SubtitleAlchemist.Platforms.Android;
+// ReSharper disable once CheckNamespace
+namespace SubtitleAlchemist; // Do not change this line as this namespace is required for platform code
 
 public static class CursorExtensions
 {

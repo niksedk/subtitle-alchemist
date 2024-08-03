@@ -99,7 +99,12 @@ namespace SubtitleAlchemist.Features.Main
             ListViewAndEditBox = new Grid();
 
             _audioVisualizer.OnVideoPositionChanged += AudioVisualizer_OnVideoPositionChanged;
+            _audioVisualizer.OnSingleClick += _audioVisualizer_OnSingleClick;
             _audioVisualizer.OnDoubleTapped += AudioVisualizer_OnDoubleTapped;
+            _audioVisualizer.OnStatus += (sender, args) =>
+            {
+                ShowStatus(args.Paragraph.Text);
+            };
             SetTimer();
         }
 
@@ -196,6 +201,19 @@ namespace SubtitleAlchemist.Features.Main
             MediaElementState.Paused,
             MediaElementState.Stopped,
         };
+
+        private void _audioVisualizer_OnSingleClick(object sender, ParagraphEventArgs e)
+        {
+            var timeSpan = TimeSpan.FromSeconds(e.Seconds);
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (VideoPlayer != null && _allowUpdatePositionStates.Contains(VideoPlayer.CurrentState))
+                {
+                    VideoPlayer.SeekTo(timeSpan);
+                    _audioVisualizer.InvalidateSurface();
+                }
+            });
+        }
 
         private void AudioVisualizer_OnVideoPositionChanged(object sender, AudioVisualizer.PositionEventArgs e)
         {

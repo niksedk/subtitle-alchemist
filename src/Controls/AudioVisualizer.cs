@@ -34,7 +34,7 @@ namespace SubtitleAlchemist.Controls
         public Paragraph? SelectedParagraph { get; private set; }
         public Paragraph? NewSelectionParagraph { get; set; }
         public Paragraph RightClickedParagraph { get; private set; }
-        public bool AllowNewSelection { get; set; }
+        public bool AllowNewSelection { get; set; } = true;
 
         public KeyboardModifierKeys ModifierKeys { get; set; } = new KeyboardModifierKeys();
         public MouseStatus MouseStatus { get; set; } = new MouseStatus();
@@ -71,15 +71,17 @@ namespace SubtitleAlchemist.Controls
 
         public delegate void ParagraphEventHandler(object sender, ParagraphEventArgs e);
 
-        public event PositionEventHandler OnVideoPositionChanged;
-        public event PositionEventHandler OnDoubleTapped;
-        public event ParagraphEventHandler OnPositionSelected;
-        public event ParagraphEventHandler OnTimeChanged;
-        public event ParagraphEventHandler OnStartTimeChanged;
-        public event ParagraphEventHandler OnTimeChangedAndOffsetRest;
-        public event ParagraphEventHandler OnNewSelectionRightClicked;
-        public event ParagraphEventHandler OnParagraphRightClicked;
-        public event ParagraphEventHandler OnNonParagraphRightClicked;
+        public event PositionEventHandler? OnVideoPositionChanged;
+        public event PositionEventHandler? OnDoubleTapped;
+        public event ParagraphEventHandler? OnPositionSelected;
+        public event ParagraphEventHandler? OnTimeChanged;
+        public event ParagraphEventHandler? OnStartTimeChanged;
+        public event ParagraphEventHandler? OnTimeChangedAndOffsetRest;
+        public event ParagraphEventHandler? OnNewSelectionRightClicked;
+        public event ParagraphEventHandler? OnParagraphRightClicked;
+        public event ParagraphEventHandler? OnNonParagraphRightClicked;
+        public event ParagraphEventHandler? OnSingleClick;
+        public event ParagraphEventHandler? OnStatus;
 
         public class PositionEventArgs : EventArgs
         {
@@ -236,6 +238,30 @@ namespace SubtitleAlchemist.Controls
             _mouseOver = true;
             MouseStatus.MouseButton1 = false;
             MouseStatus.MouseButton2 = false;
+
+            if (WavePeaks == null)
+            {
+                return;
+            }
+
+            if (_noClear)
+            {
+                _noClear = false;
+            }
+            else
+            {
+                SetCursor(CursorIcon.Arrow);
+                _mouseDown = false;
+                _mouseDownParagraph = null;
+                _mouseMoveStartX = -1;
+                _mouseMoveEndX = -1;
+            }
+
+            if (NewSelectionParagraph != null)
+            {
+                _mouseMoveStartX = SecondsToXPosition(NewSelectionParagraph.StartTime.TotalSeconds - _startPositionSeconds);
+                _mouseMoveEndX = SecondsToXPosition(NewSelectionParagraph.EndTime.TotalSeconds - _startPositionSeconds);
+            }
         }
 
         private void PointerPressed(object? sender, PointerEventArgs e)
@@ -255,7 +281,6 @@ namespace SubtitleAlchemist.Controls
             }
 
             var x = (int)Math.Round(point.Value.X, MidpointRounding.AwayFromZero);
-            var y = (int)Math.Round(point.Value.Y, MidpointRounding.AwayFromZero);
 
             Paragraph? oldMouseDownParagraph = null;
             _mouseDownParagraphType = MouseDownParagraphType.None;
@@ -265,9 +290,9 @@ namespace SubtitleAlchemist.Controls
             {
                 _buttonDownTimeTicks = DateTime.UtcNow.Ticks;
 
-                SetCursor(CursorIcon.IBeam); // VSplit
+                SetCursor(CursorIcon.ResizeLeftRight); // VSplit
 
-                double seconds = RelativeXPositionToSeconds(x);
+                var seconds = RelativeXPositionToSeconds(x);
                 var milliseconds = (int)(seconds * TimeCode.BaseUnit);
 
                 if (SetParagraphBorderHit(milliseconds, NewSelectionParagraph))
@@ -458,6 +483,20 @@ namespace SubtitleAlchemist.Controls
             _wholeParagraphMaxMilliseconds = double.MaxValue;
             if (_subtitle != null && _mouseDownParagraph != null)
             {
+                if (_subtitle.Paragraphs == null)
+                {
+                }
+
+                var nulls = _subtitle.Paragraphs.Where(p => p == null).ToList();
+                if (nulls.Count > 0)
+                {
+                }
+
+                var nullsStart = _subtitle.Paragraphs.Where(p => p.StartTime == null).ToList();
+                if (nullsStart.Count > 0)
+                {
+                }
+
                 var paragraphs = _subtitle.Paragraphs.OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
                 var curIdx = paragraphs.IndexOf(_mouseDownParagraph);
                 if (curIdx >= 0)
@@ -544,9 +583,102 @@ namespace SubtitleAlchemist.Controls
 
         private void PointerReleased(object? sender, PointerEventArgs e)
         {
-            _mouseDown = false;
-            MouseStatus.MouseButton1 = false;
-            MouseStatus.MouseButton2 = false;
+            if (WavePeaks == null)
+            {
+                return;
+            }
+
+            var point = e.GetPosition(this);
+            if (!point.HasValue)
+            {
+                return;
+            }
+
+            var x = (int)Math.Round(point.Value.X, MidpointRounding.AwayFromZero);
+
+            try
+            {
+                if (MouseStatus.MouseButton1 && OnSingleClick != null)
+                {
+                    var diff = Math.Abs(_mouseMoveStartX - x);
+                    if (_mouseMoveStartX == -1 || _mouseMoveEndX == -1 || diff < 10 && TimeSpan.FromTicks(DateTime.UtcNow.Ticks - _buttonDownTimeTicks).TotalSeconds < 0.25)
+                    {
+                        if (ModifierKeys.Shift && SelectedParagraph != null)
+                        {
+                            var seconds = RelativeXPositionToSeconds(x);
+                            var milliseconds = (int)(seconds * TimeCode.BaseUnit);
+                            if (_mouseDownParagraphType == MouseDownParagraphType.None || _mouseDownParagraphType == MouseDownParagraphType.Whole)
+                            {
+                                if (seconds < SelectedParagraph.EndTime.TotalSeconds)
+                                {
+                                    _oldParagraph = new Paragraph(SelectedParagraph);
+                                    _mouseDownParagraph = SelectedParagraph;
+                                    _mouseDownParagraph.StartTime.TotalMilliseconds = milliseconds;
+                                    OnStartTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph));
+                                }
+                            }
+                            return;
+                        }
+                        if (ModifierKeys.Control && SelectedParagraph != null)
+                        {
+                            var seconds = RelativeXPositionToSeconds(x);
+                            var milliseconds = (int)(seconds * TimeCode.BaseUnit);
+                            if (_mouseDownParagraphType == MouseDownParagraphType.None || _mouseDownParagraphType == MouseDownParagraphType.Whole)
+                            {
+                                if (seconds > SelectedParagraph.StartTime.TotalSeconds)
+                                {
+                                    _oldParagraph = new Paragraph(SelectedParagraph);
+                                    _mouseDownParagraph = SelectedParagraph;
+                                    _mouseDownParagraph.EndTime.TotalMilliseconds = milliseconds;
+                                    OnTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph));
+                                }
+                            }
+                            return;
+                        }
+                        if (ModifierKeys.Control && ModifierKeys.Shift && SelectedParagraph != null)
+                        {
+                            var seconds = RelativeXPositionToSeconds(x);
+                            if (_mouseDownParagraphType == MouseDownParagraphType.None || _mouseDownParagraphType == MouseDownParagraphType.Whole)
+                            {
+                                _oldParagraph = new Paragraph(SelectedParagraph);
+                                _mouseDownParagraph = SelectedParagraph;
+                                OnTimeChangedAndOffsetRest?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph));
+                            }
+                            return;
+                        }
+                        if (ModifierKeys.Alt && SelectedParagraph != null)
+                        {
+                            var seconds = RelativeXPositionToSeconds(x);
+                            var milliseconds = (int)(seconds * TimeCode.BaseUnit);
+                            if (_mouseDownParagraphType == MouseDownParagraphType.None || _mouseDownParagraphType == MouseDownParagraphType.Whole)
+                            {
+                                _oldParagraph = new Paragraph(SelectedParagraph);
+                                _mouseDownParagraph = SelectedParagraph;
+                                var durationMilliseconds = _mouseDownParagraph.DurationTotalMilliseconds;
+                                _mouseDownParagraph.StartTime.TotalMilliseconds = milliseconds;
+                                _mouseDownParagraph.EndTime.TotalMilliseconds = _mouseDownParagraph.StartTime.TotalMilliseconds + durationMilliseconds;
+                                OnTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph));
+                            }
+
+                            return;
+                        }
+
+                        if (_mouseDownParagraphType == MouseDownParagraphType.None || _mouseDownParagraphType == MouseDownParagraphType.Whole)
+                        {
+                            var seconds = RelativeXPositionToSeconds(x);
+                            var milliseconds = (int)(seconds * TimeCode.BaseUnit);
+                            var p = GetParagraphAtMilliseconds(milliseconds);
+                            OnSingleClick?.Invoke(this, new ParagraphEventArgs(RelativeXPositionToSeconds(x), p));
+                        }
+                    }
+                }
+            }
+            finally 
+            {
+                _mouseDown = false;
+                MouseStatus.MouseButton1 = false;
+                MouseStatus.MouseButton2 = false;
+            }
         }
 
         private void PointerMoved(object? sender, PointerEventArgs e)
@@ -609,12 +741,12 @@ namespace SubtitleAlchemist.Controls
 
                 if (IsParagraphBorderHit(milliseconds, NewSelectionParagraph))
                 {
-                    SetCursor(CursorIcon.SizeAll); // VSplit
+                    SetCursor(CursorIcon.ResizeLeftRight); // VSplit
                 }
                 else if (IsParagraphBorderHit(milliseconds, SelectedParagraph) ||
                          IsParagraphBorderHit(milliseconds, _displayableParagraphs))
                 {
-                    SetCursor(CursorIcon.SizeAll); // VSplit;
+                    SetCursor(CursorIcon.ResizeLeftRight); // VSplit;
                 }
                 else
                 {
@@ -940,14 +1072,27 @@ namespace SubtitleAlchemist.Controls
             }
         }
 
+        CursorIcon _lastCursor = CursorIcon.Arrow;
         private void SetCursor(CursorIcon cursor)
         {
-            //CursorExtensions.SetCustomCursor(this, cursor, null);
+            if (cursor == _lastCursor)
+            {
+                return;
+            }
+
+            if (Handler?.MauiContext is MauiContext context)
+            {
+                OnStatus?.Invoke(this, new ParagraphEventArgs(new Paragraph() { Text = "Cursor: " + cursor }));
+
+                this.SetCustomCursor(cursor, context);
+
+                _lastCursor = cursor;
+            }
         }
 
-        private Paragraph GetParagraphAtMilliseconds(int milliseconds)
+        private Paragraph? GetParagraphAtMilliseconds(int milliseconds)
         {
-            Paragraph p = null;
+            Paragraph? p = null;
             if (IsParagraphHit(milliseconds, SelectedParagraph))
             {
                 p = SelectedParagraph;
@@ -968,7 +1113,7 @@ namespace SubtitleAlchemist.Controls
             return p;
         }
 
-        private static bool IsParagraphHit(int milliseconds, Paragraph paragraph)
+        private static bool IsParagraphHit(int milliseconds, Paragraph? paragraph)
         {
             if (paragraph == null)
             {

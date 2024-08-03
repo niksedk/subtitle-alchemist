@@ -24,6 +24,8 @@ namespace SubtitleAlchemist.Logic
 
         public static async Task RunAsync()
         {
+            return; //TODO: Remove
+
             if (_loaded)
             {
                 return;
