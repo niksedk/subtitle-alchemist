@@ -1409,8 +1409,38 @@ namespace SubtitleAlchemist.Controls
             DrawWaveForm();
             DrawParagraphs(e);
             DrawCurrentVideoPosition();
+            DrawNewParagraph();
+
+            if (_mouseOver)
+            {
+                _canvas.DrawRect(0, 0, _info.Width, _info.Height, _paintPenSelected);
+            }
 
             e.Surface.Canvas.Flush();
+        }
+
+        private void DrawNewParagraph()
+        {
+            // current selection
+            if (NewSelectionParagraph != null)
+            {
+                var currentRegionLeft = SecondsToXPosition(NewSelectionParagraph.StartTime.TotalSeconds - _startPositionSeconds);
+                var currentRegionRight = SecondsToXPosition(NewSelectionParagraph.EndTime.TotalSeconds - _startPositionSeconds);
+                var currentRegionWidth = currentRegionRight - currentRegionLeft;
+                if (currentRegionRight >= 0 && currentRegionLeft <= Width)
+                {
+                    _canvas.DrawRect(currentRegionLeft, 0, currentRegionWidth, _info.Height, _paintBackground);
+
+                    if (currentRegionWidth > 40)
+                    {
+                        //TODO:
+                        //using (var brush = new SolidBrush(CursorColor))
+                        //{
+                        //    graphics.DrawString($"{(double)currentRegionWidth / WavePeaks.SampleRate / _zoomFactor:0.###} {LanguageSettings.Current.Waveform.Seconds}", Font, brush, new PointF(currentRegionLeft + 3, Height - 32));
+                        //}
+                    }
+                }
+            }
         }
 
         private void DrawParagraphs(SKPaintSurfaceEventArgs e)
