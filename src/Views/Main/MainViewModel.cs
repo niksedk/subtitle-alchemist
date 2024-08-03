@@ -35,7 +35,10 @@ namespace SubtitleAlchemist.Views.Main
 
         public MainPage MainPage { get; set; }
         public MediaElement? VideoPlayer { get; set; }
-        public AudioVisualizer AudioVisualizer { get; set; }
+
+        public AudioVisualizer AudioVisualizer => _audioVisualizer;
+        private readonly AudioVisualizer _audioVisualizer;
+
         public CollectionView SubtitleList { get; set; }
         public Grid ListViewAndEditBox { get; set; }
         public static IList SubtitleFormatNames => SubtitleFormat.AllSubtitleFormats.Select(p => p.Name).ToList();
@@ -86,13 +89,6 @@ namespace SubtitleAlchemist.Views.Main
             VideoPlayer = new MediaElement { BackgroundColor = Colors.Orange, ZIndex = -10000 };
             SubtitleList = new CollectionView();
             _timer = new System.Timers.Timer(19);
-            SetTimer();
-
-            if (AudioVisualizer != null)
-            {
-                AudioVisualizer.OnVideoPositionChanged += AudioVisualizer_OnVideoPositionChanged;
-            }
-
             _statusText = string.Empty;
             _selectedLineInfo = string.Empty;
             _videoFileName = string.Empty;
@@ -100,8 +96,11 @@ namespace SubtitleAlchemist.Views.Main
             _subtitle = new Subtitle();
             _paragraphs = new ObservableCollection<DisplayParagraph>();
             _currentText = string.Empty;
-            AudioVisualizer = new AudioVisualizer();
+            _audioVisualizer = new AudioVisualizer();
             ListViewAndEditBox = new Grid();
+
+            _audioVisualizer.OnVideoPositionChanged += AudioVisualizer_OnVideoPositionChanged;
+            SetTimer();
         }
 
         private void SetTimer()
@@ -109,7 +108,7 @@ namespace SubtitleAlchemist.Views.Main
             _timer.Elapsed += (_, _) =>
             {
                 _timer.Stop();
-                if (AudioVisualizer is { WavePeaks: { }, IsVisible: true }
+                if (_audioVisualizer is { WavePeaks: { }, IsVisible: true }
                     && VideoPlayer != null
                     && _allowUpdatePositionStates.Contains(VideoPlayer.CurrentState))
                 {
@@ -124,30 +123,30 @@ namespace SubtitleAlchemist.Views.Main
                             startPos = 0;
                         }
 
-                        if (mediaPlayerSeconds > AudioVisualizer.EndPositionSeconds || mediaPlayerSeconds < AudioVisualizer.StartPositionSeconds)
+                        if (mediaPlayerSeconds > _audioVisualizer.EndPositionSeconds || mediaPlayerSeconds < _audioVisualizer.StartPositionSeconds)
                         {
-                            AudioVisualizer?.SetPosition(startPos, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
+                            _audioVisualizer?.SetPosition(startPos, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
                         }
                         else
                         {
-                            AudioVisualizer?.SetPosition(AudioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
+                            _audioVisualizer?.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
                         }
                     }
                     else
                     {
-                        if (mediaPlayerSeconds > AudioVisualizer.EndPositionSeconds || mediaPlayerSeconds < AudioVisualizer.StartPositionSeconds)
+                        if (mediaPlayerSeconds > _audioVisualizer.EndPositionSeconds || mediaPlayerSeconds < _audioVisualizer.StartPositionSeconds)
                         {
-                            AudioVisualizer?.SetPosition(mediaPlayerSeconds, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
+                            _audioVisualizer?.SetPosition(mediaPlayerSeconds, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
                         }
                         else
                         {
-                            AudioVisualizer?.SetPosition(AudioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
+                            _audioVisualizer?.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, 0, new[] { 0 });
                         }
                     }
 
                     try
                     {
-                        AudioVisualizer?.InvalidateSurface();
+                        _audioVisualizer?.InvalidateSurface();
                     }
                     catch
                     {
@@ -177,7 +176,7 @@ namespace SubtitleAlchemist.Views.Main
                 if (VideoPlayer != null && _allowUpdatePositionStates.Contains(VideoPlayer.CurrentState))
                 {
                     VideoPlayer.SeekTo(timeSpan);
-                    AudioVisualizer.InvalidateSurface();
+                    _audioVisualizer.InvalidateSurface();
                 }
             });
         }
@@ -186,7 +185,7 @@ namespace SubtitleAlchemist.Views.Main
         {
             _timer.Stop();
             _timer.Dispose();
-            AudioVisualizer.OnVideoPositionChanged -= AudioVisualizer_OnVideoPositionChanged;
+            _audioVisualizer.OnVideoPositionChanged -= AudioVisualizer_OnVideoPositionChanged;
             SharpHookHandler.Dispose();
         }
 
@@ -262,7 +261,7 @@ namespace SubtitleAlchemist.Views.Main
                 VideoPlayer.Source = null;
             }
 
-            AudioVisualizer.WavePeaks = null;
+            _audioVisualizer.WavePeaks = null;
 
             if (Window != null)
             {
@@ -362,13 +361,13 @@ namespace SubtitleAlchemist.Views.Main
                 }
 
                 var wavePeaks = WavePeakData.FromDisk(peakWaveFileName);
-                AudioVisualizer.WavePeaks = wavePeaks;
-                AudioVisualizer.InvalidateSurface();
+                _audioVisualizer.WavePeaks = wavePeaks;
+                _audioVisualizer.InvalidateSurface();
             }
             else
             {
                 var wavePeaks = WavePeakData.FromDisk(peakWaveFileName);
-                AudioVisualizer.WavePeaks = wavePeaks;
+                _audioVisualizer.WavePeaks = wavePeaks;
             }
 
             _videoFileName = videoFileName;
@@ -382,7 +381,7 @@ namespace SubtitleAlchemist.Views.Main
                 VideoPlayer.Source = null;
             }
 
-            AudioVisualizer.WavePeaks = null;
+            _audioVisualizer.WavePeaks = null;
             _videoFileName = string.Empty;
         }
 
@@ -738,14 +737,14 @@ namespace SubtitleAlchemist.Views.Main
             {
                 if (e.Parameter is DisplayParagraph paragraph)
                 {
-                   // ShowStatus("Double tab at " + (int)point.Value.X + "," + (int)point.Value.Y + "  " + paragraph.Number + ": " + paragraph.Text.Replace(Environment.NewLine, "<br />"));
-                   // TODO: make customizable
+                    // ShowStatus("Double tab at " + (int)point.Value.X + "," + (int)point.Value.Y + "  " + paragraph.Number + ": " + paragraph.Text.Replace(Environment.NewLine, "<br />"));
+                    // TODO: make customizable
                     if (VideoPlayer is { IsLoaded: true })
                     {
                         VideoPlayer.SeekTo(TimeSpan.FromSeconds(paragraph.P.StartTime.TotalSeconds));
                     }
                 }
-               
+
             }
         }
     }

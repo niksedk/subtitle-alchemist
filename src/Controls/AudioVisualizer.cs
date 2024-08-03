@@ -173,29 +173,53 @@ namespace SubtitleAlchemist.Controls
 
         public AudioVisualizer()
         {
-            GestureRecognizers.Add(new TapGestureRecognizer
-            {
-                NumberOfTapsRequired = 1,
-            });
+            var tapGestureRecognizerSingle = new TapGestureRecognizer();
+            tapGestureRecognizerSingle.NumberOfTapsRequired = 1;
+            tapGestureRecognizerSingle.Tapped += TappedSingle;
+            GestureRecognizers.Add(tapGestureRecognizerSingle);
 
-            var tapGestureRecognizer = new TapGestureRecognizer();
-            tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
-            GestureRecognizers.Add(tapGestureRecognizer);
+            var tapGestureRecognizerDouble = new TapGestureRecognizer();
+            tapGestureRecognizerDouble.NumberOfTapsRequired = 2;
+            tapGestureRecognizerDouble.Tapped += TappedDouble;
+            GestureRecognizers.Add(tapGestureRecognizerDouble);
 
             _pointerGestureRecognizer = new PointerGestureRecognizer();
+            _pointerGestureRecognizer.PointerMoved += PointerMoved;
+            _pointerGestureRecognizer.PointerPressed += PointerPressed;
+            _pointerGestureRecognizer.PointerReleased += PointerReleased;
+            _pointerGestureRecognizer.PointerEntered += PointerEntered;
+            _pointerGestureRecognizer.PointerExited += PointerExited;
+            GestureRecognizers.Add(_pointerGestureRecognizer);
 
-            _pointerGestureRecognizer.PointerMoved += (s, e) =>
-            {
-                // Handle the pointer moved event
-            };
 
             //TODO: test mpv player with _canvas.Handle
         }
+
+        private void PointerExited(object? sender, PointerEventArgs e)
+        {
+        }
+
+        private void PointerEntered(object? sender, PointerEventArgs e)
+        {
+        }
+
+        private void PointerReleased(object? sender, PointerEventArgs e)
+        {
+        }
+
+        private void PointerPressed(object? sender, PointerEventArgs e)
+        {
+        }
+
+        private void PointerMoved(object? sender, PointerEventArgs e)
+        {
+        }
+
         protected override void OnHandlerChanged()
         {
             base.OnHandlerChanged();
 #if WINDOWS
-            var view = Handler.PlatformView as SkiaSharp.Views.Windows.SKXamlCanvas;
+            var view = Handler.PlatformView as SkiaSharp.Views.Windows.SKXamlCanvas;
             view.PointerWheelChanged += (s, e) =>
             {
                 var point = e.GetCurrentPoint(s as Microsoft.Maui.Platform.ContentPanel);
@@ -206,7 +230,23 @@ namespace SubtitleAlchemist.Controls
 #endif
         }
 
-        private void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+        private void TappedSingle(object? sender, TappedEventArgs? e)
+        {
+            if (WavePeaks == null)
+            {
+                return;
+            }
+
+            var point = e.GetPosition(this);
+            if (!point.HasValue)
+            {
+                return;
+            }
+
+            var positionInSeconds = RelativeXPositionToSeconds(point.Value.X);
+            OnVideoPositionChanged?.Invoke(this, new PositionEventArgs { PositionInSeconds = positionInSeconds });
+        }
+        private void TappedDouble(object? sender, TappedEventArgs e)
         {
             if (WavePeaks == null)
             {

@@ -48,7 +48,6 @@ public class MainPage : ContentPage
             BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
         };
 
-        _viewModel.AudioVisualizer = new AudioVisualizer();
         _viewModel.SubtitleList = InitSubtitleListView.MakeSubtitleListView(_viewModel);
         _viewModel.ListViewAndEditBox = new Grid();
 

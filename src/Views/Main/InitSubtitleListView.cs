@@ -93,9 +93,6 @@ namespace SubtitleAlchemist.Views.Main
                 }
             };
 
-            var pointerGestureRecognizer = new PointerGestureRecognizer();
-            grid.GestureRecognizers.Add(pointerGestureRecognizer);
-
             var tapGestureRecognizer = new TapGestureRecognizer();
             tapGestureRecognizer.NumberOfTapsRequired = 2;
             tapGestureRecognizer.Tapped += vm.ListViewDoubleTapped;
