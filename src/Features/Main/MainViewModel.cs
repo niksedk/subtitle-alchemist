@@ -256,7 +256,7 @@ namespace SubtitleAlchemist.Features.Main
             foreach (var item in Paragraphs)
             {
                 item.IsSelected = false;
-                item.BackgroundColor = Colors.Black;
+                item.BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"]; 
             }
 
             paragraph.IsSelected = true;
@@ -530,7 +530,7 @@ namespace SubtitleAlchemist.Features.Main
             foreach (var item in Paragraphs)
             {
                 item.IsSelected = false;
-                item.BackgroundColor = Colors.Black;
+                item.BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
             }
 
             var current = e.CurrentSelection;

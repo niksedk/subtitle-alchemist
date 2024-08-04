@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Markup;
+using SubtitleAlchemist.Controls.SubTimeControl;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace SubtitleAlchemist.Features.Main
@@ -589,8 +590,18 @@ namespace SubtitleAlchemist.Features.Main
 
         private static Grid MakeDefaultListViewAndEditBox(MainViewModel vm)
         {
-            var editor = new Editor { TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Row(1)
-                .Column(1).Bind("CurrentText");
+            var startTime = new SubTimeUpDown
+            {
+               // Background = (Color)Application.Current.Resources["BackgroundColor"],
+                DisplayText = "01:01:01",
+                Margin = 0,
+            }
+            .Column(0)
+            .Row(1);
+
+            var editor = new Editor { TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }
+                .Column(1).Bind("CurrentText")
+                .Row(1);
             editor.TextChanged += vm.CurrentTextChanged;
             
             return new Grid
@@ -599,7 +610,7 @@ namespace SubtitleAlchemist.Features.Main
                 VerticalOptions = LayoutOptions.Fill,
                 ColumnDefinitions = new ColumnDefinitionCollection
                 {
-                    new(100),
+                    new(150),
                     new(GridLength.Star),
                     new(100),
                 },
@@ -608,7 +619,7 @@ namespace SubtitleAlchemist.Features.Main
                     new(Star),
                     new(100),
                 },
-                Children = { editor }
+                Children = { startTime, editor }
             };
         }
 

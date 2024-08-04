@@ -27,7 +27,7 @@ public partial class DisplayParagraph : ObservableObject
     {
         P = paragraph;
         Text = paragraph.Text;
-        BackgroundColor = Colors.Black;
+        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
         IsSelected = false;
         Number = paragraph.Number;
     }

@@ -9,6 +9,10 @@ public class AboutPopup : Popup
     {
         BindingContext = model;
 
+        var fileName = System.Reflection.Assembly.GetExecutingAssembly()?.Location;
+        var applicationPath = string.IsNullOrEmpty(fileName) ? string.Empty : Path.GetDirectoryName(fileName) ?? string.Empty;
+        var imagePath = Path.Combine(applicationPath, "Resources", "Images", "Buttons");
+
         Content = new ContentView
         {
             BackgroundColor = Colors.DarkGray,
@@ -16,9 +20,26 @@ public class AboutPopup : Popup
             {
                 Margin = 1,
                 Padding = 10,
-                BackgroundColor = Colors.Black,
+                BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
                 Children =
                 {
+                    new StackLayout
+                    {
+                        Orientation = StackOrientation.Horizontal,
+                        HorizontalOptions = LayoutOptions.End,
+                        Children =
+                        {                             
+                            new ImageButton
+                            {
+                                Command = model.CloseCommand,
+                            }
+                            .Width(30)
+                            .Height(30)
+                            .Margin(10)
+                            .Source (ImageSource.FromFile(Path.Combine(imagePath, "Close.png"))),
+                        }
+                    },
+
                     new Label()
                         .Text("About Subtitle Alchemist ALPHA 1")
                         .TextColor((Color)Application.Current.Resources["TextColor"])

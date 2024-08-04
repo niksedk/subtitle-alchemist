@@ -31,7 +31,7 @@ public class LayoutPickerPopup : Popup
 
         Content = new Grid
         {
-            BackgroundColor = Colors.Black,
+            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
 
             RowDefinitions = Rows.Define(
                 (Row.Row0, columnHeight),

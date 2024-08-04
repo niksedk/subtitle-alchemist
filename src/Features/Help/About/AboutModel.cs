@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace SubtitleAlchemist.Features.Help.About
 {
@@ -10,6 +11,7 @@ namespace SubtitleAlchemist.Features.Help.About
         {
         }
 
+        [RelayCommand]
         private void Close()
         {
             MainThread.BeginInvokeOnMainThread(() =>

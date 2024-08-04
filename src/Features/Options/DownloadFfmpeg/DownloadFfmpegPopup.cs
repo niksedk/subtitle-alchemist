@@ -11,7 +11,7 @@ public class DownloadFfmpegPopup : Popup
 
         Content = new StackLayout
         {
-            BackgroundColor = Colors.Black,
+            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
 
             Children =
             {
