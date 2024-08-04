@@ -6,7 +6,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
-using SharpHook;
 using SubtitleAlchemist.Controls;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
@@ -20,6 +19,8 @@ using SubtitleAlchemist.Logic.Media;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Text;
+using SharpHook;
+using SubtitleAlchemist.Controls.AudioVisualizerControl;
 
 namespace SubtitleAlchemist.Features.Main
 {
@@ -67,7 +68,7 @@ namespace SubtitleAlchemist.Features.Main
             {
                 var subtitle = new Subtitle(_subtitle);
                 subtitle.Paragraphs.Clear();
-                subtitle.Paragraphs.AddRange(Enumerable.Select<DisplayParagraph, Paragraph>(Paragraphs, p => p.P));
+                subtitle.Paragraphs.AddRange(Paragraphs.Select(p => p.P));
                 return subtitle;
             }
         }
@@ -78,6 +79,7 @@ namespace SubtitleAlchemist.Features.Main
         private string _videoFileName;
         private readonly System.Timers.Timer _timer;
         private bool _updating;
+        private bool _stopping;
 
 
         private readonly IPopupService _popupService;
@@ -105,11 +107,17 @@ namespace SubtitleAlchemist.Features.Main
             {
                 ShowStatus(args.Paragraph.Text);
             };
+
             SetTimer();
         }
 
         private void SetTimer()
         {
+            if (_stopping)
+            {
+                return;
+            }
+
             _timer.Elapsed += (_, _) =>
             {
                 _timer.Stop();
@@ -130,33 +138,32 @@ namespace SubtitleAlchemist.Features.Main
 
                         if (mediaPlayerSeconds > _audioVisualizer.EndPositionSeconds || mediaPlayerSeconds < _audioVisualizer.StartPositionSeconds)
                         {
-                            _audioVisualizer?.SetPosition(startPos, _subtitle, mediaPlayerSeconds, 0, GetSelectedIndexes());
+                            _audioVisualizer.SetPosition(startPos, _subtitle, mediaPlayerSeconds, 0, GetSelectedIndexes());
                         }
                         else
                         {
-                            _audioVisualizer?.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
+                            _audioVisualizer.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
                         }
                     }
                     else
                     {
                         if (mediaPlayerSeconds > _audioVisualizer.EndPositionSeconds || mediaPlayerSeconds < _audioVisualizer.StartPositionSeconds)
                         {
-                            _audioVisualizer?.SetPosition(mediaPlayerSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
+                            _audioVisualizer.SetPosition(mediaPlayerSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
                         }
                         else
                         {
-                            _audioVisualizer?.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
+                            _audioVisualizer.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
                         }
                     }
 
                     try
                     {
-                        _audioVisualizer?.InvalidateSurface();
+                        _audioVisualizer.InvalidateSurface();
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignore
-                        return;
+                        ShowStatus(ex.Message);
                     }
                 }
 
@@ -278,10 +285,11 @@ namespace SubtitleAlchemist.Features.Main
 
         public void CleanUp()
         {
+            _stopping = true;
             _timer.Stop();
-            _timer.Dispose();
             _audioVisualizer.OnVideoPositionChanged -= AudioVisualizer_OnVideoPositionChanged;
             SharpHookHandler.Dispose();
+            _timer.Dispose();
         }
 
         public void Loaded(MainPage mainPage)
@@ -338,7 +346,10 @@ namespace SubtitleAlchemist.Features.Main
                 VideoOpenFile(videoFileName);
             }
 
-            _timer.Start();
+            if (!_stopping)
+            {
+                _timer.Start();
+            }
         }
 
         [RelayCommand]
@@ -367,7 +378,7 @@ namespace SubtitleAlchemist.Features.Main
         [RelayCommand]
         private async Task SubtitleSaveAs()
         {
-            if (!Enumerable.Any<DisplayParagraph>(Paragraphs))
+            if (!Paragraphs.Any())
             {
                 ShowStatus("Nothing to save");
                 return;
@@ -396,7 +407,7 @@ namespace SubtitleAlchemist.Features.Main
         [RelayCommand]
         private async Task SubtitleSave()
         {
-            if (!Enumerable.Any<DisplayParagraph>(Paragraphs))
+            if (!Paragraphs.Any())
             {
                 ShowStatus("Nothing to save");
                 return;
@@ -625,7 +636,7 @@ namespace SubtitleAlchemist.Features.Main
         [RelayCommand]
         private async Task DeleteSelectedLines()
         {
-            var selectedParagraphs = Enumerable.Where<DisplayParagraph>(Paragraphs, p => p.IsSelected).ToList();
+            var selectedParagraphs = Paragraphs.Where(p => p.IsSelected).ToList();
             var text = selectedParagraphs.Count > 1
                 ? $"Delete {selectedParagraphs.Count} lines?"
                 : $"Delete line {selectedParagraphs.First().Number}?";
@@ -700,7 +711,7 @@ namespace SubtitleAlchemist.Features.Main
                 return;
             }
 
-            var p = Paragraphs.FirstOrDefault<DisplayParagraph>(p => p.P == _currentParagraph.P);
+            var p = Paragraphs.FirstOrDefault(p => p.P == _currentParagraph.P);
             if (p == null)
             {
                 return;
@@ -735,7 +746,7 @@ namespace SubtitleAlchemist.Features.Main
                 return;
             }
 
-            var p = Paragraphs.FirstOrDefault<DisplayParagraph>(p => p.P == _currentParagraph.P);
+            var p = Paragraphs.FirstOrDefault(p => p.P == _currentParagraph.P);
             if (p == null)
             {
                 return;

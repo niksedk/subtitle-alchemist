@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Markup;
 using Microsoft.Extensions.Logging;
 using SubtitleAlchemist.Controls;
+using SubtitleAlchemist.Controls.AudioVisualizerControl;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Main;

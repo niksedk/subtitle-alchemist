@@ -1,4 +1,4 @@
-﻿namespace SubtitleAlchemist.Controls;
+﻿namespace SubtitleAlchemist.Controls.AudioVisualizerControl;
 
 public class MouseStatus
 {

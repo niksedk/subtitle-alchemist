@@ -1,6 +1,6 @@
 ﻿using SkiaSharp.Views.Maui.Handlers;
 
-namespace SubtitleAlchemist.Controls;
+namespace SubtitleAlchemist.Controls.AudioVisualizerControl;
 
 public static class Registration
 {
