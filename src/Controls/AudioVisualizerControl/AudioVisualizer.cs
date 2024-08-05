@@ -151,7 +151,7 @@ public class AudioVisualizer : SKCanvasView
         {
             if (WavePeaks != null)
             {
-                var endPositionSeconds = value + (double)Width / WavePeaks.SampleRate / _zoomFactor;
+                var endPositionSeconds = value + (double)_info.Width / WavePeaks.SampleRate / _zoomFactor;
                 if (endPositionSeconds > WavePeaks.LengthInSeconds)
                 {
                     value -= endPositionSeconds - WavePeaks.LengthInSeconds;
@@ -723,12 +723,12 @@ public class AudioVisualizer : SKCanvasView
             //Invalidate();
             return;
         }
-        if (x > Width && _startPositionSeconds + 0.1 < WavePeaks.LengthInSeconds && _mouseDown)
+        if (x > _info.Width && _startPositionSeconds + 0.1 < WavePeaks.LengthInSeconds && _mouseDown)
         {
             StartPositionSeconds += 0.1;
             if (_mouseDownParagraph == null && _mouseDownParagraphs == null)
             {
-                _mouseMoveEndX = (int)Width;
+                _mouseMoveEndX = (int)_info.Width;
                 _mouseMoveStartX -= (int)(WavePeaks.SampleRate * 0.1);
                 OnPositionSelected?.Invoke(this, new ParagraphEventArgs(_startPositionSeconds, null));
             }
@@ -738,7 +738,7 @@ public class AudioVisualizer : SKCanvasView
         }
         _mouseMoveLastX = x;
 
-        if (x < 0 || x > Width)
+        if (x < 0 || x > _info.Width)
         {
             return;
         }
@@ -1306,7 +1306,7 @@ public class AudioVisualizer : SKCanvasView
                 return 0;
             }
 
-            return RelativeXPositionToSeconds(Width);
+            return RelativeXPositionToSeconds(_info.Width);
         }
     }
 
@@ -1437,7 +1437,7 @@ public class AudioVisualizer : SKCanvasView
             var currentRegionLeft = SecondsToXPosition(NewSelectionParagraph.StartTime.TotalSeconds - _startPositionSeconds);
             var currentRegionRight = SecondsToXPosition(NewSelectionParagraph.EndTime.TotalSeconds - _startPositionSeconds);
             var currentRegionWidth = currentRegionRight - currentRegionLeft;
-            if (currentRegionRight >= 0 && currentRegionLeft <= Width)
+            if (currentRegionRight >= 0 && currentRegionLeft <= _info.Width)
             {
                 _canvas.DrawRect(currentRegionLeft, 0, currentRegionWidth, _info.Height, _paintBackground);
 
@@ -1456,7 +1456,7 @@ public class AudioVisualizer : SKCanvasView
     private void DrawParagraphs(SKPaintSurfaceEventArgs e)
     {
         var startPositionMilliseconds = _startPositionSeconds * 1000.0;
-        var endPositionMilliseconds = RelativeXPositionToSeconds(Width) * 1000.0;
+        var endPositionMilliseconds = RelativeXPositionToSeconds(_info.Width) * 1000.0;
         var paragraphStartList = new List<int>();
         var paragraphEndList = new List<int>();
 
@@ -1492,8 +1492,8 @@ public class AudioVisualizer : SKCanvasView
         }
 
         _canvas.DrawRect(currentRegionLeft, 0, currentRegionWidth, _info.Height, _paintBackground);
-        _canvas.DrawLine(currentRegionLeft, 0, currentRegionLeft, (float)Height, _paintLeft);
-        _canvas.DrawLine(currentRegionRight - 1, 0, currentRegionRight - 1, (float)Height, _paintRight);
+        _canvas.DrawLine(currentRegionLeft, 0, currentRegionLeft, (float)_info.Height, _paintLeft);
+        _canvas.DrawLine(currentRegionRight - 1, 0, currentRegionRight - 1, (float)_info.Height, _paintRight);
 
         var n = _zoomFactor * WavePeaks.SampleRate;
 
@@ -1512,7 +1512,7 @@ public class AudioVisualizer : SKCanvasView
     {
         // current video position
         var currentPositionPos = SecondsToXPosition(_currentVideoPositionSeconds - _startPositionSeconds);
-        if (_currentVideoPositionSeconds > 0 && currentPositionPos > 0 && currentPositionPos < Width)
+        if (_currentVideoPositionSeconds > 0 && currentPositionPos > 0 && currentPositionPos < _info.Width)
         {
             using var paintStyle = new SKPaint
             {
@@ -1521,7 +1521,7 @@ public class AudioVisualizer : SKCanvasView
                 IsAntialias = true,
                 Style = SKPaintStyle.Stroke,
             };
-            _canvas.DrawLine(currentPositionPos, 0, currentPositionPos, (float)Height, paintStyle);
+            _canvas.DrawLine(currentPositionPos, 0, currentPositionPos, (float)_info.Height, paintStyle);
         }
     }
 
@@ -1557,7 +1557,7 @@ public class AudioVisualizer : SKCanvasView
             var halfWaveformHeight = waveformHeight / 2;
 
             var div = WavePeaks.SampleRate * _zoomFactor;
-            for (var x = 0; x < Width; x++)
+            for (var x = 0; x < _info.Width; x++)
             {
                 var pos = (_startPositionSeconds + x / div) * WavePeaks.SampleRate;
                 var pos0 = (int)pos;
@@ -1607,10 +1607,10 @@ public class AudioVisualizer : SKCanvasView
 
         if (WavePeaks == null)
         {
-            for (var i = 0; i < Width; i += 10)
+            for (var i = 0; i < _info.Width; i += 10)
             {
-                _canvas.DrawLine(i, 0, i, (float)Height, _paintGridColor);
-                _canvas.DrawLine(0, i, (float)Width, i, _paintGridColor);
+                _canvas.DrawLine(i, 0, i, (float)_info.Height, _paintGridColor);
+                _canvas.DrawLine(0, i, (float)_info.Width, i, _paintGridColor);
             }
         }
         else
@@ -1623,17 +1623,17 @@ public class AudioVisualizer : SKCanvasView
                 0.1d : // a pixel is 0.1 second
                 1.0d;  // a pixel is 1.0 second
 
-            while (xPosition < Width)
+            while (xPosition < _info.Width)
             {
-                _canvas.DrawLine(xPosition, 0, xPosition, (float)Height, _paintGridColor);
+                _canvas.DrawLine(xPosition, 0, xPosition, (float)_info.Height, _paintGridColor);
 
                 seconds += interval;
                 xPosition = SecondsToXPosition(seconds);
             }
 
-            while (yPosition < Height)
+            while (yPosition < _info.Height)
             {
-                _canvas.DrawLine(0, yPosition, (float)Width, yPosition, _paintGridColor);
+                _canvas.DrawLine(0, yPosition, (float)_info.Width, yPosition, _paintGridColor);
 
                 yCounter += interval;
                 yPosition = Convert.ToInt32(yCounter * WavePeaks.SampleRate * _zoomFactor);

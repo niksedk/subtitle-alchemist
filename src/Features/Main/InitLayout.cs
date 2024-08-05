@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using SubtitleAlchemist.Controls.SubTimeControl;
+using SubtitleAlchemist.Controls.UpDownControl;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace SubtitleAlchemist.Features.Main
@@ -592,18 +593,27 @@ namespace SubtitleAlchemist.Features.Main
         {
             var startTime = new SubTimeUpDown
             {
-               // Background = (Color)Application.Current.Resources["BackgroundColor"],
+                // Background = (Color)Application.Current.Resources["BackgroundColor"],
                 DisplayText = "01:01:01",
                 Margin = 0,
             }
             .Column(0)
             .Row(1);
 
+            var upDown = new UpDownView
+            {
+                Background = (Color)Application.Current.Resources["BackgroundColor"],
+                TextColor = (Color)Application.Current.Resources["TextColor"],
+
+            }
+            .Column(2)
+            .Row(1);
+
             var editor = new Editor { TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }
                 .Column(1).Bind("CurrentText")
                 .Row(1);
             editor.TextChanged += vm.CurrentTextChanged;
-            
+
             return new Grid
             {
                 HorizontalOptions = LayoutOptions.Fill,
@@ -619,7 +629,7 @@ namespace SubtitleAlchemist.Features.Main
                     new(Star),
                     new(100),
                 },
-                Children = { startTime, editor }
+                Children = { startTime, editor, upDown }
             };
         }
 
