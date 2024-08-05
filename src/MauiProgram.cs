@@ -1,8 +1,7 @@
 ﻿using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Markup;
 using Microsoft.Extensions.Logging;
-using SubtitleAlchemist.Controls;
-using SubtitleAlchemist.Controls.AudioVisualizerControl;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Main;
@@ -25,7 +24,7 @@ namespace SubtitleAlchemist
                 .UseMauiCommunityToolkit()
                 .UseMauiCommunityToolkitMediaElement()
                 .UseMauiCommunityToolkitMarkup()
-                .UseAudioVisualizer()
+                .UseSkiaSharp()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

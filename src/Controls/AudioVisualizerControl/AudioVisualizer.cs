@@ -493,38 +493,33 @@ public class AudioVisualizer : SKCanvasView
 
     private void SetMinAndMax()
     {
-        _wholeParagraphMinMilliseconds = 0;
-        _wholeParagraphMaxMilliseconds = double.MaxValue;
-        if (_subtitle != null && _mouseDownParagraph != null)
+        try
         {
-            if (_subtitle.Paragraphs == null)
+            _wholeParagraphMinMilliseconds = 0;
+            _wholeParagraphMaxMilliseconds = double.MaxValue;
+            if (_subtitle != null && _mouseDownParagraph != null)
             {
-            }
-
-            var nulls = _subtitle.Paragraphs.Where(p => p == null).ToList();
-            if (nulls.Count > 0)
-            {
-            }
-
-            var nullsStart = _subtitle.Paragraphs.Where(p => p.StartTime == null).ToList();
-            if (nullsStart.Count > 0)
-            {
-            }
-
-            var paragraphs = _subtitle.Paragraphs.OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
-            var curIdx = paragraphs.IndexOf(_mouseDownParagraph);
-            if (curIdx >= 0)
-            {
-                if (curIdx > 0)
+                var paragraphs = _subtitle.Paragraphs.ToList();
+                //TODO: use locking to access "_subtitle.Paragraphs"? // paragraphs = paragraphs.OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
+                var curIdx = paragraphs.IndexOf(_mouseDownParagraph);
+                if (curIdx >= 0)
                 {
-                    _wholeParagraphMinMilliseconds = paragraphs[curIdx - 1].EndTime.TotalMilliseconds + Configuration.Settings.General.MinimumMillisecondsBetweenLines;
-                }
+                    if (curIdx > 0)
+                    {
+                        _wholeParagraphMinMilliseconds = paragraphs[curIdx - 1].EndTime.TotalMilliseconds + Configuration.Settings.General.MinimumMillisecondsBetweenLines;
+                    }
 
-                if (curIdx < _subtitle.Paragraphs.Count - 1)
-                {
-                    _wholeParagraphMaxMilliseconds = paragraphs[curIdx + 1].StartTime.TotalMilliseconds - Configuration.Settings.General.MinimumMillisecondsBetweenLines;
+                    if (curIdx < _subtitle.Paragraphs.Count - 1)
+                    {
+                        _wholeParagraphMaxMilliseconds = paragraphs[curIdx + 1].StartTime.TotalMilliseconds - Configuration.Settings.General.MinimumMillisecondsBetweenLines;
+                    }
                 }
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 
@@ -687,7 +682,7 @@ public class AudioVisualizer : SKCanvasView
                 }
             }
         }
-        finally 
+        finally
         {
             _mouseDown = false;
             MouseStatus.MouseButton1 = false;
@@ -708,7 +703,7 @@ public class AudioVisualizer : SKCanvasView
             return;
         }
 
-        var x = (int) Math.Round(point.Value.X, MidpointRounding.AwayFromZero);
+        var x = (int)Math.Round(point.Value.X, MidpointRounding.AwayFromZero);
         var y = (int)Math.Round(point.Value.Y, MidpointRounding.AwayFromZero);
 
         var oldMouseMoveLastX = _mouseMoveLastX;
@@ -1185,7 +1180,8 @@ public class AudioVisualizer : SKCanvasView
 
     private bool IsParagraphBorderHit(int milliseconds, List<Paragraph> paragraphs)
     {
-        foreach (var p in paragraphs)
+        var list = paragraphs.ToList();
+        foreach (var p in list)
         {
             var hit = IsParagraphBorderHit(milliseconds, p);
             if (hit)
