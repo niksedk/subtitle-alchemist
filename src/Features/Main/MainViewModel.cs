@@ -6,7 +6,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
-using SubtitleAlchemist.Controls;
+using SharpHook;
+using SubtitleAlchemist.Controls.AudioVisualizerControl;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
@@ -19,8 +20,6 @@ using SubtitleAlchemist.Logic.Media;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Text;
-using SharpHook;
-using SubtitleAlchemist.Controls.AudioVisualizerControl;
 
 namespace SubtitleAlchemist.Features.Main
 {

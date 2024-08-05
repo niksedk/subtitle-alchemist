@@ -518,6 +518,7 @@ public class AudioVisualizer : SKCanvasView
         }
         catch (Exception e)
         {
+            //TODO: Fix multiple accesors to _subtitle.Paragraphs ???
             //Console.WriteLine(e);
             //throw;
         }

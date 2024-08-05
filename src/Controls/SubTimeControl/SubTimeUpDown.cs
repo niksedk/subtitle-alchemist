@@ -1,7 +1,12 @@
-﻿namespace SubtitleAlchemist.Controls.SubTimeControl;
+﻿using Microsoft.Maui.Controls.Shapes;
+using SubtitleAlchemist.Controls.UpDownControl;
 
-public partial class SubTimeUpDown : ContentView
+namespace SubtitleAlchemist.Controls.SubTimeControl;
+
+public class SubTimeUpDown : ContentView
 {
+    public bool UseShortFormat { get; set; }
+
     public static readonly BindableProperty ErrorColorProperty = BindableProperty.Create(
         nameof(ErrorColor), typeof(Color), typeof(SubTimeUpDown));
 
@@ -36,52 +41,59 @@ public partial class SubTimeUpDown : ContentView
         set => SetValue(TimeProperty, value);
     }
 
-    private Label _timeLabel;
-    private ImageButton _upButton;
-    private ImageButton _downButton;
+    private readonly Label _timeLabel;
+    private readonly UpDownView _updown;
 
     public SubTimeUpDown()
     {
-        var fileName = System.Reflection.Assembly.GetExecutingAssembly()?.Location;
-        var applicationPath = string.IsNullOrEmpty(fileName) ? string.Empty : Path.GetDirectoryName(fileName) ?? string.Empty;
-        var imagePath = Path.Combine(applicationPath, "Resources", "Images", "Buttons");
-        
         _timeLabel = new Label
         {
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center
         };
-         _timeLabel.SetBinding(Label.TextProperty, new Binding(nameof(DisplayText), source: this));
+        _timeLabel.SetBinding(Label.TextProperty, new Binding(nameof(DisplayText), source: this));
 
-        _upButton = new ImageButton
+        _updown = new UpDownView
         {
-            Source = ImageSource.FromFile(Path.Combine(imagePath, "Up.png")),
-            WidthRequest = 16,
-            HeightRequest = 16,
+            Background = (Color)Application.Current.Resources["BackgroundColor"],
+            TextColor = (Color)Application.Current.Resources["TextColor"],
         };
-        _upButton.Clicked += OnUpButtonClicked;
-
-        _downButton = new ImageButton
-        {
-            Source = ImageSource.FromFile(Path.Combine(imagePath, "Down.png")),
-            WidthRequest = 8,
-            HeightRequest = 8,
-        };
-        _downButton.Clicked += OnDownButtonClicked;
+        _updown.ValueChanged += OnUpDownValueChanged;
 
         var stackLayout = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
             Children =
             {
-                _downButton,
                 _timeLabel,
-                _upButton
+                _updown,
             }
         };
 
-        Content = stackLayout;
+        var border = new Border
+        {
+            Stroke = (Color)Application.Current.Resources["TextColor"], // change to blue when focused
+            Background = (Color)Application.Current.Resources["BackgroundColor"],
+            StrokeThickness = 1,
+            Padding = new Thickness(4, 1, 1, 0),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Start,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(2)
+            },
+            Content = stackLayout,
+        };
 
+        Content = border;
+
+        UpdateDisplayText();
+    }
+
+    private void OnUpDownValueChanged(object? sender, ValueChangedEventArgs e)
+    {
+        Time = TimeSpan.FromMilliseconds(e.NewValue);
         UpdateDisplayText();
     }
 
@@ -91,21 +103,20 @@ public partial class SubTimeUpDown : ContentView
         control.UpdateDisplayText();
     }
 
-    void OnUpButtonClicked(object sender, EventArgs e)
-    {
-        Time = Time.Add(TimeSpan.FromMinutes(1));
-    }
-
-    void OnDownButtonClicked(object sender, EventArgs e)
-    {
-        if (Time > TimeSpan.Zero)
-        {
-            Time = Time.Subtract(TimeSpan.FromMinutes(1));
-        }
-    }
-
     void UpdateDisplayText()
     {
-        DisplayText = Time.ToString(@"hh\:mm");
+        var newDisplayText = Time.ToString(@"hh\.mm\.ss\,fff");
+
+        if (UseShortFormat)
+        {
+            newDisplayText = newDisplayText.TrimStart('0', ':');
+            if (newDisplayText.Length == 0)
+            {
+                newDisplayText = "0";
+            }
+        }
+
+        var prefix = Time.TotalMilliseconds < 0 ? "-" : string.Empty;
+        DisplayText = prefix + newDisplayText;
     }
 }

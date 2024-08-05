@@ -600,15 +600,6 @@ namespace SubtitleAlchemist.Features.Main
             .Column(0)
             .Row(1);
 
-            var upDown = new UpDownView
-            {
-                Background = (Color)Application.Current.Resources["BackgroundColor"],
-                TextColor = (Color)Application.Current.Resources["TextColor"],
-
-            }
-            .Column(2)
-            .Row(1);
-
             var editor = new Editor { TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }
                 .Column(1).Bind("CurrentText")
                 .Row(1);
@@ -629,7 +620,7 @@ namespace SubtitleAlchemist.Features.Main
                     new(Star),
                     new(100),
                 },
-                Children = { startTime, editor, upDown }
+                Children = { startTime, editor }
             };
         }
 

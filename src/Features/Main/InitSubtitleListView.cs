@@ -100,7 +100,6 @@ namespace SubtitleAlchemist.Features.Main
             tapGestureRecognizer.SetBinding(TapGestureRecognizer.CommandParameterProperty, ".");
             grid.GestureRecognizers.Add(tapGestureRecognizer);
 
-
             return grid;
         }
 
