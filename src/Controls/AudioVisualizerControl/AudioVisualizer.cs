@@ -518,8 +518,8 @@ public class AudioVisualizer : SKCanvasView
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            //Console.WriteLine(e);
+            //throw;
         }
     }
 

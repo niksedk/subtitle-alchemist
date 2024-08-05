@@ -15,26 +15,6 @@ public static partial class CursorExtensions
 		ArgumentNullException.ThrowIfNull(mauiContext);
 		var view = (UIElement)visualElement.ToPlatform(mauiContext);
         view.ChangeCursor(InputCursor.CreateFromCoreCursor(new CoreCursor(GetCursor(cursor), 1)));
-
-        //view.PointerEntered += ViewOnPointerEntered;
-        //view.PointerExited += ViewOnPointerExited;
-
-  //      MainThread.BeginInvokeOnMainThread(() =>
-  //      {
-  //          view.ChangeCursor(InputCursor.CreateFromCoreCursor(new CoreCursor(GetCursor(cursor), 1)));
-		//	view.InvalidateArrange();
-  //      });
-
-
-  //      void ViewOnPointerExited(object sender, PointerRoutedEventArgs e)
-		//{
-		//	view.ChangeCursor(InputCursor.CreateFromCoreCursor(new CoreCursor(GetCursor(CursorIcon.Arrow), 1)));
-		//}
-
-  //      void ViewOnPointerEntered(object sender, PointerRoutedEventArgs e)
-  //      {
-  //          view.ChangeCursor(InputCursor.CreateFromCoreCursor(new CoreCursor(GetCursor(cursor), 1)));
-  //      }
 	}
 
     private static void ChangeCursor(this UIElement uiElement, InputCursor cursor)
