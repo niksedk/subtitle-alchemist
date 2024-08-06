@@ -287,8 +287,10 @@ namespace SubtitleAlchemist.Features.Main
             _stopping = true;
             _timer.Stop();
             _audioVisualizer.OnVideoPositionChanged -= AudioVisualizer_OnVideoPositionChanged;
-            SharpHookHandler.Dispose();
-            _timer.Dispose();
+            //SharpHookHandler.Dispose();
+            //_timer.Dispose();
+
+            Configuration.Settings.Save();
         }
 
         public void Loaded(MainPage mainPage)
@@ -448,10 +450,12 @@ namespace SubtitleAlchemist.Features.Main
                 return;
             }
 
+
+            _audioVisualizer.WavePeaks = null;
             VideoPlayer.Source = MediaSource.FromFile(videoFileName);
 
             var peakWaveFileName = WavePeakGenerator.GetPeakWaveFileName(videoFileName);
-            if (!File.Exists(peakWaveFileName))
+            if (!File.Exists(peakWaveFileName) )
             {
                 var tempWaveFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.wav");
                 var process = WaveFileExtractor.GetCommandLineProcess(videoFileName, -1, tempWaveFileName, Configuration.Settings.General.VlcWaveTranscodeSettings, out _);
@@ -463,11 +467,11 @@ namespace SubtitleAlchemist.Features.Main
                 {
                     using var waveFile = new WavePeakGenerator(tempWaveFileName);
                     waveFile.GeneratePeaks(0, peakWaveFileName);
-                }
 
-                var wavePeaks = WavePeakData.FromDisk(peakWaveFileName);
-                _audioVisualizer.WavePeaks = wavePeaks;
-                _audioVisualizer.InvalidateSurface();
+                    var wavePeaks = WavePeakData.FromDisk(peakWaveFileName);
+                    _audioVisualizer.WavePeaks = wavePeaks;
+                    _audioVisualizer.InvalidateSurface();
+                }
             }
             else
             {

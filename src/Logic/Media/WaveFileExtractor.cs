@@ -8,8 +8,6 @@ namespace SubtitleAlchemist.Logic.Media
         public static Process GetCommandLineProcess(string inputVideoFile, int audioTrackNumber, string outWaveFile, string encodeParamters, out string encoderName)
         {
             var settings = Configuration.Settings;
-            settings.General.FFmpegLocation = @"C:\git\subtitleedit\src\ui\bin\Debug\net48\ffmpeg\ffmpeg.exe";
-            settings.General.UseFFmpegForWaveExtraction = true;
 
             encoderName = "VLC";
             var parameters = "\"" + inputVideoFile + "\" -I dummy -vvv --no-random --no-repeat --no-loop --no-sout-video --audio-track-id=" + audioTrackNumber + " --sout=\"#transcode{acodec=s16l,channels=1,ab=128,audio-track-id=" + audioTrackNumber + "}:std{access=file,mux=wav,dst=" + outWaveFile + "}\" vlc://quit";
