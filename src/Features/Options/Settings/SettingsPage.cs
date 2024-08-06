@@ -14,7 +14,6 @@ public class SettingsPage : ContentPage
         VideoPlayer,
         WaveformSpectrogram,
         Tools,
-        AutoTranslate,
         Toolbar,
         Appearance,
         FileTypeAssociations,
@@ -29,10 +28,9 @@ public class SettingsPage : ContentPage
         vm.Pages.Add(PageNames.VideoPlayer, MakeVideoPlayerPage(vm));
         vm.Pages.Add(PageNames.WaveformSpectrogram, MakeWaveformSpectrogramPage(vm));
         vm.Pages.Add(PageNames.Tools, MakeToolsPage(vm));
-        //vm.Pages.Add(PageNames.AutoTranslate, MakeAutoTranslatePage(vm));
-        //vm.Pages.Add(PageNames.Toolbar, MakeToolbarPage(vm));
+        vm.Pages.Add(PageNames.Toolbar, MakeToolbarPage(vm));
         vm.Pages.Add(PageNames.Appearance, MakeAppearancePage(vm));
-        //vm.Pages.Add(PageNames.File type associations, MakeFileTypeAssociationsPage(vm));
+        vm.Pages.Add(PageNames.FileTypeAssociations, MakeFileTypeAssociationsPage(vm));
 
         BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
 
@@ -40,7 +38,7 @@ public class SettingsPage : ContentPage
 
         vm.Page = new Border
         {
-            Stroke = Color.FromArgb("#C49B33"),
+            Stroke = Color.FromArgb("#cccccc"),
             Background = (Color)Application.Current.Resources["BackgroundColor"],
             StrokeThickness = 1,
             Padding = new Thickness(1),
@@ -113,13 +111,8 @@ public class SettingsPage : ContentPage
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Auto-translate"
-                },
-                new Label
-                {
-                    Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
                     FontSize = 17, Text = "Toolbar"
-                },
+                }.TapGesture(vm.Tapped(PageNames.Toolbar)),
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
@@ -129,7 +122,7 @@ public class SettingsPage : ContentPage
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
                     FontSize = 17, Text = "File type associations"
-                },
+                }.TapGesture(vm.Tapped(PageNames.FileTypeAssociations)),
             }
         };
 
@@ -223,28 +216,11 @@ public class SettingsPage : ContentPage
 
     private View MakeSubtitleFormatsPage(SettingsViewModel vm)
     {
-        var stackLayout = new StackLayout
-        {
-            Padding = new Thickness(20),
-            Children =
-                {
-                    new Label
-                    {
-                        Text = "Select your favorite subtitle formats:",
-                        FontAttributes = FontAttributes.Bold,
-                        Margin = new Thickness(0, 0, 0, 10)
-                    },
-
-                }
-        };
-
-        return stackLayout;
-    }
-
-    private View MakeShortcutsPage(SettingsViewModel vm)
-    {
         var grid = new Grid
         {
+            Padding = new Thickness(20),
+            RowSpacing = 20,
+            ColumnSpacing = 10,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -255,19 +231,48 @@ public class SettingsPage : ContentPage
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Auto }
-            },
+                new ColumnDefinition { Width = GridLength.Star }
+            }
+        };
+
+        var titleLabel = new Label { Text = "Subtitle formats", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        grid.Add(titleLabel, 0, 0);
+        Grid.SetColumnSpan(titleLabel, 2);
+
+        grid.Add(new Label { Text = "Select your favorite subtitle formats", VerticalOptions = LayoutOptions.Center }, 0, 1);
+
+        return grid;
+    }
+
+    private View MakeShortcutsPage(SettingsViewModel vm)
+    {
+        var grid = new Grid
+        {
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
-            HorizontalOptions = LayoutOptions.Fill,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto }
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star }
+            }
         };
 
-        grid.Add(new Label { Text = "Search:", VerticalOptions = LayoutOptions.Center }, 0, 0);
-        grid.Add(new Entry { Placeholder = "Enter search text", HorizontalOptions = LayoutOptions.Start }, 1, 0);
+        var titleLabel = new Label { Text = "Shortcuts", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        grid.Add(titleLabel, 0, 0);
+        Grid.SetColumnSpan(titleLabel, 2);
 
-        grid.Add(new Label { Text = "Shortcuts:", VerticalOptions = LayoutOptions.Center }, 0, 1);
+        grid.Add(new Label { Text = "Search:", VerticalOptions = LayoutOptions.Center }, 0, 1);
+        grid.Add(new Entry { Placeholder = "Enter search text", HorizontalOptions = LayoutOptions.Start }, 1, 1);
+
+        grid.Add(new Label { Text = "Shortcuts:", VerticalOptions = LayoutOptions.Center }, 0, 2);
 
         return grid;
     }
@@ -299,7 +304,9 @@ public class SettingsPage : ContentPage
         };
 
         var titleLabel = new Label
-        { Text = "Syntax coloring settings", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        {
+            Text = "Syntax coloring ", FontAttributes = FontAttributes.Bold, FontSize = 18
+        };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
@@ -344,8 +351,7 @@ public class SettingsPage : ContentPage
             }
         };
 
-        var titleLabel = new Label
-            { Text = "Video player Settings", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        var titleLabel = new Label { Text = "Video player", FontAttributes = FontAttributes.Bold, FontSize = 18 };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
@@ -364,6 +370,9 @@ public class SettingsPage : ContentPage
     {
         var grid = new Grid
         {
+            Padding = new Thickness(20),
+            RowSpacing = 20,
+            ColumnSpacing = 10,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -374,18 +383,57 @@ public class SettingsPage : ContentPage
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Auto }
-            },
+                new ColumnDefinition { Width = GridLength.Star }
+            }
+        };
+
+        var titleLabel = new Label { Text = "Waveform/spectrogram", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        grid.Add(titleLabel, 0, 0);
+        Grid.SetColumnSpan(titleLabel, 2);
+
+        // FFmpeg Location
+        grid.Add(new Label { Text = "FFmpeg Location:", VerticalOptions = LayoutOptions.Center }, 0, 1);
+        grid.Add(new Entry { Placeholder = "Enter FFmpeg path", HorizontalOptions = LayoutOptions.Start }, 1, 1);
+
+        return grid;
+    }
+
+    private View MakeToolbarPage(SettingsViewModel vm)
+    {
+        var grid = new Grid
+        {
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
-            HorizontalOptions = LayoutOptions.Fill,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto }
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star }
+            }
         };
 
-        // FFmpeg Location
-        grid.Add(new Label { Text = "FFmpeg Location:", VerticalOptions = LayoutOptions.Center }, 0, 0);
-        grid.Add(new Entry { Placeholder = "Enter FFmpeg path", HorizontalOptions = LayoutOptions.Start }, 1, 0);
+        var titleLabel = new Label { Text = "Toolbar", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        grid.Add(titleLabel, 0, 0);
+        Grid.SetColumnSpan(titleLabel, 2);
+
+        grid.Add(new Label { Text = "Show \"File new\" icon" }, 0, 1);
+        shortDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(shortDurationSwitch, 1, 1);
+
+        grid.Add(new Label { Text = "Show \"File Save\" icon" }, 0, 2);
+        longDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(longDurationSwitch, 1, 2);
+
+        grid.Add(new Label { Text = "Show \"File Save as...\" icon" }, 0, 3);
+        longDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(longDurationSwitch, 1, 3);
 
         return grid;
     }
@@ -394,6 +442,9 @@ public class SettingsPage : ContentPage
     {
         var grid = new Grid
         {
+            Padding = new Thickness(20),
+            RowSpacing = 20,
+            ColumnSpacing = 10,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -404,14 +455,13 @@ public class SettingsPage : ContentPage
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Auto }
-            },
-            Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
-            HorizontalOptions = LayoutOptions.Fill,
+                new ColumnDefinition { Width = GridLength.Star }
+            }
         };
+
+        var titleLabel = new Label { Text = "Appearance", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        grid.Add(titleLabel, 0, 0);
+        Grid.SetColumnSpan(titleLabel, 2);
 
         // Theme
         grid.Add(new Label { Text = "Theme:", VerticalOptions = LayoutOptions.Center }, 0, 1);
@@ -420,6 +470,46 @@ public class SettingsPage : ContentPage
             ItemsSource = new List<string> { "Light", "Dark", "System Default" },
             HorizontalOptions = LayoutOptions.Start,
         }, 1, 1);
+
+        return grid;
+    }
+
+    private View MakeFileTypeAssociationsPage(SettingsViewModel vm)
+    {
+        var grid = new Grid
+        {
+            Padding = new Thickness(20),
+            RowSpacing = 20,
+            ColumnSpacing = 10,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto }
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star }
+            }
+        };
+
+        var titleLabel = new Label { Text = "File type associations", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        grid.Add(titleLabel, 0, 0);
+        Grid.SetColumnSpan(titleLabel, 2);
+
+        grid.Add(new Label { Text = "SubRip (.srt)" }, 0, 1);
+        shortDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(shortDurationSwitch, 1, 1);
+
+        grid.Add(new Label { Text = "Advanced Sub Station Alpha (.ass)" }, 0, 2);
+        longDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(longDurationSwitch, 1, 2);
+
+        grid.Add(new Label { Text = "EBU STL (.stl)" }, 0, 3);
+        longDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(longDurationSwitch, 1, 3);
 
         return grid;
     }
