@@ -2,5 +2,5 @@
 
 public interface IFfmpegDownloadService
 {
-    Task<byte[]> DownloadFfmpeg();
+    Task DownloadFfmpeg(string destinationFileName, IProgress<float>? progress, CancellationToken cancellationToken);
 }
