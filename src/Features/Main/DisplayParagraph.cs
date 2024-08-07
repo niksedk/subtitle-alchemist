@@ -6,6 +6,7 @@ namespace SubtitleAlchemist.Features.Main;
 public partial class DisplayParagraph : ObservableObject
 {
     public string Start => P.StartTime.ToDisplayString();
+
     public string End => P.EndTime.ToDisplayString();
     public string Duration => P.Duration.ToShortDisplayString();
 

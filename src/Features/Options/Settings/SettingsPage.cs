@@ -38,7 +38,7 @@ public class SettingsPage : ContentPage
 
         vm.Page = new Border
         {
-            Stroke = Color.FromArgb("#cccccc"),
+            Stroke = Color.FromArgb("#cccccc"), //TODO: Move to Theme resource
             Background = (Color)Application.Current.Resources["BackgroundColor"],
             StrokeThickness = 1,
             Padding = new Thickness(1),
@@ -76,52 +76,62 @@ public class SettingsPage : ContentPage
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "General"
+                    FontSize = 17, Text = "General",
+                    TextColor = (Color)Application.Current.Resources["TextColor"],
                 }.TapGesture(vm.Tapped(PageNames.General)),
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Subtitle formats"
+                    FontSize = 17, Text = "Subtitle formats",
+                    TextColor = (Color)Application.Current.Resources["TextColor"],
                 }.TapGesture(vm.Tapped(PageNames.SubtitleFormats)),
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Shortcuts"
+                    FontSize = 17, Text = "Shortcuts",
+                    TextColor = (Color)Application.Current.Resources["TextColor"],
                 }.TapGesture(vm.Tapped(PageNames.Shortcuts)),
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Syntax coloring"
+                    FontSize = 17, Text = "Syntax coloring",
+                    TextColor = (Color)Application.Current.Resources["TextColor"],
                 }.TapGesture(vm.Tapped(PageNames.SyntaxColoring)),
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Video player"
+                    FontSize = 17, Text = "Video player",
+                    TextColor = (Color)Application.Current.Resources["TextColor"],
                 }.TapGesture(vm.Tapped(PageNames.VideoPlayer)),
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Waveform/spectrogram"
+                    FontSize = 17, Text = "Waveform/spectrogram",
+                    TextColor = (Color)Application.Current.Resources["TextColor"],
                 }.TapGesture(vm.Tapped(PageNames.WaveformSpectrogram)),
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Tools"
+                    FontSize = 17, Text = "Tools",                    
+                    TextColor = (Color)Application.Current.Resources["TextColor"],
                 }.TapGesture(vm.Tapped(PageNames.Tools)),
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Toolbar"
+                    FontSize = 17, Text = "Toolbar",
+                    TextColor = (Color)Application.Current.Resources["TextColor"],
                 }.TapGesture(vm.Tapped(PageNames.Toolbar)),
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Appearance"
+                    FontSize = 17, Text = "Appearance",
+                    TextColor = (Color)Application.Current.Resources["TextColor"],
                 }.TapGesture(vm.Tapped(PageNames.Appearance)),
                 new Label
                 {
                     Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "File type associations"
+                    FontSize = 17, Text = "File type associations",
+                    TextColor = (Color)Application.Current.Resources["TextColor"],
                 }.TapGesture(vm.Tapped(PageNames.FileTypeAssociations)),
             }
         };
@@ -154,17 +164,37 @@ public class SettingsPage : ContentPage
         };
 
         var titleLabel = new Label
-            { Text = "Tools settings", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        {
+            Text = "Tools settings", 
+            FontAttributes = FontAttributes.Bold, 
+            FontSize = 18,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
         var autoBreakLabel = new Label
-            { Text = "Auto break settings", FontAttributes = FontAttributes.Bold, FontSize = 16 };
+        {
+            Text = "Auto break settings", 
+            FontAttributes = FontAttributes.Bold, 
+            FontSize = 16,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
         grid.Add(autoBreakLabel, 0, 1);
         Grid.SetColumnSpan(autoBreakLabel, 2);
 
-        grid.Add(new Label { Text = "Break early for dialogs:", VerticalOptions = LayoutOptions.Center }, 0, 2);
-        grid.Add(new Switch { HorizontalOptions = LayoutOptions.Start }, 1, 2);
+        grid.Add(new Label
+        {
+            Text = "Break early for dialogs:", 
+            VerticalOptions = LayoutOptions.Center,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 2);
+        grid.Add(new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            OnColor = (Color)Application.Current.Resources["TextColor"],
+            ThumbColor = Colors.DarkBlue,
+        }, 1, 2);
 
         return grid;
     }
@@ -193,22 +223,43 @@ public class SettingsPage : ContentPage
         };
 
         var titleLabel = new Label
-            { Text = "General", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        {
+            Text = "General", 
+            FontAttributes = FontAttributes.Bold, 
+            FontSize = 18,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
 
         // Remember Recent Files
-        grid.Add(new Label { Text = "Remember Recent Files:", VerticalOptions = LayoutOptions.Center }, 0, 1);
-        grid.Add(new Switch { HorizontalOptions = LayoutOptions.Start }, 1, 1);
+        grid.Add(new Label
+        {
+            Text = "Remember Recent Files:", 
+            VerticalOptions = LayoutOptions.Center,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 1);
+        grid.Add(new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            OnColor = (Color)Application.Current.Resources["TextColor"],
+            ThumbColor = Colors.DarkBlue,
+        }, 1, 1);
 
         // Single Line Max Length
-        grid.Add(new Label { Text = "Single Line Max Length:", VerticalOptions = LayoutOptions.Center }, 0, 2);
+        grid.Add(new Label
+        {
+            Text = "Single Line Max Length:", 
+            VerticalOptions = LayoutOptions.Center,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 2);
         grid.Add(new Entry
         {
             Keyboard = Keyboard.Numeric,
             Placeholder = "Enter max length",
             HorizontalOptions = LayoutOptions.Start,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
         }, 1, 2);
 
         return grid;
@@ -235,11 +286,22 @@ public class SettingsPage : ContentPage
             }
         };
 
-        var titleLabel = new Label { Text = "Subtitle formats", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        var titleLabel = new Label
+        {
+            Text = "Subtitle formats", 
+            FontAttributes = FontAttributes.Bold, 
+            FontSize = 18,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
-        grid.Add(new Label { Text = "Select your favorite subtitle formats", VerticalOptions = LayoutOptions.Center }, 0, 1);
+        grid.Add(new Label
+        {
+            Text = "Select your favorite subtitle formats", 
+            VerticalOptions = LayoutOptions.Center,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 1);
 
         return grid;
     }
@@ -265,14 +327,35 @@ public class SettingsPage : ContentPage
             }
         };
 
-        var titleLabel = new Label { Text = "Shortcuts", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        var titleLabel = new Label
+        {
+            Text = "Shortcuts", 
+            FontAttributes = FontAttributes.Bold, 
+            FontSize = 18,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
-        grid.Add(new Label { Text = "Search:", VerticalOptions = LayoutOptions.Center }, 0, 1);
-        grid.Add(new Entry { Placeholder = "Enter search text", HorizontalOptions = LayoutOptions.Start }, 1, 1);
+        grid.Add(new Label
+        {
+            Text = "Search:", 
+            VerticalOptions = LayoutOptions.Center,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 1);
+        grid.Add(new Entry
+        {
+            Placeholder = "Enter search text", 
+            HorizontalOptions = LayoutOptions.Start,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 1, 1);
 
-        grid.Add(new Label { Text = "Shortcuts:", VerticalOptions = LayoutOptions.Center }, 0, 2);
+        grid.Add(new Label
+        {
+            Text = "Shortcuts:", 
+            VerticalOptions = LayoutOptions.Center,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 2);
 
         return grid;
     }
@@ -305,25 +388,65 @@ public class SettingsPage : ContentPage
 
         var titleLabel = new Label
         {
-            Text = "Syntax coloring ", FontAttributes = FontAttributes.Bold, FontSize = 18
+            Text = "Syntax coloring ", 
+            FontAttributes = FontAttributes.Bold, 
+            FontSize = 18,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
         };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
-        grid.Add(new Label { Text = "Color if duration too short" }, 0, 1);
-        shortDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(new Label
+        {
+            Text = "Color if duration too short",
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 1);
+        shortDurationSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            OnColor = (Color)Application.Current.Resources["TextColor"],
+            ThumbColor = Colors.DarkBlue,
+        };
         grid.Add(shortDurationSwitch, 1, 1);
 
-        grid.Add(new Label { Text = "Color if duration too long" }, 0, 2);
-        longDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(new Label
+        {
+            Text = "Color if duration too long",
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 2);
+        longDurationSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            OnColor = (Color)Application.Current.Resources["TextColor"],
+            ThumbColor = Colors.DarkBlue,
+        };
         grid.Add(longDurationSwitch, 1, 2);
 
-        grid.Add(new Label { Text = "Color if text too long" }, 0, 3);
-        var colorStack = new StackLayout { Orientation = StackOrientation.Horizontal, HorizontalOptions = LayoutOptions.Start };
-        textTooLongColorButton = new Button { Text = "Choose Color", FontSize = 12, Padding = new Thickness(5) };
-        // textTooLongColorButton.Clicked += OnChooseColorClicked;
+        grid.Add(new Label
+        {
+            Text = "Color if text too long",
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 3);
+        var colorStack = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal, 
+            HorizontalOptions = LayoutOptions.Start,
+        };
+        textTooLongColorButton = new Button
+        {
+            Text = "Choose Color", 
+            FontSize = 12, 
+            Padding = new Thickness(5),
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
+        
         colorStack.Children.Add(textTooLongColorButton);
-        textTooLongColorPreview = new BoxView { WidthRequest = 30, HeightRequest = 30, Color = textTooLongColor };
+        textTooLongColorPreview = new BoxView
+        {
+            WidthRequest = 30, 
+            HeightRequest = 30, 
+            Color = textTooLongColor,
+        };
         colorStack.Children.Add(textTooLongColorPreview);
         grid.Add(colorStack, 1, 3);
 
@@ -351,15 +474,26 @@ public class SettingsPage : ContentPage
             }
         };
 
-        var titleLabel = new Label { Text = "Video player", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        var titleLabel = new Label
+        {
+            Text = "Video player", 
+            FontAttributes = FontAttributes.Bold, 
+            FontSize = 18,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
-        grid.Add(new Label { Text = "Video player" }, 0, 1);
+        grid.Add(new Label
+        {
+            Text = "Video player",
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 1);
         grid.Add(new Picker
         {
             ItemsSource = new List<string> { "mpv", "vlc", "System Default" },
             HorizontalOptions = LayoutOptions.Start,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
         }, 1, 1);
 
         return grid;
@@ -387,13 +521,29 @@ public class SettingsPage : ContentPage
             }
         };
 
-        var titleLabel = new Label { Text = "Waveform/spectrogram", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        var titleLabel = new Label
+        {
+            Text = "Waveform/spectrogram", 
+            FontAttributes = FontAttributes.Bold, 
+            FontSize = 18,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
         // FFmpeg Location
-        grid.Add(new Label { Text = "FFmpeg Location:", VerticalOptions = LayoutOptions.Center }, 0, 1);
-        grid.Add(new Entry { Placeholder = "Enter FFmpeg path", HorizontalOptions = LayoutOptions.Start }, 1, 1);
+        grid.Add(new Label
+        {
+            Text = "FFmpeg Location:", 
+            VerticalOptions = LayoutOptions.Center,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 1);
+        grid.Add(new Entry
+        {
+            Placeholder = "Enter FFmpeg path", 
+            HorizontalOptions = LayoutOptions.Start,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 1, 1);
 
         return grid;
     }
@@ -419,20 +569,53 @@ public class SettingsPage : ContentPage
             }
         };
 
-        var titleLabel = new Label { Text = "Toolbar", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        var titleLabel = new Label
+        {
+            Text = "Toolbar", 
+            FontAttributes = FontAttributes.Bold, 
+            FontSize = 18,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
-        grid.Add(new Label { Text = "Show \"File new\" icon" }, 0, 1);
-        shortDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(new Label
+        {
+            Text = "Show \"File new\" icon",
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 1);
+        shortDurationSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            OnColor = (Color)Application.Current.Resources["TextColor"],
+            ThumbColor = Colors.DarkBlue,
+        };
         grid.Add(shortDurationSwitch, 1, 1);
 
-        grid.Add(new Label { Text = "Show \"File Save\" icon" }, 0, 2);
-        longDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(new Label
+        {
+            Text = "Show \"File Save\" icon",
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 2);
+        longDurationSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            OnColor = (Color)Application.Current.Resources["TextColor"],
+            ThumbColor = Colors.DarkBlue,
+        };
         grid.Add(longDurationSwitch, 1, 2);
 
-        grid.Add(new Label { Text = "Show \"File Save as...\" icon" }, 0, 3);
-        longDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(new Label
+        {
+            Text = "Show \"File Save as...\" icon",
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 3);
+        longDurationSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            OnColor = (Color)Application.Current.Resources["TextColor"],
+            ThumbColor = Colors.DarkBlue,
+        };
         grid.Add(longDurationSwitch, 1, 3);
 
         return grid;
@@ -459,16 +642,27 @@ public class SettingsPage : ContentPage
             }
         };
 
-        var titleLabel = new Label { Text = "Appearance", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        var titleLabel = new Label
+        {
+            Text = "Appearance", 
+            FontAttributes = FontAttributes.Bold, 
+            FontSize = 18,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
         // Theme
-        grid.Add(new Label { Text = "Theme:", VerticalOptions = LayoutOptions.Center }, 0, 1);
+        grid.Add(new Label
+        {
+            Text = "Theme:", VerticalOptions = LayoutOptions.Center,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 1);
         grid.Add(new Picker
         {
             ItemsSource = new List<string> { "Light", "Dark", "System Default" },
             HorizontalOptions = LayoutOptions.Start,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
         }, 1, 1);
 
         return grid;
@@ -495,20 +689,54 @@ public class SettingsPage : ContentPage
             }
         };
 
-        var titleLabel = new Label { Text = "File type associations", FontAttributes = FontAttributes.Bold, FontSize = 18 };
+        var titleLabel = new Label
+        {
+            Text = "File type associations", 
+            FontAttributes = FontAttributes.Bold, 
+            FontSize = 18,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
-        grid.Add(new Label { Text = "SubRip (.srt)" }, 0, 1);
-        shortDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(new Label
+        {
+            Text = "SubRip (.srt)",
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 1);
+        shortDurationSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            OnColor = (Color)Application.Current.Resources["TextColor"],
+            ThumbColor = Colors.DarkBlue,
+        };
         grid.Add(shortDurationSwitch, 1, 1);
 
-        grid.Add(new Label { Text = "Advanced Sub Station Alpha (.ass)" }, 0, 2);
-        longDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(new Label
+        {
+            Text = "Advanced Sub Station Alpha (.ass)",
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 2);
+        longDurationSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            OnColor = (Color)Application.Current.Resources["TextColor"],
+            ThumbColor = Colors.DarkBlue,
+
+        };
         grid.Add(longDurationSwitch, 1, 2);
 
-        grid.Add(new Label { Text = "EBU STL (.stl)" }, 0, 3);
-        longDurationSwitch = new Switch { HorizontalOptions = LayoutOptions.Start };
+        grid.Add(new Label
+        {
+            Text = "EBU STL (.stl)",
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        }, 0, 3);
+        longDurationSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            OnColor = (Color)Application.Current.Resources["TextColor"],
+            ThumbColor = Colors.DarkBlue,
+        };
         grid.Add(longDurationSwitch, 1, 3);
 
         return grid;

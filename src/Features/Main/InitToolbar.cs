@@ -28,6 +28,7 @@ namespace SubtitleAlchemist.Features.Main
 
             var stackLayout = new StackLayout
             {
+                BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
                 Orientation = StackOrientation.Horizontal,
                 Children =
                 {

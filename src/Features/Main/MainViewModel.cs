@@ -20,6 +20,7 @@ using SubtitleAlchemist.Logic.Media;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Text;
+using SubtitleAlchemist.Controls.SubTimeControl;
 
 namespace SubtitleAlchemist.Features.Main
 {
@@ -57,6 +58,9 @@ namespace SubtitleAlchemist.Features.Main
 
         [ObservableProperty]
         private string _currentText;
+
+        [ObservableProperty]
+        private string _currentStart;
 
         private DisplayParagraph? _currentParagraph;
 
@@ -96,6 +100,7 @@ namespace SubtitleAlchemist.Features.Main
             _subtitle = new Subtitle();
             _paragraphs = new ObservableCollection<DisplayParagraph>();
             _currentText = string.Empty;
+            _currentStart = "00.00.00,000";
             _audioVisualizer = new AudioVisualizer();
             ListViewAndEditBox = new Grid();
 
@@ -262,6 +267,7 @@ namespace SubtitleAlchemist.Features.Main
             paragraph.BackgroundColor = Colors.DarkGreen;
             _currentParagraph = paragraph;
             CurrentText = paragraph.Text;
+            CurrentStart = paragraph.Start;
         }
 
         private void AudioVisualizer_OnDoubleTapped(object sender, AudioVisualizer.PositionEventArgs e)
@@ -363,6 +369,7 @@ namespace SubtitleAlchemist.Features.Main
             Paragraphs = new ObservableCollection<DisplayParagraph>();
             _currentParagraph = null;
             CurrentText = string.Empty;
+            CurrentStart = "00.00.00,000";
             if (VideoPlayer != null)
             {
                 VideoPlayer.Source = null;
@@ -546,6 +553,7 @@ namespace SubtitleAlchemist.Features.Main
                     if (first)
                     {
                         CurrentText = paragraph.Text;
+                        CurrentStart = paragraph.Start;
                         _currentParagraph = paragraph;
                         first = false;
                     }
@@ -635,6 +643,22 @@ namespace SubtitleAlchemist.Features.Main
                 _currentParagraph.P.Text = e.NewTextValue;
             }
         }
+
+        public void CurrentStartChanged(object? sender, ValueChangedEventArgs e)
+        {
+            if (_updating)
+            {
+                return;
+            }
+
+            var startText = SubTimeUpDown.ToDisplayText(TimeSpan.FromMilliseconds(e.NewValue), false);
+            if (_currentParagraph != null && startText != _currentParagraph.Start)
+            {
+                _currentParagraph.P.StartTime = new TimeCode(e.NewValue);
+                CurrentStart = startText;
+            }
+        }
+
 
         [RelayCommand]
         private async Task DeleteSelectedLines()

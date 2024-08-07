@@ -17,6 +17,8 @@ public class SubTimeUpDown : ContentView
         BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(SubTimeUpDown), TimeSpan.Zero,
             propertyChanged: OnTimeChanged);
 
+    public event EventHandler<ValueChangedEventArgs>? ValueChanged;
+
     /// <summary>
     /// The Color used to display the time code when an error occurs.
     /// </summary>
@@ -95,6 +97,7 @@ public class SubTimeUpDown : ContentView
     {
         Time = TimeSpan.FromMilliseconds(e.NewValue);
         UpdateDisplayText();
+        ValueChanged?.Invoke(this, e);
     }
 
     static void OnTimeChanged(BindableObject bindable, object oldValue, object newValue)
@@ -103,11 +106,11 @@ public class SubTimeUpDown : ContentView
         control.UpdateDisplayText();
     }
 
-    void UpdateDisplayText()
+    public static string ToDisplayText(TimeSpan time, bool useShortFormat)
     {
-        var newDisplayText = Time.ToString(@"hh\.mm\.ss\,fff");
+        var newDisplayText = time.ToString(@"hh\.mm\.ss\,fff");
 
-        if (UseShortFormat)
+        if (useShortFormat)
         {
             newDisplayText = newDisplayText.TrimStart('0', ':');
             if (newDisplayText.Length == 0)
@@ -116,7 +119,12 @@ public class SubTimeUpDown : ContentView
             }
         }
 
-        var prefix = Time.TotalMilliseconds < 0 ? "-" : string.Empty;
-        DisplayText = prefix + newDisplayText;
+        var prefix = time.TotalMilliseconds < 0 ? "-" : string.Empty;
+        return prefix + newDisplayText;
+    }
+
+    private void UpdateDisplayText()
+    {
+        DisplayText = ToDisplayText(Time, UseShortFormat);
     }
 }

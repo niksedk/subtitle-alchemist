@@ -16,7 +16,7 @@ public class MainPage : ContentPage
         if (mergedDictionaries != null)
         {
             //  mergedDictionaries.Clear(); //TODO: remove default styles!?
-            if (true)
+            if (true) //Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme)
             {
                 var darkTheme = new ResourceDictionary
                 {
@@ -38,6 +38,8 @@ public class MainPage : ContentPage
 
         BindingContext = _viewModel;
         _viewModel.MainPage = this;
+        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
+        
 
         InitMenuBar.CreateMenuBar(this, _viewModel);
 
