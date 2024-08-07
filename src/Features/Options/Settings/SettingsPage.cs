@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Markup;
+using SubtitleAlchemist.Controls.ColorPickerControl;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
@@ -664,6 +665,22 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             TextColor = (Color)Application.Current.Resources["TextColor"],
         }, 1, 1);
+
+
+        var selectedColorRectangle = new SkiaSharp.SKRect(10, 10, 30 , 22);
+        var brightnessRectangle = new SkiaSharp.SKRect(10, 25, 30, 50);
+        var colorRectangle = new SkiaSharp.SKRect(10, 10, 400, 300);
+
+        // Create the new ColorWheel class, indicating
+        // the locations of the color wheel itself, the
+        // brightness area, and the position of the selected color.
+        var colorPicker = new ColorPickerView();
+        colorPicker.WidthRequest = 700;
+        colorPicker.HeightRequest = 700;
+
+
+        grid.Add(colorPicker, 0, 2);
+        Grid.SetColumnSpan(colorPicker, 2);
 
         return grid;
     }
