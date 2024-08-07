@@ -55,10 +55,10 @@ namespace SubtitleAlchemist.Controls.UpDownControl
             _timerCount++;
             if (_timerCount > 20) // increase speed after 20 ticks
             {
-                _timer.Interval = 15; // faster speed
+                _timer.Interval = 10; // faster speed
                 ButtonsPressed();
             }
-            else  // starter repeating after first tick
+            else // start repeating after first tick
             {
                 _timer.Interval = 75; // start repeat speed
                 ButtonsPressed();
