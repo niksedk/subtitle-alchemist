@@ -592,17 +592,15 @@ namespace SubtitleAlchemist.Features.Main
         private static Grid MakeDefaultListViewAndEditBox(MainViewModel vm)
         {
             var startTime = new SubTimeUpDown
-                {
-                    //Background = (Color)Application.Current.Resources["BackgroundColor"],
-                    DisplayText = "00:00:00,000",
-                    Margin = 0,
-                }
-                .Column(0)
-                .Row(1);
-           // .Bind("CurrentStart");
+            {
+                DisplayText = "00:00:00,000",
+                Margin = 0,
+            }
+            .Column(0)
+            .Row(1);
             startTime.BindingContext = vm;
             startTime.ValueChanged += vm.CurrentStartChanged;
-            startTime.Bind(SubTimeUpDown.DisplayTextProperty, "CurrentStart");
+            startTime.Bind(SubTimeUpDown.DisplayTextProperty, nameof(vm.CurrentStart), BindingMode.TwoWay);
 
             var editor = new Editor
                 {

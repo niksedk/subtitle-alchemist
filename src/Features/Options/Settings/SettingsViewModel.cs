@@ -16,7 +16,6 @@ public partial class SettingsViewModel
         Theme = "Dark";
     }
 
-    //[RelayCommand]
     public Action Tapped(PageNames pageName)
     {
         return async() =>
