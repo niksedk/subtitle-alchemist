@@ -70,77 +70,47 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
         };
 
-        var stackLayout = new VerticalStackLayout
+        vm.LeftMenu = new VerticalStackLayout
         {
             Children =
             {
-                new Label
-                {
-                    Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "General",
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                }.TapGesture(vm.Tapped(PageNames.General)),
-                new Label
-                {
-                    Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Subtitle formats",
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                }.TapGesture(vm.Tapped(PageNames.SubtitleFormats)),
-                new Label
-                {
-                    Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Shortcuts",
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                }.TapGesture(vm.Tapped(PageNames.Shortcuts)),
-                new Label
-                {
-                    Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Syntax coloring",
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                }.TapGesture(vm.Tapped(PageNames.SyntaxColoring)),
-                new Label
-                {
-                    Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Video player",
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                }.TapGesture(vm.Tapped(PageNames.VideoPlayer)),
-                new Label
-                {
-                    Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Waveform/spectrogram",
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                }.TapGesture(vm.Tapped(PageNames.WaveformSpectrogram)),
-                new Label
-                {
-                    Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Tools",                    
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                }.TapGesture(vm.Tapped(PageNames.Tools)),
-                new Label
-                {
-                    Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Toolbar",
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                }.TapGesture(vm.Tapped(PageNames.Toolbar)),
-                new Label
-                {
-                    Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "Appearance",
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                }.TapGesture(vm.Tapped(PageNames.Appearance)),
-                new Label
-                {
-                    Margin = 5, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Center,
-                    FontSize = 17, Text = "File type associations",
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                }.TapGesture(vm.Tapped(PageNames.FileTypeAssociations)),
+                MakeLeftMenuItem(vm, PageNames.General, "General"),
+                MakeLeftMenuItem(vm, PageNames.SubtitleFormats, "Subtitle formats"),
+                MakeLeftMenuItem(vm, PageNames.Shortcuts, "Shortcuts"),
+                MakeLeftMenuItem(vm, PageNames.SyntaxColoring, "Syntax coloring"),
+                MakeLeftMenuItem(vm, PageNames.VideoPlayer, "Video player"),
+                MakeLeftMenuItem(vm, PageNames.WaveformSpectrogram, "Waveform/spectrogram"),
+                MakeLeftMenuItem(vm, PageNames.Tools, "Tools"),
+                MakeLeftMenuItem(vm, PageNames.Toolbar, "Toolbar"),
+                MakeLeftMenuItem(vm, PageNames.Appearance, "Appearance"),
+                MakeLeftMenuItem(vm, PageNames.FileTypeAssociations, "File type associations"),
             }
         };
 
-        grid.Add(stackLayout, 0, 0);
+        grid.Add(vm.LeftMenu, 0, 0);
         grid.Add(vm.Page, 1, 0);
 
         Content = grid;
+    }
+
+    private IView MakeLeftMenuItem(SettingsViewModel vm, PageNames pageName, string text)
+    {
+        var label = new Label
+        {
+            Margin = 5,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            FontSize = 17,
+            Text = text,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+            ClassId = pageName.ToString(),
+        };
+
+        var tapGesture = new TapGestureRecognizer();
+        tapGesture.Tapped += (sender, e) => vm.Tapped(sender, e, pageName);
+        label.GestureRecognizers.Add(tapGesture);
+
+        return label;
     }
 
     private View MakeToolsPage(SettingsViewModel vm)
@@ -194,7 +164,6 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             OnColor = (Color)Application.Current.Resources["TextColor"],
-            ThumbColor = Colors.DarkBlue,
         }, 1, 2);
 
         return grid;
@@ -245,7 +214,6 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             OnColor = (Color)Application.Current.Resources["TextColor"],
-            ThumbColor = Colors.DarkBlue,
         }, 1, 1);
 
         // Single Line Max Length
@@ -406,7 +374,6 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             OnColor = (Color)Application.Current.Resources["TextColor"],
-            ThumbColor = Colors.DarkBlue,
         };
         grid.Add(shortDurationSwitch, 1, 1);
 
@@ -419,7 +386,6 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             OnColor = (Color)Application.Current.Resources["TextColor"],
-            ThumbColor = Colors.DarkBlue,
         };
         grid.Add(longDurationSwitch, 1, 2);
 
@@ -589,7 +555,6 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             OnColor = (Color)Application.Current.Resources["TextColor"],
-            ThumbColor = Colors.DarkBlue,
         };
         grid.Add(shortDurationSwitch, 1, 1);
 
@@ -602,7 +567,6 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             OnColor = (Color)Application.Current.Resources["TextColor"],
-            ThumbColor = Colors.DarkBlue,
         };
         grid.Add(longDurationSwitch, 1, 2);
 
@@ -615,7 +579,6 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             OnColor = (Color)Application.Current.Resources["TextColor"],
-            ThumbColor = Colors.DarkBlue,
         };
         grid.Add(longDurationSwitch, 1, 3);
 
@@ -719,7 +682,6 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             OnColor = (Color)Application.Current.Resources["TextColor"],
-            ThumbColor = Colors.DarkBlue,
         };
         grid.Add(shortDurationSwitch, 1, 1);
 
@@ -732,7 +694,6 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             OnColor = (Color)Application.Current.Resources["TextColor"],
-            ThumbColor = Colors.DarkBlue,
 
         };
         grid.Add(longDurationSwitch, 1, 2);
@@ -746,7 +707,6 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             OnColor = (Color)Application.Current.Resources["TextColor"],
-            ThumbColor = Colors.DarkBlue,
         };
         grid.Add(longDurationSwitch, 1, 3);
 

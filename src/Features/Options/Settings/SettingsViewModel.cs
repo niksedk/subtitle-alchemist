@@ -8,6 +8,7 @@ public partial class SettingsViewModel
     public string Theme { get; set; }
     public Dictionary<PageNames, View> Pages { get; set; }
     public Border Page { get; set; }
+    public VerticalStackLayout LeftMenu { get; set; }
 
     public SettingsViewModel()
     {
@@ -16,19 +17,31 @@ public partial class SettingsViewModel
         Theme = "Dark";
     }
 
-    public Action Tapped(PageNames pageName)
+    public async Task Tapped(object? sender, TappedEventArgs e, PageNames pageName)
     {
-        return async() =>
+        if (Page.Content != null)
         {
-            if (Page.Content != null)
+            await Page.Content.FadeTo(0, 200);
+        }
+
+        Page.Content = Pages[pageName];
+        await Page.Content.FadeTo(0, 0);
+
+        foreach (var child in LeftMenu.Children)
+        {
+            if (child is Label label)
             {
-                await Page.Content.FadeTo(0, 200);
+                if (label.ClassId == pageName.ToString())
+                {
+                    label.TextColor = Colors.BlueViolet;
+                }
+                else
+                {
+                    label.TextColor = (Color)Application.Current.Resources["TextColor"];
+                }
             }
+        }
 
-            Page.Content = Pages[pageName];
-
-            await Page.Content.FadeTo(0, 0);
-            await Page.Content.FadeTo(1, 200);
-        };
+        await Page.Content.FadeTo(1, 200);
     }
 }
