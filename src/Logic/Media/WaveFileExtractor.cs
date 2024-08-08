@@ -26,7 +26,7 @@ namespace SubtitleAlchemist.Logic.Media
                 //exeFilePath = Logic.VideoPlayers.LibVlcDynamic.GetVlcPath("vlc.exe");
                 //if (!File.Exists(exeFilePath))
                 {
-                    if (settings.General.UseFFmpegForWaveExtraction && File.Exists(settings.General.FFmpegLocation))
+                    if (File.Exists(settings.General.FFmpegLocation))
                     {
                         // We will run FFmpeg
                     }

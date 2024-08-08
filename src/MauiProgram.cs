@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Markup;
 using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
+using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Main;
@@ -45,6 +46,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<AboutPopup, AboutModel>();
             builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerModel>();
             builder.Services.AddTransientPopup<DownloadFfmpegPopup, DownloadFfmpegModel>();
+            builder.Services.AddTransientPopup<ColorPickerPopup, ColorPickerPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
 

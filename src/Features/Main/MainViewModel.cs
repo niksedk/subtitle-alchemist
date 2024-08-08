@@ -260,7 +260,7 @@ namespace SubtitleAlchemist.Features.Main
             foreach (var item in Paragraphs)
             {
                 item.IsSelected = false;
-                item.BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"]; 
+                item.BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
             }
 
             paragraph.IsSelected = true;
@@ -457,27 +457,33 @@ namespace SubtitleAlchemist.Features.Main
                 return;
             }
 
-
             _audioVisualizer.WavePeaks = null;
             VideoPlayer.Source = MediaSource.FromFile(videoFileName);
 
             var peakWaveFileName = WavePeakGenerator.GetPeakWaveFileName(videoFileName);
-            if (!File.Exists(peakWaveFileName) )
+            if (!File.Exists(peakWaveFileName))
             {
-                var tempWaveFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.wav");
-                var process = WaveFileExtractor.GetCommandLineProcess(videoFileName, -1, tempWaveFileName, Configuration.Settings.General.VlcWaveTranscodeSettings, out _);
-                process.Start();
-                var token = new CancellationTokenSource().Token;
-                process.WaitForExitAsync(token);
-
-                if (File.Exists(tempWaveFileName))
+                if (FfmpegHelper.IsFfmpegInstalled())
                 {
-                    using var waveFile = new WavePeakGenerator(tempWaveFileName);
-                    waveFile.GeneratePeaks(0, peakWaveFileName);
+                    var tempWaveFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.wav");
+                    var process = WaveFileExtractor.GetCommandLineProcess(videoFileName, -1, tempWaveFileName, Configuration.Settings.General.VlcWaveTranscodeSettings, out _);
+                    process.Start();
+                    var token = new CancellationTokenSource().Token;
+                    process.WaitForExitAsync(token);
 
-                    var wavePeaks = WavePeakData.FromDisk(peakWaveFileName);
-                    _audioVisualizer.WavePeaks = wavePeaks;
-                    _audioVisualizer.InvalidateSurface();
+                    if (File.Exists(tempWaveFileName))
+                    {
+                        using var waveFile = new WavePeakGenerator(tempWaveFileName);
+                        waveFile.GeneratePeaks(0, peakWaveFileName);
+
+                        var wavePeaks = WavePeakData.FromDisk(peakWaveFileName);
+                        _audioVisualizer.WavePeaks = wavePeaks;
+                        _audioVisualizer.InvalidateSurface();
+                    }
+                }
+                else
+                {
+                    _audioVisualizer.WavePeaks = null;
                 }
             }
             else
@@ -611,7 +617,12 @@ namespace SubtitleAlchemist.Features.Main
 
         private async Task<bool> RequireFfmpegOk()
         {
-            if (Configuration.IsRunningOnWindows && (string.IsNullOrWhiteSpace(Configuration.Settings.General.FFmpegLocation) || !File.Exists(Configuration.Settings.General.FFmpegLocation)))
+            if (FfmpegHelper.IsFfmpegInstalled())
+            {
+                return true;
+            }
+
+            if (Configuration.IsRunningOnWindows)
             {
                 var answer = await MainPage.DisplayAlert(
                     "Download ffmpeg?",
@@ -627,7 +638,7 @@ namespace SubtitleAlchemist.Features.Main
                 var result = await _popupService.ShowPopupAsync<DownloadFfmpegModel>(CancellationToken.None);
             }
 
-            return true;
+            return false;
         }
 
         public void CurrentTextChanged(object? sender, TextChangedEventArgs e)

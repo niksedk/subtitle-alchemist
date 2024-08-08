@@ -20,8 +20,12 @@ public class SettingsPage : ContentPage
         FileTypeAssociations,
     }
 
+    private SettingsViewModel _vm;
+
     public SettingsPage(SettingsViewModel vm)
     {
+        _vm = vm;
+
         vm.Pages.Add(PageNames.General, MakeGeneralSettingsPage(vm));
         vm.Pages.Add(PageNames.SubtitleFormats, MakeSubtitleFormatsPage(vm));
         vm.Pages.Add(PageNames.Shortcuts, MakeShortcutsPage(vm));
@@ -93,6 +97,13 @@ public class SettingsPage : ContentPage
         Content = grid;
     }
 
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+
+        _vm.SaveSettings();
+    }
+
     private IView MakeLeftMenuItem(SettingsViewModel vm, PageNames pageName, string text)
     {
         var label = new Label
@@ -120,6 +131,7 @@ public class SettingsPage : ContentPage
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -241,6 +253,7 @@ public class SettingsPage : ContentPage
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -282,6 +295,7 @@ public class SettingsPage : ContentPage
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -341,6 +355,7 @@ public class SettingsPage : ContentPage
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -427,6 +442,7 @@ public class SettingsPage : ContentPage
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -474,6 +490,7 @@ public class SettingsPage : ContentPage
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -484,7 +501,8 @@ public class SettingsPage : ContentPage
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star }
+                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Auto },
             }
         };
 
@@ -510,7 +528,33 @@ public class SettingsPage : ContentPage
             Placeholder = "Enter FFmpeg path", 
             HorizontalOptions = LayoutOptions.Start,
             TextColor = (Color)Application.Current.Resources["TextColor"],
-        }, 1, 1);
+            WidthRequest = 500,
+            BindingContext = vm,
+        }.Bind(nameof(vm.FfmpegPath)), 1, 1);
+        var ffmpegBrowse = new ImageButton
+        {
+            Source = "open.png",
+            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            HorizontalOptions = LayoutOptions.Start,
+            WidthRequest = 30,
+            HeightRequest = 30,
+            Padding = new Thickness(10,5,5,5),
+        };
+        ffmpegBrowse.Clicked += async (sender, e) =>  await vm.BrowseForFfmpeg(sender, e);
+        ToolTipProperties.SetText(ffmpegBrowse, "Browse for ffmpeg executable");
+        grid.Add(ffmpegBrowse, 2, 1);
+        var ffmpegDownloadButton = new ImageButton
+        {
+            Source = "download.png",
+            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            HorizontalOptions = LayoutOptions.Start,
+            WidthRequest = 30,
+            HeightRequest = 30,
+            Padding = new Thickness(5, 5, 5, 5),
+        };
+        ffmpegDownloadButton.Clicked += async (sender, e) => await vm.DownloadFfmpeg(sender, e);
+        ToolTipProperties.SetText(ffmpegDownloadButton, "Click to download ffmpeg");
+        grid.Add(ffmpegDownloadButton, 3, 1);
 
         return grid;
     }
@@ -522,6 +566,7 @@ public class SettingsPage : ContentPage
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -592,6 +637,7 @@ public class SettingsPage : ContentPage
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -649,6 +695,7 @@ public class SettingsPage : ContentPage
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
