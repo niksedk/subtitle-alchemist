@@ -24,8 +24,8 @@ public partial class SettingsViewModel
             await Page.Content.FadeTo(0, 200);
         }
 
+        Pages[pageName].Opacity = 0;
         Page.Content = Pages[pageName];
-        await Page.Content.FadeTo(0, 0);
 
         foreach (var child in LeftMenu.Children)
         {
