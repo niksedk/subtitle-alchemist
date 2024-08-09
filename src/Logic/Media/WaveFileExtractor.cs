@@ -65,6 +65,18 @@ namespace SubtitleAlchemist.Logic.Media
                 exeFilePath = Configuration.Settings.General.FFmpegLocation;
                 if (!Configuration.IsRunningOnWindows)
                 {
+                    if (Configuration.IsRunningOnLinux)
+                    {
+                        exeFilePath = "ffmpeg";
+                    }
+                    else if (Configuration.IsRunningOnMac && File.Exists(Configuration.Settings.General.FFmpegLocation))
+                    {
+                        exeFilePath = Configuration.Settings.General.FFmpegLocation;
+                    }
+                    else if (Configuration.IsRunningOnMac && File.Exists("/usr/local/bin/ffmpeg"))
+                    {
+                        exeFilePath = "/usr/local/bin/ffmpeg";
+                    }
                     exeFilePath = "ffmpeg";
                 }
                 parameters = string.Format(fFmpegWaveTranscodeSettings, inputVideoFile, outWaveFile, audioParameter);

@@ -19,8 +19,10 @@ using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 using SubtitleAlchemist.Controls.SubTimeControl;
+using System;
 
 namespace SubtitleAlchemist.Features.Main
 {
@@ -457,6 +459,7 @@ namespace SubtitleAlchemist.Features.Main
                 return;
             }
 
+            _timer.Stop();
             _audioVisualizer.WavePeaks = null;
             VideoPlayer.Source = MediaSource.FromFile(videoFileName);
 
@@ -467,23 +470,11 @@ namespace SubtitleAlchemist.Features.Main
                 {
                     var tempWaveFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.wav");
                     var process = WaveFileExtractor.GetCommandLineProcess(videoFileName, -1, tempWaveFileName, Configuration.Settings.General.VlcWaveTranscodeSettings, out _);
-                    process.Start();
-                    var token = new CancellationTokenSource().Token;
-                    process.WaitForExitAsync(token);
-
-                    if (File.Exists(tempWaveFileName))
+                    ShowStatus("Extracting wave info...");
+                    Task.Run(async () =>
                     {
-                        using var waveFile = new WavePeakGenerator(tempWaveFileName);
-                        waveFile.GeneratePeaks(0, peakWaveFileName);
-
-                        var wavePeaks = WavePeakData.FromDisk(peakWaveFileName);
-                        _audioVisualizer.WavePeaks = wavePeaks;
-                        _audioVisualizer.InvalidateSurface();
-                    }
-                }
-                else
-                {
-                    _audioVisualizer.WavePeaks = null;
+                        await ExtractWaveformAndSpectrogram(process, tempWaveFileName, peakWaveFileName);
+                    });
                 }
             }
             else
@@ -493,6 +484,47 @@ namespace SubtitleAlchemist.Features.Main
             }
 
             _videoFileName = videoFileName;
+
+            if (!_stopping)
+            {
+                _timer.Start();
+            }
+        }
+
+        private async Task ExtractWaveformAndSpectrogram(Process process, string tempWaveFileName, string peakWaveFileName)
+        {
+            process.Start();
+            var token = new CancellationTokenSource().Token;
+            while (!process.HasExited)
+            {
+                await Task.Delay(100, token);
+            }
+
+            if (process.ExitCode != 0)
+            {
+                ShowStatus("Failed to extract wave info.");
+                return;
+            }
+
+            if (File.Exists(tempWaveFileName))
+            {
+                using var waveFile = new WavePeakGenerator(tempWaveFileName);
+                waveFile.GeneratePeaks(0, peakWaveFileName);
+
+                var wavePeaks = WavePeakData.FromDisk(peakWaveFileName);
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    _audioVisualizer.WavePeaks = wavePeaks;
+
+                    if (!_stopping)
+                    {
+                        _timer.Start();
+                        _audioVisualizer.InvalidateSurface();
+                        ShowStatus("Wave info loaded.");
+                    }
+                });
+            }
         }
 
         [RelayCommand]
@@ -619,6 +651,12 @@ namespace SubtitleAlchemist.Features.Main
         {
             if (FfmpegHelper.IsFfmpegInstalled())
             {
+                return true;
+            }
+
+            if (Configuration.IsRunningOnMac && File.Exists("/usr/local/bin/ffmpeg"))
+            {
+                Configuration.Settings.General.FFmpegLocation = "/usr/local/bin/ffmpeg";
                 return true;
             }
 

@@ -100,6 +100,10 @@ public partial class SettingsViewModel : ObservableObject
             }
 
             var result = await _popupService.ShowPopupAsync<DownloadFfmpegModel>(CancellationToken.None);
+            if (result is string ffmpegFileName)
+            {
+                FfmpegPath = ffmpegFileName;
+            }
         }
     }
 }

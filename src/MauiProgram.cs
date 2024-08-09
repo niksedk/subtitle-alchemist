@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui;
+﻿using System.Text;
+using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Markup;
 using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
@@ -54,7 +55,7 @@ namespace SubtitleAlchemist
             builder.Logging.AddDebug();
 #endif
 
-            //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+//            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             return builder.Build();
         }

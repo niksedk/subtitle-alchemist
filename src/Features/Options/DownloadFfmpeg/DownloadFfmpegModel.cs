@@ -1,9 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Services;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
 {
@@ -19,10 +22,14 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
         [ObservableProperty]
         private string _progress;
 
+        [ObservableProperty]
+        private string _error;
+
         private Task? _downloadTask;
+        private Timer _timer = new System.Timers.Timer();
 
         private readonly CancellationTokenSource _cancellationTokenSource;
-        private readonly MemoryStream _ms;
+        private readonly MemoryStream _downloadStream;
 
 
         public DownloadFfmpegModel(IFfmpegDownloadService ffmpegDownloadService)
@@ -31,39 +38,71 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            _ms = new MemoryStream();
+            _downloadStream = new MemoryStream();
 
             Progress = "Starting...";
+            Error = string.Empty;
 
-            var timer = new System.Timers.Timer();
-            timer.Interval = 1000;
-            timer.Elapsed += OnTimerOnElapsed;
-            timer.Start();
+            _timer.Interval = 500;
+            _timer.Elapsed += OnTimerOnElapsed;
+            _timer.Start();
         }
 
         private void OnTimerOnElapsed(object? sender, ElapsedEventArgs args)
         {
             if (_downloadTask is { IsCompleted: true })
             {
-                var oldFileName = GetFfmpegTempFileName();
-                var newFileName = GetFfmpegFileName();
-                if (File.Exists(oldFileName))
-                {
-                    if (File.Exists(newFileName))
-                    {
-                        File.Delete(newFileName);
-                    }
+                _timer.Stop();
 
-                    File.Move(oldFileName, newFileName, true);
+                if (_downloadStream.Length == 0)
+                {
+                    Progress = "Download failed";
+                    Error = "No data received";
+                    return;
                 }
 
-                Close();
+                var ffmpegFileName = GetFfmpegFileName();
+
+                if (File.Exists(ffmpegFileName))
+                {
+                    File.Delete(ffmpegFileName);
+                }
+
+                UnpackFfmpeg(ffmpegFileName);
+
+                if (Popup != null)
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        Popup.Close(ffmpegFileName);
+                    });
+                }
             }
+            else if (_downloadTask is { IsFaulted: true })
+            {
+                _timer.Stop();
+                var ex = _downloadTask.Exception?.InnerException ?? _downloadTask.Exception;
+                if (ex is OperationCanceledException)
+                {
+                    Progress = "Download canceled";
+                    Close();
+                }
+                else
+                {
+                    Progress = "Download failed";
+                    Error = ex?.Message ?? "Unknown error";
+                }
+            }
+
+            return;
         }
 
-        private static string GetFfmpegTempFileName()
+        private void UnpackFfmpeg(string newFileName)
         {
-            return $"{GetFfmpegFileName()}.$$$";
+            _downloadStream.Position = 0;
+            ZipUnpacker.UnpackZipStream(_downloadStream, Path.GetDirectoryName(newFileName));
+
+            _downloadStream.Dispose();
         }
 
         private static string GetFfmpegFolder()
@@ -73,7 +112,12 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
 
         private static string GetFfmpegFileName()
         {
-            return Path.Combine(GetFfmpegFolder() , "ffmpeg.exe");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return Path.Combine(GetFfmpegFolder(), "ffmpeg.exe");
+            }
+
+            return Path.Combine(GetFfmpegFolder(), "ffmpeg");
         }
 
         private void Close()
@@ -106,15 +150,8 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
             {
                 Directory.CreateDirectory(folder);
             }
-            
-            var fileName = GetFfmpegTempFileName();
-            if (File.Exists(fileName))
-            {
-                File.Delete(fileName);
-            }
 
-            //_downloadTask = _ffmpegDownloadService.DownloadFfmpeg(fileName, downloadProgress, _cancellationTokenSource.Token);
-            _downloadTask = _ffmpegDownloadService.DownloadFfmpeg(_ms, downloadProgress, _cancellationTokenSource.Token);
+            _downloadTask = _ffmpegDownloadService.DownloadFfmpeg(_downloadStream, downloadProgress, _cancellationTokenSource.Token);
         }
     }
 }

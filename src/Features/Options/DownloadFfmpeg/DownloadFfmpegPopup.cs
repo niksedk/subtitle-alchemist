@@ -62,7 +62,8 @@ public class DownloadFfmpegPopup : Popup
         var progressBar = new ProgressBar
         {
             Progress = 0.5,
-            ProgressColor = Colors.Orange
+            ProgressColor = Colors.Orange,
+            HorizontalOptions = LayoutOptions.Fill,
         };
         progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));
         grid.Add(progressBar, 0, 2);
@@ -86,8 +87,8 @@ public class DownloadFfmpegPopup : Popup
             StrokeThickness = 1,
             Padding = new Thickness(4, 1, 1, 0),
             Margin = new Thickness(2),
-            HorizontalOptions = LayoutOptions.End,
-            VerticalOptions = LayoutOptions.Start,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
             StrokeShape = new RoundRectangle
             {
                 CornerRadius = new CornerRadius(5)
