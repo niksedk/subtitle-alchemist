@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Logic.Media;
 using static SubtitleAlchemist.Features.Options.Settings.SettingsPage;
@@ -12,6 +13,7 @@ public partial class SettingsViewModel : ObservableObject
     public Dictionary<PageNames, View> Pages { get; set; }
     public Border Page { get; set; }
     public VerticalStackLayout LeftMenu { get; set; }
+    public SettingsPage SettingsPage { get; set; }
 
     [ObservableProperty] 
     private string _ffmpegPath;
@@ -84,7 +86,20 @@ public partial class SettingsViewModel : ObservableObject
 
     public async Task DownloadFfmpeg(object? sender, EventArgs eventArgs)
     {
-        var result = await _popupService.ShowPopupAsync<DownloadFfmpegModel>(CancellationToken.None);
+        if (Configuration.IsRunningOnWindows)
+        {
+            var answer = await SettingsPage.DisplayAlert(
+                "Download ffmpeg?",
+                "Download and use ffmpeg?",
+                "Yes",
+                "No");
 
+            if (!answer)
+            {
+                return;
+            }
+
+            var result = await _popupService.ShowPopupAsync<DownloadFfmpegModel>(CancellationToken.None);
+        }
     }
 }

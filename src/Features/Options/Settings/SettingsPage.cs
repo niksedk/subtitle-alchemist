@@ -25,6 +25,7 @@ public class SettingsPage : ContentPage
     public SettingsPage(SettingsViewModel vm)
     {
         _vm = vm;
+        vm.SettingsPage = this;
 
         vm.Pages.Add(PageNames.General, MakeGeneralSettingsPage(vm));
         vm.Pages.Add(PageNames.SubtitleFormats, MakeSubtitleFormatsPage(vm));
