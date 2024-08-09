@@ -14,5 +14,10 @@
         {
             await DownloadHelper.DownloadFileAsync(_httpClient, WindowsUrl, destinationFileName, progress, cancellationToken);
         }
+
+        public async Task DownloadFfmpeg(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken)
+        {
+            await DownloadHelper.DownloadFileAsync(_httpClient, WindowsUrl,stream, progress, cancellationToken);
+        }
     }
 }
