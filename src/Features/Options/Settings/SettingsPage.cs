@@ -674,15 +674,13 @@ public class SettingsPage : ContentPage
             ItemsSource = new List<string> { "Light", "Dark", "System Default" },
             HorizontalOptions = LayoutOptions.Start,
             TextColor = (Color)Application.Current.Resources["TextColor"],
-        }, 1, 1);
-
+        }.Bind(nameof(vm.Theme)), 1, 1);
 
         var colorPicker = new ColorPickerView
         {
             WidthRequest = 500,
             HeightRequest = 500,
         };
-
         grid.Add(colorPicker, 0, 2);
         Grid.SetColumnSpan(colorPicker, 2);
 

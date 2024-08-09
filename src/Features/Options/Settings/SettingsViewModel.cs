@@ -9,13 +9,15 @@ namespace SubtitleAlchemist.Features.Options.Settings;
 
 public partial class SettingsViewModel : ObservableObject
 {
-    public string Theme { get; set; }
     public Dictionary<PageNames, View> Pages { get; set; }
     public Border Page { get; set; }
     public VerticalStackLayout LeftMenu { get; set; }
     public SettingsPage SettingsPage { get; set; }
 
-    [ObservableProperty] 
+    [ObservableProperty]
+    private string _theme;
+
+    [ObservableProperty]
     private string _ffmpegPath;
 
     private readonly IPopupService _popupService;
@@ -27,8 +29,8 @@ public partial class SettingsViewModel : ObservableObject
         Pages = new Dictionary<PageNames, View>();
         Page = new Border();
         LeftMenu = new VerticalStackLayout();
-        Theme = "Dark";
 
+        Theme = "Dark";
         _ffmpegPath = string.Empty;
 
         LoadSettings();
@@ -64,12 +66,14 @@ public partial class SettingsViewModel : ObservableObject
 
     public void LoadSettings()
     {
+        Theme = Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme ? "Dark" : "Light";
         FfmpegPath = Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.FFmpegLocation;
     }
 
     public void SaveSettings()
     {
         Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.FFmpegLocation = _ffmpegPath;
+        Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme = Theme == "Dark";
     }
 
     public async Task BrowseForFfmpeg(object? sender, EventArgs eventArgs)

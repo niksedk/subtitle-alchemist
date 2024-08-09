@@ -8,6 +8,7 @@ using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SharpHook;
 using SubtitleAlchemist.Controls.AudioVisualizerControl;
+using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
@@ -21,8 +22,6 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
-using SubtitleAlchemist.Controls.SubTimeControl;
-using System;
 
 namespace SubtitleAlchemist.Features.Main
 {
@@ -654,13 +653,19 @@ namespace SubtitleAlchemist.Features.Main
                 return true;
             }
 
+            if (File.Exists(DownloadFfmpegModel.GetFfmpegFileName()))
+            {
+                Configuration.Settings.General.FFmpegLocation = DownloadFfmpegModel.GetFfmpegFileName();
+                return true;
+            }
+
             if (Configuration.IsRunningOnMac && File.Exists("/usr/local/bin/ffmpeg"))
             {
                 Configuration.Settings.General.FFmpegLocation = "/usr/local/bin/ffmpeg";
                 return true;
             }
 
-            if (Configuration.IsRunningOnWindows)
+            if (Configuration.IsRunningOnWindows || Configuration.IsRunningOnMac)
             {
                 var answer = await MainPage.DisplayAlert(
                     "Download ffmpeg?",
@@ -913,7 +918,6 @@ namespace SubtitleAlchemist.Features.Main
                         VideoPlayer.SeekTo(TimeSpan.FromSeconds(paragraph.P.StartTime.TotalSeconds));
                     }
                 }
-
             }
         }
     }

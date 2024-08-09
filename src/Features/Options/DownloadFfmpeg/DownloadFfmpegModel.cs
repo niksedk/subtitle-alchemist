@@ -105,12 +105,12 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
             _downloadStream.Dispose();
         }
 
-        private static string GetFfmpegFolder()
+        public static string GetFfmpegFolder()
         {
             return Path.Combine(Configuration.DataDirectory, "ffmpeg");
         }
 
-        private static string GetFfmpegFileName()
+        public static string GetFfmpegFileName()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
