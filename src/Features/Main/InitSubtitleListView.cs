@@ -40,7 +40,7 @@ namespace SubtitleAlchemist.Features.Main
                 ItemTemplate = new DataTemplate(() => MakeGrid(vm))
             };
 
-            view.SetBinding(ItemsView.ItemsSourceProperty, "Paragraphs");
+            view.SetBinding(ItemsView.ItemsSourceProperty,  nameof(vm.Paragraphs));
             view.SelectionChanged += vm.OnCollectionViewSelectionChanged;
 
             MakeContextMenu(vm, view);

@@ -88,7 +88,7 @@ namespace SubtitleAlchemist.Features.Main
         private string _videoFileName;
         private readonly System.Timers.Timer _timer;
         private bool _updating;
-        private bool _stopping;
+        private bool _stopping = false;
 
 
         private readonly IPopupService _popupService;
@@ -300,7 +300,7 @@ namespace SubtitleAlchemist.Features.Main
 
         public void CleanUp()
         {
-            _stopping = true;
+            //_stopping = true;
             _timer.Stop();
             _audioVisualizer.OnVideoPositionChanged -= AudioVisualizer_OnVideoPositionChanged;
             //SharpHookHandler.Dispose();
@@ -489,6 +489,7 @@ namespace SubtitleAlchemist.Features.Main
             }
             else
             {
+                ShowStatus("Loading wave info from cache...");
                 var wavePeaks = WavePeakData.FromDisk(peakWaveFileName);
                 _audioVisualizer.WavePeaks = wavePeaks;
             }
@@ -720,6 +721,7 @@ namespace SubtitleAlchemist.Features.Main
 
             _currentParagraph.P.StartTime = new TimeCode(e.NewValue);
             CurrentStart = TimeSpan.FromMilliseconds(e.NewValue);
+            Paragraphs[Paragraphs.IndexOf(_currentParagraph)].Start = CurrentStart;
         }
 
         public void CurrentDurationChanged(object? sender, ValueChangedEventArgs e)
@@ -729,10 +731,17 @@ namespace SubtitleAlchemist.Features.Main
                 return;
             }
 
-            ShowStatus($"CurrentDurationChanged: {e.OldValue} -> {e.NewValue}");
+            var idx = Paragraphs.IndexOf(_currentParagraph);
+            if (idx < 0)
+            {
+                return;
+            }
+
             _currentParagraph.P.EndTime = new TimeCode(_currentParagraph.Start.TotalMilliseconds + e.NewValue);
             CurrentEnd = TimeSpan.FromMilliseconds(CurrentStart.TotalMicroseconds + e.NewValue);
             CurrentDuration = TimeSpan.FromMilliseconds(e.NewValue);
+            Paragraphs[idx].Duration = CurrentDuration;
+            Paragraphs[idx].End = CurrentEnd;
         }
 
 
