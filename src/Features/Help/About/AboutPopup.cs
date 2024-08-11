@@ -9,6 +9,8 @@ public class AboutPopup : Popup
     {
         BindingContext = model;
 
+        CanBeDismissedByTappingOutsideOfPopup = false;
+
         var fileName = System.Reflection.Assembly.GetExecutingAssembly()?.Location;
         var applicationPath = string.IsNullOrEmpty(fileName) ? string.Empty : Path.GetDirectoryName(fileName) ?? string.Empty;
         var imagePath = Path.Combine(applicationPath, "Resources", "Images", "Buttons");

@@ -29,6 +29,8 @@ public class LayoutPickerPopup : Popup
         BindingContext = model;
         _model = model;
 
+        CanBeDismissedByTappingOutsideOfPopup = false;
+
         Content = new Grid
         {
             BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],

@@ -10,6 +10,7 @@ public class DownloadFfmpegPopup : Popup
         BindingContext = vm;
 
         Color = (Color)Application.Current.Resources["BackgroundColor"];
+        CanBeDismissedByTappingOutsideOfPopup = false;
 
         var grid = new Grid
         {

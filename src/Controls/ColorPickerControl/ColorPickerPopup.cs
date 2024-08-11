@@ -10,6 +10,7 @@ public class ColorPickerPopup : Popup
         BindingContext = vm;
 
         Color = Colors.Transparent;
+        CanBeDismissedByTappingOutsideOfPopup = false;
 
         vm.ColorPickerView = new ColorPickerView
         {
