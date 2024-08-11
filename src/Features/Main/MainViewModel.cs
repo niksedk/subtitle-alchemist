@@ -77,7 +77,16 @@ namespace SubtitleAlchemist.Features.Main
             {
                 var subtitle = new Subtitle(_subtitle);
                 subtitle.Paragraphs.Clear();
-                subtitle.Paragraphs.AddRange(Paragraphs.Select(p => p.P));
+
+                foreach (var displayParagraph in Paragraphs)
+                {
+                    var p = new Paragraph(displayParagraph.P, false);
+                    p.Text = displayParagraph.Text;
+                    p.StartTime.TotalMilliseconds = displayParagraph.Start.TotalMilliseconds;
+                    p.EndTime.TotalMilliseconds = displayParagraph.End.TotalMilliseconds;
+                    subtitle.Paragraphs.Add(displayParagraph.P);
+                }
+
                 return subtitle;
             }
         }
@@ -129,23 +138,24 @@ namespace SubtitleAlchemist.Features.Main
             var dp = Paragraphs.FirstOrDefault(p=>p.P.Id == e.Paragraph.Id);
             if (dp == null)
             {
+                ShowStatus("OnAudioVisualizerOnOnTimeChanged no selected paragraph");
                 return;
             }
 
-            var idx = Paragraphs.IndexOf(dp);
-
             if (e.MouseDownParagraphType == MouseDownParagraphType.Start)
             {
-                dp.Start = TimeSpan.FromMilliseconds(e.Seconds * 1000.0);
+                dp.Start = TimeSpan.FromMilliseconds(e.Paragraph.StartTime.TotalMilliseconds);
                 dp.Duration = dp.End - dp.Start;
                 CurrentStart = dp.Start;
                 CurrentDuration = dp.Duration;
+                ShowStatus("OnAudioVisualizerOnOnTimeChanged Start move");
             }
             else if (e.MouseDownParagraphType == MouseDownParagraphType.End)
             {
-                dp.End = TimeSpan.FromMilliseconds(e.Seconds * 1000.0);
+                dp.End = TimeSpan.FromMilliseconds(e.Paragraph.EndTime.TotalMilliseconds);
                 dp.Duration = dp.End - dp.Start;
                 CurrentDuration = dp.Duration;
+                ShowStatus("OnAudioVisualizerOnOnTimeChanged End move");
             }
             else if (e.MouseDownParagraphType == MouseDownParagraphType.Whole)
             {
@@ -154,6 +164,7 @@ namespace SubtitleAlchemist.Features.Main
                 dp.Duration = dp.End - dp.Start;
                 CurrentStart = dp.Start;
                 CurrentDuration = dp.Duration;
+                ShowStatus("OnAudioVisualizerOnOnTimeChanged Whole move");
             }
         }
 
@@ -173,7 +184,7 @@ namespace SubtitleAlchemist.Features.Main
                 {
                     var subtitle = new Subtitle();
                     var selectedIndices = new List<int>();
-                    var orderedList = Paragraphs.OrderBy(p => p.Start).ToList();
+                    var orderedList = Paragraphs.OrderBy(p => p.Start.TotalMilliseconds).ToList();
                     var firstSelectedIndex = -1;
                     for (var i = 0; i < orderedList.Count; i++)
                     {
@@ -342,7 +353,7 @@ namespace SubtitleAlchemist.Features.Main
         {
             var timeSpan = TimeSpan.FromSeconds(e.PositionInSeconds);
             var ms = e.PositionInSeconds * 1000.0;
-            var paragraph = Paragraphs.FirstOrDefault(p => p.P.StartTime.TotalMilliseconds <= ms && p.P.EndTime.TotalMilliseconds >= ms);
+            var paragraph = Paragraphs.FirstOrDefault(p => p.Start.TotalMilliseconds <= ms && p.End.TotalMilliseconds >= ms);
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -1004,7 +1015,7 @@ namespace SubtitleAlchemist.Features.Main
                     // TODO: make customizable
                     if (VideoPlayer is { IsLoaded: true })
                     {
-                        VideoPlayer.SeekTo(TimeSpan.FromSeconds(paragraph.P.StartTime.TotalSeconds));
+                        VideoPlayer.SeekTo(TimeSpan.FromSeconds(paragraph.Start.TotalSeconds));
                     }
                 }
             }

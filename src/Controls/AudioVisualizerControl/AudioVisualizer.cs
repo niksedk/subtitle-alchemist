@@ -28,7 +28,7 @@ public class AudioVisualizer : SKCanvasView
     private const int MinimumSelectionMilliseconds = 100;
     public int ClosenessForBorderSelection { get; set; } = 15;
     public int ShotChangeSnapPixels = 8;
-    private Subtitle _subtitle = new Subtitle();
+    private readonly Subtitle _subtitle = new();
     private readonly List<Paragraph> _displayableParagraphs = new();
     private readonly List<Paragraph> _allSelectedParagraphs = new();
     public Paragraph? SelectedParagraph { get; private set; }
@@ -497,13 +497,14 @@ public class AudioVisualizer : SKCanvasView
         {
             _wholeParagraphMinMilliseconds = 0;
             _wholeParagraphMaxMilliseconds = double.MaxValue;
-            if (_subtitle != null && _mouseDownParagraph != null)
+            if (_mouseDownParagraph != null)
             {
                 var paragraphs = _subtitle.Paragraphs.ToList();
-                //TODO: use locking to access "_subtitle.Paragraphs"? // paragraphs = paragraphs.OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
-                var curIdx = paragraphs.IndexOf(_mouseDownParagraph);
-                if (curIdx >= 0)
+                var p = paragraphs.FirstOrDefault(p => p.Id == _mouseDownParagraph.Id);
+                if (p != null)
                 {
+                    var curIdx = paragraphs.IndexOf(p);
+
                     if (curIdx > 0)
                     {
                         _wholeParagraphMinMilliseconds = paragraphs[curIdx - 1].EndTime.TotalMilliseconds + Configuration.Settings.General.MinimumMillisecondsBetweenLines;
@@ -1137,9 +1138,9 @@ public class AudioVisualizer : SKCanvasView
     {
         _wholeParagraphMinMilliseconds = 0;
         _wholeParagraphMaxMilliseconds = double.MaxValue;
-        if (_subtitle != null && _mouseDownParagraph != null)
+        if (_mouseDownParagraph != null)
         {
-            var paragraphs = _subtitle.Paragraphs.OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
+            var paragraphs = _subtitle.Paragraphs.ToList();
             var curIdx = paragraphs.IndexOf(_mouseDownParagraph);
             if (curIdx >= 0)
             {
@@ -1153,9 +1154,9 @@ public class AudioVisualizer : SKCanvasView
     {
         _wholeParagraphMinMilliseconds = 0;
         _wholeParagraphMaxMilliseconds = double.MaxValue;
-        if (_subtitle != null && _mouseDownParagraph != null)
+        if (_mouseDownParagraph != null)
         {
-            var paragraphs = _subtitle.Paragraphs.OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
+            var paragraphs = _subtitle.Paragraphs;
             var curIdx = paragraphs.IndexOf(_mouseDownParagraph);
             if (curIdx >= 0)
             {
