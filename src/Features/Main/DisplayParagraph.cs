@@ -39,4 +39,16 @@ public partial class DisplayParagraph : ObservableObject
         IsSelected = false;
         Number = paragraph.Number;
     }
+
+    public DisplayParagraph(DisplayParagraph paragraph)
+    {
+        P = paragraph.P;
+        Start = paragraph.Start;
+        End = paragraph.End;
+        Duration = paragraph.Duration;
+        Text = paragraph.Text;
+        BackgroundColor = paragraph.BackgroundColor;
+        IsSelected = paragraph.IsSelected;
+        Number = paragraph.Number;
+    }
 }

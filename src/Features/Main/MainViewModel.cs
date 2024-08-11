@@ -109,18 +109,52 @@ namespace SubtitleAlchemist.Features.Main
             _currentStart = new TimeSpan();
             _currentEnd = new TimeSpan();
             _currentDuration = new TimeSpan();
-            _audioVisualizer = new AudioVisualizer() { Margin = 10 };
+            _audioVisualizer = new AudioVisualizer { Margin = 10 };
             ListViewAndEditBox = new Grid();
 
             _audioVisualizer.OnVideoPositionChanged += AudioVisualizer_OnVideoPositionChanged;
             _audioVisualizer.OnSingleClick += _audioVisualizer_OnSingleClick;
             _audioVisualizer.OnDoubleTapped += AudioVisualizer_OnDoubleTapped;
+            _audioVisualizer.OnTimeChanged += OnAudioVisualizerOnOnTimeChanged;
             _audioVisualizer.OnStatus += (sender, args) =>
             {
                 ShowStatus(args.Paragraph.Text);
             };
 
             SetTimer();
+        }
+
+        private void OnAudioVisualizerOnOnTimeChanged(object sender, ParagraphEventArgs e)
+        {
+            var dp = Paragraphs.FirstOrDefault(p=>p.P.Id == e.Paragraph.Id);
+            if (dp == null)
+            {
+                return;
+            }
+
+            var idx = Paragraphs.IndexOf(dp);
+
+            if (e.MouseDownParagraphType == MouseDownParagraphType.Start)
+            {
+                dp.Start = TimeSpan.FromMilliseconds(e.Seconds * 1000.0);
+                dp.Duration = dp.End - dp.Start;
+                CurrentStart = dp.Start;
+                CurrentDuration = dp.Duration;
+            }
+            else if (e.MouseDownParagraphType == MouseDownParagraphType.End)
+            {
+                dp.End = TimeSpan.FromMilliseconds(e.Seconds * 1000.0);
+                dp.Duration = dp.End - dp.Start;
+                CurrentDuration = dp.Duration;
+            }
+            else if (e.MouseDownParagraphType == MouseDownParagraphType.Whole)
+            {
+                dp.Start = TimeSpan.FromMilliseconds(e.Paragraph.StartTime.TotalMilliseconds);
+                dp.End = TimeSpan.FromMilliseconds(e.Paragraph.EndTime.TotalMilliseconds);
+                dp.Duration = dp.End - dp.Start;
+                CurrentStart = dp.Start;
+                CurrentDuration = dp.Duration;
+            }
         }
 
         private void SetTimer()
@@ -137,6 +171,30 @@ namespace SubtitleAlchemist.Features.Main
                     && VideoPlayer != null
                     && _allowUpdatePositionStates.Contains(VideoPlayer.CurrentState))
                 {
+                    var subtitle = new Subtitle();
+                    var selectedIndices = new List<int>();
+                    var orderedList = Paragraphs.OrderBy(p => p.Start).ToList();
+                    var firstSelectedIndex = -1;
+                    for (var i = 0; i < orderedList.Count; i++)
+                    {
+                        var dp = orderedList[i];
+                        var p = new Paragraph(dp.P, false);
+                        p.Text = dp.Text; 
+                        p.StartTime.TotalMilliseconds = dp.Start.TotalMilliseconds;
+                        p.EndTime.TotalMilliseconds = dp.End.TotalMilliseconds;
+                        subtitle.Paragraphs.Add(p);
+
+                        if (dp.IsSelected)
+                        {
+                            selectedIndices.Add(i);
+
+                            if (firstSelectedIndex < 0)
+                            {
+                                firstSelectedIndex = i;
+                            }
+                        }
+                    }
+
                     var mediaPlayerSeconds = VideoPlayer.Position.TotalSeconds;
                     if (VideoPlayer.CurrentState == MediaElementState.Playing)
                     {
@@ -150,22 +208,22 @@ namespace SubtitleAlchemist.Features.Main
 
                         if (mediaPlayerSeconds > _audioVisualizer.EndPositionSeconds || mediaPlayerSeconds < _audioVisualizer.StartPositionSeconds)
                         {
-                            _audioVisualizer.SetPosition(startPos, _subtitle, mediaPlayerSeconds, 0, GetSelectedIndexes());
+                            _audioVisualizer.SetPosition(startPos, subtitle, mediaPlayerSeconds, 0, selectedIndices.ToArray());
                         }
                         else
                         {
-                            _audioVisualizer.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
+                            _audioVisualizer.SetPosition(_audioVisualizer.StartPositionSeconds, subtitle, mediaPlayerSeconds, firstSelectedIndex, selectedIndices.ToArray());
                         }
                     }
                     else
                     {
                         if (mediaPlayerSeconds > _audioVisualizer.EndPositionSeconds || mediaPlayerSeconds < _audioVisualizer.StartPositionSeconds)
                         {
-                            _audioVisualizer.SetPosition(mediaPlayerSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
+                            _audioVisualizer.SetPosition(mediaPlayerSeconds, subtitle, mediaPlayerSeconds, firstSelectedIndex, selectedIndices.ToArray());
                         }
                         else
                         {
-                            _audioVisualizer.SetPosition(_audioVisualizer.StartPositionSeconds, _subtitle, mediaPlayerSeconds, GetFirstSelectedIndex(), GetSelectedIndexes());
+                            _audioVisualizer.SetPosition(_audioVisualizer.StartPositionSeconds, subtitle, mediaPlayerSeconds, firstSelectedIndex, selectedIndices.ToArray());
                         }
                     }
 
@@ -738,7 +796,7 @@ namespace SubtitleAlchemist.Features.Main
             }
 
             _currentParagraph.P.EndTime = new TimeCode(_currentParagraph.Start.TotalMilliseconds + e.NewValue);
-            CurrentEnd = TimeSpan.FromMilliseconds(CurrentStart.TotalMicroseconds + e.NewValue);
+            CurrentEnd = TimeSpan.FromMilliseconds(CurrentStart.TotalMilliseconds + e.NewValue);
             CurrentDuration = TimeSpan.FromMilliseconds(e.NewValue);
             Paragraphs[idx].Duration = CurrentDuration;
             Paragraphs[idx].End = CurrentEnd;

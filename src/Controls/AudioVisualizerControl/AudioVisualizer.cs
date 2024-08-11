@@ -306,7 +306,7 @@ public class AudioVisualizer : SKCanvasView
             {
                 if (_mouseDownParagraph != null)
                 {
-                    oldMouseDownParagraph = new Paragraph(_mouseDownParagraph);
+                    oldMouseDownParagraph = new Paragraph(_mouseDownParagraph, false);
                 }
 
                 if (_mouseDownParagraphType == MouseDownParagraphType.Start)
@@ -347,7 +347,7 @@ public class AudioVisualizer : SKCanvasView
                 NewSelectionParagraph = null;
                 if (_mouseDownParagraph != null)
                 {
-                    oldMouseDownParagraph = new Paragraph(_mouseDownParagraph);
+                    oldMouseDownParagraph = new Paragraph(_mouseDownParagraph, false);
                     var curIdx = _subtitle.Paragraphs.IndexOf(_mouseDownParagraph);
                     if (_mouseDownParagraphType == MouseDownParagraphType.Start && !ModifierKeys.Alt)
                     {
@@ -374,9 +374,9 @@ public class AudioVisualizer : SKCanvasView
                 var p = GetParagraphAtMilliseconds(milliseconds);
                 if (p != null)
                 {
-                    _oldParagraph = new Paragraph(p);
+                    _oldParagraph = new Paragraph(p, false);
                     _mouseDownParagraph = p;
-                    oldMouseDownParagraph = new Paragraph(_mouseDownParagraph);
+                    oldMouseDownParagraph = new Paragraph(_mouseDownParagraph, false);
                     _mouseDownParagraphType = MouseDownParagraphType.Whole;
                     _moveWholeStartDifferenceMilliseconds = (RelativeXPositionToSeconds(x) * TimeCode.BaseUnit) - p.StartTime.TotalMilliseconds;
                     SetCursor(CursorIcon.Hand); // Hand
@@ -559,7 +559,7 @@ public class AudioVisualizer : SKCanvasView
                 }
             }
 
-            _oldParagraph = new Paragraph(paragraph);
+            _oldParagraph = new Paragraph(paragraph, false);
             _mouseDownParagraph = paragraph;
             _mouseDownParagraphs = null;
             _mouseDownParagraphType = MouseDownParagraphType.Start;
@@ -581,7 +581,7 @@ public class AudioVisualizer : SKCanvasView
                 }
             }
 
-            _oldParagraph = new Paragraph(paragraph);
+            _oldParagraph = new Paragraph(paragraph, false);
             _mouseDownParagraph = paragraph;
             _mouseDownParagraphs = null;
             _mouseDownParagraphType = MouseDownParagraphType.End;
@@ -621,7 +621,7 @@ public class AudioVisualizer : SKCanvasView
                         {
                             if (seconds < SelectedParagraph.EndTime.TotalSeconds)
                             {
-                                _oldParagraph = new Paragraph(SelectedParagraph);
+                                _oldParagraph = new Paragraph(SelectedParagraph, false);
                                 _mouseDownParagraph = SelectedParagraph;
                                 _mouseDownParagraph.StartTime.TotalMilliseconds = milliseconds;
                                 OnStartTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph));
@@ -637,7 +637,7 @@ public class AudioVisualizer : SKCanvasView
                         {
                             if (seconds > SelectedParagraph.StartTime.TotalSeconds)
                             {
-                                _oldParagraph = new Paragraph(SelectedParagraph);
+                                _oldParagraph = new Paragraph(SelectedParagraph, false);
                                 _mouseDownParagraph = SelectedParagraph;
                                 _mouseDownParagraph.EndTime.TotalMilliseconds = milliseconds;
                                 OnTimeChanged?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph, _oldParagraph));
@@ -650,7 +650,7 @@ public class AudioVisualizer : SKCanvasView
                         var seconds = RelativeXPositionToSeconds(x);
                         if (_mouseDownParagraphType == MouseDownParagraphType.None || _mouseDownParagraphType == MouseDownParagraphType.Whole)
                         {
-                            _oldParagraph = new Paragraph(SelectedParagraph);
+                            _oldParagraph = new Paragraph(SelectedParagraph, false);
                             _mouseDownParagraph = SelectedParagraph;
                             OnTimeChangedAndOffsetRest?.Invoke(this, new ParagraphEventArgs(seconds, _mouseDownParagraph));
                         }
@@ -662,7 +662,7 @@ public class AudioVisualizer : SKCanvasView
                         var milliseconds = (int)(seconds * TimeCode.BaseUnit);
                         if (_mouseDownParagraphType == MouseDownParagraphType.None || _mouseDownParagraphType == MouseDownParagraphType.Whole)
                         {
-                            _oldParagraph = new Paragraph(SelectedParagraph);
+                            _oldParagraph = new Paragraph(SelectedParagraph, false);
                             _mouseDownParagraph = SelectedParagraph;
                             var durationMilliseconds = _mouseDownParagraph.DurationTotalMilliseconds;
                             _mouseDownParagraph.StartTime.TotalMilliseconds = milliseconds;
@@ -800,7 +800,7 @@ public class AudioVisualizer : SKCanvasView
                                 _mouseDownParagraph = _mouseDownParagraphs[1];
                                 _mouseDownParagraphType = MouseDownParagraphType.Start;
                                 _mouseDownParagraphs = null;
-                                _oldParagraph = new Paragraph(_mouseDownParagraph);
+                                _oldParagraph = new Paragraph(_mouseDownParagraph, false);
                                 _firstMove = false;
                             }
                         }
@@ -811,7 +811,7 @@ public class AudioVisualizer : SKCanvasView
                                 _mouseDownParagraph = _mouseDownParagraphs[0];
                                 _mouseDownParagraphType = MouseDownParagraphType.End;
                                 _mouseDownParagraphs = null;
-                                _oldParagraph = new Paragraph(_mouseDownParagraph);
+                                _oldParagraph = new Paragraph(_mouseDownParagraph, false);
                                 _firstMove = false;
                             }
                         }
