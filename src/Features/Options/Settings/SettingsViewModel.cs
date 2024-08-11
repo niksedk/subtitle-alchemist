@@ -1,6 +1,8 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
+using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Logic.Media;
 using static SubtitleAlchemist.Features.Options.Settings.SettingsPage;
@@ -13,6 +15,7 @@ public partial class SettingsViewModel : ObservableObject
     public Border Page { get; set; }
     public VerticalStackLayout LeftMenu { get; set; }
     public SettingsPage SettingsPage { get; set; }
+    public BoxView SyntaxErrorColorBox { get; set; }
 
     [ObservableProperty]
     private string _theme;
@@ -29,6 +32,7 @@ public partial class SettingsViewModel : ObservableObject
         Pages = new Dictionary<PageNames, View>();
         Page = new Border();
         LeftMenu = new VerticalStackLayout();
+        SyntaxErrorColorBox = new BoxView();
 
         Theme = "Dark";
         _ffmpegPath = string.Empty;
@@ -62,6 +66,19 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         await Page.Content.FadeTo(1, 200);
+    }
+
+    [RelayCommand]
+    public async Task PickSyntaxErrorColor()
+    {
+        var result = await _popupService.ShowPopupAsync<ColorPickerPopupModel>(
+                onPresenting: vm => vm.SetCurrentColor(SyntaxErrorColorBox.Color), 
+                CancellationToken.None);
+
+        if (result is Color color)
+        {
+            SyntaxErrorColorBox.Color = color;
+        }
     }
 
     public void LoadSettings()

@@ -347,7 +347,6 @@ public class SettingsPage : ContentPage
     private Switch shortDurationSwitch;
     private Switch longDurationSwitch;
     private Button textTooLongColorButton;
-    private BoxView textTooLongColorPreview;
     private Color textTooLongColor = Colors.LightBlue;
     private View MakeSyntaxColoringPage(SettingsViewModel vm)
     {
@@ -421,16 +420,19 @@ public class SettingsPage : ContentPage
             FontSize = 12, 
             Padding = new Thickness(5),
             TextColor = (Color)Application.Current.Resources["TextColor"],
+            BackgroundColor = Colors.DarkGray,
+            Command = vm.PickSyntaxErrorColorCommand,
         };
-        
+
         colorStack.Children.Add(textTooLongColorButton);
-        textTooLongColorPreview = new BoxView
+        vm.SyntaxErrorColorBox = new BoxView
         {
             WidthRequest = 30, 
             HeightRequest = 30, 
             Color = textTooLongColor,
+            Margin = new Thickness(10, 0, 0, 0),
         };
-        colorStack.Children.Add(textTooLongColorPreview);
+        colorStack.Children.Add(vm.SyntaxErrorColorBox);
         grid.Add(colorStack, 1, 3);
 
         return grid;
@@ -482,7 +484,6 @@ public class SettingsPage : ContentPage
 
         return grid;
     }
-
 
     private View MakeWaveformSpectrogramPage(SettingsViewModel vm)
     {

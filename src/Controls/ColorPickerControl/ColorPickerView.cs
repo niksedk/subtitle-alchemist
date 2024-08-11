@@ -18,10 +18,13 @@ public class ColorPickerView : ContentView
         set => SetValue(TextColorProperty, value);
     }
 
+    public Color CurrentColor { get; set; }
+
     private List<Color> _recentColors;
     private Slider _sliderRed;
     private Slider _sliderGreen;
     private Slider _sliderBlue;
+    private Slider _sliderAlpha;
 
     private BoxView _currentColorBox;
     private Entry _currentColorText;
@@ -42,9 +45,10 @@ public class ColorPickerView : ContentView
 
         var grid = new Grid
         {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
+            Padding = new Thickness(15),
+            RowSpacing = 15,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -66,12 +70,9 @@ public class ColorPickerView : ContentView
         };
         colorPickerBox.ColorPicked += (sender, args) =>
         {
-            _currentColorBox.Color = args.Color;
-            _currentColorText.Text = args.Color.ToHex();
-            _sliderRed.Value = args.Color.Red * 255;
-            _sliderGreen.Value = args.Color.Green * 255;
-            _sliderBlue.Value = args.Color.Blue * 255;
+            SetCurrentColor(args.Color);
             ValueChanged?.Invoke(this, args);
+
         };
         grid.Add(colorPickerBox, 0, 0);
         grid.Add(MakeEntryAndRecentGrid(), 1, 0);
@@ -83,6 +84,17 @@ public class ColorPickerView : ContentView
         Content = grid;
     }
 
+    public void SetCurrentColor(Color color)
+    {
+        _currentColorBox.Color = color;
+        _currentColorText.Text = color.ToHex();
+        _sliderRed.Value = color.Red * 255;
+        _sliderGreen.Value = color.Green * 255;
+        _sliderBlue.Value = color.Blue * 255;
+        _sliderAlpha.Value = color.Alpha * 255;
+        CurrentColor = color;
+    }
+
     private IView MakeEntryAndRecentGrid()
     {
         var grid = new Grid
@@ -90,21 +102,25 @@ public class ColorPickerView : ContentView
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
             },
             ColumnDefinitions =
             {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto },
             }
         };
 
         _currentColorBox = new BoxView
         {
-            Color = Colors.Yellow,
+            Color = CurrentColor,
             WidthRequest = 150,
             HeightRequest = 50,
         };
@@ -127,6 +143,10 @@ public class ColorPickerView : ContentView
             {
                 Orientation = StackOrientation.Horizontal,
                 Spacing = 10,
+                Margin = new Thickness(1, 1, 1, 1),
+                Padding = new Thickness(1, 1, 1, 1),
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center,
             };
             foreach (var color in chunk)
             {
@@ -135,16 +155,15 @@ public class ColorPickerView : ContentView
                     Color = color,
                     WidthRequest = 25,
                     HeightRequest = 25,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Start,
+                    Margin = new Thickness(1, 1, 1, 1),
                 };
                 recentColorBox.GestureRecognizers.Add(new TapGestureRecognizer
                 {
                     Command = new Command(() =>
                     {
-                        _currentColorBox.Color = color;
-                        _currentColorText.Text = color.ToHex();
-                        _sliderRed.Value = color.Red * 255;
-                        _sliderGreen.Value = color.Green * 255;
-                        _sliderBlue.Value = color.Blue * 255;
+                        SetCurrentColor(color);
                         ValueChanged?.Invoke(this, new ColorPickedEventArgs(color.ToSKColor(), color));
                     })
                 });
@@ -162,14 +181,17 @@ public class ColorPickerView : ContentView
     {
         var grid = new Grid
         {
-            Padding = new Thickness(20),
+            Padding = new Thickness(15),
             RowSpacing = 20,
             ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
+            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
             {
@@ -186,12 +208,16 @@ public class ColorPickerView : ContentView
             FontSize = 16,
             TextColor = (Color)Application.Current.Resources["TextColor"],
         };
+
+        const int sliderWidth = 250;
+
         _sliderRed = new Slider
         {
             Maximum = 255,
             Minimum = 0,
             Value = 0,
-            WidthRequest = 200,
+            HorizontalOptions = LayoutOptions.Fill,
+            WidthRequest = sliderWidth,
         };
         var labelRedValue = new Label
         {
@@ -222,6 +248,8 @@ public class ColorPickerView : ContentView
             Maximum = 255,
             Minimum = 0,
             Value = 0,
+            HorizontalOptions = LayoutOptions.Fill,
+            WidthRequest = sliderWidth,
         };
         var labelGreenValue = new Label
         {
@@ -229,7 +257,6 @@ public class ColorPickerView : ContentView
             FontAttributes = FontAttributes.Bold,
             FontSize = 16,
             TextColor = (Color)Application.Current.Resources["TextColor"],
-            WidthRequest = 200,
         };
         _sliderGreen.ValueChanged += (sender, args) =>
         {
@@ -253,7 +280,8 @@ public class ColorPickerView : ContentView
             Maximum = 255,
             Minimum = 0,
             Value = 0,
-            WidthRequest = 200,
+            HorizontalOptions = LayoutOptions.Fill,
+            WidthRequest = sliderWidth,
         };
         var labelBlueValue = new Label
         {
@@ -271,18 +299,51 @@ public class ColorPickerView : ContentView
         grid.Add(_sliderBlue, 1, 2);
         grid.Add(labelBlueValue, 2, 2);
 
+        var labelAlpha = new Label
+        {
+            Text = "Alpha",
+            FontAttributes = FontAttributes.Bold,
+            FontSize = 16,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
+        _sliderAlpha = new Slider
+        {
+            Maximum = 255,
+            Minimum = 0,
+            Value = 0,
+            HorizontalOptions = LayoutOptions.Fill,
+            WidthRequest = sliderWidth,
+        };
+        var labelAlphaValue = new Label
+        {
+            Text = "50",
+            FontAttributes = FontAttributes.Bold,
+            FontSize = 16,
+            TextColor = (Color)Application.Current.Resources["TextColor"],
+        };
+        _sliderAlpha.ValueChanged += (sender, args) =>
+        {
+            labelAlphaValue.Text = ((int)Math.Round(args.NewValue)).ToString();
+            SetColorFromSliders();
+        };
+        grid.Add(labelAlpha, 0, 3);
+        grid.Add(_sliderAlpha, 1, 3);
+        grid.Add(labelAlphaValue, 2, 3);
+
         return grid;
     }
 
     private void SetColorFromSliders()
     {
-        var color = Color.FromRgb(
+        var color = Color.FromRgba(
             (int)Math.Round(_sliderRed.Value),
             (int)Math.Round(_sliderGreen.Value),
-            (int)Math.Round(_sliderBlue.Value));
+            (int)Math.Round(_sliderBlue.Value),
+            (int)Math.Round(_sliderAlpha.Value));
 
         _currentColorBox.Color = color;
         _currentColorText.Text = color.ToHex();
+        CurrentColor = color;
 
         ValueChanged?.Invoke(this, new ColorPickedEventArgs(color.ToSKColor(), color));
     }

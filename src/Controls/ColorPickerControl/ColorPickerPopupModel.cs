@@ -7,8 +7,19 @@ public partial class ColorPickerPopupModel : ObservableObject
 {
     public ColorPickerPopup? Popup { get; set; }
 
-    public ColorPickerPopupModel()
+    public Color? CurrentColor { get; set; }
+    public ColorPickerView? ColorPickerView { get; set; }
+
+    [RelayCommand]
+    private void Ok()
     {
+        Popup?.Close(CurrentColor);
+    }
+
+    [RelayCommand]
+    private void Cancel()
+    {
+        Close();
     }
 
     [RelayCommand]
@@ -18,5 +29,10 @@ public partial class ColorPickerPopupModel : ObservableObject
         {
             Popup?.Close();
         });
+    }
+
+    public void SetCurrentColor(Color color)
+    {
+        ColorPickerView.SetCurrentColor(color);
     }
 }

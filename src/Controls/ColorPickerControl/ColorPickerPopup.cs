@@ -1,29 +1,92 @@
 ﻿using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace SubtitleAlchemist.Controls.ColorPickerControl;
 
 public class ColorPickerPopup : Popup
 {
-    public ColorPickerPopup(ColorPickerPopupModel model)
+    public ColorPickerPopup(ColorPickerPopupModel vm)
     {
-        BindingContext = model;
+        BindingContext = vm;
 
-        var fileName = System.Reflection.Assembly.GetExecutingAssembly()?.Location;
-        var applicationPath = string.IsNullOrEmpty(fileName) ? string.Empty : Path.GetDirectoryName(fileName) ?? string.Empty;
-        var imagePath = Path.Combine(applicationPath, "Resources", "Images", "Buttons");
+        Color = Colors.Transparent;
 
-        Content = new ContentView
+        vm.ColorPickerView = new ColorPickerView
         {
-            BackgroundColor = Colors.DarkGray,
-            Content = new StackLayout
-            {
-                
-            },
+            WidthRequest = 415,
+            HeightRequest = 500,
+            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
         };
 
 
-        model.Popup = this;
+        vm.ColorPickerView.ValueChanged += (sender, args) =>
+        {
+            vm.CurrentColor = args.Color;
+        };
+
+        var stackLayoutOkCancel = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                new Button
+                {
+                    Text = "OK",
+                    BackgroundColor = Colors.DarkGray,
+                    TextColor = Colors.White,
+                    Command = vm.OkCommand,
+                    Margin = new Thickness(5, 5, 5, 25),
+                },
+                new Button
+                {
+                    Text = "Cancel",
+                    BackgroundColor = Colors.DarkGray,
+                    TextColor = Colors.White,
+                    Command = vm.CancelCommand,
+                    Margin = new Thickness(5, 5, 5, 25),
+                },
+            },
+        };
+
+        var stackLayout = new StackLayout
+        {
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            Children =
+            {
+                vm.ColorPickerView,
+                stackLayoutOkCancel,
+            },
+        };
+
+        var border = new Border
+        {
+            Stroke = (Color)Application.Current.Resources["TextColor"], // change to blue when focused
+            Background = (Color)Application.Current.Resources["BackgroundColor"],
+            StrokeThickness = 1,
+            Padding = new Thickness(4, 1, 1, 0),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = stackLayout,
+        };
+
+        Content = new ContentView
+        {
+            BackgroundColor = Colors.Transparent,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Content = border,
+        };
+
+        vm.Popup = this;
     }
 }
-
 
