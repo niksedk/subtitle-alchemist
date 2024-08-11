@@ -125,6 +125,7 @@ namespace SubtitleAlchemist.Features.Main
             _audioVisualizer.OnSingleClick += _audioVisualizer_OnSingleClick;
             _audioVisualizer.OnDoubleTapped += AudioVisualizer_OnDoubleTapped;
             _audioVisualizer.OnTimeChanged += OnAudioVisualizerOnOnTimeChanged;
+            _audioVisualizer.SetContextMenu(MakeAudioVisualizerContextMenu());
             _audioVisualizer.OnStatus += (sender, args) =>
             {
                 ShowStatus(args.Paragraph.Text);
@@ -133,9 +134,62 @@ namespace SubtitleAlchemist.Features.Main
             SetTimer();
         }
 
+        public MenuFlyout MakeAudioVisualizerContextMenu()
+        {
+            var imagePath = Path.Combine("Resources", "Images", "Menu");
+
+            var menuFlyout = new MenuFlyout();
+            var items = new List<MenuFlyoutItem>
+                {
+                    new MenuFlyoutItem
+                    {
+                        Text = "Delete x lines?",
+                        Command = DeleteSelectedLinesCommand,
+                        IconImageSource = ImageSource.FromFile(Path.Combine(imagePath,"Delete.png")),
+                        IsEnabled = false,
+                    },
+                    new MenuFlyoutItem
+                    {
+                        Text = "Insert line before",
+                        Command = InsertBeforeCommand,
+                        IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Add.png")),
+                        IsEnabled = false,
+                    },
+                    new MenuFlyoutItem
+                    {
+                        Text = "Insert line after",
+                        Command = InsertAfterCommand,
+                        IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Add.png")),
+                        IsEnabled = false,
+                    },
+                    new MenuFlyoutSeparator(),
+                    new MenuFlyoutItem
+                    {
+                        Text = "Italic",
+                        Command = ItalicCommand, KeyboardAccelerators =
+                        {
+                            new KeyboardAccelerator
+                            {
+                                Modifiers = KeyboardAcceleratorModifiers.Ctrl,
+                                Key = "I",
+                            }
+                        },
+                        IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Italic.png")),
+                        IsEnabled = false,
+                    },
+                };
+
+            foreach (var item in items)
+            {
+                menuFlyout.Add(item);
+            }
+
+            return menuFlyout;
+        }
+
         private void OnAudioVisualizerOnOnTimeChanged(object sender, ParagraphEventArgs e)
         {
-            var dp = Paragraphs.FirstOrDefault(p=>p.P.Id == e.Paragraph.Id);
+            var dp = Paragraphs.FirstOrDefault(p => p.P.Id == e.Paragraph.Id);
             if (dp == null)
             {
                 ShowStatus("OnAudioVisualizerOnOnTimeChanged no selected paragraph");
@@ -190,7 +244,7 @@ namespace SubtitleAlchemist.Features.Main
                     {
                         var dp = orderedList[i];
                         var p = new Paragraph(dp.P, false);
-                        p.Text = dp.Text; 
+                        p.Text = dp.Text;
                         p.StartTime.TotalMilliseconds = dp.Start.TotalMilliseconds;
                         p.EndTime.TotalMilliseconds = dp.End.TotalMilliseconds;
                         subtitle.Paragraphs.Add(p);

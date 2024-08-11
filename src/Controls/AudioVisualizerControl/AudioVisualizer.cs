@@ -235,6 +235,11 @@ public class AudioVisualizer : SKCanvasView
         //TODO: test mpv player with _canvas.Handle
     }
 
+    public void SetContextMenu(MenuFlyout menuFlyout)
+    {
+        FlyoutBase.SetContextFlyout(this, menuFlyout); 
+    }
+
     private void PointerExited(object? sender, PointerEventArgs e)
     {
         _mouseOver = false;
