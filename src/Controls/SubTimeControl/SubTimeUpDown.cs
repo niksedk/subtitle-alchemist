@@ -100,10 +100,14 @@ public class SubTimeUpDown : ContentView
         ValueChanged?.Invoke(this, e);
     }
 
-    static void OnTimeChanged(BindableObject bindable, object oldValue, object newValue)
+    private static void OnTimeChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        var control = (SubTimeUpDown)bindable;
-        control.UpdateDisplayText();
+        if (newValue is TimeSpan timeSpan && bindable is SubTimeUpDown control)
+        {
+            control._updown.Value = (float)timeSpan.TotalMilliseconds;
+            control.Time = timeSpan;
+            control.UpdateDisplayText();
+        }
     }
 
     public static string ToDisplayText(TimeSpan time, bool useShortFormat)

@@ -591,16 +591,29 @@ namespace SubtitleAlchemist.Features.Main
 
         private static Grid MakeDefaultListViewAndEditBox(MainViewModel vm)
         {
-            var startTime = new SubTimeUpDown
+            var startTimeUpDown = new SubTimeUpDown
             {
                 DisplayText = "00:00:00,000",
-                Margin = 0,
+                HorizontalOptions = LayoutOptions.Start,
             }
             .Column(0)
             .Row(1);
-            startTime.BindingContext = vm;
-            startTime.ValueChanged += vm.CurrentStartChanged;
-            startTime.Bind(SubTimeUpDown.DisplayTextProperty, nameof(vm.CurrentStart), BindingMode.TwoWay);
+            startTimeUpDown.BindingContext = vm;
+            startTimeUpDown.ValueChanged += vm.CurrentStartChanged;
+            startTimeUpDown.Bind(SubTimeUpDown.TimeProperty, nameof(vm.CurrentStart), BindingMode.TwoWay);
+
+            var durationUpDown = new SubTimeUpDown
+                {
+                    DisplayText = "00:00:00,000",
+                    UseShortFormat = true,
+                    HorizontalOptions = LayoutOptions.Start,
+                }
+                .Column(0)
+                .Row(1);
+            //durationUpDown.BindingContext = vm;
+            //durationUpDown.ValueChanged += vm.CurrentStartChanged;
+            //durationUpDown.Bind(SubTimeUpDown.TimeProperty, nameof(vm.CurrentStart), BindingMode.TwoWay);
+
 
             var editor = new Editor
                 {
@@ -611,13 +624,33 @@ namespace SubtitleAlchemist.Features.Main
                 .Row(1);
             editor.TextChanged += vm.CurrentTextChanged;
 
-            return new Grid
+            var leftGrid = new Grid
+            {
+                ColumnDefinitions = new ColumnDefinitionCollection
+                {
+                    new(GridLength.Auto),
+                    new(GridLength.Auto),
+                },
+                RowDefinitions = new RowDefinitionCollection
+                {
+                    new() { Height = GridLength.Auto },
+                    new() { Height = GridLength.Auto },
+                },
+            };
+
+            leftGrid.Add(new Label { Text = "Show" }, 0, 0);
+            leftGrid.Add(startTimeUpDown, 1, 0);
+            leftGrid.Add(new Label { Text = "Duration" }, 0, 1);
+            leftGrid.Add(durationUpDown, 1, 1);
+
+            var grid = new Grid
             {
                 HorizontalOptions = LayoutOptions.Fill,
                 VerticalOptions = LayoutOptions.Fill,
+                Padding = new Thickness(5),
                 ColumnDefinitions = new ColumnDefinitionCollection
                 {
-                    new(175),
+                    new(GridLength.Auto),
                     new(GridLength.Star),
                     new(100),
                 },
@@ -626,8 +659,13 @@ namespace SubtitleAlchemist.Features.Main
                     new(Star),
                     new(100),
                 },
-                Children = { startTime, editor }
             };
+
+            grid.Add(leftGrid, 0, 1);
+            grid.Add(editor, 1, 1);
+
+
+            return grid;
         }
 
         private static StackLayout MakeStatusBar(MainViewModel mainViewModel)

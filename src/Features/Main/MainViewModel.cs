@@ -61,7 +61,7 @@ namespace SubtitleAlchemist.Features.Main
         private string _currentText;
 
         [ObservableProperty]
-        private string _currentStart;
+        private TimeSpan _currentStart;
 
         private DisplayParagraph? _currentParagraph;
 
@@ -101,7 +101,7 @@ namespace SubtitleAlchemist.Features.Main
             _subtitle = new Subtitle();
             _paragraphs = new ObservableCollection<DisplayParagraph>();
             _currentText = string.Empty;
-            _currentStart = "00.00.00,000";
+            _currentStart = new TimeSpan();
             _audioVisualizer = new AudioVisualizer();
             ListViewAndEditBox = new Grid();
 
@@ -370,7 +370,7 @@ namespace SubtitleAlchemist.Features.Main
             Paragraphs = new ObservableCollection<DisplayParagraph>();
             _currentParagraph = null;
             CurrentText = string.Empty;
-            CurrentStart = "00.00.00,000";
+            CurrentStart = new TimeSpan();
             if (VideoPlayer != null)
             {
                 VideoPlayer.Source = null;
@@ -700,17 +700,13 @@ namespace SubtitleAlchemist.Features.Main
 
         public void CurrentStartChanged(object? sender, ValueChangedEventArgs e)
         {
-            if (_updating)
+            if (_updating || _currentParagraph == null)
             {
                 return;
             }
 
-            var startText = SubTimeUpDown.ToDisplayText(TimeSpan.FromMilliseconds(e.NewValue), false);
-            if (_currentParagraph != null && startText != _currentParagraph.Start)
-            {
-                _currentParagraph.P.StartTime = new TimeCode(e.NewValue);
-                CurrentStart = startText;
-            }
+            _currentParagraph.P.StartTime = new TimeCode(e.NewValue);
+            CurrentStart = TimeSpan.FromMilliseconds(e.NewValue);
         }
 
 
