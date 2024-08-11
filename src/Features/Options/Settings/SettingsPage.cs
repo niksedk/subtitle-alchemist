@@ -119,7 +119,7 @@ public class SettingsPage : ContentPage
         };
 
         var tapGesture = new TapGestureRecognizer();
-        tapGesture.Tapped += (sender, e) => vm.Tapped(sender, e, pageName);
+        tapGesture.Tapped += (sender, e) => vm.LeftMenuTapped(sender, e, pageName);
         label.GestureRecognizers.Add(tapGesture);
 
         return label;

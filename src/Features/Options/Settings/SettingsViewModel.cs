@@ -40,7 +40,7 @@ public partial class SettingsViewModel : ObservableObject
         LoadSettings();
     }
 
-    public async Task Tapped(object? sender, TappedEventArgs e, PageNames pageName)
+    public async Task LeftMenuTapped(object? sender, TappedEventArgs e, PageNames pageName)
     {
         if (Page.Content != null)
         {
@@ -83,14 +83,14 @@ public partial class SettingsViewModel : ObservableObject
 
     public void LoadSettings()
     {
-        Theme = Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme ? "Dark" : "Light";
-        FfmpegPath = Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.FFmpegLocation;
+        Theme = Configuration.Settings.General.UseDarkTheme ? "Dark" : "Light";
+        FfmpegPath = Configuration.Settings.General.FFmpegLocation;
     }
 
     public void SaveSettings()
     {
-        Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.FFmpegLocation = _ffmpegPath;
-        Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme = Theme == "Dark";
+        Configuration.Settings.General.FFmpegLocation = _ffmpegPath;
+        Configuration.Settings.General.UseDarkTheme = Theme == "Dark";
     }
 
     public async Task BrowseForFfmpeg(object? sender, EventArgs eventArgs)
