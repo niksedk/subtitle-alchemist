@@ -5,11 +5,14 @@ namespace SubtitleAlchemist.Features.Main;
 
 public partial class DisplayParagraph : ObservableObject
 {
-    [ObservableProperty] 
+    [ObservableProperty]
     public TimeSpan _start;
 
-    public string End => P.EndTime.ToDisplayString();
-    public string Duration => P.Duration.ToShortDisplayString();
+    [ObservableProperty]
+    public TimeSpan _end;
+
+    [ObservableProperty]
+    public TimeSpan _duration;
 
     [ObservableProperty] 
     private string _text;
@@ -29,6 +32,8 @@ public partial class DisplayParagraph : ObservableObject
     {
         P = paragraph;
         Start = paragraph.StartTime.TimeSpan;
+        End = paragraph.EndTime.TimeSpan;
+        Duration = paragraph.Duration.TimeSpan;
         Text = paragraph.Text;
         BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
         IsSelected = false;

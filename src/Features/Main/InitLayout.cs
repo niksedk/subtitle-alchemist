@@ -532,17 +532,15 @@ namespace SubtitleAlchemist.Features.Main
 
             var durationUpDown = new SubTimeUpDown
             {
-                DisplayText = "00:00:00,000",
+                DisplayText = "00,000",
                 UseShortFormat = true,
                 HorizontalOptions = LayoutOptions.Start,
             }
             .Column(0)
             .Row(1);
-            //TODO:
-            //durationUpDown.BindingContext = vm;
-            //durationUpDown.ValueChanged += vm.CurrentStartChanged;
-            //durationUpDown.Bind(SubTimeUpDown.TimeProperty, nameof(vm.CurrentStart), BindingMode.TwoWay);
-
+            durationUpDown.BindingContext = vm;
+            durationUpDown.ValueChanged += vm.CurrentDurationChanged;
+            durationUpDown.Bind(SubTimeUpDown.TimeProperty, nameof(vm.CurrentDuration), BindingMode.TwoWay);
 
             var editor = new Editor
             {

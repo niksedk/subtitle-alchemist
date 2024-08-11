@@ -44,7 +44,7 @@ public class SubTimeUpDown : ContentView
     }
 
     private readonly Label _timeLabel;
-    private readonly UpDownView _updown;
+    private readonly UpDownView _upDown;
 
     public SubTimeUpDown()
     {
@@ -55,12 +55,12 @@ public class SubTimeUpDown : ContentView
         };
         _timeLabel.SetBinding(Label.TextProperty, new Binding(nameof(DisplayText), source: this));
 
-        _updown = new UpDownView
+        _upDown = new UpDownView
         {
             Background = (Color)Application.Current.Resources["BackgroundColor"],
             TextColor = (Color)Application.Current.Resources["TextColor"],
         };
-        _updown.ValueChanged += OnUpDownValueChanged;
+        _upDown.ValueChanged += OnUpDownValueChanged;
 
         var stackLayout = new StackLayout
         {
@@ -68,7 +68,7 @@ public class SubTimeUpDown : ContentView
             Children =
             {
                 _timeLabel,
-                _updown,
+                _upDown,
             }
         };
 
@@ -104,7 +104,7 @@ public class SubTimeUpDown : ContentView
     {
         if (newValue is TimeSpan timeSpan && bindable is SubTimeUpDown control)
         {
-            control._updown.Value = (float)timeSpan.TotalMilliseconds;
+            control._upDown.Value = (float)timeSpan.TotalMilliseconds;
             control.Time = timeSpan;
             control.UpdateDisplayText();
         }
@@ -116,7 +116,7 @@ public class SubTimeUpDown : ContentView
 
         if (useShortFormat)
         {
-            newDisplayText = newDisplayText.TrimStart('0', ':');
+            newDisplayText = newDisplayText.TrimStart('0', ':', '.');
             if (newDisplayText.Length == 0)
             {
                 newDisplayText = "0";

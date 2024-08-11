@@ -8,7 +8,6 @@ using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SharpHook;
 using SubtitleAlchemist.Controls.AudioVisualizerControl;
-using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
@@ -63,6 +62,12 @@ namespace SubtitleAlchemist.Features.Main
         [ObservableProperty]
         private TimeSpan _currentStart;
 
+        [ObservableProperty]
+        private TimeSpan _currentDuration;
+
+        [ObservableProperty]
+        private TimeSpan _currentEnd;
+
         private DisplayParagraph? _currentParagraph;
 
 
@@ -102,6 +107,8 @@ namespace SubtitleAlchemist.Features.Main
             _paragraphs = new ObservableCollection<DisplayParagraph>();
             _currentText = string.Empty;
             _currentStart = new TimeSpan();
+            _currentEnd = new TimeSpan();
+            _currentDuration = new TimeSpan();
             _audioVisualizer = new AudioVisualizer() { Margin = 10 };
             ListViewAndEditBox = new Grid();
 
@@ -269,6 +276,8 @@ namespace SubtitleAlchemist.Features.Main
             _currentParagraph = paragraph;
             CurrentText = paragraph.Text;
             CurrentStart = paragraph.Start;
+            CurrentEnd = paragraph.End;
+            CurrentDuration = paragraph.End - paragraph.Start;
         }
 
         private void AudioVisualizer_OnDoubleTapped(object sender, AudioVisualizer.PositionEventArgs e)
@@ -371,6 +380,8 @@ namespace SubtitleAlchemist.Features.Main
             _currentParagraph = null;
             CurrentText = string.Empty;
             CurrentStart = new TimeSpan();
+            CurrentEnd = new TimeSpan();
+            CurrentDuration = new TimeSpan();
             if (VideoPlayer != null)
             {
                 VideoPlayer.Source = null;
@@ -591,6 +602,8 @@ namespace SubtitleAlchemist.Features.Main
                     {
                         CurrentText = paragraph.Text;
                         CurrentStart = paragraph.Start;
+                        CurrentEnd = paragraph.End;
+                        CurrentDuration = paragraph.End - paragraph.Start;
                         _currentParagraph = paragraph;
                         first = false;
                     }
@@ -707,6 +720,19 @@ namespace SubtitleAlchemist.Features.Main
 
             _currentParagraph.P.StartTime = new TimeCode(e.NewValue);
             CurrentStart = TimeSpan.FromMilliseconds(e.NewValue);
+        }
+
+        public void CurrentDurationChanged(object? sender, ValueChangedEventArgs e)
+        {
+            if (_updating || _currentParagraph == null)
+            {
+                return;
+            }
+
+            ShowStatus($"CurrentDurationChanged: {e.OldValue} -> {e.NewValue}");
+            _currentParagraph.P.EndTime = new TimeCode(_currentParagraph.Start.TotalMilliseconds + e.NewValue);
+            CurrentEnd = TimeSpan.FromMilliseconds(CurrentStart.TotalMicroseconds + e.NewValue);
+            CurrentDuration = TimeSpan.FromMilliseconds(e.NewValue);
         }
 
 
