@@ -97,12 +97,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -142,12 +136,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -188,12 +176,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -233,12 +215,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -280,12 +256,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -322,12 +292,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -362,12 +326,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -404,12 +362,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -444,12 +396,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -485,12 +431,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -529,12 +469,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -569,12 +503,6 @@ namespace SubtitleAlchemist.Features.Main
                 Children =
                 {
                     InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
-
-                    new Label()
-                        .Bind(Label.TextProperty, static vm => vm.StatusText,
-                            static (MainViewModel vm, string text) => vm.StatusText = text)
-                        .Row(Row.StatusBar)
-                        .Column(Column.Left),
                 }
             };
 
@@ -603,29 +531,31 @@ namespace SubtitleAlchemist.Features.Main
             startTimeUpDown.Bind(SubTimeUpDown.TimeProperty, nameof(vm.CurrentStart), BindingMode.TwoWay);
 
             var durationUpDown = new SubTimeUpDown
-                {
-                    DisplayText = "00:00:00,000",
-                    UseShortFormat = true,
-                    HorizontalOptions = LayoutOptions.Start,
-                }
-                .Column(0)
-                .Row(1);
+            {
+                DisplayText = "00:00:00,000",
+                UseShortFormat = true,
+                HorizontalOptions = LayoutOptions.Start,
+            }
+            .Column(0)
+            .Row(1);
+            //TODO:
             //durationUpDown.BindingContext = vm;
             //durationUpDown.ValueChanged += vm.CurrentStartChanged;
             //durationUpDown.Bind(SubTimeUpDown.TimeProperty, nameof(vm.CurrentStart), BindingMode.TwoWay);
 
 
             var editor = new Editor
-                {
-                    TextColor = (Color)Application.Current.Resources["TextColor"], 
-                    Margin = 5,
-                }
-                .Column(1).Bind("CurrentText")
-                .Row(1);
+            {
+                TextColor = (Color)Application.Current.Resources["TextColor"], 
+                Margin = new Thickness(10),
+            }
+            .Column(1).Bind("CurrentText")
+            .Row(1);
             editor.TextChanged += vm.CurrentTextChanged;
 
             var leftGrid = new Grid
             {
+                Margin = new Thickness(10),
                 ColumnDefinitions = new ColumnDefinitionCollection
                 {
                     new(GridLength.Auto),
@@ -638,16 +568,25 @@ namespace SubtitleAlchemist.Features.Main
                 },
             };
 
-            leftGrid.Add(new Label { Text = "Show" }, 0, 0);
+            leftGrid.Add(new Label
+            {
+                Text = "Show",
+                VerticalOptions = LayoutOptions.End,
+                Padding = new Thickness(0, 0, 5, 5),
+            }, 0, 0);
             leftGrid.Add(startTimeUpDown, 1, 0);
-            leftGrid.Add(new Label { Text = "Duration" }, 0, 1);
+            leftGrid.Add(new Label
+            {
+                Text = "Duration",
+                VerticalOptions = LayoutOptions.End,
+                Padding = new Thickness(0, 0, 5, 5),
+            }, 0, 1);
             leftGrid.Add(durationUpDown, 1, 1);
 
             var grid = new Grid
             {
                 HorizontalOptions = LayoutOptions.Fill,
                 VerticalOptions = LayoutOptions.Fill,
-                Padding = new Thickness(5),
                 ColumnDefinitions = new ColumnDefinitionCollection
                 {
                     new(GridLength.Auto),
@@ -664,7 +603,6 @@ namespace SubtitleAlchemist.Features.Main
             grid.Add(leftGrid, 0, 1);
             grid.Add(editor, 1, 1);
 
-
             return grid;
         }
 
@@ -677,7 +615,10 @@ namespace SubtitleAlchemist.Features.Main
                 VerticalOptions = LayoutOptions.Fill,
                 Children =
                 {
-                    new Label().Bind(Label.TextProperty, static vm => vm.StatusText,
+                    new Label
+                    {
+                        Padding = new Thickness(10,2,2,2),
+                    }.Bind(Label.TextProperty, static vm => vm.StatusText,
                         static (MainViewModel vm, string text) => vm.StatusText = text),
                     new Label().Bind(Label.TextProperty, static vm => vm.SelectedLineInfo,
                         static (MainViewModel vm, string text) => vm.SelectedLineInfo = text),

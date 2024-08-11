@@ -12,6 +12,7 @@ namespace SubtitleAlchemist.Features.Main
                 SelectionMode = SelectionMode.Single,
                 HorizontalOptions = LayoutOptions.Fill,
                 BackgroundColor = Colors.DarkGray,
+                Margin = new Thickness(10),
                 Header = new Grid
                 {
                     ColumnDefinitions = new ColumnDefinitionCollection

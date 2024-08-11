@@ -39,7 +39,6 @@ public class MainPage : ContentPage
         BindingContext = _viewModel;
         _viewModel.MainPage = this;
         BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
-        
 
         InitMenuBar.CreateMenuBar(this, _viewModel);
 
@@ -47,6 +46,7 @@ public class MainPage : ContentPage
         {
             ZIndex = -10000,
             BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            Margin = new Thickness(10),
         };
 
         _viewModel.SubtitleList = InitSubtitleListView.MakeSubtitleListView(_viewModel);

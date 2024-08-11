@@ -102,7 +102,7 @@ namespace SubtitleAlchemist.Features.Main
             _paragraphs = new ObservableCollection<DisplayParagraph>();
             _currentText = string.Empty;
             _currentStart = new TimeSpan();
-            _audioVisualizer = new AudioVisualizer();
+            _audioVisualizer = new AudioVisualizer() { Margin = 10 };
             ListViewAndEditBox = new Grid();
 
             _audioVisualizer.OnVideoPositionChanged += AudioVisualizer_OnVideoPositionChanged;
