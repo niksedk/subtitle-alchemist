@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.Markup;
-using SubtitleAlchemist.Controls.ColorPickerControl;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
@@ -676,14 +675,6 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             TextColor = (Color)Application.Current.Resources["TextColor"],
         }.Bind(nameof(vm.Theme)), 1, 1);
-
-        var colorPicker = new ColorPickerView
-        {
-            WidthRequest = 500,
-            HeightRequest = 500,
-        };
-        grid.Add(colorPicker, 0, 2);
-        Grid.SetColumnSpan(colorPicker, 2);
 
         return grid;
     }
