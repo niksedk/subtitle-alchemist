@@ -516,6 +516,7 @@ namespace SubtitleAlchemist.Features.Main
             _audioVisualizer.OnVideoPositionChanged -= AudioVisualizer_OnVideoPositionChanged;
             SharpHookHandler.Clear();
             Configuration.Settings.Save();
+            SharpHookHandler.Dispose();
         }
         public void Start()
         {

@@ -4,7 +4,7 @@ namespace SubtitleAlchemist.Logic
 {
     public static class SharpHookHandler
     {
-        public static readonly TaskPoolGlobalHook Hook = new();
+        public static TaskPoolGlobalHook? Hook;
         private static bool _loaded;
 
         private static readonly Stack<List<EventHandler<KeyboardHookEventArgs>>> StackKeyPressed = new();
@@ -44,6 +44,11 @@ namespace SubtitleAlchemist.Logic
             if (_loaded)
             {
                 return;
+            }
+
+            if (Hook == null || Hook.IsDisposed)
+            {
+                Hook = new TaskPoolGlobalHook();
             }
 
             _loaded = true;
@@ -123,6 +128,12 @@ namespace SubtitleAlchemist.Logic
             {
                 CurrentMouseReleasedEventHandlers.AddRange(StackMouseReleased.Pop());
             }
+        }
+
+        public static void Dispose()
+        {
+            Hook?.Dispose();
+            _loaded = false;
         }
     }
 }
