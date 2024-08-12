@@ -42,7 +42,7 @@ namespace SubtitleAlchemist.Features.Main
         public CollectionView SubtitleList { get; set; }
         public Grid ListViewAndEditBox { get; set; }
         public static IList SubtitleFormatNames => SubtitleFormat.AllSubtitleFormats.Select(p => p.Name).ToList();
-
+        public Editor TextBox { get; set; }
         public Picker? SubtitleFormatPicker { get; internal set; }
         public Picker? EncodingPicker { get; internal set; }
         public static IList EncodingNames => EncodingHelper.GetEncodings().Select(p => p.DisplayName).ToList();
@@ -122,9 +122,10 @@ namespace SubtitleAlchemist.Features.Main
             ListViewAndEditBox = new Grid();
 
             _audioVisualizer.OnVideoPositionChanged += AudioVisualizer_OnVideoPositionChanged;
-            _audioVisualizer.OnSingleClick += _audioVisualizer_OnSingleClick;
-            _audioVisualizer.OnDoubleTapped += AudioVisualizer_OnDoubleTapped;
+            _audioVisualizer.OnSingleClick += _audioVisualizerOnSingleClick;
+            _audioVisualizer.OnDoubleTapped += AudioVisualizerOnDoubleTapped;
             _audioVisualizer.OnTimeChanged += OnAudioVisualizerOnOnTimeChanged;
+            _audioVisualizer.OnNewSelectionInsert += AudioVisualizerOnNewSelectionInsert;
             _audioVisualizer.SetContextMenu(MakeAudioVisualizerContextMenu());
             _audioVisualizer.OnStatus += (sender, args) =>
             {
@@ -132,6 +133,29 @@ namespace SubtitleAlchemist.Features.Main
             };
 
             SetTimer();
+        }
+
+        private void AudioVisualizerOnNewSelectionInsert(object sender, ParagraphEventArgs e)
+        {
+            var newDp = new DisplayParagraph(e.Paragraph);
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                foreach (var dp in Paragraphs)
+                {
+                    if (dp.P.StartTime.TotalMilliseconds >= e.Paragraph.StartTime.TotalMilliseconds)
+                    {
+                        Paragraphs.Insert(Paragraphs.IndexOf(dp), newDp);
+                        SelectParagraph(newDp);
+                        TextBox.Focus();
+                        return;
+                    }
+                }
+
+                Paragraphs.Insert(0, newDp);
+                SelectParagraph(newDp);
+                TextBox.Focus();
+            });
         }
 
         public MenuFlyout MakeAudioVisualizerContextMenu()
@@ -304,8 +328,6 @@ namespace SubtitleAlchemist.Features.Main
 
                 _timer.Start();
             };
-
-            _timer.Enabled = true;
         }
 
         private int GetFirstSelectedIndex()
@@ -344,7 +366,7 @@ namespace SubtitleAlchemist.Features.Main
             MediaElementState.Stopped,
         };
 
-        private void _audioVisualizer_OnSingleClick(object sender, ParagraphEventArgs e)
+        private void _audioVisualizerOnSingleClick(object sender, ParagraphEventArgs e)
         {
             var timeSpan = TimeSpan.FromSeconds(e.Seconds);
             MainThread.BeginInvokeOnMainThread(() =>
@@ -403,7 +425,7 @@ namespace SubtitleAlchemist.Features.Main
             CurrentDuration = paragraph.End - paragraph.Start;
         }
 
-        private void AudioVisualizer_OnDoubleTapped(object sender, AudioVisualizer.PositionEventArgs e)
+        private void AudioVisualizerOnDoubleTapped(object sender, AudioVisualizer.PositionEventArgs e)
         {
             var timeSpan = TimeSpan.FromSeconds(e.PositionInSeconds);
             var ms = e.PositionInSeconds * 1000.0;
@@ -423,12 +445,9 @@ namespace SubtitleAlchemist.Features.Main
 
         public void CleanUp()
         {
-            //_stopping = true;
-            _timer.Stop();
+          //  _timer.Stop();
             _audioVisualizer.OnVideoPositionChanged -= AudioVisualizer_OnVideoPositionChanged;
-            //SharpHookHandler.Dispose();
-            //_timer.Dispose();
-
+            SharpHookHandler.Clear();
             Configuration.Settings.Save();
         }
 
@@ -515,6 +534,11 @@ namespace SubtitleAlchemist.Features.Main
             if (Window != null)
             {
                 Window.Title = "Untitled - Subtitle Alchemist";
+            }
+
+            if (!_stopping)
+            {
+                _timer.Start();
             }
         }
 
@@ -901,7 +925,7 @@ namespace SubtitleAlchemist.Features.Main
                 Paragraphs.Remove(displayParagraph);
             }
 
-            if (firstIdx > Paragraphs.Count)
+            if (firstIdx >= Paragraphs.Count)
             {
                 firstIdx = Paragraphs.Count - 1;
             }

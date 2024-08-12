@@ -22,6 +22,21 @@ namespace SubtitleAlchemist.Logic
             CurrentMouseClickedEventHandlers.Add(mouseHookEventArgs);
         }
 
+        private static readonly Stack<List<EventHandler<MouseHookEventArgs>>> StackMousePressed = new();
+        private static readonly List<EventHandler<MouseHookEventArgs>> CurrentMousePressedEventHandlers = new();
+        public static void AddMousePressed(EventHandler<MouseHookEventArgs> mouseHookEventArgs)
+        {
+            CurrentMousePressedEventHandlers.Add(mouseHookEventArgs);
+        }
+
+
+        private static readonly Stack<List<EventHandler<MouseHookEventArgs>>> StackMouseReleased = new();
+        private static readonly List<EventHandler<MouseHookEventArgs>> CurrentMouseReleasedEventHandlers = new();
+        public static void AddMouseReleased(EventHandler<MouseHookEventArgs> mouseHookEventArgs)
+        {
+            CurrentMouseReleasedEventHandlers.Add(mouseHookEventArgs);
+        }
+
         public static async Task RunAsync()
         {
             return; //TODO: Remove
@@ -49,6 +64,22 @@ namespace SubtitleAlchemist.Logic
                 }
             };
 
+            Hook.MousePressed += (s, e) =>
+            {
+                foreach (var handler in CurrentMousePressedEventHandlers)
+                {
+                    handler?.Invoke(s, e);
+                }
+            };
+
+            Hook.MouseReleased += (s, e) =>
+            {
+                foreach (var handler in CurrentMouseReleasedEventHandlers)
+                {
+                    handler?.Invoke(s, e);
+                }
+            };
+
             await Hook.RunAsync();
         }
 
@@ -56,12 +87,16 @@ namespace SubtitleAlchemist.Logic
         {
             CurrentKeyPressedEventHandlers.Clear();
             CurrentMouseClickedEventHandlers.Clear();
+            CurrentMousePressedEventHandlers.Clear();
+            CurrentMouseReleasedEventHandlers.Clear();
         }
 
         public static void Push()
         {
             StackKeyPressed.Push(CurrentKeyPressedEventHandlers);
             StackMouseClicked.Push(CurrentMouseClickedEventHandlers);
+            StackMousePressed.Push(CurrentMousePressedEventHandlers);
+            StackMouseReleased.Push(CurrentMouseReleasedEventHandlers);
             Clear();
         }
 
@@ -77,6 +112,16 @@ namespace SubtitleAlchemist.Logic
             if (StackMouseClicked.Count > 0)
             {
                 CurrentMouseClickedEventHandlers.AddRange(StackMouseClicked.Pop());
+            }
+
+            if (StackMousePressed.Count > 0)
+            {
+                CurrentMousePressedEventHandlers.AddRange(StackMousePressed.Pop());
+            }
+
+            if (StackMouseReleased.Count > 0)
+            {
+                CurrentMouseReleasedEventHandlers.AddRange(StackMouseReleased.Pop());
             }
         }
 

@@ -2,8 +2,11 @@
 using MauiCursor;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Forms;
+using SharpHook;
+using SharpHook.Native;
 using SkiaSharp;
 using SkiaSharp.Views.Maui.Controls;
+using SubtitleAlchemist.Logic;
 using SKPaintSurfaceEventArgs = SkiaSharp.Views.Maui.SKPaintSurfaceEventArgs;
 
 namespace SubtitleAlchemist.Controls.AudioVisualizerControl;
@@ -77,10 +80,13 @@ public class AudioVisualizer : SKCanvasView
     public event ParagraphEventHandler? OnStartTimeChanged;
     public event ParagraphEventHandler? OnTimeChangedAndOffsetRest;
     public event ParagraphEventHandler? OnNewSelectionRightClicked;
+    public event ParagraphEventHandler? OnNewSelectionInsert;
     public event ParagraphEventHandler? OnParagraphRightClicked;
     public event ParagraphEventHandler? OnNonParagraphRightClicked;
     public event ParagraphEventHandler? OnSingleClick;
     public event ParagraphEventHandler? OnStatus;
+
+    public event EventHandler OnZoomedChanged;
 
     public class PositionEventArgs : EventArgs
     {
@@ -232,7 +238,66 @@ public class AudioVisualizer : SKCanvasView
         pointerGestureRecognizer.PointerExited += PointerExited;
         GestureRecognizers.Add(pointerGestureRecognizer);
 
+        SharpHookHandler.AddMousePressed(OnMousePressed);
+        SharpHookHandler.AddMouseReleased(OnMouseReleased);
+        SharpHookHandler.AddKeyPressed(OnKeyPressed);
+
         //TODO: test mpv player with _canvas.Handle
+    }
+
+    private void OnKeyPressed(object? sender, KeyboardHookEventArgs e)
+    {
+        if (!_mouseOver)
+        {
+            return;
+        }
+
+        if (e.Data.KeyCode == KeyCode.VcNumPadAdd) //TODO: modifiers?
+        {
+            ZoomIn();
+            e.SuppressEvent = true;
+        }
+        else if (e.Data.KeyCode == KeyCode.VcNumPadSubtract)
+        {
+            ZoomOut();
+            e.SuppressEvent = true;
+        }
+        else if (e.Data.KeyCode is KeyCode.VcNumPad0 or KeyCode.Vc0)
+        {
+            ZoomFactor = 1.0;
+            OnZoomedChanged?.Invoke(this, null);
+            e.SuppressEvent = true;
+        }
+        else if (e.Data.KeyCode == KeyCode.VcLeft)
+        {
+            StartPositionSeconds -= 0.1;
+            e.SuppressEvent = true;
+        }
+        else if (e.Data.KeyCode == KeyCode.VcRight)
+        {
+            StartPositionSeconds += 0.1;
+            e.SuppressEvent = true;
+        }
+        else if (e.Data.KeyCode == KeyCode.VcEnter)
+        {
+            if (NewSelectionParagraph != null)
+            {
+                OnNewSelectionInsert?.Invoke(this, new ParagraphEventArgs(NewSelectionParagraph));
+                NewSelectionParagraph = null;
+            }
+        }
+    }
+
+    public void ZoomIn()
+    {
+        ZoomFactor += 0.1;
+        OnZoomedChanged?.Invoke(this, null);
+    }
+
+    public void ZoomOut()
+    {
+        ZoomFactor -= 0.1;
+        OnZoomedChanged?.Invoke(this, null);
     }
 
     public void SetContextMenu(MenuFlyout menuFlyout)
@@ -276,10 +341,39 @@ public class AudioVisualizer : SKCanvasView
         }
     }
 
+    private SKPoint _lastTouchPoint;
+    private bool _isLeftButtonPressed;
+    private bool _isRightButtonPressed;
+
+
+    private void OnMousePressed(object? sender, MouseHookEventArgs e)
+    {
+        UpdateMouseState("Pressed", e);
+    }
+
+    private void OnMouseReleased(object? sender, MouseHookEventArgs e)
+    {
+        UpdateMouseState("Released", e);
+    }
+
+    private void UpdateMouseState(string action, MouseHookEventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            MouseStatus.MouseButton1 = e.Data.Button == MouseButton.Button1;
+            MouseStatus.MouseButton2 = e.Data.Button == MouseButton.Button2;
+        });
+    }
+
     private void PointerPressed(object? sender, PointerEventArgs e)
     {
         _mouseDown = true;
-        MouseStatus.MouseButton1 = true;
+        
+        //for debug
+        if (MouseStatus.MouseButtonNone)
+        {
+            MouseStatus.MouseButton1 = true;
+        }
 
         if (WavePeaks == null)
         {
@@ -400,6 +494,7 @@ public class AudioVisualizer : SKCanvasView
                 _mouseMoveStartX = x;
                 _mouseMoveEndX = x;
             }
+
             if (_mouseDownParagraphType == MouseDownParagraphType.Start)
             {
                 if (_subtitle != null && _mouseDownParagraph != null)
@@ -469,7 +564,7 @@ public class AudioVisualizer : SKCanvasView
         {
             Paragraph prev = null;
             Paragraph next = null;
-            var paragraphs = _subtitle.Paragraphs.OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
+            var paragraphs = _subtitle.Paragraphs.ToList();
             for (var i = 0; i < paragraphs.Count; i++)
             {
                 var p2 = paragraphs[i];
@@ -506,6 +601,12 @@ public class AudioVisualizer : SKCanvasView
             {
                 var paragraphs = _subtitle.Paragraphs.ToList();
                 var p = paragraphs.FirstOrDefault(p => p.Id == _mouseDownParagraph.Id);
+
+                if (p == null)
+                {
+                    OnStatus?.Invoke(this, new ParagraphEventArgs(new Paragraph() { Text = "SetMinAndMax p not found!!!" }));
+                }
+
                 if (p != null)
                 {
                     var curIdx = paragraphs.IndexOf(p);
@@ -524,8 +625,8 @@ public class AudioVisualizer : SKCanvasView
         }
         catch (Exception e)
         {
-            //TODO: Fix multiple accesors to _subtitle.Paragraphs ???
-            //Console.WriteLine(e);
+            //TODO: Fix multiple accessors to _subtitle.Paragraphs ???
+            Console.WriteLine(e);
             //throw;
         }
     }
@@ -684,7 +785,10 @@ public class AudioVisualizer : SKCanvasView
                         var seconds = RelativeXPositionToSeconds(x);
                         var milliseconds = (int)(seconds * TimeCode.BaseUnit);
                         var p = GetParagraphAtMilliseconds(milliseconds);
-                        OnSingleClick?.Invoke(this, new ParagraphEventArgs(RelativeXPositionToSeconds(x), p));
+                        if (p != null)
+                        {
+                            OnSingleClick?.Invoke(this, new ParagraphEventArgs(RelativeXPositionToSeconds(x), p));
+                        }
                     }
                 }
             }
@@ -1098,7 +1202,7 @@ public class AudioVisualizer : SKCanvasView
 
         if (Handler?.MauiContext is MauiContext context)
         {
-            OnStatus?.Invoke(this, new ParagraphEventArgs(new Paragraph() { Text = "Cursor: " + cursor }));
+            //OnStatus?.Invoke(this, new ParagraphEventArgs(new Paragraph() { Text = "Cursor: " + cursor }));
 
             this.SetCustomCursor(cursor, context);
 
@@ -1251,6 +1355,12 @@ public class AudioVisualizer : SKCanvasView
         if (!point.HasValue)
         {
             return;
+        }
+
+        if (e.Buttons ==  ButtonsMask.Primary)
+        {
+            MouseStatus.MouseButton1 = true;
+            MouseStatus.MouseButton2 = false;
         }
 
         var positionInSeconds = RelativeXPositionToSeconds(point.Value.X);

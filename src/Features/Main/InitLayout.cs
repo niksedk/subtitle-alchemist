@@ -542,14 +542,14 @@ namespace SubtitleAlchemist.Features.Main
             durationUpDown.ValueChanged += vm.CurrentDurationChanged;
             durationUpDown.Bind(SubTimeUpDown.TimeProperty, nameof(vm.CurrentDuration), BindingMode.TwoWay);
 
-            var editor = new Editor
+            vm.TextBox = new Editor
             {
                 TextColor = (Color)Application.Current.Resources["TextColor"], 
                 Margin = new Thickness(10),
             }
             .Column(1).Bind("CurrentText")
             .Row(1);
-            editor.TextChanged += vm.CurrentTextChanged;
+            vm.TextBox.TextChanged += vm.CurrentTextChanged;
 
             var leftGrid = new Grid
             {
@@ -599,7 +599,7 @@ namespace SubtitleAlchemist.Features.Main
             };
 
             grid.Add(leftGrid, 0, 1);
-            grid.Add(editor, 1, 1);
+            grid.Add(vm.TextBox, 1, 1);
 
             return grid;
         }
