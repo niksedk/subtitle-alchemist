@@ -39,7 +39,7 @@ namespace SubtitleAlchemist.Logic
 
         public static async Task RunAsync()
         {
-            return; //TODO: Remove
+            //return; //TODO: Remove
 
             if (_loaded)
             {
@@ -123,12 +123,6 @@ namespace SubtitleAlchemist.Logic
             {
                 CurrentMouseReleasedEventHandlers.AddRange(StackMouseReleased.Pop());
             }
-        }
-
-        public static void Dispose()
-        {
-            Clear();
-            Hook.Dispose();
         }
     }
 }

@@ -87,6 +87,7 @@ public class AudioVisualizer : SKCanvasView
     public event ParagraphEventHandler? OnStatus;
 
     public event EventHandler OnZoomedChanged;
+    public event EventHandler OnPlayToggle;
 
     public class PositionEventArgs : EventArgs
     {
@@ -115,7 +116,6 @@ public class AudioVisualizer : SKCanvasView
             if (Math.Abs(_zoomFactor - value) > 0.01)
             {
                 _zoomFactor = value;
-                InvalidateSurface();
             }
         }
     }
@@ -143,7 +143,6 @@ public class AudioVisualizer : SKCanvasView
             if (Math.Abs(_verticalZoomFactor - value) > 0.01)
             {
                 _verticalZoomFactor = value;
-                InvalidateSurface();
             }
         }
     }
@@ -171,7 +170,6 @@ public class AudioVisualizer : SKCanvasView
             if (Math.Abs(_startPositionSeconds - value) > 0.01)
             {
                 _startPositionSeconds = value;
-                InvalidateSurface();
             }
         }
     }
@@ -286,6 +284,10 @@ public class AudioVisualizer : SKCanvasView
                 NewSelectionParagraph = null;
             }
         }
+        else if (e.Data.KeyCode == KeyCode.VcSpace)
+        {
+            OnPlayToggle?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     public void ZoomIn()
@@ -302,7 +304,7 @@ public class AudioVisualizer : SKCanvasView
 
     public void SetContextMenu(MenuFlyout menuFlyout)
     {
-        FlyoutBase.SetContextFlyout(this, menuFlyout); 
+        FlyoutBase.SetContextFlyout(this, menuFlyout);
     }
 
     private void PointerExited(object? sender, PointerEventArgs e)
@@ -368,7 +370,7 @@ public class AudioVisualizer : SKCanvasView
     private void PointerPressed(object? sender, PointerEventArgs e)
     {
         _mouseDown = true;
-        
+
         //for debug
         if (MouseStatus.MouseButtonNone)
         {
@@ -796,6 +798,7 @@ public class AudioVisualizer : SKCanvasView
         finally
         {
             _mouseDown = false;
+            _mouseDownParagraph = null;
             MouseStatus.MouseButton1 = false;
             MouseStatus.MouseButton2 = false;
         }
@@ -815,7 +818,6 @@ public class AudioVisualizer : SKCanvasView
         }
 
         var x = (int)Math.Round(point.Value.X, MidpointRounding.AwayFromZero);
-        var y = (int)Math.Round(point.Value.Y, MidpointRounding.AwayFromZero);
 
         var oldMouseMoveLastX = _mouseMoveLastX;
         if (x < 0 && _startPositionSeconds > 0.1 && _mouseDown)
@@ -831,9 +833,9 @@ public class AudioVisualizer : SKCanvasView
                 }
             }
             _mouseMoveLastX = x;
-            //Invalidate();
             return;
         }
+
         if (x > _info.Width && _startPositionSeconds + 0.1 < WavePeaks.LengthInSeconds && _mouseDown)
         {
             StartPositionSeconds += 0.1;
@@ -844,15 +846,20 @@ public class AudioVisualizer : SKCanvasView
                 OnPositionSelected?.Invoke(this, new ParagraphEventArgs(_startPositionSeconds, null));
             }
             _mouseMoveLastX = x;
-            //Invalidate();
             return;
         }
+
         _mouseMoveLastX = x;
 
         if (x < 0 || x > _info.Width)
         {
             return;
         }
+
+        OnStatus?.Invoke(this, new ParagraphEventArgs(new Paragraph
+        {
+            Text = "x: " + x + ", oldMouseMoveLastX == x" + (oldMouseMoveLastX == x) + ", firstMove" + _firstMove
+        }));
 
         if (MouseStatus.MouseButtonNone)
         {
@@ -1166,28 +1173,23 @@ public class AudioVisualizer : SKCanvasView
                             if (nearestShotChangeInFront != null && Math.Abs(SecondsToXPosition(NewSelectionParagraph.StartTime.TotalSeconds - _startPositionSeconds) - SecondsToXPosition(nearestShotChangeInFront.Value - _startPositionSeconds)) < ShotChangeSnapPixels)
                             {
                                 NewSelectionParagraph.StartTime.TotalMilliseconds = (nearestShotChangeInFront.Value * 1000) + TimeCodesBeautifierUtils.GetInCuesGapMs();
-                                //Invalidate();
                             }
                             if (nearestShotChangeInBack != null && Math.Abs(SecondsToXPosition(NewSelectionParagraph.EndTime.TotalSeconds - _startPositionSeconds) - SecondsToXPosition(nearestShotChangeInBack.Value - _startPositionSeconds)) < ShotChangeSnapPixels)
                             {
                                 NewSelectionParagraph.EndTime.TotalMilliseconds = (nearestShotChangeInBack.Value * 1000) - TimeCodesBeautifierUtils.GetOutCuesGapMs();
-                                //Invalidate();
                             }
                         }
 
                         if (PreventOverlap && endTotalSeconds * TimeCode.BaseUnit >= _wholeParagraphMaxMilliseconds)
                         {
                             NewSelectionParagraph.EndTime.TotalMilliseconds = _wholeParagraphMaxMilliseconds - 1;
-                            //Invalidate();
                         }
                         if (PreventOverlap && startTotalSeconds * TimeCode.BaseUnit <= _wholeParagraphMinMilliseconds)
                         {
                             NewSelectionParagraph.StartTime.TotalMilliseconds = _wholeParagraphMinMilliseconds + 1;
-                            //Invalidate();
                         }
                     }
                 }
-                //Invalidate();
             }
         }
     }
@@ -1357,7 +1359,7 @@ public class AudioVisualizer : SKCanvasView
             return;
         }
 
-        if (e.Buttons ==  ButtonsMask.Primary)
+        if (e.Buttons == ButtonsMask.Primary)
         {
             MouseStatus.MouseButton1 = true;
             MouseStatus.MouseButton2 = false;
@@ -1435,24 +1437,12 @@ public class AudioVisualizer : SKCanvasView
         }
         _currentVideoPositionSeconds = currentVideoPositionSeconds;
         LoadParagraphs(subtitle, subtitleIndex, selectedIndexes);
-        if (IsVisible)
-        {
-            try
-            {
-                InvalidateSurface();
-            }
-            catch
-            {
-                // ignore
-            }
-        }
     }
 
     private void LoadParagraphs(Subtitle subtitle, int primarySelectedIndex, int[] selectedIndexes)
     {
         lock (_lock)
         {
-
             _subtitle.Paragraphs.Clear();
             _displayableParagraphs.Clear();
             SelectedParagraph = null;

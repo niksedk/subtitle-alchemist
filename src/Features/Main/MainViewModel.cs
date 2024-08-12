@@ -126,13 +126,56 @@ namespace SubtitleAlchemist.Features.Main
             _audioVisualizer.OnDoubleTapped += AudioVisualizerOnDoubleTapped;
             _audioVisualizer.OnTimeChanged += OnAudioVisualizerOnOnTimeChanged;
             _audioVisualizer.OnNewSelectionInsert += AudioVisualizerOnNewSelectionInsert;
+            _audioVisualizer.OnPlayToggle += AudioVisualizerOnPlayToggle;
             _audioVisualizer.SetContextMenu(MakeAudioVisualizerContextMenu());
             _audioVisualizer.OnStatus += (sender, args) =>
             {
                 ShowStatus(args.Paragraph.Text);
             };
 
+            //VideoPlayer.MediaOpened += (sender, args) =>
+            //{
+            //    VideoPlayer.SetTimerInterval(19);
+            //};
+
+            //VideoPlayer.StateChanged += (sender, args) =>
+            //{
+            //    if (!_firstPlay)
+            //    {
+            //        return;
+            //    }
+
+            //    if (VideoPlayer.CurrentState == MediaElementState.Playing)
+            //    {
+            //        VideoPlayer.SetTimerInterval(19);
+            //        _firstPlay = false;
+            //    }
+            //};
+
             SetTimer();
+        }
+
+        private bool _firstPlay = true;
+
+
+        private void AudioVisualizerOnPlayToggle(object? sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(_videoFileName) || VideoPlayer == null)
+            {
+                return;
+            }
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (VideoPlayer.CurrentState == MediaElementState.Playing)
+                {
+                    VideoPlayer.Pause();
+                }
+                else
+                {
+                    VideoPlayer.Play();
+                }
+            });
         }
 
         private void AudioVisualizerOnNewSelectionInsert(object sender, ParagraphEventArgs e)
@@ -246,13 +289,17 @@ namespace SubtitleAlchemist.Features.Main
             }
         }
 
-        private void SetTimer()
+        public void StopTimer()
         {
-            if (_stopping)
-            {
-                return;
-            }
+            _stopping = true;
+            _timer.Stop();
 
+            // Delay 100 ms
+            Task.Delay(100).Wait();
+        }
+
+        public void SetTimer()
+        {
             _timer.Elapsed += (_, _) =>
             {
                 _timer.Stop();
@@ -284,9 +331,21 @@ namespace SubtitleAlchemist.Features.Main
                         }
                     }
 
+                    if (_stopping)
+                    {
+                        return;
+                    }
+
                     var mediaPlayerSeconds = VideoPlayer.Position.TotalSeconds;
                     if (VideoPlayer.CurrentState == MediaElementState.Playing)
                     {
+                        // Hack to speed up waveform movement
+                        if (_firstPlay && VideoPlayer.CurrentState == MediaElementState.Playing)
+                        {
+                            VideoPlayer.SetTimerInterval(25);
+                            _firstPlay = false;
+                        }
+
                         // var diff = DateTime.UtcNow.Ticks - _mediaPlayerStartAt;
                         // var seconds = TimeSpan.FromTicks(diff).TotalSeconds;
                         var startPos = mediaPlayerSeconds - 0.01;
@@ -315,16 +374,23 @@ namespace SubtitleAlchemist.Features.Main
                             _audioVisualizer.SetPosition(_audioVisualizer.StartPositionSeconds, subtitle, mediaPlayerSeconds, firstSelectedIndex, selectedIndices.ToArray());
                         }
                     }
-
-                    try
-                    {
-                        _audioVisualizer.InvalidateSurface();
-                    }
-                    catch (Exception ex)
-                    {
-                        ShowStatus(ex.Message);
-                    }
                 }
+
+                if (_stopping)
+                {
+                    return;
+                }
+
+                try
+                {
+                    AudioVisualizer.InvalidateSurface();
+                }
+                catch
+                {
+                    // ignore
+                }
+
+
 
                 _timer.Start();
             };
@@ -443,12 +509,20 @@ namespace SubtitleAlchemist.Features.Main
             });
         }
 
-        public void CleanUp()
+        public void Stop()
         {
-          //  _timer.Stop();
+            _stopping = true;
+            _timer.Stop();
             _audioVisualizer.OnVideoPositionChanged -= AudioVisualizer_OnVideoPositionChanged;
             SharpHookHandler.Clear();
             Configuration.Settings.Save();
+        }
+        public void Start()
+        {
+            _stopping = false;
+            _timer.Start();
+            _audioVisualizer.OnVideoPositionChanged += AudioVisualizer_OnVideoPositionChanged;
+            SharpHookHandler.AddKeyPressed(KeyPressed);
         }
 
         public void Loaded(MainPage mainPage)

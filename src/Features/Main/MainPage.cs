@@ -54,10 +54,13 @@ public class MainPage : ContentPage
 
         MakeLayout(0); // TODO: use settings to determine layout
 
-        Unloaded += OnUnloaded!;
         Loaded += OnLoaded!;
+    }
 
-        SharpHookHandler.AddKeyPressed(vm.KeyPressed);
+    protected override void OnDisappearing()
+    {
+        _viewModel.Stop();
+        base.OnDisappearing();
     }
 
     public void MakeLayout(int layoutNumber)
@@ -68,24 +71,7 @@ public class MainPage : ContentPage
     private async void OnLoaded(object s, EventArgs e)
     {
         _viewModel.Loaded(this);
+        _viewModel.Start();
         await SharpHookHandler.RunAsync();
-    }
-
-    private void OnUnloaded(object s, EventArgs e)
-    {
-        _viewModel.CleanUp();
-    }
-
-    protected override void OnNavigatedTo(NavigatedToEventArgs args)
-    {
-        // TODO: start timer + keyboard listener?
-
-        base.OnNavigatedTo(args);
-    }
-
-    protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
-    {
-        // TODO: stop timer + keyboard listener?
-        base.OnNavigatedFrom(args);
     }
 }
