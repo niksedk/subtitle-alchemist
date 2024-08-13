@@ -6,7 +6,7 @@ namespace SubtitleAlchemist.Features.Main
     {
         internal static StackLayout CreateToolbarBar(MainPage page, MainViewModel vm)
         {
-            var imagePath = Path.Combine("Resources", "Images", "DarkTheme");
+            var imagePrefix = "theme_dark_";
 
             vm.SubtitleFormatPicker = new Picker
             {
@@ -34,7 +34,7 @@ namespace SubtitleAlchemist.Features.Main
                 {
                     new ImageButton
                     {
-                        Source = ImageSource.FromFile(Path.Combine(imagePath,"New.png")),
+                        Source = $"{imagePrefix}new.png",
                         Padding = 5,
                         WidthRequest = 16,
                         HeightRequest = 16,
@@ -44,7 +44,7 @@ namespace SubtitleAlchemist.Features.Main
                     },
                     new ImageButton
                     {
-                        Source = ImageSource.FromFile(Path.Combine(imagePath,"Open.png")),
+                        Source = $"{imagePrefix}open.png",
                         Padding = 5,
                         WidthRequest = 16,
                         HeightRequest = 16,
@@ -54,7 +54,7 @@ namespace SubtitleAlchemist.Features.Main
                     },
                     new ImageButton
                     {
-                        Source = ImageSource.FromFile(Path.Combine(imagePath,"Save.png")),
+                        Source = $"{imagePrefix}save.png",
                         Padding = 5,
                         WidthRequest = 16,
                         HeightRequest = 16,
@@ -64,7 +64,7 @@ namespace SubtitleAlchemist.Features.Main
                     },
                     new ImageButton
                     {
-                        Source = ImageSource.FromFile(Path.Combine(imagePath,"SaveAs.png")),
+                        Source = $"{imagePrefix}save_as.png",
                         Padding = 5,
                         WidthRequest = 16,
                         HeightRequest = 16,
@@ -74,7 +74,7 @@ namespace SubtitleAlchemist.Features.Main
                     },
                     new ImageButton
                     {
-                        Source = ImageSource.FromFile(Path.Combine(imagePath,"Find.png")),
+                        Source = $"{imagePrefix}find.png",
                         Padding = 5,
                         WidthRequest = 16,
                         HeightRequest = 16,
@@ -83,7 +83,7 @@ namespace SubtitleAlchemist.Features.Main
                     },
                     new ImageButton
                     {
-                        Source = ImageSource.FromFile(Path.Combine(imagePath,"Replace.png")),
+                        Source = $"{imagePrefix}replace.png",
                         Padding = 5,
                         WidthRequest = 16,
                         HeightRequest = 16,
@@ -92,7 +92,7 @@ namespace SubtitleAlchemist.Features.Main
                     },
                     new ImageButton
                     {
-                        Source = ImageSource.FromFile(Path.Combine(imagePath,"Help.png")),
+                        Source = $"{imagePrefix}help.png",
                         Padding = 5,
                         WidthRequest = 16,
                         HeightRequest = 16,
@@ -101,7 +101,7 @@ namespace SubtitleAlchemist.Features.Main
                     },
                     new ImageButton
                     {
-                        Source = ImageSource.FromFile(Path.Combine(imagePath,"Layout.png")),
+                        Source = $"{imagePrefix}layout.png",
                         Padding = 5,
                         WidthRequest = 16,
                         HeightRequest = 16,
