@@ -72,7 +72,7 @@ public partial class SettingsViewModel : ObservableObject
     public async Task PickSyntaxErrorColor()
     {
         var result = await _popupService.ShowPopupAsync<ColorPickerPopupModel>(
-                onPresenting: vm => vm.SetCurrentColor(SyntaxErrorColorBox.Color), 
+                onPresenting: vm => vm.SetCurrentColor(SyntaxErrorColorBox.Color),
                 CancellationToken.None);
 
         if (result is Color color)
@@ -89,7 +89,7 @@ public partial class SettingsViewModel : ObservableObject
 
     public void SaveSettings()
     {
-        Configuration.Settings.General.FFmpegLocation = _ffmpegPath;
+        Configuration.Settings.General.FFmpegLocation = FfmpegPath;
         Configuration.Settings.General.UseDarkTheme = Theme == "Dark";
     }
 
@@ -107,24 +107,21 @@ public partial class SettingsViewModel : ObservableObject
 
     public async Task DownloadFfmpeg(object? sender, EventArgs eventArgs)
     {
-        if (Configuration.IsRunningOnWindows)
+        var answer = await SettingsPage.DisplayAlert(
+            "Download ffmpeg?",
+            "Download and use ffmpeg?",
+            "Yes",
+            "No");
+
+        if (!answer)
         {
-            var answer = await SettingsPage.DisplayAlert(
-                "Download ffmpeg?",
-                "Download and use ffmpeg?",
-                "Yes",
-                "No");
+            return;
+        }
 
-            if (!answer)
-            {
-                return;
-            }
-
-            var result = await _popupService.ShowPopupAsync<DownloadFfmpegModel>(CancellationToken.None);
-            if (result is string ffmpegFileName)
-            {
-                FfmpegPath = ffmpegFileName;
-            }
+        var result = await _popupService.ShowPopupAsync<DownloadFfmpegModel>(CancellationToken.None);
+        if (result is string ffmpegFileName)
+        {
+            FfmpegPath = ffmpegFileName;
         }
     }
 }
