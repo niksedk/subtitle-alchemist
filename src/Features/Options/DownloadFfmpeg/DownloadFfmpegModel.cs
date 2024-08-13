@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Services;
 using System.Globalization;
@@ -107,7 +106,7 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
 
         public static string GetFfmpegFolder()
         {
-            return Path.Combine(Configuration.DataDirectory, "ffmpeg");
+            return Path.Combine(FileSystem.Current.AppDataDirectory, "ffmpeg");
         }
 
         public static string GetFfmpegFileName()

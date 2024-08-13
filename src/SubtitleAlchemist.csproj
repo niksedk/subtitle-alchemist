@@ -95,6 +95,18 @@
 
 	<ItemGroup>
 	  <None Remove="Resources\Images\theme_dark_open.png" />
+	  <None Remove="Resources\Raw\layout_01.png" />
+	  <None Remove="Resources\Raw\layout_02.png" />
+	  <None Remove="Resources\Raw\layout_03.png" />
+	  <None Remove="Resources\Raw\layout_04.png" />
+	  <None Remove="Resources\Raw\layout_05.png" />
+	  <None Remove="Resources\Raw\layout_06.png" />
+	  <None Remove="Resources\Raw\layout_07.png" />
+	  <None Remove="Resources\Raw\layout_08.png" />
+	  <None Remove="Resources\Raw\layout_09.png" />
+	  <None Remove="Resources\Raw\layout_10.png" />
+	  <None Remove="Resources\Raw\layout_11.png" />
+	  <None Remove="Resources\Raw\layout_12.png" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -233,78 +245,78 @@
 	  <None Update="Resources\Images\DarkTheme\WebVttStyle.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
-	  <None Update="Resources\Images\Layouts\L1.png">
+	  <MauiAsset Update="Resources\Raw\layout_01.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Images\Layouts\L10.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_10.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Images\Layouts\L11.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_11.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Images\Layouts\L12.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_12.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Images\Layouts\L2.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_02.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Images\Layouts\L3.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_03.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Images\Layouts\L4.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_04.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Images\Layouts\L5.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_05.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Images\Layouts\L6.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_06.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Images\Layouts\L7.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_07.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Images\Layouts\L8.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_08.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Images\Layouts\L9.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_09.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_01.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_01.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_10.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_10.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_11.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_11.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_12.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_12.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_02.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_02.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_03.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_03.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_04.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_04.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_05.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_05.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_06.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_06.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_07.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_07.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_08.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_08.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Resources\Raw\layout_09.png">
+	  </MauiAsset>
+	  <MauiAsset Update="Resources\Raw\layout_09.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
+	  </MauiAsset>
 	  <None Update="Resources\Images\Menu\Add.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
@@ -431,7 +443,6 @@
 	  <Folder Include="Features\Edit\" />
 	  <Folder Include="Features\Sync\" />
 	  <Folder Include="Features\SpellCheck\" />
-	  <Folder Include="Resources\Images\Layouts\" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
