@@ -181,17 +181,16 @@ public class TranslatePage : ContentPage
                 {
                     Padding = new Thickness(5),
                     ColumnDefinitions =
-                        {
-                            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
-                            new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
-                            new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
-                            new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }
-                        },
-
+                    {
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                        new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
+                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
+                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }
+                    },
                     RowDefinitions =
-                        {
-                            new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) }
-                        }
+                    {
+                        new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) }
+                    }
                 };
 
                 // Bind each cell to the appropriate property
@@ -243,21 +242,32 @@ public class TranslatePage : ContentPage
         {
             RowDefinitions = new RowDefinitionCollection
             {
-                new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) },
-                new RowDefinition { Height = new GridLength(1, GridUnitType.Star) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Star) },
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                new() { Width = new GridLength(1, GridUnitType.Star) },
             }
         };
 
         gridLayout.Add(headerGrid, 0, 0);
         gridLayout.Add(collectionView, 0, 1);
 
+        var frame = new Frame
+        {
+            Content = gridLayout,
+            HasShadow = true,
+            CornerRadius = 5,
+            Padding = new Thickness(5),
+            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor],
+            BorderColor = (Color)Application.Current.Resources[ThemeNames.BorderColor],
+            Margin = new Thickness(10),
+        };
+        frame.Content = gridLayout;
 
-        grid.Add(gridLayout, 0, 2);
-        Grid.SetColumnSpan(gridLayout, 2);
+        grid.Add(frame, 0, 2);
+        Grid.SetColumnSpan(frame, 2);
 
 
         Content = grid;

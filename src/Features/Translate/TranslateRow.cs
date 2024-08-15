@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace SubtitleAlchemist.Features.Translate;
 
-public partial class ExcelRow : ObservableObject
+public partial class TranslateRow : ObservableObject
 {
     [ObservableProperty] private int _number;
 

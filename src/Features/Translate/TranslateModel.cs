@@ -16,7 +16,7 @@ namespace SubtitleAlchemist.Features.Translate;
 public partial class TranslateModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private ObservableCollection<ExcelRow> _lines;
+    private ObservableCollection<TranslateRow> _lines;
 
     [ObservableProperty]
     private ObservableCollection<DisplayParagraph> _paragraphs;
@@ -31,7 +31,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     {
         Paragraphs = new ObservableCollection<DisplayParagraph>();
 
-        Lines = new ObservableCollection<ExcelRow>();
+        Lines = new ObservableCollection<TranslateRow>();
 
         AutoTranslators = new ObservableCollection<IAutoTranslator>
         {
@@ -63,7 +63,6 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     public ProgressBar ProgressBar { get; set; } = new();
     public Picker EnginePicker { get; set; } = new();
     public Label TitleLabel { get; set; } = new();
-    public ICommand PoweredByMouseEnterCommand { get; set; }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -74,7 +73,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
             Lines.Clear();
             foreach (var p in Paragraphs)
             {
-                Lines.Add(new ExcelRow
+                Lines.Add(new TranslateRow
                 {
                     Number = p.Number,
                     StartTime = p.Start,
