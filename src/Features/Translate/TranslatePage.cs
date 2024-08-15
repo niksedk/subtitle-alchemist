@@ -19,6 +19,9 @@ public class TranslatePage : ContentPage
             {
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Star) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
@@ -110,14 +113,14 @@ public class TranslatePage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             RowDefinitions = new RowDefinitionCollection
             {
-                new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) },
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) },
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) },
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                new() { Width = new GridLength(1, GridUnitType.Auto) },
+                new() { Width = new GridLength(1, GridUnitType.Auto) },
+                new() { Width = new GridLength(1, GridUnitType.Auto) },
+                new() { Width = new GridLength(1, GridUnitType.Star) },
             },
         };
 
@@ -227,7 +230,7 @@ public class TranslatePage : ContentPage
                 new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
                 new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
                 new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }
-            }
+            },
         };
 
         // Add headers
@@ -235,7 +238,6 @@ public class TranslatePage : ContentPage
         headerGrid.Add(new Label { Text = "Start Time", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 1, 0);
         headerGrid.Add(new Label { Text = "Original Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 2, 0);
         headerGrid.Add(new Label { Text = "Translated Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
-
 
 
         var gridLayout = new Grid
@@ -268,6 +270,97 @@ public class TranslatePage : ContentPage
 
         grid.Add(frame, 0, 2);
         Grid.SetColumnSpan(frame, 2);
+
+        vm.LabelApiKey = new Label
+        {
+            Text = "API key",
+            FontAttributes = FontAttributes.Bold,
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        };
+
+        vm.EntryApiKey = new Entry
+        {
+            Text = string.Empty,
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = 150,
+            Placeholder = "Enter API key",
+            Margin = new Thickness(0, 0, 10, 0),
+        };
+
+        vm.LabelApiUrl = new Label
+        {
+            Text = "API url",
+            FontAttributes = FontAttributes.Bold,
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        };
+
+        vm.EntryApiUrl = new Entry
+        {
+            Text = string.Empty,
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = 150,
+            Placeholder = "Enter API url",
+        };
+
+
+        var settingsRow = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10),
+            Children =
+            {
+                vm.LabelApiKey,
+                vm.EntryApiKey,
+                vm.LabelApiUrl,
+                vm.EntryApiUrl,
+            }
+        };
+
+        grid.Add(settingsRow, 0, 3);
+        Grid.SetColumnSpan(settingsRow, 2);
+
+        var buttonRow = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10),
+            Children =
+            {
+                new Button
+                {
+                    Text = "OK",
+                    TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
+                    BackgroundColor = (Color)Application.Current.Resources[ThemeNames.SecondaryBackgroundColor],
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(0, 0, 10, 0),
+                    Command = vm.OkCommand,
+                },
+                new Button
+                {
+                    Text = "Cancel",
+                    TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
+                    BackgroundColor = (Color)Application.Current.Resources[ThemeNames.SecondaryBackgroundColor],
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center,
+                    Command = vm.CancelCommand,
+                },
+            }
+        };
+
+        grid.Add(buttonRow, 0, 4);
+        Grid.SetColumnSpan(buttonRow, 2);
 
 
         Content = grid;

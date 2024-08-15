@@ -870,9 +870,29 @@ namespace SubtitleAlchemist.Features.Main
             await Shell.Current.GoToAsync(nameof(AudioToTextWhisperPage));
         }
 
+        private async Task<bool> CheckIfSubtitleIsEmpty()
+        {
+            if (Paragraphs.Count == 0 || Paragraphs.Count == 1 && string.IsNullOrEmpty(Paragraphs[0].Text))
+            {
+                    await MainPage.DisplayAlert(
+                        "No subtitle loaded",
+                        "You need to load/create a subtitle.",
+                        "OK");
+
+                    return true;
+            }
+
+            return false;
+        }
+
         [RelayCommand]
         private async Task AutoTranslateShow()
         {
+            if (await CheckIfSubtitleIsEmpty())
+            {
+                return;
+            }
+
             await Shell.Current.GoToAsync(nameof(TranslatePage), new Dictionary<string, object>
             {
                 { nameof(Paragraphs), Paragraphs },

@@ -7,7 +7,6 @@ using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Translate;
 using System.Globalization;
 using System.Text;
-using System.Windows.Input;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic;
 
@@ -63,6 +62,10 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     public ProgressBar ProgressBar { get; set; } = new();
     public Picker EnginePicker { get; set; } = new();
     public Label TitleLabel { get; set; } = new();
+    public Label LabelApiKey { get; set; } = new();
+    public Entry EntryApiKey { get; set; } = new();
+    public Label LabelApiUrl { get; set; } = new();
+    public Entry EntryApiUrl { get; set; } = new();
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -330,9 +333,25 @@ foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
         TitleLabel.TextDecorations = TextDecorations.None;
     }
 
-
     public void MouseClickedPoweredBy(object? sender, TappedEventArgs e)
     {
         UiUtil.OpenUrl(SelectedAutoTranslator.Url);
+    }
+
+    [RelayCommand]
+    public async Task Cancel()
+    {
+        await Shell.Current.GoToAsync("..");
+    }
+
+    [RelayCommand]
+    public async Task Ok()
+    {
+        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+        {
+            { "Page", nameof(GetType) },
+            { "Encoding", Encoding.UTF8 },
+            { "TranslatedRows", Lines },
+        });
     }
 }
