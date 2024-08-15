@@ -1,6 +1,10 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
-public class AudioToTextWhisperModel
+public partial class AudioToTextWhisperModel : ObservableObject
 {
-    public string Theme { get; set; }
+    public AudioToTextWhisperModel()
+    {
+    }
 }

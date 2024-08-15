@@ -873,7 +873,10 @@ namespace SubtitleAlchemist.Features.Main
         [RelayCommand]
         private async Task AutoTranslateShow()
         {
-            await Shell.Current.GoToAsync(nameof(TranslatePage));
+            await Shell.Current.GoToAsync(nameof(TranslatePage), new Dictionary<string, object>
+            {
+                { nameof(Paragraphs), Paragraphs },
+            });
         }
 
         [RelayCommand]

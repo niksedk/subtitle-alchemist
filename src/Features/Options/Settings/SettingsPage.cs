@@ -19,7 +19,7 @@ public class SettingsPage : ContentPage
         FileTypeAssociations,
     }
 
-    private SettingsViewModel _vm;
+    private readonly SettingsViewModel _vm;
 
     public SettingsPage(SettingsViewModel vm)
     {
