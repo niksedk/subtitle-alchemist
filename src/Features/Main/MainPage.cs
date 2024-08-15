@@ -22,6 +22,8 @@ public class MainPage : ContentPage
                 {
                     { ThemeNames.BackgroundColor, Color.FromRgb(0x1F, 0x1F, 0x1F) },
                     { ThemeNames.TextColor, Colors.WhiteSmoke },
+                    { ThemeNames.SecondaryBackgroundColor, Color.FromRgb(20,20,20) },
+                    { ThemeNames.BorderColor, Colors.DarkGray },
                 };
                 mergedDictionaries.Add(darkTheme);
             }
@@ -30,7 +32,9 @@ public class MainPage : ContentPage
                 var lightTheme = new ResourceDictionary
                 {
                     { ThemeNames.BackgroundColor, Colors.White },
-                    { ThemeNames.TextColor, Colors.Black }
+                    { ThemeNames.TextColor, Colors.Black },
+                    { ThemeNames.SecondaryBackgroundColor, Color.FromRgb(120,120,120) },
+                    { ThemeNames.BorderColor, Colors.DarkGray },
                 };
                 mergedDictionaries.Add(lightTheme);
             }

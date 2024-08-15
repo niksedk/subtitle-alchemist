@@ -876,6 +876,8 @@ namespace SubtitleAlchemist.Features.Main
             await Shell.Current.GoToAsync(nameof(TranslatePage), new Dictionary<string, object>
             {
                 { nameof(Paragraphs), Paragraphs },
+                { "Encoding", Encoding.UTF8 },
+                { "Subtitle", UpdatedSubtitle },
             });
         }
 

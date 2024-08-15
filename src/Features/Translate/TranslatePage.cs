@@ -1,10 +1,12 @@
+using SubtitleAlchemist.Logic.Constants;
+
 namespace SubtitleAlchemist.Features.Translate;
 
 public class TranslatePage : ContentPage
 {
     public TranslatePage(TranslateModel vm)
     {
-        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
+        BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor];
 
         BindingContext = vm;
 
@@ -15,28 +17,32 @@ public class TranslatePage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
             RowDefinitions = new RowDefinitionCollection
             {
-                new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) },
-                new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                new() { Width = new GridLength(1, GridUnitType.Star) },
+                new() { Width = new GridLength(1, GridUnitType.Star) },
             },
         };
 
-        var titleLabel = new Label
+        vm.TitleLabel = new Label
         {
             Margin = new Thickness(15, 15, 15, 15),
-            Text = "Powered by",
+            Text = "Powered by X",
             FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         };
-        grid.Add(titleLabel, 0, 0);
-        Grid.SetColumnSpan(titleLabel, 2);
+        var mouseGesture = new PointerGestureRecognizer();
+        mouseGesture.PointerEnteredCommand = new Command(() => vm.MouseEnteredPoweredBy());
+        mouseGesture.PointerExitedCommand = new Command(() => vm.MouseExitedPoweredBy());
+        vm.TitleLabel.GestureRecognizers.Add(mouseGesture);
+
+        grid.Add(vm.TitleLabel, 0, 0);
+        Grid.SetColumnSpan(vm.TitleLabel, 2);
 
 
         var gridLeft = new Grid
@@ -45,43 +51,43 @@ public class TranslatePage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             RowDefinitions = new RowDefinitionCollection
             {
-                new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) },
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) },
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) },
+                new() { Width = new GridLength(1, GridUnitType.Auto) },
+                new() { Width = new GridLength(1, GridUnitType.Star) },
+                new() { Width = new GridLength(1, GridUnitType.Auto) },
+                new() { Width = new GridLength(1, GridUnitType.Auto) },
             },
         };
 
-        var enginePicker = new Picker
+        vm.EnginePicker = new Picker
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             SelectedIndex = 0,
 
         };
-        enginePicker.SetBinding(Picker.ItemsSourceProperty, "AutoTranslators");
-        enginePicker.SetBinding(Picker.SelectedItemProperty, "SelectedAutoTranslator");
-        gridLeft.Add(enginePicker, 0, 0);
+        vm.EnginePicker.SetBinding(Picker.ItemsSourceProperty, "AutoTranslators");
+        vm.EnginePicker.SetBinding(Picker.SelectedItemProperty, "SelectedAutoTranslator");
+        vm.EnginePicker.SelectedIndexChanged += vm.EngineSelectedIndexChanged;
+        gridLeft.Add(vm.EnginePicker, 0, 0);
 
         var fromLabel = new Label
         {
             Text = "From:",
             FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 10, 0),
         };
         gridLeft.Add(fromLabel, 2, 0);
 
-        var fromPicker = new Picker
+        vm.FromLanguagePicker = new Picker
         {
-            TextColor = (Color)Application.Current.Resources["TextColor"],
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
             Items =
@@ -90,44 +96,76 @@ public class TranslatePage : ContentPage
             },
             SelectedIndex = 0,
         };
-        gridLeft.Add(fromPicker, 3, 0);
-
+        gridLeft.Add(vm.FromLanguagePicker, 3, 0);
 
         grid.Add(gridLeft, 0, 1);
 
-        var right = new StackLayout
+
+        var rightGrid = new Grid
         {
-            Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
-            Children =
+            RowDefinitions = new RowDefinitionCollection
             {
-                new Label
-                {
-                    Text = "To:",
-                    FontAttributes = FontAttributes.Bold,
-                    FontSize = 18,
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                    HorizontalOptions = LayoutOptions.Start,
-                    VerticalOptions = LayoutOptions.Center,
-                    Margin = new Thickness(0,0,10,0),
-                },
-                new Picker
-                {
-                    FontSize = 18,
-                    TextColor = (Color)Application.Current.Resources["TextColor"],
-                    HorizontalOptions = LayoutOptions.Start,
-                    VerticalOptions = LayoutOptions.Center,
-                    Items =
-                    {
-                        "English","Danish",
-                    },
-                    SelectedIndex = 0,
-                },
+                new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) },
+            },
+            ColumnDefinitions = new ColumnDefinitionCollection
+            {
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) },
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) },
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) },
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
             },
         };
 
-        grid.Add(right, 1, 1);
+        rightGrid.Add(new Label
+        {
+            Text = "To:",
+            FontAttributes = FontAttributes.Bold,
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 10, 0),
+        }, 0, 0);
+
+
+        vm.ToLanguagePicker = new Picker
+        {
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Items =
+            {
+                "English", "Danish",
+            },
+            SelectedIndex = 0,
+        };
+        rightGrid.Add(vm.ToLanguagePicker, 1, 0);
+
+        rightGrid.Add(new Button
+        {
+            Text = "Translate",
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
+            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.SecondaryBackgroundColor],
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+            Command = vm.TranslateCommand,
+        }, 2, 0);
+
+        vm.ProgressBar = new ProgressBar
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+            IsVisible = false,
+            IsEnabled = false,
+            Progress = 0.0,
+            Margin = new Thickness(5, 0, 5, 0),
+        };
+
+        rightGrid.Add(vm.ProgressBar, 3, 0);
+
+        grid.Add(rightGrid, 1, 1);
 
 
         // Define CollectionView
@@ -179,7 +217,7 @@ public class TranslatePage : ContentPage
         // Create the header grid
         var headerGrid = new Grid
         {
-            BackgroundColor = Color.FromRgb(22,22,22), //TODO: Add to resources, header background color
+            BackgroundColor = Color.FromRgb(22, 22, 22), //TODO: Add to resources, header background color
             Padding = new Thickness(5),
             ColumnDefinitions =
             {
@@ -217,22 +255,6 @@ public class TranslatePage : ContentPage
 
         grid.Add(gridLayout, 0, 2);
         Grid.SetColumnSpan(gridLayout, 2);
-
-
-
-        //// Add the header and CollectionView to the main layout
-        //var stackLayout = new StackLayout
-        //{
-        //    Children =
-        //    {
-        //        headerGrid,
-        //        new BoxView { HeightRequest = 1, Color = Colors.Black }, // Divider
-        //        collectionView,
-        //    }
-        //};
-
-        //grid.Add(stackLayout, 0, 2);
-        //Grid.SetColumnSpan(stackLayout, 2);
 
 
         Content = grid;
