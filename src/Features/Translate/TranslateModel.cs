@@ -28,12 +28,21 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         AutoTranslators = new ObservableCollection<IAutoTranslator>
         {
             new GoogleTranslateV1(),
+            new GoogleTranslateV2(),
+            new MicrosoftTranslator(),
             new DeepLTranslate(),
             new LibreTranslate(),
+            new MyMemoryApi(),
             new ChatGptTranslate(),
+            new LmStudioTranslate(),
             new OllamaTranslate(),
             new AnthropicTranslate(),
-            new GoogleTranslateV2(),
+            new GroqTranslate(),
+           // new OpenRouterTranslate(),
+            new GeminiTranslate(),
+            new PapagoTranslate(),
+            new NoLanguageLeftBehindServe(),
+            new NoLanguageLeftBehindApi(),
         };
         SelectedAutoTranslator = AutoTranslators[0];
     }
