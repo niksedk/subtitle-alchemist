@@ -36,10 +36,13 @@ public class TranslatePage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         };
-        var mouseGesture = new PointerGestureRecognizer();
-        mouseGesture.PointerEnteredCommand = new Command(() => vm.MouseEnteredPoweredBy());
-        mouseGesture.PointerExitedCommand = new Command(() => vm.MouseExitedPoweredBy());
-        vm.TitleLabel.GestureRecognizers.Add(mouseGesture);
+        var pointerGesture = new PointerGestureRecognizer();
+        pointerGesture.PointerEnteredCommand = new Command(() => vm.MouseEnteredPoweredBy());
+        pointerGesture.PointerExitedCommand = new Command(() => vm.MouseExitedPoweredBy());
+        vm.TitleLabel.GestureRecognizers.Add(pointerGesture);
+        var tapGesture = new TapGestureRecognizer();
+        tapGesture.Tapped += vm.MouseClickedPoweredBy;
+        vm.TitleLabel.GestureRecognizers.Add(tapGesture);
 
         grid.Add(vm.TitleLabel, 0, 0);
         Grid.SetColumnSpan(vm.TitleLabel, 2);

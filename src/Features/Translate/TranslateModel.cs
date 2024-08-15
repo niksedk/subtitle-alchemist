@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Input;
 using SubtitleAlchemist.Logic.Constants;
+using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Translate;
 
@@ -124,7 +125,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         FromLanguagePicker.Items.Clear();
         foreach (var language in fromLanguages)
         {
-            FromLanguagePicker.Items.Add(language.Name);
+            FromLanguagePicker.Items.Add(ToProperCase(language.Name));
         }
         var sourceLanguageIsoCode = EvaluateDefaultSourceLanguageCode(_encoding, _subtitle, fromLanguages);
         SelectLanguageCode(FromLanguagePicker, sourceLanguageIsoCode, fromLanguages);
@@ -133,10 +134,21 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         ToLanguagePicker.Items.Clear();
         foreach (var language in toLanguages)
         {
-            ToLanguagePicker.Items.Add(language.Name);
+            ToLanguagePicker.Items.Add(ToProperCase(language.Name));
         }
         var targetLanguageIsoCode = EvaluateDefaultTargetLanguageCode(sourceLanguageIsoCode);
         SelectLanguageCode(ToLanguagePicker, targetLanguageIsoCode, toLanguages);
+    }
+
+    static string ToProperCase(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return input;
+        }
+
+        TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+        return textInfo.ToTitleCase(input.ToLower());
     }
 
     public static void SelectLanguageCode(Picker comboBox, string languageIsoCode, List<TranslationPair> translationPairs)
@@ -317,5 +329,11 @@ foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
     {
         TitleLabel.TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor];
         TitleLabel.TextDecorations = TextDecorations.None;
+    }
+
+
+    public void MouseClickedPoweredBy(object? sender, TappedEventArgs e)
+    {
+        UiUtil.OpenUrl(SelectedAutoTranslator.Url);
     }
 }
