@@ -59,13 +59,24 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
     public Picker FromLanguagePicker { get; set; } = new();
     public Picker ToLanguagePicker { get; set; } = new();
+
     public ProgressBar ProgressBar { get; set; } = new();
+
     public Picker EnginePicker { get; set; } = new();
+
     public Label TitleLabel { get; set; } = new();
+
     public Label LabelApiKey { get; set; } = new();
     public Entry EntryApiKey { get; set; } = new();
+
     public Label LabelApiUrl { get; set; } = new();
     public Entry EntryApiUrl { get; set; } = new();
+
+    public Label LabelFormality { get; set; } = new();
+    public Entry EntryFormality { get; set; } = new();
+
+    public Label LabelModel { get; set; } = new();
+    public Entry EntryModel { get; set; } = new();
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -109,17 +120,352 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     {
         if (sender is Picker { SelectedItem: IAutoTranslator translator })
         {
-            TitleLabel.Text = $"Powered by {translator.Name}";
-
-            SetAutoTranslatorEngine();
+            SetAutoTranslatorEngine(translator);
             SetupLanguageSettings(translator);
         }
     }
 
-    private void SetAutoTranslatorEngine()
+    private void SetAutoTranslatorEngine(IAutoTranslator translator)
     {
+        TitleLabel.Text = $"Powered by {translator.Name}";
 
+        EntryApiKey.IsVisible = false;
+        EntryApiKey.Text = string.Empty;
+        LabelApiKey.IsVisible = false;
+        EntryApiUrl.IsVisible = false;
+        EntryApiUrl.Text = string.Empty;
+        LabelApiUrl.IsVisible = false;
+        EntryFormality.IsVisible = false;
+        EntryFormality.Text = string.Empty;
+        LabelFormality.IsVisible = false;
+        EntryModel.IsVisible = false;
+        EntryModel.Text = string.Empty;
+        LabelModel.IsVisible = false;
+
+        var engineType = translator.GetType();
+
+        if (engineType == typeof(GoogleTranslateV1))
+        {
+            return;
+        }
+
+        if (engineType == typeof(GoogleTranslateV2))
+        {
+            EntryApiKey.Text = Configuration.Settings.Tools.GoogleApiV2Key;
+            LabelApiKey.IsVisible = true;
+            EntryApiKey.IsVisible = true;
+            return;
+        }
+
+        if (engineType == typeof(MicrosoftTranslator))
+        {
+            EntryApiKey.Text = Configuration.Settings.Tools.MicrosoftTranslatorApiKey;
+            LabelApiKey.IsVisible = true;
+            EntryApiKey.IsVisible = true;
+            return;
+        }
+
+        if (engineType == typeof(DeepLTranslate))
+        {
+            LabelFormality.IsVisible = true;
+            EntryFormality.IsVisible = true;
+            //EntryFormality.DropDownStyle = ComboBoxStyle.DropDownList;
+
+            FillUrls(new List<string>
+                {
+                    Configuration.Settings.Tools.AutoTranslateDeepLUrl,
+                    Configuration.Settings.Tools.AutoTranslateDeepLUrl.Contains("api-free.deepl.com") ? "https://api.deepl.com/" : "https://api-free.deepl.com/",
+                });
+
+            EntryApiKey.Text = Configuration.Settings.Tools.AutoTranslateDeepLApiKey;
+            LabelApiKey.IsVisible = true;
+            EntryApiKey.IsVisible = true;
+
+            SelectFormality();
+
+            return;
+        }
+
+        if (engineType == typeof(NoLanguageLeftBehindServe))
+        {
+            FillUrls(new List<string>
+                {
+                    Configuration.Settings.Tools.AutoTranslateNllbServeUrl,
+                    "http://127.0.0.1:6060/",
+                    "http://192.168.8.127:6060/",
+                });
+
+            return;
+        }
+
+        if (engineType == typeof(NoLanguageLeftBehindApi))
+        {
+            FillUrls(new List<string>
+                {
+                    Configuration.Settings.Tools.AutoTranslateNllbApiUrl,
+                    "http://localhost:7860/api/v2/",
+                    "https://winstxnhdw-nllb-api.hf.space/api/v2/",
+                });
+
+            return;
+        }
+
+        if (engineType == typeof(LibreTranslate))
+        {
+            FillUrls(new List<string>
+                {
+                    Configuration.Settings.Tools.AutoTranslateLibreUrl,
+                    "http://localhost:5000/",
+                    "https://libretranslate.com/",
+                    "https://translate.argosopentech.com/",
+                    "https://translate.terraprint.co/",
+                });
+
+            return;
+        }
+
+        //if (engineType == typeof(PapagoTranslate))
+        //{
+        //    nikseComboBoxUrl.Items.Clear();
+        //    nikseComboBoxUrl.Items.Add(Configuration.Settings.Tools.AutoTranslatePapagoApiKeyId);
+        //    nikseComboBoxUrl.SelectedIndex = 0;
+        //    nikseComboBoxUrl.IsVisible = true;
+        //    labelUrl.IsVisible = true;
+        //    labelUrl.Text = "Client ID";
+        //    nikseComboBoxUrl.Left = labelUrl.Right + 3;
+
+        //    labelApiKey.Left = nikseComboBoxUrl.Right + 12;
+        //    labelApiKey.Text = "Client secret";
+        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.AutoTranslatePapagoApiKey;
+        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
+        //    labelApiKey.IsVisible = true;
+        //    nikseTextBoxApiKey.IsVisible = true;
+
+        //    return;
+        //}
+
+
+        //if (engineType == typeof(MyMemoryApi))
+        //{
+        //    labelApiKey.Left = labelUrl.Left;
+        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.AutoTranslateMyMemoryApiKey;
+        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
+        //    labelApiKey.IsVisible = true;
+        //    nikseTextBoxApiKey.IsVisible = true;
+
+        //    return;
+        //}
+
+        //if (engineType == typeof(ChatGptTranslate))
+        //{
+        //    if (Configuration.Settings.Tools.ChatGptUrl == null)
+        //    {
+        //        Configuration.Settings.Tools.ChatGptUrl = "https://api.openai.com/v1/chat/completions";
+        //    }
+
+        //    FillUrls(new List<string>
+        //        {
+        //            Configuration.Settings.Tools.ChatGptUrl.TrimEnd('/'),
+        //            Configuration.Settings.Tools.ChatGptUrl.StartsWith("http://localhost:1234/v1/chat/completions", StringComparison.OrdinalIgnoreCase) ? "https://api.openai.com/v1/chat/completions" : "http://localhost:1234/v1/chat/completions"
+        //        });
+
+        //    labelFormality.Text = LanguageSettings.Current.AudioToText.Model;
+        //    labelFormality.Enabled = true;
+        //    labelFormality.IsVisible = true;
+
+        //    comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
+        //    comboBoxFormality.Items.Clear();
+        //    comboBoxFormality.Enabled = true;
+        //    comboBoxFormality.Left = labelFormality.Right + 3;
+        //    comboBoxFormality.IsVisible = true;
+        //    comboBoxFormality.Items.AddRange(ChatGptTranslate.Models);
+        //    comboBoxFormality.Text = Configuration.Settings.Tools.ChatGptModel;
+
+        //    labelApiKey.Left = nikseComboBoxUrl.Right + 12;
+        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.ChatGptApiKey;
+        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
+        //    labelApiKey.IsVisible = true;
+        //    nikseTextBoxApiKey.IsVisible = true;
+        //    return;
+        //}
+
+        //if (engineType == typeof(LmStudioTranslate))
+        //{
+        //    if (string.IsNullOrEmpty(Configuration.Settings.Tools.LmStudioApiUrl))
+        //    {
+        //        Configuration.Settings.Tools.LmStudioApiUrl = "http://localhost:1234/v1/chat/completions";
+        //    }
+
+        //    FillUrls(new List<string>
+        //        {
+        //            Configuration.Settings.Tools.LmStudioApiUrl.TrimEnd('/'),
+        //        });
+
+        //    return;
+        //}
+
+        //if (engineType == typeof(OllamaTranslate))
+        //{
+        //    if (Configuration.Settings.Tools.OllamaApiUrl == null)
+        //    {
+        //        Configuration.Settings.Tools.OllamaApiUrl = "http://localhost:11434/api/generate";
+        //    }
+
+        //    FillUrls(new List<string>
+        //        {
+        //            Configuration.Settings.Tools.OllamaApiUrl.TrimEnd('/'),
+        //        });
+
+        //    var models = Configuration.Settings.Tools.OllamaModels.Split(',').ToList();
+
+        //    labelFormality.Text = LanguageSettings.Current.AudioToText.Model;
+        //    labelFormality.Enabled = true;
+        //    labelFormality.IsVisible = true;
+
+        //    comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
+        //    comboBoxFormality.Items.Clear();
+        //    comboBoxFormality.Enabled = true;
+        //    comboBoxFormality.Left = labelFormality.Right + 3;
+        //    comboBoxFormality.IsVisible = true;
+        //    foreach (var model in models)
+        //    {
+        //        comboBoxFormality.Items.Add(model);
+        //    }
+        //    comboBoxFormality.Text = Configuration.Settings.Tools.OllamaModel;
+
+        //    comboBoxFormality.ContextMenuStrip = contextMenuStripOlamaModels;
+
+        //    return;
+        //}
+
+        //if (engineType == typeof(AnthropicTranslate))
+        //{
+        //    FillUrls(new List<string>
+        //        {
+        //            Configuration.Settings.Tools.AnthropicApiUrl,
+        //        });
+
+        //    labelApiKey.Left = nikseComboBoxUrl.Right + 12;
+        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.AnthropicApiKey;
+        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
+        //    labelApiKey.IsVisible = true;
+        //    nikseTextBoxApiKey.Visible = true;
+
+        //    labelFormality.Text = LanguageSettings.Current.AudioToText.Model;
+        //    labelFormality.IsVisible = true;
+        //    comboBoxFormality.Left = labelFormality.Right + 3;
+        //    comboBoxFormality.IsVisible = true;
+        //    comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
+        //    comboBoxFormality.Items.Clear();
+        //    comboBoxFormality.Items.AddRange(AnthropicTranslate.Models);
+        //    comboBoxFormality.Text = Configuration.Settings.Tools.AnthropicApiModel;
+
+        //    return;
+        //}
+
+        //if (engineType == typeof(GroqTranslate))
+        //{
+        //    FillUrls(new List<string>
+        //        {
+        //            Configuration.Settings.Tools.GroqUrl,
+        //        });
+
+        //    labelApiKey.Left = nikseComboBoxUrl.Right + 12;
+        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.GroqApiKey;
+        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
+        //    labelApiKey.IsVisible = true;
+        //    nikseTextBoxApiKey.IsVisible = true;
+
+        //    labelFormality.Text = LanguageSettings.Current.AudioToText.Model;
+        //    labelFormality.IsVisible = true;
+        //    comboBoxFormality.Left = labelFormality.Right + 3;
+        //    comboBoxFormality.IsVisible = true;
+        //    comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
+        //    comboBoxFormality.Items.Clear();
+        //    comboBoxFormality.Items.AddRange(GroqTranslate.Models);
+        //    comboBoxFormality.Text = Configuration.Settings.Tools.GroqModel;
+
+        //    return;
+        //}
+
+
+        //if (engineType == typeof(OpenRouterTranslate))
+        //{
+        //    FillUrls(new List<string>
+        //        {
+        //            Configuration.Settings.Tools.OpenRouterUrl,
+        //        });
+
+        //    labelApiKey.Left = nikseComboBoxUrl.Right + 12;
+        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.OpenRouterApiKey;
+        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
+        //    labelApiKey.IsVisible = true;
+        //    nikseTextBoxApiKey.IsVisible = true;
+
+        //    labelFormality.Text = LanguageSettings.Current.AudioToText.Model;
+        //    labelFormality.IsVisible = true;
+        //    comboBoxFormality.Left = labelFormality.Right + 3;
+        //    comboBoxFormality.IsVisible = true;
+        //    comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
+        //    comboBoxFormality.Items.Clear();
+        //    comboBoxFormality.Items.AddRange(OpenRouterTranslate.Models);
+        //    comboBoxFormality.Text = Configuration.Settings.Tools.OpenRouterModel;
+
+        //    return;
+        //}
+
+
+        //if (engineType == typeof(GeminiTranslate))
+        //{
+        //    nikseComboBoxUrl.IsVisible = false;
+        //    labelUrl.Visible = false;
+
+        //    labelApiKey.Left = labelUrl.Left;
+        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.GeminiProApiKey;
+        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
+        //    labelApiKey.IsVisible = true;
+        //    nikseTextBoxApiKey.IsVisible = true;
+        //    return;
+        //}
+
+        throw new Exception($"Engine {translator.Name} not handled!");
     }
+
+    private void FillUrls(List<string> p0)
+    {
+        //nikseComboBoxUrl.Items.Clear();
+        //foreach (var url in list.Distinct())
+        //{
+        //    if (!string.IsNullOrEmpty(url))
+        //    {
+        //        nikseComboBoxUrl.Items.Add(url.TrimEnd('/') + "/");
+        //    }
+        //}
+
+        //labelUrl.Text = LanguageSettings.Current.Main.Url;
+        //nikseComboBoxUrl.Left = labelUrl.Right + 3;
+        //if (nikseComboBoxUrl.Items.Count > 0)
+        //{
+        //    nikseComboBoxUrl.SelectedIndex = 0;
+        //}
+
+        EntryApiUrl.IsVisible = true;
+        LabelApiUrl.IsVisible = true;
+    }
+
+    private void SelectFormality()
+    {
+        //comboBoxFormality.SelectedIndex = 0;
+        //for (var i = 0; i < comboBoxFormality.Items.Count; i++)
+        //{
+        //    if (comboBoxFormality.Items[i].ToString() == Configuration.Settings.Tools.AutoTranslateDeepLFormality)
+        //    {
+        //        comboBoxFormality.SelectedIndex = i;
+        //        break;
+        //    }
+        //}
+    }
+
 
     private void SetupLanguageSettings(IAutoTranslator autoTranslator)
     {
