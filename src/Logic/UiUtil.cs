@@ -7,13 +7,18 @@ internal static class UiUtil
 {
     public static void OpenFolderFromFileName(string fileName)
     {
-        string folderName = Path.GetDirectoryName(fileName);
+        if (string.IsNullOrEmpty(fileName))
+        {
+            return;
+        }
+
+        string? folderName = Path.GetDirectoryName(fileName);
         if (Configuration.IsRunningOnWindows)
         {
             var argument = @"/select, " + fileName;
             Process.Start("explorer.exe", argument);
         }
-        else
+        else if (!string.IsNullOrEmpty(folderName)) 
         {
             OpenFolder(folderName);
         }

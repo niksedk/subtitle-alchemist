@@ -1,4 +1,5 @@
 ﻿using SkiaSharp.Views.Maui;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Controls.ColorPickerControl;
 
@@ -18,16 +19,15 @@ public class ColorPickerView : ContentView
         set => SetValue(TextColorProperty, value);
     }
 
-    public Color CurrentColor { get; set; }
+    public Color CurrentColor { get; set; } = Colors.White;
 
-    private List<Color> _recentColors;
-    private Slider _sliderRed;
-    private Slider _sliderGreen;
-    private Slider _sliderBlue;
-    private Slider _sliderAlpha;
-
-    private BoxView _currentColorBox;
-    private Entry _currentColorText;
+    private List<Color> _recentColors = new();
+    private Slider _sliderRed = new();
+    private Slider _sliderGreen = new();
+    private Slider _sliderBlue = new();
+    private Slider _sliderAlpha = new();
+    private BoxView _currentColorBox = new();
+    private Entry _currentColorText = new();
 
     public ColorPickerView()
     {
@@ -185,7 +185,7 @@ public class ColorPickerView : ContentView
             RowSpacing = 20,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -206,7 +206,7 @@ public class ColorPickerView : ContentView
             Text = "Red",
             FontAttributes = FontAttributes.Bold,
             FontSize = 16,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
         };
 
         const int sliderWidth = 250;

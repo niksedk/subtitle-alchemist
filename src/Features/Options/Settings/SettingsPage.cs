@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Markup;
 using Microsoft.Maui.Controls.Shapes;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
 
@@ -37,7 +38,7 @@ public class SettingsPage : ContentPage
         vm.Pages.Add(PageNames.Appearance, MakeAppearancePage(vm));
         vm.Pages.Add(PageNames.FileTypeAssociations, MakeFileTypeAssociationsPage(vm));
 
-        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
+        BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
 
         BindingContext = vm;
 

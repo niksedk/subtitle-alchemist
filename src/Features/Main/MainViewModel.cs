@@ -16,6 +16,7 @@ using SubtitleAlchemist.Features.Tools.AdjustDuration;
 using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections;
 using System.Collections.ObjectModel;
@@ -479,7 +480,7 @@ namespace SubtitleAlchemist.Features.Main
             foreach (var item in Paragraphs)
             {
                 item.IsSelected = false;
-                item.BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
+                item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
             }
 
             paragraph.IsSelected = true;
@@ -811,7 +812,7 @@ namespace SubtitleAlchemist.Features.Main
             foreach (var item in Paragraphs)
             {
                 item.IsSelected = false;
-                item.BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
+                item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
             }
 
             var current = e.CurrentSelection;

@@ -201,7 +201,7 @@ public class TranslatePage : ContentPage
                 numberLabel.SetBinding(Label.TextProperty, "Number");
 
                 var startTimeLabel = new Label { VerticalTextAlignment = TextAlignment.Center };
-                startTimeLabel.SetBinding(Label.TextProperty, new Binding("StartTime", stringFormat: "{0:HH:mm:ss}"));
+                startTimeLabel.SetBinding(Label.TextProperty, new Binding("StartTime", stringFormat: "{HH:mm:ss.fff}"));
 
                 var originalTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center };
                 originalTextLabel.SetBinding(Label.TextProperty, "OriginalText");

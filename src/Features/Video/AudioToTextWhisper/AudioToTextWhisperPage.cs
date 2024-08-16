@@ -1,10 +1,12 @@
+using SubtitleAlchemist.Logic.Constants;
+
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
 public class AudioToTextWhisperPage : ContentPage
 {
     public AudioToTextWhisperPage(AudioToTextWhisperModel vm)
     {
-        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
+        BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
         Content = new Grid
         {
             RowDefinitions = new RowDefinitionCollection
@@ -18,7 +20,7 @@ public class AudioToTextWhisperPage : ContentPage
             },
             Children =
             {
-                new Label { Text = "Audio to text", FontSize = 24, HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.CenterAndExpand },
+                new Label { Text = "Audio to text", FontSize = 24, HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center },
             },
         };
     }

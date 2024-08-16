@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Nikse.SubtitleEdit.Core.Common;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -35,7 +36,7 @@ public partial class DisplayParagraph : ObservableObject
         End = paragraph.EndTime.TimeSpan;
         Duration = paragraph.Duration.TimeSpan;
         Text = paragraph.Text;
-        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
+        BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
         IsSelected = false;
         Number = paragraph.Number;
     }

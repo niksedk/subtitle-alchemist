@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 
@@ -9,7 +10,7 @@ public class DownloadFfmpegPopup : Popup
     {
         BindingContext = vm;
 
-        Color = (Color)Application.Current.Resources["BackgroundColor"];
+        Color = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
         CanBeDismissedByTappingOutsideOfPopup = false;
 
         var grid = new Grid
@@ -29,7 +30,7 @@ public class DownloadFfmpegPopup : Popup
             Padding = new Thickness(30, 20, 30 ,10),
             RowSpacing = 20,
             ColumnSpacing = 10,
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor],
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
         };
@@ -39,8 +40,8 @@ public class DownloadFfmpegPopup : Popup
             Text = "Downloading ffmpeg",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             Padding = new Thickness(0, 0, 0, 10),
         };
         grid.Add(titleLabel, 0, 0);
@@ -50,8 +51,8 @@ public class DownloadFfmpegPopup : Popup
             Text = "...",
             FontAttributes = FontAttributes.Bold,
             FontSize = 15,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
         }; //.Bind(Label.TextProperty, vm.Progress);
         progressLabel.SetBinding(Label.TextProperty, nameof(vm.Progress));
         grid.Add(progressLabel, 0, 1);
@@ -69,7 +70,7 @@ public class DownloadFfmpegPopup : Popup
         {
             Text = "Cancel",
             BackgroundColor = Colors.DarkGray, // (Color)Application.Current.Resources["BackgroundColor"],
-            TextColor = (Color)Application.Current.Resources["TextColor"],
+            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.Center,
             Command = vm.CancelCommand,
         };
@@ -77,8 +78,8 @@ public class DownloadFfmpegPopup : Popup
 
         var border = new Border
         {
-            Stroke = (Color)Application.Current.Resources["TextColor"], // change to blue when focused
-            Background = (Color)Application.Current.Resources["BackgroundColor"],
+            Stroke = (Color)Application.Current.Resources[ThemeNames.TextColor], // change to blue when focused
+            Background = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             StrokeThickness = 1,
             Padding = new Thickness(4, 1, 1, 0),
             Margin = new Thickness(2),

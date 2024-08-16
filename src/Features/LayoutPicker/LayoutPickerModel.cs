@@ -31,48 +31,48 @@ namespace SubtitleAlchemist.Features.LayoutPicker
         private readonly List<byte[]> _grayscaleImages;
 
         [ObservableProperty]
-        private ImageSource _layout1ImageSource;
+        private ImageSource? _layout1ImageSource;
 
         [ObservableProperty]
-        private ImageSource _layout2ImageSource;
+        private ImageSource? _layout2ImageSource;
 
         [ObservableProperty]
-        private ImageSource _layout3ImageSource;
+        private ImageSource? _layout3ImageSource;
 
         [ObservableProperty]
-        private ImageSource _layout4ImageSource;
-
-
-        [ObservableProperty]
-        private ImageSource _layout5ImageSource;
+        private ImageSource? _layout4ImageSource;
 
 
         [ObservableProperty]
-        private ImageSource _layout6ImageSource;
+        private ImageSource? _layout5ImageSource;
 
 
         [ObservableProperty]
-        private ImageSource _layout7ImageSource;
+        private ImageSource? _layout6ImageSource;
 
 
         [ObservableProperty]
-        private ImageSource _layout8ImageSource;
+        private ImageSource? _layout7ImageSource;
 
 
         [ObservableProperty]
-        private ImageSource _layout9ImageSource;
+        private ImageSource? _layout8ImageSource;
 
 
         [ObservableProperty]
-        private ImageSource _layout10ImageSource;
+        private ImageSource? _layout9ImageSource;
 
 
         [ObservableProperty]
-        private ImageSource _layout11ImageSource;
+        private ImageSource? _layout10ImageSource;
 
 
         [ObservableProperty]
-        private ImageSource _layout12ImageSource;
+        private ImageSource? _layout11ImageSource;
+
+
+        [ObservableProperty]
+        private ImageSource? _layout12ImageSource;
 
         private int _selectedLayout = -1;
 

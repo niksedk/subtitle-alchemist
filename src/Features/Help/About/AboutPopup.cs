@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Help.About;
 
@@ -22,7 +23,7 @@ public class AboutPopup : Popup
             {
                 Margin = 1,
                 Padding = 10,
-                BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+                BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
                 Children =
                 {
                     new StackLayout

@@ -11,4 +11,10 @@ public partial class TranslateRow : ObservableObject
     [ObservableProperty] private string _originalText;
 
     [ObservableProperty] private string _translatedText;
+
+    public TranslateRow()
+    {
+        _originalText = string.Empty;
+        _translatedText = string.Empty;
+    }
 }

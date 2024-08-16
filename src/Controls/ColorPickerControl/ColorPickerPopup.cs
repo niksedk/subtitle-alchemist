@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Controls.ColorPickerControl;
 
@@ -16,7 +17,7 @@ public class ColorPickerPopup : Popup
         {
             WidthRequest = 415,
             HeightRequest = 500,
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
         };
 
 
@@ -55,7 +56,7 @@ public class ColorPickerPopup : Popup
         {
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor],
             Children =
             {
                 vm.ColorPickerView,
@@ -65,8 +66,8 @@ public class ColorPickerPopup : Popup
 
         var border = new Border
         {
-            Stroke = (Color)Application.Current.Resources["TextColor"], // change to blue when focused
-            Background = (Color)Application.Current.Resources["BackgroundColor"],
+            Stroke = (Color)Application.Current.Resources[ThemeNames.TextColor], // change to blue when focused
+            Background = (Color)Application.Current.Resources[ThemeNames.BackgroundColor],
             StrokeThickness = 1,
             Padding = new Thickness(4, 1, 1, 0),
             Margin = new Thickness(2),

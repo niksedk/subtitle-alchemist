@@ -1,6 +1,7 @@
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace SubtitleAlchemist.Features.LayoutPicker;
@@ -33,7 +34,7 @@ public class LayoutPickerPopup : Popup
 
         Content = new Grid
         {
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
 
             RowDefinitions = Rows.Define(
                 (Row.Row0, columnHeight),

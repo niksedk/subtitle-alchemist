@@ -42,14 +42,14 @@ public class MainPage : ContentPage
 
         BindingContext = _viewModel;
         _viewModel.MainPage = this;
-        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"];
+        BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
 
         InitMenuBar.CreateMenuBar(this, _viewModel);
 
         _viewModel.VideoPlayer = new MediaElement
         {
             ZIndex = -10000,
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             Margin = new Thickness(10),
         };
 

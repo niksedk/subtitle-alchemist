@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Controls.UpDownControl;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Controls.SubTimeControl;
 
@@ -57,8 +58,8 @@ public class SubTimeUpDown : ContentView
 
         _upDown = new UpDownView
         {
-            Background = (Color)Application.Current.Resources["BackgroundColor"],
-            TextColor = (Color)Application.Current.Resources["TextColor"],
+            Background = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
+            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
         };
         _upDown.ValueChanged += OnUpDownValueChanged;
 
@@ -74,8 +75,8 @@ public class SubTimeUpDown : ContentView
 
         var border = new Border
         {
-            Stroke = (Color)Application.Current.Resources["TextColor"], // change to blue when focused
-            Background = (Color)Application.Current.Resources["BackgroundColor"],
+            Stroke = (Color)Application.Current.Resources[ThemeNames.TextColor], // change to blue when focused
+            Background = (Color)Application.Current.Resources[ThemeNames.BackgroundColor],
             StrokeThickness = 1,
             Padding = new Thickness(4, 1, 1, 0),
             Margin = new Thickness(2),

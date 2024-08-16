@@ -18,7 +18,7 @@ namespace SubtitleAlchemist.Logic
                 var filePath = Path.Combine(outputPath, entry.FullName);
                 var directoryPath = Path.GetDirectoryName(filePath);
 
-                if (!Directory.Exists(directoryPath))
+                if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
                 {
                     Directory.CreateDirectory(directoryPath);
                 }

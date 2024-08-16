@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using SkiaSharp;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Main
 {
@@ -25,16 +26,16 @@ namespace SubtitleAlchemist.Features.Main
                     },
                     Children =
                     {
-                        new BoxView { BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1 }.Column(0),
-                        new Label { Text = "#", TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(0),
-                        new BoxView { BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1 }.Column(1),
-                        new Label { Text = "Start", TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(1),
-                        new BoxView { BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1 }.Column(2),
-                        new Label { Text = "End", TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(2),
-                        new BoxView { BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1 }.Column(3),
-                        new Label { Text = "Duration", TextColor =(Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(3),
-                        new BoxView { BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1 }.Column(4),
-                        new Label { Text = "Text", TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(4)
+                        new BoxView { BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(0),
+                        new Label { Text = "#", TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(0),
+                        new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(1),
+                        new Label { Text = "Start", TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(1),
+                        new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(2),
+                        new Label { Text = "End", TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(2),
+                        new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(3),
+                        new Label { Text = "Duration", TextColor =(Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(3),
+                        new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(4),
+                        new Label { Text = "Text", TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(4)
                     }
                 },
                 ItemTemplate = new DataTemplate(() => MakeGrid(vm))
@@ -64,33 +65,33 @@ namespace SubtitleAlchemist.Features.Main
                 {
                     new BoxView
                     {
-                        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
+                        BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
                     }.Column(0).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                    new Label { TextColor =(Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(0).Bind("Number"),
+                    new Label { TextColor =(Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(0).Bind("Number"),
 
                     new BoxView
                     {
-                        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
+                        BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
                     }.Column(1).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                    new Label { TextColor =(Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(1).Bind("Start"),
+                    new Label { TextColor =(Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(1).Bind("Start"),
 
                     new BoxView
                     {
-                        BackgroundColor =(Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
+                        BackgroundColor =(Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
                     }.Column(2).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                    new Label { TextColor =(Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(2).Bind("End"),
+                    new Label { TextColor =(Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(2).Bind("End"),
 
                     new BoxView
                     {
-                        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
+                        BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
                     }.Column(3).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                    new Label { TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(3).Bind("Duration"),
+                    new Label { TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(3).Bind("Duration"),
 
                     new BoxView
                     {
-                        BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"], Margin = 1, ZIndex = -1
+                        BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
                     }.Column(4).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                    new Label { TextColor = (Color)Application.Current.Resources["TextColor"], Margin = 5 }.Column(4).Bind("Text")
+                    new Label { TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(4).Bind("Text")
                 }
             };
 
