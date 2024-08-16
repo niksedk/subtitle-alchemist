@@ -53,7 +53,7 @@ public class DownloadFfmpegPopup : Popup
             FontSize = 15,
             TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
-        }; //.Bind(Label.TextProperty, vm.Progress);
+        }; 
         progressLabel.SetBinding(Label.TextProperty, nameof(vm.Progress));
         grid.Add(progressLabel, 0, 1);
 
@@ -69,7 +69,7 @@ public class DownloadFfmpegPopup : Popup
         var cancelButton = new Button
         {
             Text = "Cancel",
-            BackgroundColor = Colors.DarkGray, // (Color)Application.Current.Resources["BackgroundColor"],
+            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.SecondaryBackgroundColor],
             TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.Center,
             Command = vm.CancelCommand,
