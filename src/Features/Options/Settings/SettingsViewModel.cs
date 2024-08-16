@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
+using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 using static SubtitleAlchemist.Features.Options.Settings.SettingsPage;
 
@@ -14,7 +15,7 @@ public partial class SettingsViewModel : ObservableObject
     public Dictionary<PageNames, View> Pages { get; set; }
     public Border Page { get; set; }
     public VerticalStackLayout LeftMenu { get; set; }
-    public SettingsPage SettingsPage { get; set; }
+    public SettingsPage? SettingsPage { get; set; } 
     public BoxView SyntaxErrorColorBox { get; set; }
 
     [ObservableProperty]
@@ -60,7 +61,7 @@ public partial class SettingsViewModel : ObservableObject
                 }
                 else
                 {
-                    label.TextColor = (Color)Application.Current.Resources["TextColor"];
+                    label.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
                 }
             }
         }
@@ -107,7 +108,7 @@ public partial class SettingsViewModel : ObservableObject
 
     public async Task DownloadFfmpeg(object? sender, EventArgs eventArgs)
     {
-        var answer = await SettingsPage.DisplayAlert(
+        var answer = await SettingsPage!.DisplayAlert(
             "Download ffmpeg?",
             "Download and use ffmpeg?",
             "Yes",

@@ -45,7 +45,7 @@ public class SettingsPage : ContentPage
         vm.Page = new Border
         {
             Stroke = Color.FromArgb("#cccccc"), //TODO: Move to Theme resource
-            Background = (Color)Application.Current.Resources["BackgroundColor"],
+            Background = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             StrokeThickness = 1,
             Padding = new Thickness(1),
             HorizontalOptions = LayoutOptions.Fill,
@@ -71,7 +71,7 @@ public class SettingsPage : ContentPage
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             HorizontalOptions = LayoutOptions.Fill,
         };
 
@@ -114,7 +114,7 @@ public class SettingsPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             FontSize = 17,
             Text = text,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
+            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
             ClassId = pageName.ToString(),
         };
 
@@ -201,7 +201,7 @@ public class SettingsPage : ContentPage
             Padding = new Thickness(20),
             RowSpacing = 20,
             ColumnSpacing = 10,
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             HorizontalOptions = LayoutOptions.Fill,
         };
 
@@ -536,7 +536,7 @@ public class SettingsPage : ContentPage
         var ffmpegBrowse = new ImageButton
         {
             Source = "open.png",
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             HorizontalOptions = LayoutOptions.Start,
             WidthRequest = 30,
             HeightRequest = 30,
@@ -548,7 +548,7 @@ public class SettingsPage : ContentPage
         var ffmpegDownloadButton = new ImageButton
         {
             Source = "download.png",
-            BackgroundColor = (Color)Application.Current.Resources["BackgroundColor"],
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             HorizontalOptions = LayoutOptions.Start,
             WidthRequest = 30,
             HeightRequest = 30,

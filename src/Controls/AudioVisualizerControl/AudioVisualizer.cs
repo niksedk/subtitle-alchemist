@@ -564,8 +564,8 @@ public class AudioVisualizer : SKCanvasView
         _wholeParagraphMaxMilliseconds = double.MaxValue;
         if (_subtitle != null)
         {
-            Paragraph prev = null;
-            Paragraph next = null;
+            Paragraph? prev = null;
+            Paragraph? next = null;
             var paragraphs = _subtitle.Paragraphs.ToList();
             for (var i = 0; i < paragraphs.Count; i++)
             {

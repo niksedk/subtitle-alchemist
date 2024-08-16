@@ -130,7 +130,7 @@ public class ColorPickerView : ContentView
         {
             Text = "#000000",
             FontSize = 16,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
+            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
             HorizontalTextAlignment = TextAlignment.Center,
             WidthRequest = 150,
         };
