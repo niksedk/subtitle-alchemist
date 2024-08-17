@@ -15,16 +15,15 @@ public partial class SettingsViewModel : ObservableObject
     public Dictionary<PageNames, View> Pages { get; set; }
     public Border Page { get; set; }
     public VerticalStackLayout LeftMenu { get; set; }
-    public SettingsPage? SettingsPage { get; set; } 
+    public SettingsPage? SettingsPage { get; set; }
     public BoxView SyntaxErrorColorBox { get; set; }
 
-    [ObservableProperty]
-    private string _theme;
+    [ObservableProperty] private string _theme;
 
-    [ObservableProperty]
-    private string _ffmpegPath;
+    [ObservableProperty] private string _ffmpegPath;
 
     private readonly IPopupService _popupService;
+    private PageNames _pageName = PageNames.General;
 
     public SettingsViewModel(IPopupService popupService)
     {
@@ -67,14 +66,16 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         await Page.Content.FadeTo(1, 200);
+
+        _pageName = pageName;
     }
 
     [RelayCommand]
     public async Task PickSyntaxErrorColor()
     {
         var result = await _popupService.ShowPopupAsync<ColorPickerPopupModel>(
-                onPresenting: vm => vm.SetCurrentColor(SyntaxErrorColorBox.Color),
-                CancellationToken.None);
+            onPresenting: vm => vm.SetCurrentColor(SyntaxErrorColorBox.Color),
+            CancellationToken.None);
 
         if (result is Color color)
         {
@@ -128,13 +129,58 @@ public partial class SettingsViewModel : ObservableObject
 
     public void ThemeChanged(object? sender, EventArgs eventArgs)
     {
-        if (sender is Picker picker)
+        if (sender is not Picker picker)
         {
-            var value = picker.SelectedItem.ToString();
-            if (value != null)
+            return;
+        }
+
+        var value = picker.SelectedItem.ToString();
+        if (value == null)
+        {
+            return;
+        }
+
+        Theme = value;
+
+        Preferences.Set("Theme", Theme);
+
+        var mergedDictionaries = Application.Current!.Resources.MergedDictionaries;
+        if (mergedDictionaries == null)
+        {
+            return;
+        }
+
+        foreach (var dictionaries in mergedDictionaries)
+        {
+            if (Theme == "Light")
             {
-                Theme = value;
+                SetThemeDictionaryColor(dictionaries, ThemeNames.BackgroundColor, Colors.White);
+                SetThemeDictionaryColor(dictionaries, ThemeNames.TextColor, Colors.Black);
+                SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(120, 120, 120));
+                SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
+            }
+            else
+            {
+                SetThemeDictionaryColor(dictionaries, ThemeNames.BackgroundColor, Color.FromRgb(0x1F, 0x1F, 0x1F));
+                SetThemeDictionaryColor(dictionaries, ThemeNames.TextColor, Colors.WhiteSmoke);
+                SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(20, 20, 20));
+                SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
             }
         }
+
+        LeftMenuTapped(null, new TappedEventArgs(null), _pageName);
+    }
+
+    private static void SetThemeDictionaryColor(ResourceDictionary dictionaries, string name, Color color)
+    {
+        var found = dictionaries.TryGetValue(name, out _);
+        if (found)
+        {
+            dictionaries[name] = color;
+        }
+        //else
+        //{
+        //    dictionaries.Add(name, color);
+        //}
     }
 }

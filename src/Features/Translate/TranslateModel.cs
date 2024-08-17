@@ -1,14 +1,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
-using SubtitleAlchemist.Features.Main;
 using Nikse.SubtitleEdit.Core.AutoTranslate;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Translate;
+using SubtitleAlchemist.Features.Main;
+using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text;
-using SubtitleAlchemist.Logic.Constants;
-using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Translate;
 
@@ -25,6 +25,14 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
     [ObservableProperty]
     private IAutoTranslator _selectedAutoTranslator;
+
+    private bool _translationInProgress = false;
+    private bool _abort = false;
+    private bool _singleLineMode = false;
+    private CancellationTokenSource _cancellationTokenSource = new();
+    private int _translationProgressIndex = 0;
+
+    public TranslatePage? TranslatePage { get; set; }
 
     public TranslateModel()
     {
@@ -55,10 +63,12 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     }
 
     private Encoding _encoding = Encoding.UTF8;
-    private Subtitle _subtitle = new();
+    private Subtitle _sourceSubtitle = new();
+    private Subtitle _targetSubtitle = new();
 
-    public Picker FromLanguagePicker { get; set; } = new();
-    public Picker ToLanguagePicker { get; set; } = new();
+
+    public Picker SourceLanguagePicker { get; set; } = new();
+    public Picker TargetLanguagePicker { get; set; } = new();
 
     public ProgressBar ProgressBar { get; set; } = new();
 
@@ -77,6 +87,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
     public Label LabelModel { get; set; } = new();
     public Entry EntryModel { get; set; } = new();
+    public CollectionView CollectionView { get; set; } = new();
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -104,16 +115,215 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
         if (query["Subtitle"] is Subtitle subtitle)
         {
-            _subtitle = subtitle;
+            _sourceSubtitle = subtitle;
+
+            _targetSubtitle = new Subtitle(subtitle, false);
+            foreach (var p in _targetSubtitle.Paragraphs)
+            {
+                p.Text = string.Empty;
+            }
         }
     }
 
     [RelayCommand]
-    public void Translate()
+    public async Task Translate()
     {
         ProgressBar.IsVisible = true;
         ProgressBar.IsEnabled = true;
         ProgressBar.Progress = 0.5;
+
+        if (TranslatePage == null)
+        {
+            return;
+        }
+
+        if (_translationInProgress)
+        {
+            _translationInProgress = false;
+            _cancellationTokenSource.Cancel();
+            _abort = true;
+            //_breakTranslation = true;
+            //buttonTranslate.Enabled = false;
+            //buttonOK.Enabled = true;
+            //buttonCancel.Enabled = true;
+            //buttonOK.Refresh();
+            _singleLineMode = false;
+            return;
+        }
+
+        _translationInProgress = true;
+        _cancellationTokenSource = new CancellationTokenSource();
+
+        var translator = SelectedAutoTranslator;
+        var engineType = translator.GetType();
+
+        if (translator.Name == DeepLTranslate.StaticName && string.IsNullOrWhiteSpace(EntryApiKey.Text))
+        {
+            await TranslatePage.DisplayAlert("API key required", string.Format("{0} requires an API key.", translator.Name), "OK");
+            _translationInProgress = false;
+            _singleLineMode = false;
+            return;
+        }
+
+        if (translator.Name == DeepLTranslate.StaticName && string.IsNullOrWhiteSpace(EntryApiUrl.Text))
+        {
+            await TranslatePage.DisplayAlert("URL key required", string.Format("{0} requires an URL.", translator.Name), "OK");
+            _translationInProgress = false;
+            _singleLineMode = false;
+            return;
+        }
+
+        SaveSettings(engineType);
+
+        //buttonOK.Enabled = false;
+        //buttonCancel.Enabled = false;
+        //buttonTranslate.Text = LanguageSettings.Current.General.Cancel;
+        //progressBar1.Minimum = 0;
+        //progressBar1.Value = 0;
+        //progressBar1.Maximum = TranslatedSubtitle.Paragraphs.Count;
+        //progressBar1.Visible = true;
+        //labelPleaseWait.Visible = true;
+
+        translator.Initialize();
+
+        var sourceLanguage = translator.GetSupportedSourceLanguages()
+            .FirstOrDefault(p => p.Name.Equals(SourceLanguagePicker.SelectedItem.ToString(), StringComparison.InvariantCultureIgnoreCase));
+
+        var targetLanguage = translator.GetSupportedTargetLanguages()
+            .FirstOrDefault(p => p.Name.Equals(TargetLanguagePicker.SelectedItem.ToString(), StringComparison.InvariantCultureIgnoreCase));
+
+        if (sourceLanguage == null || targetLanguage == null)
+        {
+            return;
+        }
+
+        Configuration.Settings.Tools.GoogleTranslateLastSourceLanguage = sourceLanguage.TwoLetterIsoLanguageName;
+        Configuration.Settings.Tools.GoogleTranslateLastTargetLanguage = targetLanguage.TwoLetterIsoLanguageName;
+
+        var forceSingleLineMode = Configuration.Settings.Tools.AutoTranslateStrategy == TranslateStrategy.TranslateEachLineSeparately.ToString() ||
+                                  translator.Name == NoLanguageLeftBehindApi.StaticName ||  // NLLB seems to miss some text...
+                                  translator.Name == NoLanguageLeftBehindServe.StaticName ||
+                                  _singleLineMode;
+
+        // do translate
+        var linesTranslated = 0;
+        if (CollectionView.SelectedItem is TranslateRow tr)
+        {
+            var index = Lines.IndexOf(tr);
+            if (index < 0)
+            {
+                index = 0;
+            }
+
+            while (index < Lines.Count)
+            {
+                if (_abort)
+                {
+                    break;
+                }
+
+                var linesMergedAndTranslated = await MergeAndSplitHelper.MergeAndTranslateIfPossible(_sourceSubtitle, _targetSubtitle, sourceLanguage, targetLanguage, index, translator, forceSingleLineMode, _cancellationTokenSource.Token);
+
+                if (linesMergedAndTranslated > 0)
+                {
+                    index += linesMergedAndTranslated;
+                    linesTranslated += linesMergedAndTranslated;
+                    _translationProgressIndex = index - 1;
+                    continue;
+                }
+
+                forceSingleLineMode = true;
+
+            }
+        }
+
+        ProgressBar.IsVisible = false;
+        //labelPleaseWait.Visible = false;
+        //buttonOK.Enabled = true;
+        //buttonCancel.Enabled = true;
+        //_breakTranslation = false;
+        //buttonTranslate.Enabled = true;
+        //buttonTranslate.Text = LanguageSettings.Current.GoogleTranslate.Translate;
+        _translationInProgress = false;
+
+        //timerUpdate.Dispose();
+        //_translationProgressDirty = true;
+        //UpdateTranslation();
+        //buttonOK.Focus();
+
+        _abort = false;
+    }
+
+    private void SaveSettings(Type engineType)
+    {
+        if (engineType == typeof(MicrosoftTranslator) && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
+        {
+            Configuration.Settings.Tools.MicrosoftTranslatorApiKey = EntryApiKey.Text.Trim();
+        }
+
+        if (engineType == typeof(DeepLTranslate) && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
+        {
+            Configuration.Settings.Tools.AutoTranslateDeepLUrl = EntryApiUrl.Text.Trim();
+            Configuration.Settings.Tools.AutoTranslateDeepLApiKey = EntryApiKey.Text.Trim();
+        }
+
+        if (engineType == typeof(LibreTranslate) && EntryApiKey.IsVisible && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
+        {
+            Configuration.Settings.Tools.AutoTranslateLibreApiKey = EntryApiKey.Text.Trim();
+        }
+
+        if (engineType == typeof(MyMemoryApi) && EntryApiKey.IsVisible && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
+        {
+            Configuration.Settings.Tools.AutoTranslateMyMemoryApiKey = EntryApiKey.Text.Trim();
+        }
+
+        if (engineType == typeof(ChatGptTranslate))
+        {
+            Configuration.Settings.Tools.ChatGptApiKey = EntryApiKey.Text.Trim();
+            Configuration.Settings.Tools.ChatGptUrl = EntryApiUrl.Text.Trim();
+            //Configuration.Settings.Tools.ChatGptModel = EntryFormality.Text.Trim();
+        }
+
+        if (engineType == typeof(LmStudioTranslate))
+        {
+            Configuration.Settings.Tools.LmStudioApiUrl = EntryApiUrl.Text.Trim();
+            //Configuration.Settings.Tools.LmStudioModel = comboBoxFormality.Text.Trim();
+        }
+
+        if (engineType == typeof(OllamaTranslate))
+        {
+            Configuration.Settings.Tools.OllamaApiUrl = EntryApiUrl.Text.Trim();
+            //Configuration.Settings.Tools.OllamaModel = comboBoxFormality.Text.Trim();
+        }
+
+        if (engineType == typeof(AnthropicTranslate) && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
+        {
+            Configuration.Settings.Tools.AnthropicApiKey = EntryApiKey.Text.Trim();
+            //Configuration.Settings.Tools.AnthropicApiModel = comboBoxFormality.Text.Trim();
+        }
+
+        if (engineType == typeof(GroqTranslate) && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
+        {
+            Configuration.Settings.Tools.GroqApiKey = EntryApiKey.Text.Trim();
+            //Configuration.Settings.Tools.GroqModel = comboBoxFormality.Text.Trim();
+        }
+
+        //if (engineType == typeof(OpenRouterTranslate) && !string.IsNullOrWhiteSpace(nikseTextBoxApiKey.Text))
+        //{
+        //    Configuration.Settings.Tools.OpenRouterApiKey = nikseTextBoxApiKey.Text.Trim();
+        //    Configuration.Settings.Tools.OpenRouterModel = comboBoxFormality.Text.Trim();
+        //}
+
+        if (engineType == typeof(GeminiTranslate) && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
+        {
+            Configuration.Settings.Tools.GeminiProApiKey = EntryApiKey.Text.Trim();
+        }
+
+        if (engineType == typeof(PapagoTranslate) && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
+        {
+            Configuration.Settings.Tools.AutoTranslatePapagoApiKeyId = EntryApiUrl.Text.Trim();
+            Configuration.Settings.Tools.AutoTranslatePapagoApiKey = EntryApiKey.Text.Trim();
+        }
     }
 
     public void EngineSelectedIndexChanged(object? sender, EventArgs e)
@@ -225,7 +435,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         if (engineType == typeof(PapagoTranslate))
         {
             EntryApiUrl.Text = Configuration.Settings.Tools.AutoTranslatePapagoApiKeyId;
-            EntryApiUrl.IsVisible = true; 
+            EntryApiUrl.IsVisible = true;
             LabelApiUrl.IsVisible = true;
             LabelApiUrl.Text = "Client ID";
 
@@ -445,33 +655,33 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
     private void SetupLanguageSettings(IAutoTranslator autoTranslator)
     {
-        var fromLanguages = autoTranslator.GetSupportedSourceLanguages();
-        FromLanguagePicker.Items.Clear();
-        foreach (var language in fromLanguages)
+        var sourceLanguages = autoTranslator.GetSupportedSourceLanguages();
+        SourceLanguagePicker.Items.Clear();
+        foreach (var language in sourceLanguages)
         {
-            FromLanguagePicker.Items.Add(ToProperCase(language.Name));
+            SourceLanguagePicker.Items.Add(ToProperCase(language.Name));
         }
-        var sourceLanguageIsoCode = EvaluateDefaultSourceLanguageCode(_encoding, _subtitle, fromLanguages);
-        SelectLanguageCode(FromLanguagePicker, sourceLanguageIsoCode, fromLanguages);
+        var sourceLanguageIsoCode = EvaluateDefaultSourceLanguageCode(_encoding, _sourceSubtitle, sourceLanguages);
+        SelectLanguageCode(SourceLanguagePicker, sourceLanguageIsoCode, sourceLanguages);
 
-        var toLanguages = autoTranslator.GetSupportedTargetLanguages();
-        ToLanguagePicker.Items.Clear();
-        foreach (var language in toLanguages)
+        var targetLanguages = autoTranslator.GetSupportedTargetLanguages();
+        TargetLanguagePicker.Items.Clear();
+        foreach (var language in targetLanguages)
         {
-            ToLanguagePicker.Items.Add(ToProperCase(language.Name));
+            TargetLanguagePicker.Items.Add(ToProperCase(language.Name));
         }
         var targetLanguageIsoCode = EvaluateDefaultTargetLanguageCode(sourceLanguageIsoCode);
-        SelectLanguageCode(ToLanguagePicker, targetLanguageIsoCode, toLanguages);
+        SelectLanguageCode(TargetLanguagePicker, targetLanguageIsoCode, targetLanguages);
     }
 
-    static string ToProperCase(string input)
+    private static string ToProperCase(string input)
     {
         if (string.IsNullOrEmpty(input))
         {
             return input;
         }
 
-        TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+        var textInfo = CultureInfo.CurrentCulture.TextInfo;
         return textInfo.ToTitleCase(input.ToLower());
     }
 
@@ -675,5 +885,10 @@ foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
             { "Encoding", Encoding.UTF8 },
             { "TranslatedRows", Lines },
         });
+    }
+
+    public void CollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        //e.Handled = true;
     }
 }

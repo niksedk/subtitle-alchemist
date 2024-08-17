@@ -131,7 +131,9 @@ namespace SubtitleAlchemist.Logic.Media
                 }
 
                 using var ms = new MemoryStream(Encoding.UTF8.GetBytes(format.ToText(subtitle, string.Empty)));
+#pragma warning disable CA1416 // Validate platform compatibility
                 var fileLocation = await FileSaver.Default.SaveAsync(suggestedFileName, ms, cancellationToken);
+#pragma warning restore CA1416 // Validate platform compatibility
                 return fileLocation.FilePath ?? string.Empty;
             }
             catch

@@ -16,7 +16,9 @@ internal static class UiUtil
         if (Configuration.IsRunningOnWindows)
         {
             var argument = @"/select, " + fileName;
+#pragma warning disable CA1416 // Validate platform compatibility
             Process.Start("explorer.exe", argument);
+#pragma warning restore CA1416 // Validate platform compatibility
         }
         else if (!string.IsNullOrEmpty(folderName)) 
         {
@@ -50,7 +52,9 @@ internal static class UiUtil
                     UseShellExecute = true
                 };
 
+#pragma warning disable CA1416 // Validate platform compatibility
                 Process.Start(startInfo);
+#pragma warning restore CA1416 // Validate platform compatibility
             }
             else if (Configuration.IsRunningOnLinux)
             {
@@ -59,7 +63,10 @@ internal static class UiUtil
                     EnableRaisingEvents = false,
                     StartInfo = { FileName = "xdg-open", Arguments = item }
                 };
-                process.Start();
+
+#pragma warning disable CA1416 // Validate platform compatibility
+                var _ = process.Start();
+#pragma warning restore CA1416 // Validate platform compatibility
             }
         }
         catch (Exception exception)

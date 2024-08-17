@@ -10,6 +10,8 @@ public class TranslatePage : ContentPage
 
         BindingContext = vm;
 
+        vm.TranslatePage = this;
+
         var grid = new Grid
         {
             Margin = new Thickness(10, 10, 10, 10),
@@ -91,7 +93,7 @@ public class TranslatePage : ContentPage
         };
         gridLeft.Add(fromLabel, 2, 0);
 
-        vm.FromLanguagePicker = new Picker
+        vm.SourceLanguagePicker = new Picker
         {
             TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.End,
@@ -102,7 +104,7 @@ public class TranslatePage : ContentPage
             },
             SelectedIndex = 0,
         };
-        gridLeft.Add(vm.FromLanguagePicker, 3, 0);
+        gridLeft.Add(vm.SourceLanguagePicker, 3, 0);
 
         grid.Add(gridLeft, 0, 1);
 
@@ -135,7 +137,7 @@ public class TranslatePage : ContentPage
         }, 0, 0);
 
 
-        vm.ToLanguagePicker = new Picker
+        vm.TargetLanguagePicker = new Picker
         {
             TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.Start,
@@ -146,7 +148,7 @@ public class TranslatePage : ContentPage
             },
             SelectedIndex = 0,
         };
-        rightGrid.Add(vm.ToLanguagePicker, 1, 0);
+        rightGrid.Add(vm.TargetLanguagePicker, 1, 0);
 
         rightGrid.Add(new Button
         {
@@ -175,7 +177,7 @@ public class TranslatePage : ContentPage
 
 
         // Define CollectionView
-        var collectionView = new CollectionView
+        vm.CollectionView = new CollectionView
         {
             ItemTemplate = new DataTemplate(() =>
             {
@@ -254,7 +256,9 @@ public class TranslatePage : ContentPage
         };
 
         gridLayout.Add(headerGrid, 0, 0);
-        gridLayout.Add(collectionView, 0, 1);
+        gridLayout.Add(vm.CollectionView, 0, 1);
+
+        vm.CollectionView.SelectionChanged += vm.CollectionViewSelectionChanged;
 
         var frame = new Frame
         {
@@ -365,6 +369,6 @@ public class TranslatePage : ContentPage
 
         Content = grid;
 
-        collectionView.SetBinding(ItemsView.ItemsSourceProperty, "Lines");
+        vm.CollectionView.SetBinding(ItemsView.ItemsSourceProperty, "Lines");
     }
 }

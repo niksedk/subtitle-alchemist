@@ -734,7 +734,10 @@ public partial class MainViewModel : ObservableObject
 
     private async Task ExtractWaveformAndSpectrogram(Process process, string tempWaveFileName, string peakWaveFileName)
     {
+#pragma warning disable CA1416 // Validate platform compatibility
         process.Start();
+#pragma warning restore CA1416 // Validate platform compatibility
+
         var token = new CancellationTokenSource().Token;
         while (!process.HasExited)
         {
