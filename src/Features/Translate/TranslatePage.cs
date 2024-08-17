@@ -6,7 +6,7 @@ public class TranslatePage : ContentPage
 {
     public TranslatePage(TranslateModel vm)
     {
-        BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor];
+        BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
 
         BindingContext = vm;
 

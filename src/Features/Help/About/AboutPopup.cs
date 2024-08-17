@@ -12,10 +12,6 @@ public class AboutPopup : Popup
 
         CanBeDismissedByTappingOutsideOfPopup = false;
 
-        var fileName = System.Reflection.Assembly.GetExecutingAssembly()?.Location;
-        var applicationPath = string.IsNullOrEmpty(fileName) ? string.Empty : Path.GetDirectoryName(fileName) ?? string.Empty;
-        var imagePath = Path.Combine(applicationPath, "Resources", "Images", "Buttons");
-
         Content = new ContentView
         {
             BackgroundColor = Colors.DarkGray,
@@ -39,7 +35,7 @@ public class AboutPopup : Popup
                             .Width(30)
                             .Height(30)
                             .Margin(10)
-                            .Source (ImageSource.FromFile(Path.Combine(imagePath, "Close.png"))),
+                            .Source("btn_close.png"),
                         }
                     },
 

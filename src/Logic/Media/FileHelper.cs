@@ -123,7 +123,11 @@ namespace SubtitleAlchemist.Logic.Media
                 var suggestedFileName = string.Empty;
                 if (!string.IsNullOrEmpty(videoFileName))
                 {
-                    suggestedFileName = Path.Combine(Path.GetDirectoryName(videoFileName), Path.GetFileNameWithoutExtension(videoFileName) + format.Extension);
+                    var folderName = Path.GetDirectoryName(videoFileName);
+                    if (folderName != null)
+                    {
+                        suggestedFileName = Path.Combine(folderName, Path.GetFileNameWithoutExtension(videoFileName) + format.Extension);
+                    }
                 }
 
                 using var ms = new MemoryStream(Encoding.UTF8.GetBytes(format.ToText(subtitle, string.Empty)));

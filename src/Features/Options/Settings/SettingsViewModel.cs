@@ -125,4 +125,16 @@ public partial class SettingsViewModel : ObservableObject
             FfmpegPath = ffmpegFileName;
         }
     }
+
+    public void ThemeChanged(object? sender, EventArgs eventArgs)
+    {
+        if (sender is Picker picker)
+        {
+            var value = picker.SelectedItem.ToString();
+            if (value != null)
+            {
+                Theme = value;
+            }
+        }
+    }
 }

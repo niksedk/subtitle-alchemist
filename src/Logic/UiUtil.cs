@@ -64,7 +64,7 @@ internal static class UiUtil
         }
         catch (Exception exception)
         {
-           // MessageBox.Show($"Cannot open {type}: {item}{Environment.NewLine}{Environment.NewLine}{exception.Source}: {exception.Message}", "Error opening URL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Console.WriteLine($"Cannot open {type}: {item}{Environment.NewLine}{Environment.NewLine}{exception.Source}: {exception.Message}");
         }
     }
 }

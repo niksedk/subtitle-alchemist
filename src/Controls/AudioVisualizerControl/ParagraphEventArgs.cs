@@ -16,7 +16,7 @@ public class ParagraphEventArgs
         Paragraph = new Paragraph(p, false);
     }
 
-    public ParagraphEventArgs(double seconds, Paragraph p)
+    public ParagraphEventArgs(double seconds, Paragraph? p)
     {
         Seconds = seconds;
         Paragraph = new Paragraph(p, false);
@@ -29,7 +29,7 @@ public class ParagraphEventArgs
         BeforeParagraph = b;
     }
 
-    public ParagraphEventArgs(double seconds, Paragraph p, Paragraph b, MouseDownParagraphType mouseDownParagraphType)
+    public ParagraphEventArgs(double seconds, Paragraph p, Paragraph? b, MouseDownParagraphType mouseDownParagraphType)
     {
         Seconds = seconds;
         Paragraph = new Paragraph(p, false);
@@ -37,7 +37,7 @@ public class ParagraphEventArgs
         MouseDownParagraphType = mouseDownParagraphType;
     }
 
-    public ParagraphEventArgs(double seconds, Paragraph p, Paragraph b, MouseDownParagraphType mouseDownParagraphType, bool movePreviousOrNext)
+    public ParagraphEventArgs(double seconds, Paragraph p, Paragraph? b, MouseDownParagraphType mouseDownParagraphType, bool movePreviousOrNext)
     {
         Seconds = seconds;
         Paragraph = new Paragraph(p, false);

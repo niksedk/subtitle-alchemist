@@ -98,8 +98,12 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
 
         private void UnpackFfmpeg(string newFileName)
         {
-            _downloadStream.Position = 0;
-            ZipUnpacker.UnpackZipStream(_downloadStream, Path.GetDirectoryName(newFileName));
+            var folder = Path.GetDirectoryName(newFileName);
+            if (folder != null)
+            {
+                _downloadStream.Position = 0;
+                ZipUnpacker.UnpackZipStream(_downloadStream, folder);
+            }
 
             _downloadStream.Dispose();
         }

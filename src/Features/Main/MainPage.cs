@@ -16,7 +16,7 @@ public class MainPage : ContentPage
         if (mergedDictionaries != null)
         {
             //  mergedDictionaries.Clear(); //TODO: remove default styles!?
-            if (true) //Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme)
+            if (Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme)
             {
                 var darkTheme = new ResourceDictionary
                 {

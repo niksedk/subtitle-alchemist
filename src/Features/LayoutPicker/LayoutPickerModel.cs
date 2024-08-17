@@ -81,11 +81,7 @@ namespace SubtitleAlchemist.Features.LayoutPicker
         public LayoutPickerModel()
         {
             var selectedLayout = 0;
-
-            var fileName = System.Reflection.Assembly.GetExecutingAssembly()?.Location;
-            var applicationPath = string.IsNullOrEmpty(fileName) ? string.Empty : Path.GetDirectoryName(fileName) ?? string.Empty;
-            var imagePath = Path.Combine(applicationPath, "Resources", "Images", "Layouts");
-            imagePath = FileSystem.Current.AppDataDirectory;
+            var imagePath = FileSystem.Current.AppDataDirectory;
 
             _images = new List<byte[]>();
             _grayscaleImages = new List<byte[]>();

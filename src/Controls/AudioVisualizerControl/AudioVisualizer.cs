@@ -16,7 +16,7 @@ public class AudioVisualizer : SKCanvasView
     private readonly object _lock = new();
 
     // actual canvas instance to draw on
-    private SKCanvas _canvas;
+    private SKCanvas? _canvas;
 
     // holds information about the dimensions, etc.
     private SKImageInfo _info;
@@ -50,9 +50,9 @@ public class AudioVisualizer : SKCanvasView
     private int _mouseMoveEndX = -1;
     private bool _mouseDown;
     private bool _mouseOver;
-    private Paragraph _prevParagraph;
-    private Paragraph _nextParagraph;
-    private Paragraph _oldParagraph;
+    private Paragraph? _prevParagraph;
+    private Paragraph? _nextParagraph;
+    private Paragraph? _oldParagraph;
     private Paragraph? _mouseDownParagraph;
     private Paragraph[]? _mouseDownParagraphs;
     private MouseDownParagraphType _mouseDownParagraphType = MouseDownParagraphType.Start;
@@ -86,8 +86,8 @@ public class AudioVisualizer : SKCanvasView
     public event ParagraphEventHandler? OnSingleClick;
     public event ParagraphEventHandler? OnStatus;
 
-    public event EventHandler OnZoomedChanged;
-    public event EventHandler OnPlayToggle;
+    public event EventHandler? OnZoomedChanged;
+    public event EventHandler? OnPlayToggle;
 
     public class PositionEventArgs : EventArgs
     {
@@ -263,7 +263,7 @@ public class AudioVisualizer : SKCanvasView
         else if (e.Data.KeyCode is KeyCode.VcNumPad0 or KeyCode.Vc0)
         {
             ZoomFactor = 1.0;
-            OnZoomedChanged?.Invoke(this, null);
+            OnZoomedChanged?.Invoke(this, EventArgs.Empty);
             e.SuppressEvent = true;
         }
         else if (e.Data.KeyCode == KeyCode.VcLeft)
@@ -293,13 +293,13 @@ public class AudioVisualizer : SKCanvasView
     public void ZoomIn()
     {
         ZoomFactor += 0.1;
-        OnZoomedChanged?.Invoke(this, null);
+        OnZoomedChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void ZoomOut()
     {
         ZoomFactor -= 0.1;
-        OnZoomedChanged?.Invoke(this, null);
+        OnZoomedChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void SetContextMenu(MenuFlyout menuFlyout)
@@ -342,11 +342,6 @@ public class AudioVisualizer : SKCanvasView
             _mouseMoveEndX = SecondsToXPosition(NewSelectionParagraph.EndTime.TotalSeconds - _startPositionSeconds);
         }
     }
-
-    private SKPoint _lastTouchPoint;
-    private bool _isLeftButtonPressed;
-    private bool _isRightButtonPressed;
-
 
     private void OnMousePressed(object? sender, MouseHookEventArgs e)
     {
@@ -856,11 +851,6 @@ public class AudioVisualizer : SKCanvasView
             return;
         }
 
-        OnStatus?.Invoke(this, new ParagraphEventArgs(new Paragraph
-        {
-            Text = "x: " + x + ", oldMouseMoveLastX == x" + (oldMouseMoveLastX == x) + ", firstMove" + _firstMove
-        }));
-
         if (MouseStatus.MouseButtonNone)
         {
             var seconds = RelativeXPositionToSeconds(x);
@@ -1204,10 +1194,7 @@ public class AudioVisualizer : SKCanvasView
 
         if (Handler?.MauiContext is MauiContext context)
         {
-            //OnStatus?.Invoke(this, new ParagraphEventArgs(new Paragraph() { Text = "Cursor: " + cursor }));
-
             this.SetCustomCursor(cursor, context);
-
             _lastCursor = cursor;
         }
     }
@@ -1335,14 +1322,20 @@ public class AudioVisualizer : SKCanvasView
     {
         base.OnHandlerChanged();
 #if WINDOWS
+        if (Handler != null)          
+        {
             var view = Handler.PlatformView as SkiaSharp.Views.Windows.SKXamlCanvas;
-            view.PointerWheelChanged += (s, e) =>
+            if (view != null) 
             {
-                var point = e.GetCurrentPoint(s as Microsoft.Maui.Platform.ContentPanel);
-                var delta = point.Properties.MouseWheelDelta;
-                var positionSeconds = _currentVideoPositionSeconds + delta / 80.0;
-                OnVideoPositionChanged?.Invoke(this, new PositionEventArgs { PositionInSeconds = positionSeconds });
-            };
+                view.PointerWheelChanged += (s, e) =>
+                {
+                    var point = e.GetCurrentPoint(s as Microsoft.Maui.Platform.ContentPanel);
+                    var delta = point.Properties.MouseWheelDelta;
+                    var positionSeconds = _currentVideoPositionSeconds + delta / 80.0;
+                    OnVideoPositionChanged?.Invoke(this, new PositionEventArgs { PositionInSeconds = positionSeconds });
+                };
+            }  
+        }  
 #endif
     }
 
@@ -1389,30 +1382,55 @@ public class AudioVisualizer : SKCanvasView
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private double RelativeXPositionToSeconds(double x)
     {
+        if (WavePeaks == null)
+        {
+            return 0;
+        }
+
         return _startPositionSeconds + x / WavePeaks.SampleRate / _zoomFactor;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private double RelativeXPositionToSeconds(int x)
     {
+        if (WavePeaks == null)
+        {
+            return 0;
+        }
+
         return _startPositionSeconds + (double)x / WavePeaks.SampleRate / _zoomFactor;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int SecondsToXPosition(double seconds)
     {
+        if (WavePeaks == null)
+        {
+            return 0;
+        }
+
         return (int)Math.Round(seconds * WavePeaks.SampleRate * _zoomFactor, MidpointRounding.AwayFromZero);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int SecondsToSampleIndex(double seconds)
     {
+        if (WavePeaks == null)
+        {
+            return 0;
+        }
+
         return (int)Math.Round(seconds * WavePeaks.SampleRate, MidpointRounding.AwayFromZero);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private double SampleIndexToSeconds(int index)
     {
+        if (WavePeaks == null)
+        {
+            return 0;
+        }
+
         return (double)index / WavePeaks.SampleRate;
     }
 
@@ -1539,23 +1557,25 @@ public class AudioVisualizer : SKCanvasView
     private void DrawNewParagraph()
     {
         // current selection
-        if (NewSelectionParagraph != null)
+        if (NewSelectionParagraph == null || _canvas == null)
         {
-            var currentRegionLeft = SecondsToXPosition(NewSelectionParagraph.StartTime.TotalSeconds - _startPositionSeconds);
-            var currentRegionRight = SecondsToXPosition(NewSelectionParagraph.EndTime.TotalSeconds - _startPositionSeconds);
-            var currentRegionWidth = currentRegionRight - currentRegionLeft;
-            if (currentRegionRight >= 0 && currentRegionLeft <= _info.Width)
-            {
-                _canvas.DrawRect(currentRegionLeft, 0, currentRegionWidth, _info.Height, _paintBackground);
+            return;
+        }
 
-                if (currentRegionWidth > 40)
-                {
-                    //TODO:
-                    //using (var brush = new SolidBrush(CursorColor))
-                    //{
-                    //    graphics.DrawString($"{(double)currentRegionWidth / WavePeaks.SampleRate / _zoomFactor:0.###} {LanguageSettings.Current.Waveform.Seconds}", Font, brush, new PointF(currentRegionLeft + 3, Height - 32));
-                    //}
-                }
+        var currentRegionLeft = SecondsToXPosition(NewSelectionParagraph.StartTime.TotalSeconds - _startPositionSeconds);
+        var currentRegionRight = SecondsToXPosition(NewSelectionParagraph.EndTime.TotalSeconds - _startPositionSeconds);
+        var currentRegionWidth = currentRegionRight - currentRegionLeft;
+        if (currentRegionRight >= 0 && currentRegionLeft <= _info.Width)
+        {
+            _canvas.DrawRect(currentRegionLeft, 0, currentRegionWidth, _info.Height, _paintBackground);
+
+            if (currentRegionWidth > 40)
+            {
+                //TODO:
+                //using (var brush = new SolidBrush(CursorColor))
+                //{
+                //    graphics.DrawString($"{(double)currentRegionWidth / WavePeaks.SampleRate / _zoomFactor:0.###} {LanguageSettings.Current.Waveform.Seconds}", Font, brush, new PointF(currentRegionLeft + 3, Height - 32));
+                //}
             }
         }
     }
@@ -1588,7 +1608,7 @@ public class AudioVisualizer : SKCanvasView
         var currentRegionRight = SecondsToXPosition(paragraph.EndTime.TotalSeconds - _startPositionSeconds);
         var currentRegionWidth = currentRegionRight - currentRegionLeft;
 
-        if (currentRegionWidth <= 1)
+        if (currentRegionWidth <= 1 || _canvas == null)
         {
             return;
         }
@@ -1602,21 +1622,24 @@ public class AudioVisualizer : SKCanvasView
         _canvas.DrawLine(currentRegionLeft, 0, currentRegionLeft, (float)_info.Height, _paintLeft);
         _canvas.DrawLine(currentRegionRight - 1, 0, currentRegionRight - 1, (float)_info.Height, _paintRight);
 
-        var n = _zoomFactor * WavePeaks.SampleRate;
-
         var text = HtmlUtil.RemoveHtmlTags(paragraph.Text, true);
         if (Configuration.Settings.VideoControls.WaveformUnwrapText)
         {
             text = text.Replace(Environment.NewLine, "  ");
         }
 
-        var bounds = new SKRect();
-        var x = _paintText.MeasureText(text, ref bounds);
+        //var bounds = new SKRect();
+        //TODO: cut off text -- var x = _paintText.MeasureText(text, ref bounds);
         _canvas.DrawText(text, currentRegionLeft + 3, 14, _paintText);
     }
 
     private void DrawCurrentVideoPosition()
     {
+        if (_canvas == null)
+        {
+            return;
+        }
+
         // current video position
         var currentPositionPos = SecondsToXPosition(_currentVideoPositionSeconds - _startPositionSeconds);
         if (_currentVideoPositionSeconds > 0 && currentPositionPos > 0 && currentPositionPos < _info.Width)
@@ -1650,7 +1673,7 @@ public class AudioVisualizer : SKCanvasView
 
     private void DrawWaveForm()
     {
-        if (WavePeaks == null)
+        if (WavePeaks == null || _canvas == null)
         {
             return;
         }
@@ -1707,7 +1730,7 @@ public class AudioVisualizer : SKCanvasView
 
     private void DrawGridLines()
     {
-        if (!ShowGridLines)
+        if (!ShowGridLines || _canvas == null)
         {
             return;
         }

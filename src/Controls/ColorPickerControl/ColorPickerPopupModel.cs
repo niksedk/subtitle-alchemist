@@ -33,6 +33,6 @@ public partial class ColorPickerPopupModel : ObservableObject
 
     public void SetCurrentColor(Color color)
     {
-        ColorPickerView.SetCurrentColor(color);
+        ColorPickerView?.SetCurrentColor(color);
     }
 }

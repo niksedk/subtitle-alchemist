@@ -73,7 +73,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     public Entry EntryApiUrl { get; set; } = new();
 
     public Label LabelFormality { get; set; } = new();
-    public Entry EntryFormality { get; set; } = new();
+    public Picker PickerFormality { get; set; } = new();
 
     public Label LabelModel { get; set; } = new();
     public Entry EntryModel { get; set; } = new();
@@ -135,8 +135,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         EntryApiUrl.IsVisible = false;
         EntryApiUrl.Text = string.Empty;
         LabelApiUrl.IsVisible = false;
-        EntryFormality.IsVisible = false;
-        EntryFormality.Text = string.Empty;
+        PickerFormality.IsVisible = false;
         LabelFormality.IsVisible = false;
         EntryModel.IsVisible = false;
         EntryModel.Text = string.Empty;
@@ -168,14 +167,13 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         if (engineType == typeof(DeepLTranslate))
         {
             LabelFormality.IsVisible = true;
-            EntryFormality.IsVisible = true;
-            //EntryFormality.DropDownStyle = ComboBoxStyle.DropDownList;
+            PickerFormality.IsVisible = true;
 
             FillUrls(new List<string>
-                {
-                    Configuration.Settings.Tools.AutoTranslateDeepLUrl,
-                    Configuration.Settings.Tools.AutoTranslateDeepLUrl.Contains("api-free.deepl.com") ? "https://api.deepl.com/" : "https://api-free.deepl.com/",
-                });
+            {
+                Configuration.Settings.Tools.AutoTranslateDeepLUrl,
+                Configuration.Settings.Tools.AutoTranslateDeepLUrl.Contains("api-free.deepl.com") ? "https://api.deepl.com/" : "https://api-free.deepl.com/",
+            });
 
             EntryApiKey.Text = Configuration.Settings.Tools.AutoTranslateDeepLApiKey;
             LabelApiKey.IsVisible = true;
@@ -189,11 +187,11 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         if (engineType == typeof(NoLanguageLeftBehindServe))
         {
             FillUrls(new List<string>
-                {
-                    Configuration.Settings.Tools.AutoTranslateNllbServeUrl,
-                    "http://127.0.0.1:6060/",
-                    "http://192.168.8.127:6060/",
-                });
+            {
+                Configuration.Settings.Tools.AutoTranslateNllbServeUrl,
+                "http://127.0.0.1:6060/",
+                "http://192.168.8.127:6060/",
+            });
 
             return;
         }
@@ -201,11 +199,11 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         if (engineType == typeof(NoLanguageLeftBehindApi))
         {
             FillUrls(new List<string>
-                {
-                    Configuration.Settings.Tools.AutoTranslateNllbApiUrl,
-                    "http://localhost:7860/api/v2/",
-                    "https://winstxnhdw-nllb-api.hf.space/api/v2/",
-                });
+            {
+                Configuration.Settings.Tools.AutoTranslateNllbApiUrl,
+                "http://localhost:7860/api/v2/",
+                "https://winstxnhdw-nllb-api.hf.space/api/v2/",
+            });
 
             return;
         }
@@ -213,180 +211,162 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         if (engineType == typeof(LibreTranslate))
         {
             FillUrls(new List<string>
-                {
-                    Configuration.Settings.Tools.AutoTranslateLibreUrl,
-                    "http://localhost:5000/",
-                    "https://libretranslate.com/",
-                    "https://translate.argosopentech.com/",
-                    "https://translate.terraprint.co/",
-                });
+            {
+                Configuration.Settings.Tools.AutoTranslateLibreUrl,
+                "http://localhost:5000/",
+                "https://libretranslate.com/",
+                "https://translate.argosopentech.com/",
+                "https://translate.terraprint.co/",
+            });
 
             return;
         }
 
-        //if (engineType == typeof(PapagoTranslate))
-        //{
-        //    nikseComboBoxUrl.Items.Clear();
-        //    nikseComboBoxUrl.Items.Add(Configuration.Settings.Tools.AutoTranslatePapagoApiKeyId);
-        //    nikseComboBoxUrl.SelectedIndex = 0;
-        //    nikseComboBoxUrl.IsVisible = true;
-        //    labelUrl.IsVisible = true;
-        //    labelUrl.Text = "Client ID";
-        //    nikseComboBoxUrl.Left = labelUrl.Right + 3;
+        if (engineType == typeof(PapagoTranslate))
+        {
+            EntryApiUrl.Text = Configuration.Settings.Tools.AutoTranslatePapagoApiKeyId;
+            EntryApiUrl.IsVisible = true; 
+            LabelApiUrl.IsVisible = true;
+            LabelApiUrl.Text = "Client ID";
 
-        //    labelApiKey.Left = nikseComboBoxUrl.Right + 12;
-        //    labelApiKey.Text = "Client secret";
-        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.AutoTranslatePapagoApiKey;
-        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
-        //    labelApiKey.IsVisible = true;
-        //    nikseTextBoxApiKey.IsVisible = true;
+            LabelApiKey.Text = "Client secret";
+            EntryApiKey.Text = Configuration.Settings.Tools.AutoTranslatePapagoApiKey;
+            LabelApiKey.IsVisible = true;
+            EntryApiKey.IsVisible = true;
 
-        //    return;
-        //}
+            return;
+        }
 
 
-        //if (engineType == typeof(MyMemoryApi))
-        //{
-        //    labelApiKey.Left = labelUrl.Left;
-        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.AutoTranslateMyMemoryApiKey;
-        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
-        //    labelApiKey.IsVisible = true;
-        //    nikseTextBoxApiKey.IsVisible = true;
+        if (engineType == typeof(MyMemoryApi))
+        {
+            EntryApiKey.Text = Configuration.Settings.Tools.AutoTranslateMyMemoryApiKey;
+            LabelApiKey.IsVisible = true;
+            EntryApiKey.IsVisible = true;
+            return;
+        }
 
-        //    return;
-        //}
+        if (engineType == typeof(ChatGptTranslate))
+        {
+            if (Configuration.Settings.Tools.ChatGptUrl == null)
+            {
+                Configuration.Settings.Tools.ChatGptUrl = "https://api.openai.com/v1/chat/completions";
+            }
 
-        //if (engineType == typeof(ChatGptTranslate))
-        //{
-        //    if (Configuration.Settings.Tools.ChatGptUrl == null)
-        //    {
-        //        Configuration.Settings.Tools.ChatGptUrl = "https://api.openai.com/v1/chat/completions";
-        //    }
+            FillUrls(new List<string>
+                {
+                    Configuration.Settings.Tools.ChatGptUrl.TrimEnd('/'),
+                    Configuration.Settings.Tools.ChatGptUrl.StartsWith("http://localhost:1234/v1/chat/completions", StringComparison.OrdinalIgnoreCase) ? "https://api.openai.com/v1/chat/completions" : "http://localhost:1234/v1/chat/completions"
+                });
 
-        //    FillUrls(new List<string>
-        //        {
-        //            Configuration.Settings.Tools.ChatGptUrl.TrimEnd('/'),
-        //            Configuration.Settings.Tools.ChatGptUrl.StartsWith("http://localhost:1234/v1/chat/completions", StringComparison.OrdinalIgnoreCase) ? "https://api.openai.com/v1/chat/completions" : "http://localhost:1234/v1/chat/completions"
-        //        });
+            //LabelFormality.Text = "Model";
+            //LabelFormality.IsVisible = true;
 
-        //    labelFormality.Text = LanguageSettings.Current.AudioToText.Model;
-        //    labelFormality.Enabled = true;
-        //    labelFormality.IsVisible = true;
+            //comboBoxFormality.Items.Clear();
+            //comboBoxFormality.Enabled = true;
+            //comboBoxFormality.Left = labelFormality.Right + 3;
+            //comboBoxFormality.IsVisible = true;
+            //comboBoxFormality.Items.AddRange(ChatGptTranslate.Models);
+            //comboBoxFormality.Text = Configuration.Settings.Tools.ChatGptModel;
 
-        //    comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
-        //    comboBoxFormality.Items.Clear();
-        //    comboBoxFormality.Enabled = true;
-        //    comboBoxFormality.Left = labelFormality.Right + 3;
-        //    comboBoxFormality.IsVisible = true;
-        //    comboBoxFormality.Items.AddRange(ChatGptTranslate.Models);
-        //    comboBoxFormality.Text = Configuration.Settings.Tools.ChatGptModel;
+            EntryApiKey.Text = Configuration.Settings.Tools.ChatGptApiKey;
+            LabelApiKey.IsVisible = true;
+            EntryApiKey.IsVisible = true;
+            return;
+        }
 
-        //    labelApiKey.Left = nikseComboBoxUrl.Right + 12;
-        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.ChatGptApiKey;
-        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
-        //    labelApiKey.IsVisible = true;
-        //    nikseTextBoxApiKey.IsVisible = true;
-        //    return;
-        //}
+        if (engineType == typeof(LmStudioTranslate))
+        {
+            if (string.IsNullOrEmpty(Configuration.Settings.Tools.LmStudioApiUrl))
+            {
+                Configuration.Settings.Tools.LmStudioApiUrl = "http://localhost:1234/v1/chat/completions";
+            }
 
-        //if (engineType == typeof(LmStudioTranslate))
-        //{
-        //    if (string.IsNullOrEmpty(Configuration.Settings.Tools.LmStudioApiUrl))
-        //    {
-        //        Configuration.Settings.Tools.LmStudioApiUrl = "http://localhost:1234/v1/chat/completions";
-        //    }
+            FillUrls(new List<string>
+            {
+                Configuration.Settings.Tools.LmStudioApiUrl.TrimEnd('/'),
+            });
 
-        //    FillUrls(new List<string>
-        //        {
-        //            Configuration.Settings.Tools.LmStudioApiUrl.TrimEnd('/'),
-        //        });
+            return;
+        }
 
-        //    return;
-        //}
+        if (engineType == typeof(OllamaTranslate))
+        {
+            if (Configuration.Settings.Tools.OllamaApiUrl == null)
+            {
+                Configuration.Settings.Tools.OllamaApiUrl = "http://localhost:11434/api/generate";
+            }
 
-        //if (engineType == typeof(OllamaTranslate))
-        //{
-        //    if (Configuration.Settings.Tools.OllamaApiUrl == null)
-        //    {
-        //        Configuration.Settings.Tools.OllamaApiUrl = "http://localhost:11434/api/generate";
-        //    }
+            FillUrls(new List<string>
+            {
+                Configuration.Settings.Tools.OllamaApiUrl.TrimEnd('/'),
+            });
 
-        //    FillUrls(new List<string>
-        //        {
-        //            Configuration.Settings.Tools.OllamaApiUrl.TrimEnd('/'),
-        //        });
+            var models = Configuration.Settings.Tools.OllamaModels.Split(',').ToList();
 
-        //    var models = Configuration.Settings.Tools.OllamaModels.Split(',').ToList();
+            LabelModel.IsVisible = true;
 
-        //    labelFormality.Text = LanguageSettings.Current.AudioToText.Model;
-        //    labelFormality.Enabled = true;
-        //    labelFormality.IsVisible = true;
+            //comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
+            //comboBoxFormality.Items.Clear();
+            //comboBoxFormality.Enabled = true;
+            //comboBoxFormality.Left = labelFormality.Right + 3;
+            //comboBoxFormality.IsVisible = true;
+            //foreach (var model in models)
+            //{
+            //    comboBoxFormality.Items.Add(model);
+            //}
+            EntryModel.Text = Configuration.Settings.Tools.OllamaModel;
 
-        //    comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
-        //    comboBoxFormality.Items.Clear();
-        //    comboBoxFormality.Enabled = true;
-        //    comboBoxFormality.Left = labelFormality.Right + 3;
-        //    comboBoxFormality.IsVisible = true;
-        //    foreach (var model in models)
-        //    {
-        //        comboBoxFormality.Items.Add(model);
-        //    }
-        //    comboBoxFormality.Text = Configuration.Settings.Tools.OllamaModel;
+            //comboBoxFormality.ContextMenuStrip = contextMenuStripOlamaModels;
 
-        //    comboBoxFormality.ContextMenuStrip = contextMenuStripOlamaModels;
+            return;
+        }
 
-        //    return;
-        //}
+        if (engineType == typeof(AnthropicTranslate))
+        {
+            FillUrls(new List<string>
+                {
+                    Configuration.Settings.Tools.AnthropicApiUrl,
+                });
 
-        //if (engineType == typeof(AnthropicTranslate))
-        //{
-        //    FillUrls(new List<string>
-        //        {
-        //            Configuration.Settings.Tools.AnthropicApiUrl,
-        //        });
+            EntryApiKey.Text = Configuration.Settings.Tools.AnthropicApiKey;
+            LabelApiKey.IsVisible = true;
+            EntryApiKey.IsVisible = true;
 
-        //    labelApiKey.Left = nikseComboBoxUrl.Right + 12;
-        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.AnthropicApiKey;
-        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
-        //    labelApiKey.IsVisible = true;
-        //    nikseTextBoxApiKey.Visible = true;
+            LabelModel.Text = "Model";
+            LabelModel.IsVisible = true;
+            //comboBoxFormality.IsVisible = true;
+            //comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
+            //comboBoxFormality.Items.Clear();
+            //comboBoxFormality.Items.AddRange(AnthropicTranslate.Models);
+            EntryModel.Text = Configuration.Settings.Tools.AnthropicApiModel;
 
-        //    labelFormality.Text = LanguageSettings.Current.AudioToText.Model;
-        //    labelFormality.IsVisible = true;
-        //    comboBoxFormality.Left = labelFormality.Right + 3;
-        //    comboBoxFormality.IsVisible = true;
-        //    comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
-        //    comboBoxFormality.Items.Clear();
-        //    comboBoxFormality.Items.AddRange(AnthropicTranslate.Models);
-        //    comboBoxFormality.Text = Configuration.Settings.Tools.AnthropicApiModel;
+            return;
+        }
 
-        //    return;
-        //}
+        if (engineType == typeof(GroqTranslate))
+        {
+            FillUrls(new List<string>
+                {
+                    Configuration.Settings.Tools.GroqUrl,
+                });
 
-        //if (engineType == typeof(GroqTranslate))
-        //{
-        //    FillUrls(new List<string>
-        //        {
-        //            Configuration.Settings.Tools.GroqUrl,
-        //        });
+            EntryApiKey.Text = Configuration.Settings.Tools.GroqApiKey;
+            LabelApiKey.IsVisible = true;
+            EntryApiKey.IsVisible = true;
 
-        //    labelApiKey.Left = nikseComboBoxUrl.Right + 12;
-        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.GroqApiKey;
-        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
-        //    labelApiKey.IsVisible = true;
-        //    nikseTextBoxApiKey.IsVisible = true;
+            LabelModel.Text = "Model";
+            LabelModel.IsVisible = true;
+            //comboBoxFormality.Left = labelFormality.Right + 3;
+            //comboBoxFormality.IsVisible = true;
+            //comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
+            //comboBoxFormality.Items.Clear();
+            //comboBoxFormality.Items.AddRange(GroqTranslate.Models);
+            EntryModel.Text = Configuration.Settings.Tools.GroqModel;
+            EntryModel.IsVisible = true;
 
-        //    labelFormality.Text = LanguageSettings.Current.AudioToText.Model;
-        //    labelFormality.IsVisible = true;
-        //    comboBoxFormality.Left = labelFormality.Right + 3;
-        //    comboBoxFormality.IsVisible = true;
-        //    comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
-        //    comboBoxFormality.Items.Clear();
-        //    comboBoxFormality.Items.AddRange(GroqTranslate.Models);
-        //    comboBoxFormality.Text = Configuration.Settings.Tools.GroqModel;
-
-        //    return;
-        //}
+            return;
+        }
 
 
         //if (engineType == typeof(OpenRouterTranslate))
@@ -415,24 +395,20 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         //}
 
 
-        //if (engineType == typeof(GeminiTranslate))
-        //{
-        //    nikseComboBoxUrl.IsVisible = false;
-        //    labelUrl.Visible = false;
-
-        //    labelApiKey.Left = labelUrl.Left;
-        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.GeminiProApiKey;
-        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
-        //    labelApiKey.IsVisible = true;
-        //    nikseTextBoxApiKey.IsVisible = true;
-        //    return;
-        //}
+        if (engineType == typeof(GeminiTranslate))
+        {
+            EntryApiKey.Text = Configuration.Settings.Tools.GeminiProApiKey;
+            LabelApiKey.IsVisible = true;
+            EntryApiKey.IsVisible = true;
+            return;
+        }
 
         throw new Exception($"Engine {translator.Name} not handled!");
     }
 
-    private void FillUrls(List<string> p0)
+    private void FillUrls(List<string> urls)
     {
+        EntryApiUrl.Text = urls.Count > 0 ? urls[0] : string.Empty;
         //nikseComboBoxUrl.Items.Clear();
         //foreach (var url in list.Distinct())
         //{
@@ -442,7 +418,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         //    }
         //}
 
-        //labelUrl.Text = LanguageSettings.Current.Main.Url;
+        LabelApiUrl.Text = "Url";
         //nikseComboBoxUrl.Left = labelUrl.Right + 3;
         //if (nikseComboBoxUrl.Items.Count > 0)
         //{
@@ -675,7 +651,7 @@ foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
 
     public void MouseExitedPoweredBy()
     {
-        TitleLabel.TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor];
+        TitleLabel.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
         TitleLabel.TextDecorations = TextDecorations.None;
     }
 
