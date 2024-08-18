@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Views;
 using SubtitleAlchemist.Controls.ColorPickerControl;
+using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Controls.UpDownControl;
 using SubtitleAlchemist.Logic.Constants;
 
@@ -88,22 +89,29 @@ namespace SubtitleAlchemist.Logic
 
         public static ColorPickerView BindDynamicTheme(this ColorPickerView control)
         {
-            control.SetDynamicResource(ColorPickerView.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
             control.SetDynamicResource(ColorPickerView.TextColorProperty, ThemeNames.TextColor);
             return control;
         }
 
         public static UpDownView BindDynamicTheme(this UpDownView control)
         {
-            control.SetDynamicResource(UpDownView.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
             control.SetDynamicResource(UpDownView.TextColorProperty, ThemeNames.TextColor);
             return control;
         }
 
+        public static SubTimeUpDown BindDynamicTheme(this SubTimeUpDown control)
+        {
+            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            return control;
+        }
+
+
         public static Editor BindDynamicTheme(this Editor control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
-            control.SetDynamicResource(Editor.TextColorProperty, ThemeNames.BackgroundColor);
+            control.SetDynamicResource(Editor.TextColorProperty, ThemeNames.TextColor);
             return control;
         }
 

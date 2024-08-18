@@ -1,7 +1,6 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Controls.UpDownControl;
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Controls.SubTimeControl;
 
@@ -54,7 +53,7 @@ public class SubTimeUpDown : ContentView
         {
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center
-        };
+        }.BindDynamicTheme();
         _timeLabel.SetBinding(Label.TextProperty, new Binding(nameof(DisplayText), source: this));
 
         _upDown = new UpDownView

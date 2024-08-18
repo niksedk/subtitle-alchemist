@@ -525,6 +525,7 @@ internal static class InitLayout
                 DisplayText = "00:00:00,000",
                 HorizontalOptions = LayoutOptions.Start,
             }
+            .BindDynamicTheme()
             .Column(0)
             .Row(1);
         startTimeUpDown.BindingContext = vm;
@@ -537,6 +538,7 @@ internal static class InitLayout
                 UseShortFormat = true,
                 HorizontalOptions = LayoutOptions.Start,
             }
+            .BindDynamicTheme()
             .Column(0)
             .Row(1);
         durationUpDown.BindingContext = vm;
@@ -571,14 +573,14 @@ internal static class InitLayout
             Text = "Show",
             VerticalOptions = LayoutOptions.End,
             Padding = new Thickness(0, 0, 5, 5),
-        }, 0, 0);
+        }.BindDynamicTheme(), 0, 0);
         leftGrid.Add(startTimeUpDown, 1, 0);
         leftGrid.Add(new Label
         {
             Text = "Duration",
             VerticalOptions = LayoutOptions.End,
             Padding = new Thickness(0, 0, 5, 5),
-        }, 0, 1);
+        }.BindDynamicTheme(), 0, 1);
         leftGrid.Add(durationUpDown, 1, 1);
 
         var grid = new Grid
@@ -616,9 +618,13 @@ internal static class InitLayout
                 new Label
                 {
                     Padding = new Thickness(10,2,2,2),
-                }.Bind(Label.TextProperty, static vm => vm.StatusText,
+                }
+                    .BindDynamicTheme()
+                    .Bind(Label.TextProperty, static vm => vm.StatusText,
                     static (MainViewModel vm, string text) => vm.StatusText = text),
-                new Label().Bind(Label.TextProperty, static vm => vm.SelectedLineInfo,
+                new Label()
+                    .BindDynamicTheme()
+                    .Bind(Label.TextProperty, static vm => vm.SelectedLineInfo,
                     static (MainViewModel vm, string text) => vm.SelectedLineInfo = text),
             }
         };

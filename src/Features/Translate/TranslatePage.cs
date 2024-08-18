@@ -52,7 +52,6 @@ public class TranslatePage : ContentPage
         grid.Add(vm.TitleLabel, 0, 0);
         Grid.SetColumnSpan(vm.TitleLabel, 2);
 
-
         var gridLeft = new Grid
         {
             Padding = new Thickness(10),
@@ -75,8 +74,7 @@ public class TranslatePage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             SelectedIndex = 0,
-
-        };
+        }.BindDynamicTheme();
         vm.EnginePicker.SetBinding(Picker.ItemsSourceProperty, "AutoTranslators");
         vm.EnginePicker.SetBinding(Picker.SelectedItemProperty, "SelectedAutoTranslator");
         vm.EnginePicker.SelectedIndexChanged += vm.EngineSelectedIndexChanged;
@@ -193,16 +191,16 @@ public class TranslatePage : ContentPage
                 };
 
                 // Bind each cell to the appropriate property
-                var numberLabel = new Label { VerticalTextAlignment = TextAlignment.Center };
+                var numberLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicTheme();
                 numberLabel.SetBinding(Label.TextProperty, "Number");
 
-                var startTimeLabel = new Label { VerticalTextAlignment = TextAlignment.Center };
+                var startTimeLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicTheme();
                 startTimeLabel.SetBinding(Label.TextProperty, new Binding("StartTime", stringFormat: "{HH:mm:ss.fff}"));
 
-                var originalTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center };
+                var originalTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicTheme();
                 originalTextLabel.SetBinding(Label.TextProperty, "OriginalText");
 
-                var translatedTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center };
+                var translatedTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicTheme();
                 translatedTextLabel.SetBinding(Label.TextProperty, "TranslatedText");
 
                 // Add labels to grid
@@ -213,7 +211,7 @@ public class TranslatePage : ContentPage
 
                 return gridTexts;
             })
-        };
+        }.BindDynamicTheme();
 
         // Create the header grid
         var headerGrid = new Grid
@@ -247,7 +245,7 @@ public class TranslatePage : ContentPage
             {
                 new() { Width = new GridLength(1, GridUnitType.Star) },
             }
-        };
+        }.BindDynamicTheme();
 
         gridLayout.Add(headerGrid, 0, 0);
         gridLayout.Add(vm.CollectionView, 0, 1);
