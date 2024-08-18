@@ -251,12 +251,18 @@ public class SettingsPage : ContentPage
         radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png");
         radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png");
         radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png");
         grid.Add(radial, 0, 3);
         Grid.SetColumnSpan(radial, 2);
 
 
-        var leftButton = new Button { Text = "Rotate Left" };
-        var rightButton = new Button { Text = "Rotate Right" };
+        var leftButton = new Button { Text = "Rotate Left" }.BindDynamicTheme();
+        var rightButton = new Button { Text = "Rotate Right" }.BindDynamicTheme();
 
         leftButton.Clicked += (s, e) => radial.RotateLeft();
         rightButton.Clicked += (s, e) => radial.RotateRight();
