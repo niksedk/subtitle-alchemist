@@ -41,20 +41,20 @@ public class AboutPopup : Popup
 
                     new Label()
                         .Text("About Subtitle Alchemist ALPHA 1")
-                        .TextColor((Color)Application.Current.Resources["TextColor"])
+                        .BindDynamicTheme()
                         .FontSize(30)
                         .Bold()
                         .Margin(20),
 
                     new Label()
                         .Text("Subtitle Alchemist is Free Software under the GNU Public License." + Environment.NewLine + "You may distribute, modify and use it freely.")
-                        .TextColor((Color)Application.Current.Resources["TextColor"])
+                        .BindDynamicTheme()
                         .FontSize(20)
                         .Margin(10),
 
                     new Label()
                         .Text("C# source code is available on GitHub: ")
-                        .TextColor((Color)Application.Current.Resources["TextColor"])
+                        .BindDynamicTheme()
                         .FontSize(15)
                         .Margin(10),
 

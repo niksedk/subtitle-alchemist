@@ -46,6 +46,8 @@ public partial class SettingsViewModel : ObservableObject
 
     public async Task LeftMenuTapped(object? sender, TappedEventArgs e, PageNames pageName)
     {
+        _pageName = pageName;
+
         if (Page.Content != null)
         {
             await Page.Content.FadeTo(0, 200);
@@ -71,7 +73,7 @@ public partial class SettingsViewModel : ObservableObject
 
         await Page.Content.FadeTo(1, 200);
 
-        _pageName = pageName;
+        
     }
 
     [RelayCommand]

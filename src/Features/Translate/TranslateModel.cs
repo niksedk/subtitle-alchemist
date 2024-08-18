@@ -88,6 +88,9 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     public Label LabelModel { get; set; } = new();
     public Entry EntryModel { get; set; } = new();
     public CollectionView CollectionView { get; set; } = new();
+    public Button ButtonTranslate { get; set; } = new();
+    public Button ButtonOk { get; set; } = new();
+    public Button ButtonCancel { get; set; } = new();
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -128,10 +131,6 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     public async Task Translate()
     {
-        ProgressBar.IsVisible = true;
-        ProgressBar.IsEnabled = true;
-        ProgressBar.Progress = 0.5;
-
         if (TranslatePage == null)
         {
             return;
@@ -140,17 +139,14 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         if (_translationInProgress)
         {
             _translationInProgress = false;
-            _cancellationTokenSource.Cancel();
             _abort = true;
-            //_breakTranslation = true;
-            //buttonTranslate.Enabled = false;
-            //buttonOK.Enabled = true;
-            //buttonCancel.Enabled = true;
-            //buttonOK.Refresh();
-            _singleLineMode = false;
+            await _cancellationTokenSource.CancelAsync();
             return;
         }
 
+        ProgressBar.IsVisible = true;
+        ProgressBar.IsEnabled = true;
+        ProgressBar.Progress = 0;
         _translationInProgress = true;
         _cancellationTokenSource = new CancellationTokenSource();
 
@@ -175,14 +171,9 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
         SaveSettings(engineType);
 
-        //buttonOK.Enabled = false;
-        //buttonCancel.Enabled = false;
-        //buttonTranslate.Text = LanguageSettings.Current.General.Cancel;
-        //progressBar1.Minimum = 0;
-        //progressBar1.Value = 0;
-        //progressBar1.Maximum = TranslatedSubtitle.Paragraphs.Count;
-        //progressBar1.Visible = true;
-        //labelPleaseWait.Visible = true;
+        ButtonOk.IsEnabled = false;
+        ButtonCancel.IsEnabled = false;
+        ButtonTranslate.Text  = "Cancel";
 
         translator.Initialize();
 
@@ -200,58 +191,81 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         Configuration.Settings.Tools.GoogleTranslateLastSourceLanguage = sourceLanguage.TwoLetterIsoLanguageName;
         Configuration.Settings.Tools.GoogleTranslateLastTargetLanguage = targetLanguage.TwoLetterIsoLanguageName;
 
+
+        // do translate
+        await Task.Run(async () =>
+        {
+            await DoTranslate(sourceLanguage, targetLanguage, translator);
+        });
+
+        ButtonOk.IsEnabled = true;
+        ButtonCancel.IsEnabled = true;
+        ButtonTranslate.Text = "Translate";
+        _translationInProgress = false;
+        _abort = false;
+        ProgressBar.IsVisible = false;
+        ButtonOk.Focus();
+    }
+
+    private async Task DoTranslate(TranslationPair sourceLanguage, TranslationPair targetLanguage, IAutoTranslator translator)
+    {
+        var start = 0;
+        if (CollectionView.SelectedItem is TranslateRow selectedItem)
+        {
+            start = Lines.IndexOf(selectedItem);
+        }
+
         var forceSingleLineMode = Configuration.Settings.Tools.AutoTranslateStrategy == TranslateStrategy.TranslateEachLineSeparately.ToString() ||
                                   translator.Name == NoLanguageLeftBehindApi.StaticName ||  // NLLB seems to miss some text...
                                   translator.Name == NoLanguageLeftBehindServe.StaticName ||
                                   _singleLineMode;
 
-        // do translate
+        var index = start;
         var linesTranslated = 0;
-        if (CollectionView.SelectedItem is TranslateRow tr)
+        var errorCount = 0;
+        while (index < Lines.Count)
         {
-            var index = Lines.IndexOf(tr);
-            if (index < 0)
+            if (_abort)
             {
-                index = 0;
+                break;
             }
 
-            while (index < Lines.Count)
+            var linesMergedAndTranslated = await MergeAndSplitHelper.MergeAndTranslateIfPossible(_sourceSubtitle,
+                _targetSubtitle, sourceLanguage, targetLanguage, index, translator, forceSingleLineMode,
+                _cancellationTokenSource.Token);
+
+            if (linesMergedAndTranslated > 0)
             {
-                if (_abort)
+                for (var j = index; j < index + linesMergedAndTranslated; j++)
                 {
-                    break;
+                    if (j < Lines.Count && j < _targetSubtitle.Paragraphs.Count)
+                    {
+                        Lines[j].TranslatedText = _targetSubtitle.Paragraphs[j].Text;
+                    }
                 }
 
-                var linesMergedAndTranslated = await MergeAndSplitHelper.MergeAndTranslateIfPossible(_sourceSubtitle, _targetSubtitle, sourceLanguage, targetLanguage, index, translator, forceSingleLineMode, _cancellationTokenSource.Token);
+                index += linesMergedAndTranslated;
 
-                if (linesMergedAndTranslated > 0)
+                var index1 = index;
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    index += linesMergedAndTranslated;
-                    linesTranslated += linesMergedAndTranslated;
-                    _translationProgressIndex = index - 1;
-                    continue;
-                }
+                    ProgressBar.Progress = (double)index1 / Lines.Count;
+                });
 
-                forceSingleLineMode = true;
+                linesTranslated += linesMergedAndTranslated;
+                _translationProgressIndex = index - 1;
+                errorCount = 0;
+                continue;
+            }
 
+            errorCount++;
+            forceSingleLineMode = true;
+
+            if (errorCount > 1)
+            {
+                break;
             }
         }
-
-        ProgressBar.IsVisible = false;
-        //labelPleaseWait.Visible = false;
-        //buttonOK.Enabled = true;
-        //buttonCancel.Enabled = true;
-        //_breakTranslation = false;
-        //buttonTranslate.Enabled = true;
-        //buttonTranslate.Text = LanguageSettings.Current.GoogleTranslate.Translate;
-        _translationInProgress = false;
-
-        //timerUpdate.Dispose();
-        //_translationProgressDirty = true;
-        //UpdateTranslation();
-        //buttonOK.Focus();
-
-        _abort = false;
     }
 
     private void SaveSettings(Type engineType)
@@ -767,7 +781,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         {
             return Configuration.Settings.Tools.GoogleTranslateLastSourceLanguage;
         }
-
+        
         return defaultSourceLanguageCode;
     }
 

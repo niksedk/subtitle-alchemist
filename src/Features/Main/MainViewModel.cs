@@ -4,6 +4,7 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls.Shapes;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SharpHook;
@@ -22,6 +23,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
+using Path = System.IO.Path;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -158,6 +160,20 @@ public partial class MainViewModel : ObservableObject
 
     private bool _firstPlay = true;
 
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query["Page"] is not string page)
+        {
+            return;
+        }
+
+        if (page == nameof(TranslatePage))
+        {
+            if (query["Lines"] is List<TranslateRow> lines)
+            {
+            }
+        }
+    }
 
     private void AudioVisualizerOnPlayToggle(object? sender, EventArgs e)
     {

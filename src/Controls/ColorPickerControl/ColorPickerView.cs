@@ -222,8 +222,7 @@ public class ColorPickerView : ContentView
             Text = "50",
             FontAttributes = FontAttributes.Bold,
             FontSize = 16,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         _sliderRed.ValueChanged += (sender, args) =>
         {
             labelRedValue.Text = ((int)Math.Round(args.NewValue)).ToString();
@@ -239,8 +238,7 @@ public class ColorPickerView : ContentView
             Text = "Green",
             FontAttributes = FontAttributes.Bold,
             FontSize = 16,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         _sliderGreen = new Slider
         {
             Maximum = 255,
@@ -254,8 +252,7 @@ public class ColorPickerView : ContentView
             Text = "50",
             FontAttributes = FontAttributes.Bold,
             FontSize = 16,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         _sliderGreen.ValueChanged += (sender, args) =>
         {
             labelGreenValue.Text = ((int)Math.Round(args.NewValue)).ToString();
@@ -271,8 +268,7 @@ public class ColorPickerView : ContentView
             Text = "Blue",
             FontAttributes = FontAttributes.Bold,
             FontSize = 16,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         _sliderBlue = new Slider
         {
             Maximum = 255,
@@ -286,8 +282,7 @@ public class ColorPickerView : ContentView
             Text = "50",
             FontAttributes = FontAttributes.Bold,
             FontSize = 16,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         _sliderBlue.ValueChanged += (sender, args) =>
         {
             labelBlueValue.Text = ((int)Math.Round(args.NewValue)).ToString();
@@ -302,8 +297,7 @@ public class ColorPickerView : ContentView
             Text = "Alpha",
             FontAttributes = FontAttributes.Bold,
             FontSize = 16,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         _sliderAlpha = new Slider
         {
             Maximum = 255,
@@ -317,8 +311,7 @@ public class ColorPickerView : ContentView
             Text = "50",
             FontAttributes = FontAttributes.Bold,
             FontSize = 16,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         _sliderAlpha.ValueChanged += (sender, args) =>
         {
             labelAlphaValue.Text = ((int)Math.Round(args.NewValue)).ToString();

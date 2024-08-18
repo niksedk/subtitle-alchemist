@@ -1,5 +1,4 @@
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Translate;
 
@@ -144,14 +143,16 @@ public class TranslatePage : ContentPage
         }.BindDynamicTheme();
         rightGrid.Add(vm.TargetLanguagePicker, 1, 0);
 
-        rightGrid.Add(new Button
+        vm.ButtonTranslate = new Button
         {
             Text = "Translate",
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
             Command = vm.TranslateCommand,
-        }.BindDynamicTheme(), 2, 0);
+        }.BindDynamicTheme();
+
+        rightGrid.Add(vm.ButtonTranslate, 2, 0);
 
         vm.ProgressBar = new ProgressBar
         {
@@ -319,6 +320,23 @@ public class TranslatePage : ContentPage
         grid.Add(settingsRow, 0, 3);
         Grid.SetColumnSpan(settingsRow, 2);
 
+        vm.ButtonOk = new Button
+        {
+            Text = "OK",
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 10, 0),
+            Command = vm.OkCommand,
+        }.BindDynamicTheme();
+
+        vm.ButtonCancel = new Button
+        {
+            Text = "Cancel",
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.CancelCommand,
+        }.BindDynamicTheme();
+
         var buttonRow = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -327,21 +345,8 @@ public class TranslatePage : ContentPage
             Margin = new Thickness(10),
             Children =
             {
-                new Button
-                {
-                    Text = "OK",
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center,
-                    Margin = new Thickness(0, 0, 10, 0),
-                    Command = vm.OkCommand,
-                }.BindDynamicTheme(),
-                new Button
-                {
-                    Text = "Cancel",
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center,
-                    Command = vm.CancelCommand,
-                }.BindDynamicTheme(),
+                vm.ButtonOk,
+                vm.ButtonCancel,
             }
         };
 

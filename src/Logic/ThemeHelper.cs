@@ -70,7 +70,7 @@ namespace SubtitleAlchemist.Logic
 
         public static Button BindDynamicTheme(this Button control)
         {
-            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.SecondaryBackgroundColor);
             control.SetDynamicResource(Button.TextColorProperty, ThemeNames.TextColor);
             return control;
         }
