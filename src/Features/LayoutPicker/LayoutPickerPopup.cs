@@ -34,8 +34,6 @@ public class LayoutPickerPopup : Popup
 
         Content = new Grid
         {
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
-
             RowDefinitions = Rows.Define(
                 (Row.Row0, columnHeight),
                 (Row.Row1, columnHeight),
@@ -135,7 +133,7 @@ public class LayoutPickerPopup : Popup
                     .Row(2).Column(3),
                 MakeLabel(11, model, 2, 3),
             }
-        };
+        }.BindDynamicTheme();
 
         SharpHookHandler.AddKeyPressed(model.KeyPressed);
         model.Popup = this;

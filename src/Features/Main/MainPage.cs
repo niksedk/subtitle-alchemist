@@ -42,16 +42,15 @@ public class MainPage : ContentPage
 
         BindingContext = _viewModel;
         _viewModel.MainPage = this;
-        BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+        this.BindDynamicTheme();
 
         InitMenuBar.CreateMenuBar(this, _viewModel);
 
         _viewModel.VideoPlayer = new MediaElement
         {
             ZIndex = -10000,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             Margin = new Thickness(10),
-        };
+        }.BindDynamicTheme();
 
         _viewModel.SubtitleList = InitSubtitleListView.MakeSubtitleListView(_viewModel);
         _viewModel.ListViewAndEditBox = new Grid();

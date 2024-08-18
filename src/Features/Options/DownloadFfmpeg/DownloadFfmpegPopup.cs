@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg;
@@ -10,7 +11,7 @@ public class DownloadFfmpegPopup : Popup
     {
         BindingContext = vm;
 
-        Color = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+        this.BindDynamicTheme();
         CanBeDismissedByTappingOutsideOfPopup = false;
 
         var grid = new Grid
@@ -30,20 +31,17 @@ public class DownloadFfmpegPopup : Popup
             Padding = new Thickness(30, 20, 30 ,10),
             RowSpacing = 20,
             ColumnSpacing = 10,
-            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor],
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-        };
+        }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
             Text = "Downloading ffmpeg",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             Padding = new Thickness(0, 0, 0, 10),
-        };
+        }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
 
         var progressLabel = new Label
@@ -51,9 +49,7 @@ public class DownloadFfmpegPopup : Popup
             Text = "...",
             FontAttributes = FontAttributes.Bold,
             FontSize = 15,
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
-        }; 
+        }.BindDynamicTheme(); 
         progressLabel.SetBinding(Label.TextProperty, nameof(vm.Progress));
         grid.Add(progressLabel, 0, 1);
 
@@ -69,17 +65,13 @@ public class DownloadFfmpegPopup : Popup
         var cancelButton = new Button
         {
             Text = "Cancel",
-            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.SecondaryBackgroundColor],
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.Center,
             Command = vm.CancelCommand,
-        };
+        }.BindDynamicTheme();
         grid.Add(cancelButton, 0, 3);
 
         var border = new Border
         {
-            Stroke = (Color)Application.Current.Resources[ThemeNames.TextColor], // change to blue when focused
-            Background = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             StrokeThickness = 1,
             Padding = new Thickness(4, 1, 1, 0),
             Margin = new Thickness(2),
@@ -90,7 +82,7 @@ public class DownloadFfmpegPopup : Popup
                 CornerRadius = new CornerRadius(5)
             },
             Content = grid,
-        };
+        }.BindDynamicTheme();
 
         Content = border;
 

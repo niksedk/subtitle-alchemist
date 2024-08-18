@@ -1,3 +1,4 @@
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Tools.AdjustDuration;
@@ -6,7 +7,7 @@ public class AdjustDurationPage : ContentPage
 {
     public AdjustDurationPage(AdjustDurationModel vm)
     {
-        BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+        this.BindDynamicTheme();
         Content = new Grid
         {
             RowDefinitions = new RowDefinitionCollection

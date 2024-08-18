@@ -1,3 +1,4 @@
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Translate;
@@ -6,7 +7,7 @@ public class TranslatePage : ContentPage
 {
     public TranslatePage(TranslateModel vm)
     {
-        BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+        this.BindDynamicTheme();
 
         BindingContext = vm;
 
@@ -37,10 +38,9 @@ public class TranslatePage : ContentPage
             Margin = new Thickness(15, 15, 15, 15),
             Text = "Powered by X",
             FontAttributes = FontAttributes.Bold,
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-        };
+        }.BindDynamicTheme();
         var pointerGesture = new PointerGestureRecognizer();
         pointerGesture.PointerEnteredCommand = new Command(() => vm.MouseEnteredPoweredBy());
         pointerGesture.PointerExitedCommand = new Command(() => vm.MouseExitedPoweredBy());
@@ -86,16 +86,14 @@ public class TranslatePage : ContentPage
         {
             Text = "From:",
             FontAttributes = FontAttributes.Bold,
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 10, 0),
-        };
+        }.BindDynamicTheme();
         gridLeft.Add(fromLabel, 2, 0);
 
         vm.SourceLanguagePicker = new Picker
         {
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
             Items =
@@ -103,7 +101,7 @@ public class TranslatePage : ContentPage
                 "English", "Danish",
             },
             SelectedIndex = 0,
-        };
+        }.BindDynamicTheme();
         gridLeft.Add(vm.SourceLanguagePicker, 3, 0);
 
         grid.Add(gridLeft, 0, 1);
@@ -130,16 +128,14 @@ public class TranslatePage : ContentPage
         {
             Text = "To:",
             FontAttributes = FontAttributes.Bold,
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 10, 0),
-        }, 0, 0);
+        }.BindDynamicTheme(), 0, 0);
 
 
         vm.TargetLanguagePicker = new Picker
         {
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Items =
@@ -147,19 +143,17 @@ public class TranslatePage : ContentPage
                 "English", "Danish",
             },
             SelectedIndex = 0,
-        };
+        }.BindDynamicTheme();
         rightGrid.Add(vm.TargetLanguagePicker, 1, 0);
 
         rightGrid.Add(new Button
         {
             Text = "Translate",
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
-            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.SecondaryBackgroundColor],
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
             Command = vm.TranslateCommand,
-        }, 2, 0);
+        }.BindDynamicTheme(), 2, 0);
 
         vm.ProgressBar = new ProgressBar
         {
@@ -266,10 +260,8 @@ public class TranslatePage : ContentPage
             HasShadow = true,
             CornerRadius = 5,
             Padding = new Thickness(5),
-            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor],
-            BorderColor = (Color)Application.Current.Resources[ThemeNames.BorderColor],
             Margin = new Thickness(10),
-        };
+        }.BindDynamicTheme();
         frame.Content = gridLayout;
 
         grid.Add(frame, 0, 2);
@@ -279,40 +271,36 @@ public class TranslatePage : ContentPage
         {
             Text = "API key",
             FontAttributes = FontAttributes.Bold,
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-        };
+        }.BindDynamicTheme();
 
         vm.EntryApiKey = new Entry
         {
             Text = string.Empty,
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = 150,
             Placeholder = "Enter API key",
             Margin = new Thickness(0, 0, 10, 0),
-        };
+        }.BindDynamicTheme();
 
         vm.LabelApiUrl = new Label
         {
             Text = "API url",
             FontAttributes = FontAttributes.Bold,
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-        };
+        }.BindDynamicTheme();
 
         vm.EntryApiUrl = new Entry
         {
             Text = string.Empty,
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = 150,
             Placeholder = "Enter API url",
-        };
+        }.BindDynamicTheme();
 
 
         var settingsRow = new StackLayout
@@ -344,22 +332,18 @@ public class TranslatePage : ContentPage
                 new Button
                 {
                     Text = "OK",
-                    TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
-                    BackgroundColor = (Color)Application.Current.Resources[ThemeNames.SecondaryBackgroundColor],
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
                     Margin = new Thickness(0, 0, 10, 0),
                     Command = vm.OkCommand,
-                },
+                }.BindDynamicTheme(),
                 new Button
                 {
                     Text = "Cancel",
-                    TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
-                    BackgroundColor = (Color)Application.Current.Resources[ThemeNames.SecondaryBackgroundColor],
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
                     Command = vm.CancelCommand,
-                },
+                }.BindDynamicTheme(),
             }
         };
 

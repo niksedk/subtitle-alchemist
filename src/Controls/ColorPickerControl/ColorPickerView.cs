@@ -1,4 +1,5 @@
 ﻿using SkiaSharp.Views.Maui;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Controls.ColorPickerControl;
@@ -130,10 +131,9 @@ public class ColorPickerView : ContentView
         {
             Text = "#000000",
             FontSize = 16,
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
             HorizontalTextAlignment = TextAlignment.Center,
             WidthRequest = 150,
-        };
+        }.BindDynamicTheme();
         grid.Add(_currentColorText, 0, 1);
 
         var row = 2;
@@ -185,7 +185,6 @@ public class ColorPickerView : ContentView
             RowSpacing = 20,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -199,15 +198,14 @@ public class ColorPickerView : ContentView
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto },
             }
-        };
+        }.BindDynamicTheme();
 
         var labelRed = new Label
         {
             Text = "Red",
             FontAttributes = FontAttributes.Bold,
             FontSize = 16,
-            TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
-        };
+        }.BindDynamicTheme();
 
         const int sliderWidth = 250;
 

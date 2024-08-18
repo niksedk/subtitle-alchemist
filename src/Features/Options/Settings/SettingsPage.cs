@@ -27,6 +27,9 @@ public class SettingsPage : ContentPage
     {
         _vm = vm;
         vm.SettingsPage = this;
+        this.BindDynamicTheme();
+
+        vm.Theme = Preferences.Get("Theme", "Dark");
 
         vm.Pages.Add(PageNames.General, MakeGeneralSettingsPage(vm));
         vm.Pages.Add(PageNames.SubtitleFormats, MakeSubtitleFormatsPage(vm));
@@ -38,11 +41,9 @@ public class SettingsPage : ContentPage
         vm.Pages.Add(PageNames.Toolbar, MakeToolbarPage(vm));
         vm.Pages.Add(PageNames.Appearance, MakeAppearancePage(vm));
         vm.Pages.Add(PageNames.FileTypeAssociations, MakeFileTypeAssociationsPage(vm));
-        ThemeHelper.SetDynamicTheme(this);
 
         BindingContext = vm;
 
-        var border = 
         vm.Page = new Border
         {
             StrokeThickness = 1,
@@ -54,8 +55,7 @@ public class SettingsPage : ContentPage
                 CornerRadius = new CornerRadius(2),
             },
             Content = vm.Pages[PageNames.General],
-        };
-        ThemeHelper.SetDynamicTheme(vm.Page);
+        }.BindDynamicTheme();
 
         var grid = new Grid
         {
@@ -72,8 +72,7 @@ public class SettingsPage : ContentPage
             RowSpacing = 20,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
-        };
-        ThemeHelper.SetDynamicTheme(grid);
+        }.BindDynamicTheme();
 
         vm.LeftMenu = new VerticalStackLayout
         {
@@ -115,8 +114,7 @@ public class SettingsPage : ContentPage
             FontSize = 17,
             Text = text,
             ClassId = pageName.ToString(),
-        };
-        ThemeHelper.SetDynamicTheme(label);
+        }.BindDynamicTheme();
 
         var tapGesture = new TapGestureRecognizer();
         tapGesture.Tapped += async (sender, e) => await vm.LeftMenuTapped(sender, e, pageName);
@@ -145,16 +143,14 @@ public class SettingsPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto }
             }
-        };
-        ThemeHelper.SetDynamicTheme(grid);
+        }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
             Text = "Tools settings",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
-        };
-        ThemeHelper.SetDynamicTheme(titleLabel);
+        }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
@@ -163,8 +159,7 @@ public class SettingsPage : ContentPage
             Text = "Auto break settings",
             FontAttributes = FontAttributes.Bold,
             FontSize = 16,
-        };
-        ThemeHelper.SetDynamicTheme(autoBreakLabel);
+        }.BindDynamicTheme();
         grid.Add(autoBreakLabel, 0, 1);
         Grid.SetColumnSpan(autoBreakLabel, 2);
 
@@ -172,15 +167,13 @@ public class SettingsPage : ContentPage
         {
             Text = "Break early for dialogs:",
             VerticalOptions = LayoutOptions.Center,
-        };
-        ThemeHelper.SetDynamicTheme(labelBreakEarly);
+        }.BindDynamicTheme();
         grid.Add(labelBreakEarly, 0, 2);
 
         var switchBreakEarly = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-        };
-        ThemeHelper.SetDynamicTheme(switchBreakEarly);
+        }.BindDynamicTheme();
 
         grid.Add(switchBreakEarly, 1, 2);
 
@@ -207,16 +200,14 @@ public class SettingsPage : ContentPage
             RowSpacing = 20,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
-        };
-        ThemeHelper.SetDynamicTheme(grid);
+        }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
             Text = "General",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
-        };
-        ThemeHelper.SetDynamicTheme(titleLabel);
+        }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
@@ -225,15 +216,13 @@ public class SettingsPage : ContentPage
         {
             Text = "Remember Recent Files:",
             VerticalOptions = LayoutOptions.Center,
-        };
+        }.BindDynamicTheme();
         grid.Add(labelRecentFiles, 0, 1);
-        ThemeHelper.SetDynamicTheme(labelRecentFiles);
 
         var switchRecentFiles = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-        };
-        ThemeHelper.SetDynamicTheme(switchRecentFiles);
+        }.BindDynamicTheme();
         grid.Add(switchRecentFiles, 1, 1);
 
         // Single Line Max Length
@@ -241,18 +230,16 @@ public class SettingsPage : ContentPage
         {
             Text = "Single Line Max Length:",
             VerticalOptions = LayoutOptions.Center,
-        };
+        }.BindDynamicTheme();
         grid.Add(labelMaxLength, 0, 2);
-        ThemeHelper.SetDynamicTheme(labelMaxLength);
 
         var entryMaxLength = new Entry
         {
             Keyboard = Keyboard.Numeric,
             Placeholder = "Enter max length",
             HorizontalOptions = LayoutOptions.Start,
-        };
+        }.BindDynamicTheme();
         grid.Add(entryMaxLength, 1, 2);
-        ThemeHelper.SetDynamicTheme(entryMaxLength);
 
         return grid;
     }
@@ -277,16 +264,14 @@ public class SettingsPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Star }
             }
-        };
-        grid.SetDynamicResource(BackgroundColorProperty, ThemeNames.BackgroundColor);
+        }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
             Text = "Subtitle formats",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
-        };
-        ThemeHelper.SetDynamicTheme(titleLabel);
+        }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
@@ -294,8 +279,7 @@ public class SettingsPage : ContentPage
         {
             Text = "Select your favorite subtitle formats",
             VerticalOptions = LayoutOptions.Center,
-        };
-        ThemeHelper.SetDynamicTheme(labelFavoriteSubtitleFormats);
+        }.BindDynamicTheme();
         grid.Add(labelFavoriteSubtitleFormats, 0, 1);
 
         return grid;
@@ -321,16 +305,14 @@ public class SettingsPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Star }
             }
-        };
-        ThemeHelper.SetDynamicTheme(grid);
+        }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
             Text = "Shortcuts",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
-        };
-        ThemeHelper.SetDynamicTheme(titleLabel);
+        }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
@@ -338,24 +320,21 @@ public class SettingsPage : ContentPage
         {
             Text = "Search:",
             VerticalOptions = LayoutOptions.Center,
-        };
+        }.BindDynamicTheme();
         grid.Add(labelSearch, 0, 1);
-        ThemeHelper.SetDynamicTheme(labelSearch);
 
         var entrySearch = new Entry
         {
             Placeholder = "Enter search text",
             HorizontalOptions = LayoutOptions.Start,
-        };
-        ThemeHelper.SetDynamicTheme(entrySearch);
+        }.BindDynamicTheme();
         grid.Add(entrySearch, 1, 1);
 
         var labelShortcuts = new Label
         {
             Text = "Shortcuts:",
             VerticalOptions = LayoutOptions.Center,
-        };
-        ThemeHelper.SetDynamicTheme(labelShortcuts);
+        }.BindDynamicTheme();
         grid.Add(labelShortcuts, 0, 2);
 
         return grid;
@@ -385,48 +364,41 @@ public class SettingsPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Star }
             }
-        };
-        ThemeHelper.SetDynamicTheme(grid);
+        }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
             Text = "Syntax coloring ",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
-        };
-        ThemeHelper.SetDynamicTheme(titleLabel);
+        }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
         grid.Add(new Label
         {
             Text = "Color if duration too short",
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        }, 0, 1);
+        }.BindDynamicTheme(), 0, 1);
         _shortDurationSwitch = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            OnColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
-        };
+        }.BindDynamicTheme();
         grid.Add(_shortDurationSwitch, 1, 1);
 
         grid.Add(new Label
         {
             Text = "Color if duration too long",
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        }, 0, 2);
+        }.BindDynamicTheme(), 0, 2);
         _longDurationSwitch = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            OnColor = (Color)Application.Current.Resources[ThemeNames.TextColor],
-        };
+        }.BindDynamicTheme();
         grid.Add(_longDurationSwitch, 1, 2);
 
         grid.Add(new Label
         {
             Text = "Color if text too long",
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        }, 0, 3);
+        }.BindDynamicTheme(), 0, 3);
         var colorStack = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -438,9 +410,7 @@ public class SettingsPage : ContentPage
             FontSize = 12,
             Padding = new Thickness(5),
             Command = vm.PickSyntaxErrorColorCommand,
-        };
-        _textTooLongColorButton.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.SecondaryBackgroundColor);
-        _textTooLongColorButton.SetDynamicResource(Button.TextColorProperty, ThemeNames.TextColor);
+        }.BindDynamicTheme();
 
         colorStack.Children.Add(_textTooLongColorButton);
         vm.SyntaxErrorColorBox = new BoxView
@@ -476,30 +446,26 @@ public class SettingsPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Star },
                 new ColumnDefinition { Width = GridLength.Auto }
             }
-        };
-        grid.SetDynamicResource(BackgroundColorProperty, ThemeNames.BackgroundColor);
+        }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
             Text = "Video player",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        };
+        }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
         grid.Add(new Label
         {
             Text = "Video player",
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        }, 0, 1);
+        }.BindDynamicTheme(), 0, 1);
         grid.Add(new Picker
         {
             ItemsSource = new List<string> { "mpv", "vlc", "System Default" },
             HorizontalOptions = LayoutOptions.Start,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
-        }, 1, 1);
+        }.BindDynamicTheme(), 1, 1);
 
         return grid;
     }
@@ -525,16 +491,14 @@ public class SettingsPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Star },
                 new ColumnDefinition { Width = GridLength.Auto },
             }
-        };
-        grid.SetDynamicResource(BackgroundColorProperty, ThemeNames.BackgroundColor);
+        }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
             Text = "Waveform/spectrogram",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        };
+        }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
@@ -543,16 +507,14 @@ public class SettingsPage : ContentPage
         {
             Text = "FFmpeg Location:",
             VerticalOptions = LayoutOptions.Center,
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        }, 0, 1);
+        }.BindDynamicTheme(), 0, 1);
         grid.Add(new Entry
         {
             Placeholder = "Enter FFmpeg path",
             HorizontalOptions = LayoutOptions.Start,
-            TextColor = (Color)Application.Current.Resources["TextColor"],
             WidthRequest = 500,
             BindingContext = vm,
-        }.Bind(nameof(vm.FfmpegPath)), 1, 1);
+        }.Bind(nameof(vm.FfmpegPath)).BindDynamicTheme(), 1, 1);
         var ffmpegBrowse = new ImageButton
         {
             Source = "open.png",
@@ -560,8 +522,7 @@ public class SettingsPage : ContentPage
             WidthRequest = 30,
             HeightRequest = 30,
             Padding = new Thickness(10, 5, 5, 5),
-        };
-        ffmpegBrowse.SetDynamicResource(ImageButton.BackgroundColorProperty, ThemeNames.BackgroundColor);
+        }.BindDynamicTheme();
 
         ffmpegBrowse.Clicked += async (sender, e) => await vm.BrowseForFfmpeg(sender, e);
         ToolTipProperties.SetText(ffmpegBrowse, "Browse for ffmpeg executable");
@@ -569,12 +530,11 @@ public class SettingsPage : ContentPage
         var ffmpegDownloadButton = new ImageButton
         {
             Source = "download.png",
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             HorizontalOptions = LayoutOptions.Start,
             WidthRequest = 30,
             HeightRequest = 30,
             Padding = new Thickness(5, 5, 5, 5),
-        };
+        }.BindDynamicTheme();
         ffmpegDownloadButton.Clicked += async (sender, e) => await vm.DownloadFfmpeg(sender, e);
         ToolTipProperties.SetText(ffmpegDownloadButton, "Click to download ffmpeg");
         grid.Add(ffmpegDownloadButton, 3, 1);
@@ -602,8 +562,7 @@ public class SettingsPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Star }
             }
-        };
-        grid.SetDynamicResource(BackgroundColorProperty, ThemeNames.BackgroundColor);
+        }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
@@ -611,44 +570,38 @@ public class SettingsPage : ContentPage
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
         };
-        ThemeHelper.SetDynamicTheme(titleLabel);
+        titleLabel.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
         grid.Add(new Label
         {
             Text = "Show \"File new\" icon",
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        }, 0, 1);
+        }.BindDynamicTheme(), 0, 1);
         _shortDurationSwitch = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            OnColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         grid.Add(_shortDurationSwitch, 1, 1);
 
         grid.Add(new Label
         {
             Text = "Show \"File Save\" icon",
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        }, 0, 2);
+        }.BindDynamicTheme(), 0, 2);
         _longDurationSwitch = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            OnColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         grid.Add(_longDurationSwitch, 1, 2);
 
         grid.Add(new Label
         {
             Text = "Show \"File Save as...\" icon",
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        }, 0, 3);
+        }.BindDynamicTheme(), 0, 3);
         _longDurationSwitch = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            OnColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         grid.Add(_longDurationSwitch, 1, 3);
 
         return grid;
@@ -674,16 +627,15 @@ public class SettingsPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Star }
             }
-        };
-        grid.SetDynamicResource(BackgroundColorProperty, ThemeNames.BackgroundColor);
+        }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
             Text = "Appearance",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
-        };
-        ThemeHelper.SetDynamicTheme(titleLabel);
+        }.BindDynamicTheme();
+        grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
         // Theme
@@ -691,17 +643,18 @@ public class SettingsPage : ContentPage
         {
             Text = "Theme:",
             VerticalOptions = LayoutOptions.Center,
-        };
-        ThemeHelper.SetDynamicTheme(themeLabel);
+        }.BindDynamicTheme();
 
         grid.Add(themeLabel, 0, 1);
         var picker = new Picker
         {
-            ItemsSource = new List<string> { "Light", "Dark", "System Default" },
             HorizontalOptions = LayoutOptions.Start,
-        };
-        ThemeHelper.SetDynamicTheme(picker);
-        picker.SelectedIndexChanged += vm.ThemeChanged;
+        }.BindDynamicTheme();
+        picker.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Themes));
+        picker.SetBinding(Picker.SelectedItemProperty, nameof(vm.Theme));
+        picker.SelectedItem = vm.Theme;
+
+        picker.SelectedIndexChanged += async(o, args) => await vm.ThemeChanged(o, args);
         grid.Add(picker, 1, 1);
 
         return grid;
@@ -727,54 +680,45 @@ public class SettingsPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Star }
             }
-        };
-        grid.SetDynamicResource(BackgroundColorProperty, ThemeNames.BackgroundColor);
+        }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
             Text = "File type associations",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        };
+        }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
         grid.Add(new Label
         {
             Text = "SubRip (.srt)",
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        }, 0, 1);
+        }.BindDynamicTheme(), 0, 1);
         _shortDurationSwitch = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            OnColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         grid.Add(_shortDurationSwitch, 1, 1);
 
         grid.Add(new Label
         {
             Text = "Advanced Sub Station Alpha (.ass)",
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        }, 0, 2);
+        }.BindDynamicTheme(), 0, 2);
         _longDurationSwitch = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            OnColor = (Color)Application.Current.Resources["TextColor"],
-
-        };
+        }.BindDynamicTheme();
         grid.Add(_longDurationSwitch, 1, 2);
 
         grid.Add(new Label
         {
             Text = "EBU STL (.stl)",
-            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor],
-        }, 0, 3);
+        }.BindDynamicTheme(), 0, 3);
         _longDurationSwitch = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            OnColor = (Color)Application.Current.Resources["TextColor"],
-        };
+        }.BindDynamicTheme();
         grid.Add(_longDurationSwitch, 1, 3);
 
         return grid;

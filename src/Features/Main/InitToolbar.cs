@@ -1,4 +1,5 @@
-﻿using SubtitleAlchemist.Logic.Constants;
+﻿using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 using ImageButton = Microsoft.Maui.Controls.ImageButton;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -16,7 +17,7 @@ internal static class InitToolbar
             WidthRequest = 225,
             HeightRequest = 16,
             Margin = new Thickness(5, 0),
-        };
+        }.BindDynamicTheme();
 
         vm.EncodingPicker = new Picker
         {
@@ -25,17 +26,15 @@ internal static class InitToolbar
             WidthRequest = 225,
             HeightRequest = 16,
             Margin = new Thickness(5, 0),
-        };
+        }.BindDynamicTheme();
 
         var stackLayout = new StackLayout
         {
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
             Orientation = StackOrientation.Horizontal,
             Children =
             {
                 new ImageButton
                 {
-                    BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
                     Source = $"{imagePrefix}new.png",
                     Padding = 5,
                     WidthRequest = 16,
@@ -43,7 +42,7 @@ internal static class InitToolbar
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
                     Command = vm.SubtitleNewCommand,
-                },
+                }.BindDynamicTheme(),
                 new ImageButton
                 {
                     Source = $"{imagePrefix}open.png",
@@ -53,7 +52,7 @@ internal static class InitToolbar
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
                     Command = vm.SubtitleOpenCommand,
-                },
+                }.BindDynamicTheme(),
                 new ImageButton
                 {
                     Source = $"{imagePrefix}save.png",
@@ -63,7 +62,7 @@ internal static class InitToolbar
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
                     Command = vm.SubtitleSaveCommand,
-                },
+                }.BindDynamicTheme(),
                 new ImageButton
                 {
                     Source = $"{imagePrefix}save_as.png",
@@ -73,7 +72,7 @@ internal static class InitToolbar
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
                     Command = vm.SubtitleSaveAsCommand,
-                },
+                }.BindDynamicTheme(),
                 new ImageButton
                 {
                     Source = $"{imagePrefix}find.png",
@@ -82,7 +81,7 @@ internal static class InitToolbar
                     HeightRequest = 16,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
-                },
+                }.BindDynamicTheme(),
                 new ImageButton
                 {
                     Source = $"{imagePrefix}replace.png",
@@ -91,7 +90,7 @@ internal static class InitToolbar
                     HeightRequest = 16,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
-                },
+                }.BindDynamicTheme(),
                 new ImageButton
                 {
                     Source = $"{imagePrefix}help.png",
@@ -100,7 +99,7 @@ internal static class InitToolbar
                     HeightRequest = 16,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
-                },
+                }.BindDynamicTheme(),
                 new ImageButton
                 {
                     Source = $"{imagePrefix}layout.png",
@@ -110,14 +109,14 @@ internal static class InitToolbar
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
                     Command = vm.ShowLayoutPickerCommand,
-                },
+                }.BindDynamicTheme(),
                 new Label
                 {
                     Text = "Format",
                     VerticalTextAlignment = TextAlignment.Center,
                     Padding = new Thickness(30, 0, 0, 7),
                     HeightRequest = 16,
-                },
+                }.BindDynamicTheme(),
                 vm.SubtitleFormatPicker,
                 new Label
                 {
@@ -125,10 +124,10 @@ internal static class InitToolbar
                     VerticalTextAlignment = TextAlignment.Center,
                     Padding = new Thickness(30, 0, 0, 7),
                     HeightRequest = 16,
-                },
+                }.BindDynamicTheme(),
                 vm.EncodingPicker,
             }
-        };
+        }.BindDynamicTheme();
 
         return stackLayout;
     }

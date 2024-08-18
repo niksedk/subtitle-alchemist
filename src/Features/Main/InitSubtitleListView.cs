@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using SkiaSharp;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -12,7 +13,6 @@ public static class InitSubtitleListView
         {
             SelectionMode = SelectionMode.Single,
             HorizontalOptions = LayoutOptions.Fill,
-            BackgroundColor = Colors.DarkGray,
             Margin = new Thickness(10),
             Header = new Grid
             {
@@ -27,19 +27,19 @@ public static class InitSubtitleListView
                 Children =
                 {
                     new BoxView { BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(0),
-                    new Label { Text = "#", TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(0),
+                    new Label { Text = "#",  Margin = 5 }.Column(0).BindDynamicTheme(),
                     new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(1),
-                    new Label { Text = "Start", TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(1),
+                    new Label { Text = "Start", Margin = 5 }.Column(1).BindDynamicTheme(),
                     new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(2),
-                    new Label { Text = "End", TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(2),
+                    new Label { Text = "End", Margin = 5 }.Column(2).BindDynamicTheme(),
                     new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(3),
-                    new Label { Text = "Duration", TextColor =(Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(3),
+                    new Label { Text = "Duration", Margin = 5 }.Column(3).BindDynamicTheme(),
                     new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(4),
-                    new Label { Text = "Text", TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(4)
+                    new Label { Text = "Text", Margin = 5 }.Column(4).BindDynamicTheme()
                 }
             },
             ItemTemplate = new DataTemplate(() => MakeGrid(vm))
-        };
+        }.BindDynamicTheme();
 
         view.SetBinding(ItemsView.ItemsSourceProperty,  nameof(vm.Paragraphs));
         view.SelectionChanged += vm.OnCollectionViewSelectionChanged;
@@ -67,33 +67,33 @@ public static class InitSubtitleListView
                 {
                     BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
                 }.Column(0).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                new Label { TextColor =(Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(0).Bind("Number"),
+                new Label {  Margin = 5 }.Column(0).Bind("Number").BindDynamicTheme(),
 
                 new BoxView
                 {
                     BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
                 }.Column(1).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                new Label { TextColor =(Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(1).Bind("Start"),
+                new Label {  Margin = 5 }.Column(1).Bind("Start").BindDynamicTheme(),
 
                 new BoxView
                 {
                     BackgroundColor =(Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
                 }.Column(2).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                new Label { TextColor =(Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(2).Bind("End"),
+                new Label { Margin = 5 }.Column(2).Bind("End").BindDynamicTheme(),
 
                 new BoxView
                 {
                     BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
                 }.Column(3).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                new Label { TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(3).Bind("Duration"),
+                new Label { Margin = 5 }.Column(3).Bind("Duration").BindDynamicTheme(),
 
                 new BoxView
                 {
                     BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
                 }.Column(4).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                new Label { TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor], Margin = 5 }.Column(4).Bind("Text")
+                new Label { Margin = 5 }.Column(4).Bind("Text").BindDynamicTheme(),
             }
-        };
+        }.BindDynamicTheme();
 
         var tapGestureRecognizer = new TapGestureRecognizer();
         tapGestureRecognizer.NumberOfTapsRequired = 2;

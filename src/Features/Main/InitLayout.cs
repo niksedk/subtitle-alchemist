@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using SubtitleAlchemist.Controls.SubTimeControl;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
@@ -137,7 +138,7 @@ internal static class InitLayout
             {
                 InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
             }
-        };
+        }.BindDynamicTheme();
 
 
         grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)Row.ListViewAndVideo);
@@ -544,9 +545,8 @@ internal static class InitLayout
 
         vm.TextBox = new Editor
             {
-                TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor], 
                 Margin = new Thickness(10),
-            }
+            }.BindDynamicTheme()
             .Column(1).Bind("CurrentText")
             .Row(1);
         vm.TextBox.TextChanged += vm.CurrentTextChanged;

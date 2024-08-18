@@ -6,6 +6,7 @@ using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
+using System.Collections.ObjectModel;
 using static SubtitleAlchemist.Features.Options.Settings.SettingsPage;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
@@ -18,9 +19,12 @@ public partial class SettingsViewModel : ObservableObject
     public SettingsPage? SettingsPage { get; set; }
     public BoxView SyntaxErrorColorBox { get; set; }
 
-    [ObservableProperty] private string _theme;
-
     [ObservableProperty] private string _ffmpegPath;
+
+    [ObservableProperty] private string _theme = "Dark";
+
+    [ObservableProperty]
+    private ObservableCollection<string> _themes = new(){ "Light", "Dark", "Custom" };
 
     private readonly IPopupService _popupService;
     private PageNames _pageName = PageNames.General;
@@ -127,14 +131,14 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    public void ThemeChanged(object? sender, EventArgs eventArgs)
+    public async Task ThemeChanged(object? sender, EventArgs eventArgs)
     {
         if (sender is not Picker picker)
         {
             return;
         }
 
-        var value = picker.SelectedItem.ToString();
+        var value = picker.SelectedItem?.ToString();
         if (value == null)
         {
             return;
@@ -168,7 +172,7 @@ public partial class SettingsViewModel : ObservableObject
             }
         }
 
-        LeftMenuTapped(null, new TappedEventArgs(null), _pageName);
+        await LeftMenuTapped(null, new TappedEventArgs(null), _pageName);
     }
 
     private static void SetThemeDictionaryColor(ResourceDictionary dictionaries, string name, Color color)
