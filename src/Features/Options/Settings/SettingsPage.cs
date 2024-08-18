@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Markup;
 using Microsoft.Maui.Controls.Shapes;
+using SubtitleAlchemist.Controls.RadialControl;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
 
@@ -240,6 +241,35 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
         grid.Add(entryMaxLength, 1, 2);
+
+        var radial = new RadialView()
+        {
+            WidthRequest = 400,
+            HeightRequest = 400,
+            BackgroundColor = Colors.Blue,
+        };
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png");
+        grid.Add(radial, 0, 3);
+        Grid.SetColumnSpan(radial, 2);
+
+
+        var leftButton = new Button { Text = "Rotate Left" };
+        var rightButton = new Button { Text = "Rotate Right" };
+
+        leftButton.Clicked += (s, e) => radial.RotateLeft();
+        rightButton.Clicked += (s, e) => radial.RotateRight();
+
+        var buttonLayout = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            Children = { leftButton, rightButton }
+        };
+
+        grid.Add(buttonLayout, 0, 4);
+        Grid.SetColumnSpan(buttonLayout, 2);
+
 
         return grid;
     }

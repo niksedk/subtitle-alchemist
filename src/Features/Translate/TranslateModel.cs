@@ -344,6 +344,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     {
         if (sender is Picker { SelectedItem: IAutoTranslator translator })
         {
+            SelectedAutoTranslator = translator;
             SetAutoTranslatorEngine(translator);
             SetupLanguageSettings(translator);
         }
