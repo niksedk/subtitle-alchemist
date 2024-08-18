@@ -27,7 +27,7 @@ using Path = System.IO.Path;
 
 namespace SubtitleAlchemist.Features.Main;
 
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableObject, IQueryAttributable
 {
     public int SelectedLayout { get; set; }
 
@@ -162,15 +162,20 @@ public partial class MainViewModel : ObservableObject
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (query["Page"] is not string page)
+        if (!query.ContainsKey("Page") || query["Page"] is not string page)
         {
             return;
         }
 
         if (page == nameof(TranslatePage))
         {
-            if (query["Lines"] is List<TranslateRow> lines)
+            if (query["TranslatedRows"] is List<TranslateRow> lines)
             {
+                for (var i = 0; i < lines.Count && i < Paragraphs.Count; i++)
+                {
+                    var displayParagraph = Paragraphs[i];
+                    displayParagraph.Text = lines[i].TranslatedText;
+                }
             }
         }
     }

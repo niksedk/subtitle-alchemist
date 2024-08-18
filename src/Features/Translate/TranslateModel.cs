@@ -895,9 +895,9 @@ foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
     {
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
-            { "Page", nameof(GetType) },
+            { "Page", nameof(TranslatePage) },
             { "Encoding", Encoding.UTF8 },
-            { "TranslatedRows", Lines },
+            { "TranslatedRows", Lines.ToList() },
         });
     }
 
