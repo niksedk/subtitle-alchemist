@@ -1,14 +1,19 @@
+using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Translate;
 
 public class TranslatePage : ContentPage
 {
+    private TranslateModel _vm;
+
     public TranslatePage(TranslateModel vm)
     {
         this.BindDynamicTheme();
 
         BindingContext = vm;
+        _vm = vm;
 
         vm.TranslatePage = this;
 
@@ -277,14 +282,14 @@ public class TranslatePage : ContentPage
             FontAttributes = FontAttributes.Bold,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(20, 0, 0, 0),
         }.BindDynamicTheme();
 
         vm.EntryApiKey = new Entry
         {
             Text = string.Empty,
-            HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = 150,
+            WidthRequest = 200,
             Placeholder = "Enter API key",
             Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
@@ -292,20 +297,56 @@ public class TranslatePage : ContentPage
         vm.LabelApiUrl = new Label
         {
             Text = "API url",
-            FontAttributes = FontAttributes.Bold,
-            HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(20, 0, 0, 0),
         }.BindDynamicTheme();
 
         vm.EntryApiUrl = new Entry
         {
             Text = string.Empty,
-            HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = 150,
+            WidthRequest = 250,
             Placeholder = "Enter API url",
         }.BindDynamicTheme();
 
+        vm.ButtonApiUrl = new Button
+        {
+            Text = "...",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+
+        vm.LabelModel = new Label
+        {
+            Text = "Model",
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(20, 0, 0, 0),
+        }.BindDynamicTheme();
+
+        vm.EntryModel = new Entry
+        {
+            Text = string.Empty,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = 250,
+            Placeholder = "Enter model",
+        };
+    
+        vm.ButtonModel = new Button
+        {
+            Text = "...",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+
+        vm.LabelFormality = new Label
+        {
+            Text = "Formality",
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(20,0,0,0),
+        }.BindDynamicTheme();
+
+        vm.PickerFormality = new Picker
+        {
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
 
         var settingsRow = new StackLayout
         {
@@ -319,6 +360,12 @@ public class TranslatePage : ContentPage
                 vm.EntryApiKey,
                 vm.LabelApiUrl,
                 vm.EntryApiUrl,
+                vm.ButtonApiUrl,
+                vm.LabelModel,
+                vm.EntryModel,
+                vm.ButtonModel,
+                vm.LabelFormality,
+                vm.PickerFormality,
             }
         };
 
@@ -362,5 +409,28 @@ public class TranslatePage : ContentPage
         Content = grid;
 
         vm.CollectionView.SetBinding(ItemsView.ItemsSourceProperty, "Lines");
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (_vm.Lines.Count > 0 && _vm.CollectionView.SelectedItem == null)
+                {
+                    _vm.Lines[0].BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
+                    _vm.CollectionView.SelectedItem = _vm.Lines[0];
+                    _vm.Lines = _vm.Lines;
+                }
+                else if (_vm.CollectionView.SelectedItem is TranslateRow tr)
+                {
+                    tr.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
+                    _vm.Lines = _vm.Lines;
+                }
+            }); return false;
+        });
     }
 }

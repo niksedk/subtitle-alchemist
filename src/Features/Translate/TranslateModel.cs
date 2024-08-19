@@ -6,6 +6,7 @@ using Nikse.SubtitleEdit.Core.Translate;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
+using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text;
@@ -31,6 +32,8 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     private bool _singleLineMode = false;
     private CancellationTokenSource _cancellationTokenSource = new();
     private int _translationProgressIndex = 0;
+    private List<string> _apiUrls = new();
+    private List<string> _apiModels = new();
 
     public TranslatePage? TranslatePage { get; set; }
 
@@ -81,12 +84,14 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
     public Label LabelApiUrl { get; set; } = new();
     public Entry EntryApiUrl { get; set; } = new();
+    public Button ButtonApiUrl { get; set; } = new();
 
     public Label LabelFormality { get; set; } = new();
     public Picker PickerFormality { get; set; } = new();
 
     public Label LabelModel { get; set; } = new();
     public Entry EntryModel { get; set; } = new();
+    public Button ButtonModel { get; set; } = new();
     public CollectionView CollectionView { get; set; } = new();
     public Button ButtonTranslate { get; set; } = new();
     public Button ButtonOk { get; set; } = new();
@@ -302,7 +307,15 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
             }
         }
 
-        ReactiveButtons();
+        TranslatePage?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                _translationProgressIndex = Lines.Count -1;
+                ReactiveButtons();
+            });
+            return false;
+        });
     }
 
     private void ReactiveButtons()
@@ -320,6 +333,11 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
             if (_translationProgressIndex >= 0 && _translationProgressIndex < Lines.Count)
             {
                 Lines[_translationProgressIndex].BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
+
+                // sometimes we need more than one ScrollTo...
+                CollectionView.ScrollTo(_translationProgressIndex, 1, ScrollToPosition.Center, false);
+                CollectionView.ScrollTo(_translationProgressIndex, 1, ScrollToPosition.Center, false);
+                CollectionView.ScrollTo(_translationProgressIndex, 1, ScrollToPosition.Center, false);
             }
         });
     }
@@ -416,11 +434,18 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         EntryApiUrl.IsVisible = false;
         EntryApiUrl.Text = string.Empty;
         LabelApiUrl.IsVisible = false;
-        PickerFormality.IsVisible = false;
+        ButtonApiUrl.IsVisible = false;
         LabelFormality.IsVisible = false;
-        EntryModel.IsVisible = false;
-        EntryModel.Text = string.Empty;
+        PickerFormality.IsVisible = false;
         LabelModel.IsVisible = false;
+        EntryModel.IsVisible = false;
+        ButtonModel.IsVisible = false;
+        EntryModel.Text = string.Empty;
+        LabelApiUrl.Text = "API url";
+        LabelApiKey.Text = "API key";
+
+        _apiUrls.Clear();
+        _apiModels.Clear();
 
         var engineType = translator.GetType();
 
@@ -540,15 +565,10 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
                     Configuration.Settings.Tools.ChatGptUrl.StartsWith("http://localhost:1234/v1/chat/completions", StringComparison.OrdinalIgnoreCase) ? "https://api.openai.com/v1/chat/completions" : "http://localhost:1234/v1/chat/completions"
                 });
 
-            //LabelFormality.Text = "Model";
-            //LabelFormality.IsVisible = true;
-
-            //comboBoxFormality.Items.Clear();
-            //comboBoxFormality.Enabled = true;
-            //comboBoxFormality.Left = labelFormality.Right + 3;
-            //comboBoxFormality.IsVisible = true;
-            //comboBoxFormality.Items.AddRange(ChatGptTranslate.Models);
-            //comboBoxFormality.Text = Configuration.Settings.Tools.ChatGptModel;
+            LabelModel.IsVisible = true;
+            EntryModel.IsVisible = true;
+            ButtonModel.IsVisible = true;
+            _apiModels = ChatGptTranslate.Models.ToList();
 
             EntryApiKey.Text = Configuration.Settings.Tools.ChatGptApiKey;
             LabelApiKey.IsVisible = true;
@@ -583,19 +603,10 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
                 Configuration.Settings.Tools.OllamaApiUrl.TrimEnd('/'),
             });
 
-            var models = Configuration.Settings.Tools.OllamaModels.Split(',').ToList();
-
+            _apiModels = Configuration.Settings.Tools.OllamaModels.Split(',').ToList();
+            EntryModel.IsVisible = true;
             LabelModel.IsVisible = true;
-
-            //comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
-            //comboBoxFormality.Items.Clear();
-            //comboBoxFormality.Enabled = true;
-            //comboBoxFormality.Left = labelFormality.Right + 3;
-            //comboBoxFormality.IsVisible = true;
-            //foreach (var model in models)
-            //{
-            //    comboBoxFormality.Items.Add(model);
-            //}
+            ButtonModel.IsVisible = true;
             EntryModel.Text = Configuration.Settings.Tools.OllamaModel;
 
             //comboBoxFormality.ContextMenuStrip = contextMenuStripOlamaModels;
@@ -606,20 +617,18 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         if (engineType == typeof(AnthropicTranslate))
         {
             FillUrls(new List<string>
-                {
-                    Configuration.Settings.Tools.AnthropicApiUrl,
-                });
+            {
+                Configuration.Settings.Tools.AnthropicApiUrl,
+            });
 
             EntryApiKey.Text = Configuration.Settings.Tools.AnthropicApiKey;
             LabelApiKey.IsVisible = true;
             EntryApiKey.IsVisible = true;
 
-            LabelModel.Text = "Model";
+            _apiModels = AnthropicTranslate.Models.ToList();
+            EntryModel.IsVisible = true;
             LabelModel.IsVisible = true;
-            //comboBoxFormality.IsVisible = true;
-            //comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
-            //comboBoxFormality.Items.Clear();
-            //comboBoxFormality.Items.AddRange(AnthropicTranslate.Models);
+            ButtonModel.IsVisible = true;
             EntryModel.Text = Configuration.Settings.Tools.AnthropicApiModel;
 
             return;
@@ -628,22 +637,19 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         if (engineType == typeof(GroqTranslate))
         {
             FillUrls(new List<string>
-                {
-                    Configuration.Settings.Tools.GroqUrl,
-                });
+            {
+                Configuration.Settings.Tools.GroqUrl,
+            });
 
             EntryApiKey.Text = Configuration.Settings.Tools.GroqApiKey;
             LabelApiKey.IsVisible = true;
             EntryApiKey.IsVisible = true;
 
-            LabelModel.Text = "Model";
+            _apiModels = GroqTranslate.Models.ToList();
+            EntryModel.IsVisible = true;
             LabelModel.IsVisible = true;
-            //comboBoxFormality.Left = labelFormality.Right + 3;
-            //comboBoxFormality.IsVisible = true;
-            //comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
-            //comboBoxFormality.Items.Clear();
-            //comboBoxFormality.Items.AddRange(GroqTranslate.Models);
-            EntryModel.Text = Configuration.Settings.Tools.GroqModel;
+            ButtonModel.IsVisible = true;
+            EntryModel.Text = string.IsNullOrEmpty(Configuration.Settings.Tools.GroqModel) ? _apiModels[0] : Configuration.Settings.Tools.GroqModel;
             EntryModel.IsVisible = true;
 
             return;
@@ -675,7 +681,6 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         //    return;
         //}
 
-
         if (engineType == typeof(GeminiTranslate))
         {
             EntryApiKey.Text = Configuration.Settings.Tools.GeminiProApiKey;
@@ -690,28 +695,18 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     private void FillUrls(List<string> urls)
     {
         EntryApiUrl.Text = urls.Count > 0 ? urls[0] : string.Empty;
-        //nikseComboBoxUrl.Items.Clear();
-        //foreach (var url in list.Distinct())
-        //{
-        //    if (!string.IsNullOrEmpty(url))
-        //    {
-        //        nikseComboBoxUrl.Items.Add(url.TrimEnd('/') + "/");
-        //    }
-        //}
-
-        LabelApiUrl.Text = "Url";
-        //nikseComboBoxUrl.Left = labelUrl.Right + 3;
-        //if (nikseComboBoxUrl.Items.Count > 0)
-        //{
-        //    nikseComboBoxUrl.SelectedIndex = 0;
-        //}
-
+        _apiUrls = urls;
         EntryApiUrl.IsVisible = true;
         LabelApiUrl.IsVisible = true;
+        ButtonApiUrl.IsVisible = urls.Count > 0;
     }
 
     private void SelectFormality()
     {
+        LabelFormality.IsVisible = true;
+        PickerFormality.IsVisible = true;
+
+        //PickerFormality.Items = new List<string>
         //comboBoxFormality.SelectedIndex = 0;
         //for (var i = 0; i < comboBoxFormality.Items.Count; i++)
         //{
