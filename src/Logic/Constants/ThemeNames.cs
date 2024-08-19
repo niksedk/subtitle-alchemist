@@ -6,5 +6,6 @@
         public const string TextColor = "TextColor";
         public const string SecondaryBackgroundColor = "SecondaryBackgroundColor";
         public const string BorderColor = "BorderColor";
+        public const string ActiveBackgroundColor = "ActiveBackgroundColor";
     }
 }

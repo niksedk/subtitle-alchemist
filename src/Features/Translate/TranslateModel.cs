@@ -141,6 +141,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
             _translationInProgress = false;
             _abort = true;
             await _cancellationTokenSource.CancelAsync();
+            ReactiveButtons();
             return;
         }
 
@@ -173,7 +174,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
         ButtonOk.IsEnabled = false;
         ButtonCancel.IsEnabled = false;
-        ButtonTranslate.Text  = "Cancel";
+        ButtonTranslate.Text = "Cancel";
 
         translator.Initialize();
 
@@ -191,23 +192,21 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         Configuration.Settings.Tools.GoogleTranslateLastSourceLanguage = sourceLanguage.TwoLetterIsoLanguageName;
         Configuration.Settings.Tools.GoogleTranslateLastTargetLanguage = targetLanguage.TwoLetterIsoLanguageName;
 
-
-        // do translate
-        await Task.Run(async () =>
+        foreach (var translateRow in Lines)
         {
-            await DoTranslate(sourceLanguage, targetLanguage, translator);
+            translateRow.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+        }
+
+        // do translation in background
+#pragma warning disable CS4014
+        Task.Run(() =>
+        {
+            DoTranslate(sourceLanguage, targetLanguage, translator, _cancellationTokenSource.Token);
         });
-
-        ButtonOk.IsEnabled = true;
-        ButtonCancel.IsEnabled = true;
-        ButtonTranslate.Text = "Translate";
-        _translationInProgress = false;
-        _abort = false;
-        ProgressBar.IsVisible = false;
-        ButtonOk.Focus();
     }
+#pragma warning restore CS4014
 
-    private async Task DoTranslate(TranslationPair sourceLanguage, TranslationPair targetLanguage, IAutoTranslator translator)
+    private async Task DoTranslate(TranslationPair sourceLanguage, TranslationPair targetLanguage, IAutoTranslator translator, CancellationToken cancellationToken)
     {
         var start = 0;
         if (CollectionView.SelectedItem is TranslateRow selectedItem)
@@ -225,14 +224,15 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         var errorCount = 0;
         while (index < Lines.Count)
         {
-            if (_abort)
+            if (_abort || cancellationToken.IsCancellationRequested)
             {
+                ReactiveButtons();
                 break;
             }
 
             var linesMergedAndTranslated = await MergeAndSplitHelper.MergeAndTranslateIfPossible(_sourceSubtitle,
                 _targetSubtitle, sourceLanguage, targetLanguage, index, translator, forceSingleLineMode,
-                _cancellationTokenSource.Token);
+                cancellationToken);
 
             if (linesMergedAndTranslated > 0)
             {
@@ -250,22 +250,78 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     ProgressBar.Progress = (double)index1 / Lines.Count;
+                    CollectionView.ScrollTo(index1, 1, ScrollToPosition.Center, false);
                 });
 
                 linesTranslated += linesMergedAndTranslated;
-                _translationProgressIndex = index - 1;
+                _translationProgressIndex = index;
                 errorCount = 0;
                 continue;
             }
 
             errorCount++;
-            forceSingleLineMode = true;
+            if (errorCount > 3)
+            {
+                forceSingleLineMode = true;
+            }
 
-            if (errorCount > 1)
+            var src = new Subtitle();
+            src.Paragraphs.Add(_sourceSubtitle.Paragraphs[index]);
+            var trg = new Subtitle();
+            trg.Paragraphs.Add(_targetSubtitle.Paragraphs[index]);
+            var translateCount = await MergeAndSplitHelper.MergeAndTranslateIfPossible(
+                src,
+                trg,
+                sourceLanguage,
+                targetLanguage,
+                0,
+                translator,
+                false,
+                _cancellationTokenSource.Token);
+
+            if (_abort || cancellationToken.IsCancellationRequested)
+            {
+                ReactiveButtons();
+                return;
+            }
+
+            if (translateCount > 0)
+            {
+                Lines[index].TranslatedText = trg.Paragraphs[0].Text;
+                index += translateCount;
+                var index1 = index;
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ProgressBar.Progress = (double)index1 / Lines.Count;
+                    CollectionView.ScrollTo(index1, 1, ScrollToPosition.Center, false);
+                });
+            }
+            else
             {
                 break;
             }
         }
+
+        ReactiveButtons();
+    }
+
+    private void ReactiveButtons()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ButtonOk.IsEnabled = true;
+            ButtonCancel.IsEnabled = true;
+            ButtonTranslate.Text = "Translate";
+            _translationInProgress = false;
+            _abort = false;
+            ProgressBar.IsVisible = false;
+            ButtonOk.Focus();
+
+            if (_translationProgressIndex >= 0 && _translationProgressIndex < Lines.Count)
+            {
+                Lines[_translationProgressIndex].BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
+            }
+        });
     }
 
     private void SaveSettings(Type engineType)
@@ -782,7 +838,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         {
             return Configuration.Settings.Tools.GoogleTranslateLastSourceLanguage;
         }
-        
+
         return defaultSourceLanguageCode;
     }
 
@@ -888,6 +944,7 @@ foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
     [RelayCommand]
     public async Task Cancel()
     {
+        _abort = true;
         await Shell.Current.GoToAsync("..");
     }
 
@@ -904,6 +961,19 @@ foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
 
     public void CollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        //e.Handled = true;
+        if (_translationInProgress)
+        {
+            return;
+        }
+
+        if (e.PreviousSelection.FirstOrDefault() is TranslateRow rowOld)
+        {
+            rowOld.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+        }
+
+        if (e.CurrentSelection.FirstOrDefault() is TranslateRow row)
+        {
+            row.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
+        }
     }
 }

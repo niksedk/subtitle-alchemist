@@ -41,7 +41,7 @@ public static class InitSubtitleListView
             ItemTemplate = new DataTemplate(() => MakeGrid(vm))
         }.BindDynamicTheme();
 
-        view.SetBinding(ItemsView.ItemsSourceProperty,  nameof(vm.Paragraphs));
+        view.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Paragraphs));
         view.SelectionChanged += vm.OnCollectionViewSelectionChanged;
 
         MakeContextMenu(vm, view);
@@ -65,33 +65,33 @@ public static class InitSubtitleListView
             {
                 new BoxView
                 {
-                    BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
-                }.Column(0).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                new Label {  Margin = 5 }.Column(0).Bind("Number").BindDynamicTheme(),
+                    BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
+                }.Column(0),
+                new Label {  Margin = 1, Padding = 5 }.Column(0).Bind("Number").BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
 
                 new BoxView
                 {
-                    BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
-                }.Column(1).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                new Label {  Margin = 5 }.Column(1).Bind("Start").BindDynamicTheme(),
+                    BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
+                }.Column(1),
+                new Label {  Margin = 1, Padding = 5 }.Column(1).Bind("Start").BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
 
                 new BoxView
                 {
-                    BackgroundColor =(Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
-                }.Column(2).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                new Label { Margin = 5 }.Column(2).Bind("End").BindDynamicTheme(),
+                    BackgroundColor =(Color)Application.Current.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
+                }.Column(2),
+                new Label { Margin = 1, Padding = 5 }.Column(2).Bind("End").BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
 
                 new BoxView
                 {
-                    BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
-                }.Column(3).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                new Label { Margin = 5 }.Column(3).Bind("Duration").BindDynamicTheme(),
+                    BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
+                }.Column(3),
+                new Label { Margin = 1, Padding = 5 }.Column(3).Bind("Duration").BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
 
                 new BoxView
                 {
-                    BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1
-                }.Column(4).Bind(VisualElement.BackgroundColorProperty, nameof(DisplayParagraph.BackgroundColor)),
-                new Label { Margin = 5 }.Column(4).Bind("Text").BindDynamicTheme(),
+                    BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
+                }.Column(4),
+                new Label { Margin = 1, Padding = 5 }.Column(4).Bind("Text").BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
             }
         }.BindDynamicTheme();
 

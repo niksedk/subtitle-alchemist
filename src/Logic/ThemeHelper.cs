@@ -28,6 +28,12 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static Label BindDynamicThemeTextColorOnly(this Label control)
+        {
+            control.SetDynamicResource(Label.TextColorProperty, ThemeNames.TextColor);
+            return control;
+        }
+
         public static Grid BindDynamicTheme(this Grid control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);

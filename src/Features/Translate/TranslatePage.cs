@@ -192,17 +192,21 @@ public class TranslatePage : ContentPage
                 };
 
                 // Bind each cell to the appropriate property
-                var numberLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicTheme();
+                var numberLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
                 numberLabel.SetBinding(Label.TextProperty, "Number");
+                numberLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
 
-                var startTimeLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicTheme();
+                var startTimeLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
                 startTimeLabel.SetBinding(Label.TextProperty, new Binding("StartTime", stringFormat: "{HH:mm:ss.fff}"));
+                startTimeLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
 
-                var originalTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicTheme();
+                var originalTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
                 originalTextLabel.SetBinding(Label.TextProperty, "OriginalText");
+                originalTextLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
 
-                var translatedTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicTheme();
+                var translatedTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
                 translatedTextLabel.SetBinding(Label.TextProperty, "TranslatedText");
+                translatedTextLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
 
                 // Add labels to grid
                 gridTexts.Add(numberLabel, 0, 0);
@@ -251,6 +255,7 @@ public class TranslatePage : ContentPage
         gridLayout.Add(headerGrid, 0, 0);
         gridLayout.Add(vm.CollectionView, 0, 1);
 
+        vm.CollectionView.SelectionMode = SelectionMode.Single;
         vm.CollectionView.SelectionChanged += vm.CollectionViewSelectionChanged;
 
         var frame = new Frame

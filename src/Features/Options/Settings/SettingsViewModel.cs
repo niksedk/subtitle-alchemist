@@ -164,6 +164,7 @@ public partial class SettingsViewModel : ObservableObject
                 SetThemeDictionaryColor(dictionaries, ThemeNames.TextColor, Colors.Black);
                 SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(120, 120, 120));
                 SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
+                SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Colors.LightGreen);
             }
             else
             {
@@ -171,6 +172,7 @@ public partial class SettingsViewModel : ObservableObject
                 SetThemeDictionaryColor(dictionaries, ThemeNames.TextColor, Colors.WhiteSmoke);
                 SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(20, 20, 20));
                 SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
+                SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGreen);
             }
         }
 

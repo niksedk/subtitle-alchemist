@@ -2,5 +2,5 @@
 
 public class RadialElement
 {
-    public string ImageUrl { get; set; }
+    public string? ImageUrl { get; set; }
 }

@@ -246,7 +246,6 @@ public class SettingsPage : ContentPage
         {
             WidthRequest = 400,
             HeightRequest = 400,
-            BackgroundColor = Colors.Blue,
         };
         radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png");
         radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png");
@@ -257,6 +256,13 @@ public class SettingsPage : ContentPage
         radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png");
         radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png");
         radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png");
+        radial.CenterImage = new RadialElement()
+        {
+            ImageUrl = "C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\wheel.png",
+        };
         grid.Add(radial, 0, 3);
         Grid.SetColumnSpan(radial, 2);
 
