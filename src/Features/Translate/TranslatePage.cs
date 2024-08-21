@@ -37,24 +37,47 @@ public class TranslatePage : ContentPage
             },
         };
 
-        vm.TitleLabel = new Label
+        var poweredByLabel = new Label
         {
-            Margin = new Thickness(15, 15, 15, 15),
-            Text = "Powered by X",
-            FontAttributes = FontAttributes.Bold,
+            Margin = new Thickness(15, 15, 0, 15),
+            Text = "Powered by ",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            FontSize = 12,
         }.BindDynamicTheme();
+
+        vm.TitleLabel = new Label
+        {
+            Margin = new Thickness(5, 15, 15, 15),
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            FontSize = 12,
+            TextDecorations = TextDecorations.Underline,
+        }.BindDynamicTheme();
+
+        var titleTexts = new StackLayout()
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                poweredByLabel,
+                vm.TitleLabel,
+            }
+        };
+
         var pointerGesture = new PointerGestureRecognizer();
-        pointerGesture.PointerEnteredCommand = new Command(() => vm.MouseEnteredPoweredBy());
-        pointerGesture.PointerExitedCommand = new Command(() => vm.MouseExitedPoweredBy());
+        pointerGesture.PointerEnteredCommand = new Command(vm.MouseEnteredPoweredBy);
+        pointerGesture.PointerExitedCommand = new Command(vm.MouseExitedPoweredBy);
         vm.TitleLabel.GestureRecognizers.Add(pointerGesture);
         var tapGesture = new TapGestureRecognizer();
         tapGesture.Tapped += vm.MouseClickedPoweredBy;
         vm.TitleLabel.GestureRecognizers.Add(tapGesture);
 
-        grid.Add(vm.TitleLabel, 0, 0);
-        Grid.SetColumnSpan(vm.TitleLabel, 2);
+        grid.Add(titleTexts, 0, 0);
+        Grid.SetColumnSpan(titleTexts, 2);
 
         var gridLeft = new Grid
         {
@@ -98,12 +121,9 @@ public class TranslatePage : ContentPage
         {
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
-            Items =
-            {
-                "English", "Danish",
-            },
-            SelectedIndex = 0,
         }.BindDynamicTheme();
+        vm.SourceLanguagePicker.ItemsSource = vm.SourceLanguages;
+        vm.SourceLanguagePicker.SetBinding(Picker.SelectedItemProperty, nameof(vm.SourceLanguage));
         gridLeft.Add(vm.SourceLanguagePicker, 3, 0);
 
         grid.Add(gridLeft, 0, 1);
@@ -140,13 +160,11 @@ public class TranslatePage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Items =
-            {
-                "English", "Danish",
-            },
-            SelectedIndex = 0,
         }.BindDynamicTheme();
         rightGrid.Add(vm.TargetLanguagePicker, 1, 0);
+        vm.TargetLanguagePicker.ItemsSource = vm.TargetLanguages;
+        vm.TargetLanguagePicker.SetBinding(Picker.SelectedItemProperty, nameof(vm.TargetLanguage));
+        vm.TargetLanguagePicker.SelectedIndexChanged += vm.TargetLanguagePickerSelectedIndexChanged;
 
         vm.ButtonTranslate = new Button
         {
@@ -291,7 +309,7 @@ public class TranslatePage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = 200,
             Placeholder = "Enter API key",
-            Margin = new Thickness(0, 0, 10, 0),
+            Margin = new Thickness(3, 0, 10, 0),
         }.BindDynamicTheme();
 
         vm.LabelApiUrl = new Label
@@ -307,12 +325,14 @@ public class TranslatePage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = 250,
             Placeholder = "Enter API url",
+            Margin = new Thickness(3, 0, 0, 0),
         }.BindDynamicTheme();
 
         vm.ButtonApiUrl = new Button
         {
             Text = "...",
             VerticalOptions = LayoutOptions.Center,
+            Command = vm.PickApiUrlCommand,
         }.BindDynamicTheme();
 
         vm.LabelModel = new Label
@@ -328,12 +348,15 @@ public class TranslatePage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = 250,
             Placeholder = "Enter model",
+            Margin = new Thickness(3, 0, 0, 0),
         };
     
         vm.ButtonModel = new Button
         {
             Text = "...",
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(3, 0, 0, 0),
+            Command = vm.PickModelCommand,
         }.BindDynamicTheme();
 
         vm.LabelFormality = new Label
@@ -346,7 +369,10 @@ public class TranslatePage : ContentPage
         vm.PickerFormality = new Picker
         {
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(3, 0, 0, 0),
         }.BindDynamicTheme();
+        vm.PickerFormality.ItemsSource = vm.Formalities;
+        vm.PickerFormality.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedFormality));
 
         var settingsRow = new StackLayout
         {

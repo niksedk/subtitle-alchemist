@@ -1,17 +1,17 @@
-using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 
-namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg;
+namespace SubtitleAlchemist.Controls.PickerControl;
 
-public class DownloadFfmpegPopup : Popup
+public class PickerPopup : Popup
 {
-    public DownloadFfmpegPopup(DownloadFfmpegModel vm)
+    public PickerPopup(PickerPopupModel vm)
     {
         BindingContext = vm;
 
         this.BindDynamicTheme();
-        CanBeDismissedByTappingOutsideOfPopup = false;
+        CanBeDismissedByTappingOutsideOfPopup = true;
 
         var grid = new Grid
         {
@@ -20,46 +20,42 @@ public class DownloadFfmpegPopup : Popup
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-            },
+            }, 
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Auto },
             },
             Margin = new Thickness(2),
-            Padding = new Thickness(30, 20, 30 ,10),
+            Padding = new Thickness(30, 20, 30, 10),
             RowSpacing = 20,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
+            HeightRequest = 300,
         }.BindDynamicTheme();
 
         var titleLabel = new Label
         {
-            Text = "Downloading ffmpeg",
+            Text = "Choose item",
             FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
             Padding = new Thickness(0, 0, 0, 10),
         }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
 
-        var progressLabel = new Label
+        var picker = new Picker
         {
-            Text = "...",
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 15,
-        }.BindDynamicTheme(); 
-        progressLabel.SetBinding(Label.TextProperty, nameof(vm.Progress));
-        grid.Add(progressLabel, 0, 1);
+            ItemsSource = vm.Items,
+            SelectedItem = vm.SelectedItem,
+        }.BindDynamicTheme();
+        grid.Add(picker, 0, 1);
 
-        var progressBar = new ProgressBar
+
+        var okButton = new Button
         {
-            Progress = 0.5,
-            ProgressColor = Colors.Orange,
-            HorizontalOptions = LayoutOptions.Fill,
-        };
-        progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));
-        grid.Add(progressBar, 0, 2);
+            Text = "OK",
+            HorizontalOptions = LayoutOptions.Center,
+            Command = vm.OkCommand,
+        }.BindDynamicTheme();
 
         var cancelButton = new Button
         {
@@ -67,7 +63,20 @@ public class DownloadFfmpegPopup : Popup
             HorizontalOptions = LayoutOptions.Center,
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
-        grid.Add(cancelButton, 0, 3);
+
+        var buttonRow = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Center,
+            Padding = new Thickness(15),
+            Children =
+            {
+                okButton,
+                cancelButton,
+            },
+        };
+
+        grid.Add(buttonRow, 0, 2);
 
         var border = new Border
         {
@@ -86,7 +95,5 @@ public class DownloadFfmpegPopup : Popup
         Content = border;
 
         vm.Popup = this;
-
-        vm.StartDownload();
     }
 }

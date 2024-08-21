@@ -6,10 +6,11 @@ using Nikse.SubtitleEdit.Core.Translate;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
-using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text;
+using CommunityToolkit.Maui.Core;
+using SubtitleAlchemist.Controls.PickerControl;
 
 namespace SubtitleAlchemist.Features.Translate;
 
@@ -27,19 +28,23 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private IAutoTranslator _selectedAutoTranslator;
 
-    private bool _translationInProgress = false;
-    private bool _abort = false;
-    private bool _singleLineMode = false;
+    private bool _translationInProgress;
+    private bool _abort;
+    private bool _singleLineMode;
     private CancellationTokenSource _cancellationTokenSource = new();
-    private int _translationProgressIndex = 0;
+    private int _translationProgressIndex;
     private List<string> _apiUrls = new();
     private List<string> _apiModels = new();
 
     public TranslatePage? TranslatePage { get; set; }
 
-    public TranslateModel()
+    private readonly IPopupService _popupService;
+
+    public TranslateModel(IPopupService popupService)
     {
         Paragraphs = new ObservableCollection<DisplayParagraph>();
+
+        _popupService = popupService;
 
         Lines = new ObservableCollection<TranslateRow>();
 
@@ -69,6 +74,23 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     private Subtitle _sourceSubtitle = new();
     private Subtitle _targetSubtitle = new();
 
+    [ObservableProperty]
+    private ObservableCollection<TranslationPair> _sourceLanguages = new();
+
+    [ObservableProperty]
+    private ObservableCollection<TranslationPair> _targetLanguages = new();
+
+    [ObservableProperty]
+    private TranslationPair? _sourceLanguage;
+
+    [ObservableProperty]
+    private TranslationPair? _targetLanguage;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _Formalities = new();
+
+    [ObservableProperty]
+    private string? _selectedFormality;
 
     public Picker SourceLanguagePicker { get; set; } = new();
     public Picker TargetLanguagePicker { get; set; } = new();
@@ -294,11 +316,11 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
             {
                 Lines[index].TranslatedText = trg.Paragraphs[0].Text;
                 index += translateCount;
-                var index1 = index;
+                var progressIndex = index;
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    ProgressBar.Progress = (double)index1 / Lines.Count;
-                    CollectionView.ScrollTo(index1, 1, ScrollToPosition.Center, false);
+                    ProgressBar.Progress = (double)progressIndex / Lines.Count;
+                    CollectionView.ScrollTo(progressIndex, 1, ScrollToPosition.Center, false);
                 });
             }
             else
@@ -311,7 +333,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                _translationProgressIndex = Lines.Count -1;
+                _translationProgressIndex = Lines.Count - 1;
                 ReactiveButtons();
             });
             return false;
@@ -369,37 +391,37 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         {
             Configuration.Settings.Tools.ChatGptApiKey = EntryApiKey.Text.Trim();
             Configuration.Settings.Tools.ChatGptUrl = EntryApiUrl.Text.Trim();
-            //Configuration.Settings.Tools.ChatGptModel = EntryFormality.Text.Trim();
+            Configuration.Settings.Tools.ChatGptModel = EntryModel.Text.Trim();
         }
 
         if (engineType == typeof(LmStudioTranslate))
         {
             Configuration.Settings.Tools.LmStudioApiUrl = EntryApiUrl.Text.Trim();
-            //Configuration.Settings.Tools.LmStudioModel = comboBoxFormality.Text.Trim();
+            Configuration.Settings.Tools.LmStudioModel = EntryModel.Text.Trim();
         }
 
         if (engineType == typeof(OllamaTranslate))
         {
             Configuration.Settings.Tools.OllamaApiUrl = EntryApiUrl.Text.Trim();
-            //Configuration.Settings.Tools.OllamaModel = comboBoxFormality.Text.Trim();
+            Configuration.Settings.Tools.OllamaModel = EntryModel.Text.Trim();
         }
 
         if (engineType == typeof(AnthropicTranslate) && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
         {
             Configuration.Settings.Tools.AnthropicApiKey = EntryApiKey.Text.Trim();
-            //Configuration.Settings.Tools.AnthropicApiModel = comboBoxFormality.Text.Trim();
+            Configuration.Settings.Tools.AnthropicApiModel = EntryModel.Text.Trim();
         }
 
         if (engineType == typeof(GroqTranslate) && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
         {
             Configuration.Settings.Tools.GroqApiKey = EntryApiKey.Text.Trim();
-            //Configuration.Settings.Tools.GroqModel = comboBoxFormality.Text.Trim();
+            Configuration.Settings.Tools.GroqModel = EntryModel.Text.Trim();
         }
 
-        //if (engineType == typeof(OpenRouterTranslate) && !string.IsNullOrWhiteSpace(nikseTextBoxApiKey.Text))
+        //if (engineType == typeof(OpenRouterTranslate) && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
         //{
-        //    Configuration.Settings.Tools.OpenRouterApiKey = nikseTextBoxApiKey.Text.Trim();
-        //    Configuration.Settings.Tools.OpenRouterModel = comboBoxFormality.Text.Trim();
+        //    Configuration.Settings.Tools.OpenRouterApiKey = EntryApiKey.Text.Trim();
+        //    Configuration.Settings.Tools.OpenRouterModel = EntryModel.Text.Trim();
         //}
 
         if (engineType == typeof(GeminiTranslate) && !string.IsNullOrWhiteSpace(EntryApiKey.Text))
@@ -426,7 +448,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
     private void SetAutoTranslatorEngine(IAutoTranslator translator)
     {
-        TitleLabel.Text = $"Powered by {translator.Name}";
+        TitleLabel.Text = translator.Name;
 
         EntryApiKey.IsVisible = false;
         EntryApiKey.Text = string.Empty;
@@ -530,10 +552,10 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
         if (engineType == typeof(PapagoTranslate))
         {
+            LabelApiUrl.Text = "Client ID";
             EntryApiUrl.Text = Configuration.Settings.Tools.AutoTranslatePapagoApiKeyId;
             EntryApiUrl.IsVisible = true;
             LabelApiUrl.IsVisible = true;
-            LabelApiUrl.Text = "Client ID";
 
             LabelApiKey.Text = "Client secret";
             EntryApiKey.Text = Configuration.Settings.Tools.AutoTranslatePapagoApiKey;
@@ -560,10 +582,10 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
             }
 
             FillUrls(new List<string>
-                {
-                    Configuration.Settings.Tools.ChatGptUrl.TrimEnd('/'),
-                    Configuration.Settings.Tools.ChatGptUrl.StartsWith("http://localhost:1234/v1/chat/completions", StringComparison.OrdinalIgnoreCase) ? "https://api.openai.com/v1/chat/completions" : "http://localhost:1234/v1/chat/completions"
-                });
+            {
+                Configuration.Settings.Tools.ChatGptUrl.TrimEnd('/'),
+                Configuration.Settings.Tools.ChatGptUrl.StartsWith("http://localhost:1234/v1/chat/completions", StringComparison.OrdinalIgnoreCase) ? "https://api.openai.com/v1/chat/completions" : "http://localhost:1234/v1/chat/completions"
+            });
 
             LabelModel.IsVisible = true;
             EntryModel.IsVisible = true;
@@ -659,15 +681,13 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         //if (engineType == typeof(OpenRouterTranslate))
         //{
         //    FillUrls(new List<string>
-        //        {
-        //            Configuration.Settings.Tools.OpenRouterUrl,
-        //        });
+        //    {
+        //        Configuration.Settings.Tools.OpenRouterUrl,
+        //    });
 
-        //    labelApiKey.Left = nikseComboBoxUrl.Right + 12;
-        //    nikseTextBoxApiKey.Text = Configuration.Settings.Tools.OpenRouterApiKey;
-        //    nikseTextBoxApiKey.Left = labelApiKey.Right + 3;
+        //    EntrypiKey.Text = Configuration.Settings.Tools.OpenRouterApiKey;
         //    labelApiKey.IsVisible = true;
-        //    nikseTextBoxApiKey.IsVisible = true;
+        //    EntryApiKey.IsVisible = true;
 
         //    labelFormality.Text = LanguageSettings.Current.AudioToText.Model;
         //    labelFormality.IsVisible = true;
@@ -706,38 +726,40 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         LabelFormality.IsVisible = true;
         PickerFormality.IsVisible = true;
 
-        //PickerFormality.Items = new List<string>
-        //comboBoxFormality.SelectedIndex = 0;
-        //for (var i = 0; i < comboBoxFormality.Items.Count; i++)
-        //{
-        //    if (comboBoxFormality.Items[i].ToString() == Configuration.Settings.Tools.AutoTranslateDeepLFormality)
-        //    {
-        //        comboBoxFormality.SelectedIndex = i;
-        //        break;
-        //    }
-        //}
-    }
+        foreach (var formality in Formalities)
+        {
+            if (formality == Configuration.Settings.Tools.AutoTranslateDeepLFormality)
+            {
+                SelectedFormality = formality;
+                return;
+            }
+        }
 
+        if (Formalities.Count > 0)
+        {
+            SelectedFormality = Formalities[0];
+        }
+    }
 
     private void SetupLanguageSettings(IAutoTranslator autoTranslator)
     {
         var sourceLanguages = autoTranslator.GetSupportedSourceLanguages();
-        SourceLanguagePicker.Items.Clear();
-        foreach (var language in sourceLanguages)
+        SourceLanguages.Clear();
+        foreach (var sourceLanguage in sourceLanguages)
         {
-            SourceLanguagePicker.Items.Add(ToProperCase(language.Name));
+            SourceLanguages.Add(sourceLanguage);
         }
         var sourceLanguageIsoCode = EvaluateDefaultSourceLanguageCode(_encoding, _sourceSubtitle, sourceLanguages);
-        SelectLanguageCode(SourceLanguagePicker, sourceLanguageIsoCode, sourceLanguages);
+        SourceLanguage = SelectLanguageCode(SourceLanguagePicker, sourceLanguageIsoCode, sourceLanguages);
 
         var targetLanguages = autoTranslator.GetSupportedTargetLanguages();
-        TargetLanguagePicker.Items.Clear();
-        foreach (var language in targetLanguages)
+        TargetLanguages.Clear();
+        foreach (var targetLanguage in targetLanguages)
         {
-            TargetLanguagePicker.Items.Add(ToProperCase(language.Name));
+            TargetLanguages.Add(targetLanguage);
         }
         var targetLanguageIsoCode = EvaluateDefaultTargetLanguageCode(sourceLanguageIsoCode);
-        SelectLanguageCode(TargetLanguagePicker, targetLanguageIsoCode, targetLanguages);
+        TargetLanguage = SelectLanguageCode(TargetLanguagePicker, targetLanguageIsoCode, targetLanguages);
     }
 
     private static string ToProperCase(string input)
@@ -751,7 +773,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         return textInfo.ToTitleCase(input.ToLower());
     }
 
-    public static void SelectLanguageCode(Picker comboBox, string languageIsoCode, List<TranslationPair> translationPairs)
+    public static TranslationPair? SelectLanguageCode(Picker comboBox, string languageIsoCode, List<TranslationPair> translationPairs)
     {
         var i = 0;
         var threeLetterLanguageCode = Iso639Dash2LanguageCode.GetThreeLetterCodeFromTwoLetterCode(languageIsoCode);
@@ -766,8 +788,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
             if (!string.IsNullOrEmpty(item.TwoLetterIsoLanguageName) && item.TwoLetterIsoLanguageName == languageIsoCode)
             {
-                comboBox.SelectedIndex = i;
-                return;
+                return item;
             }
 
             if (item.Code.Contains('-'))
@@ -775,48 +796,41 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
                 var arr = item.Code.ToLowerInvariant().Split('-');
                 if (arr[0].Length == 2 && arr[0] == languageIsoCode)
                 {
-                    comboBox.SelectedIndex = i;
-                    return;
+                    return item;
                 }
 
                 if (arr[0].Length == 3 && arr[0] == languageIsoCode)
                 {
-                    comboBox.SelectedIndex = i;
-                    return;
+                    return item;
                 }
 
                 if (arr[1].Length == 2 && arr[1] == languageIsoCode)
                 {
-                    comboBox.SelectedIndex = i;
-                    return;
+                    return item;
                 }
 
                 if (arr[1].Length == 3 && arr[1] == languageIsoCode)
                 {
-                    comboBox.SelectedIndex = i;
-                    return;
+                    return item;
                 }
             }
 
             if (languageIsoCode.Length == 2 && item.Code == languageIsoCode)
             {
                 comboBox.SelectedIndex = i;
-                return;
+                return item;
             }
 
             if (!string.IsNullOrEmpty(threeLetterLanguageCode) && item.Code.StartsWith(threeLetterLanguageCode) || item.Code == languageIsoCode)
             {
                 comboBox.SelectedIndex = i;
-                return;
+                return item;
             }
 
             i++;
         }
 
-        if (comboBox.SelectedIndex < 0 && comboBox.Items.Count > 0)
-        {
-            comboBox.SelectedIndex = 0;
-        }
+        return translationPairs.FirstOrDefault();
     }
 
     public static string EvaluateDefaultSourceLanguageCode(Encoding encoding, Subtitle subtitle, List<TranslationPair> sourceLanguages)
@@ -842,20 +856,20 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         var installedLanguages = new List<string>(); // Get installed languages
 
 #if WINDOWS
-foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
-{
-    if (x is string s)
-    {
-        if (s.Contains('-'))
+        foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
         {
-            installedLanguages.Add(s.Split('-')[0]);
+            if (x is string s)
+            {
+                if (s.Contains('-'))
+                {
+                    installedLanguages.Add(s.Split('-')[0]);
+                }
+                else
+                {
+                    installedLanguages.Add(s);
+                }
+            }
         }
-        else
-        {
-            installedLanguages.Add(s);
-        }
-    }
-}
 #endif
 
         var uiCultureTargetLanguage = Configuration.Settings.Tools.GoogleTranslateLastTargetLanguage;
@@ -921,14 +935,12 @@ foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
 
     public void MouseEnteredPoweredBy()
     {
-        TitleLabel.TextColor = Colors.BlueViolet;
-        TitleLabel.TextDecorations = TextDecorations.Underline;
+        TitleLabel.TextColor = Colors.LightSkyBlue; //TODO: link color in theme
     }
 
     public void MouseExitedPoweredBy()
     {
         TitleLabel.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
-        TitleLabel.TextDecorations = TextDecorations.None;
     }
 
     public void MouseClickedPoweredBy(object? sender, TappedEventArgs e)
@@ -969,6 +981,90 @@ foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
         if (e.CurrentSelection.FirstOrDefault() is TranslateRow row)
         {
             row.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
+        }
+    }
+
+    public void TargetLanguagePickerSelectedIndexChanged(object? sender, EventArgs e)
+    {
+        var translator = SelectedAutoTranslator;
+
+        if (TargetLanguage == null)
+        {
+            return;
+        }
+
+        var target = TargetLanguage;
+        if (translator.Name == DeepLTranslate.StaticName)
+        {
+            if (target.HasFormality is null or false)
+            {
+                LabelFormality.IsEnabled = false;
+                PickerFormality.IsEnabled = false;
+                return;
+            }
+
+            LabelFormality.IsEnabled = true;
+            PickerFormality.IsEnabled = true;
+
+            if (target.TwoLetterIsoLanguageName == "ja" && Formalities.Count != 3)
+            {
+                Formalities.Clear();
+                Formalities.Add("default");
+                PickerFormality.Items.Add("more");
+                Formalities.Add("less");
+
+                SelectFormality();
+            }
+            else if (Formalities.Count != 3)
+            {
+                Formalities.Clear();
+                Formalities.Add("default");
+                Formalities.Add("more");
+                Formalities.Add("less");
+                Formalities.Add("prefer_more");
+                Formalities.Add("prefer_less");
+
+                SelectFormality();
+            }
+        }
+
+        if (Formalities.Count > 0 && SelectedFormality == null)
+        {
+            SelectedFormality = Formalities[0];
+        }
+    }
+
+    [RelayCommand]
+    public async Task PickApiUrl()
+    {
+        var result = await _popupService.ShowPopupAsync<PickerPopupModel>(
+            onPresenting: vm =>
+            {
+                vm.SetItems(_apiUrls);
+                vm.SetSelectedItem(EntryApiUrl.Text);
+            },
+            CancellationToken.None);
+        
+        if (result is string s)
+        {
+            EntryApiUrl.Text = s;
+        }
+    }
+
+    [RelayCommand]
+    public async Task PickModel()
+    {
+        var result = await _popupService.ShowPopupAsync<PickerPopupModel>(
+            onPresenting: vm =>
+            {
+                vm.SetItems(_apiModels);
+                vm.SetSelectedItem(EntryModel.Text);
+            },
+            CancellationToken.None);
+
+        if (result is string s)
+        {
+            EntryModel.Text = s;
         }
     }
 }
