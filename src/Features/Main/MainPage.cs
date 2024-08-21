@@ -25,6 +25,7 @@ public class MainPage : ContentPage
                     { ThemeNames.SecondaryBackgroundColor, Color.FromRgb(20,20,20) },
                     { ThemeNames.BorderColor, Colors.DarkGray },
                     { ThemeNames.ActiveBackgroundColor, Colors.DarkGreen },
+                    { ThemeNames.LinkColor, Colors.LightSkyBlue },
                 };
                 mergedDictionaries.Add(darkTheme);
             }
@@ -37,6 +38,7 @@ public class MainPage : ContentPage
                     { ThemeNames.SecondaryBackgroundColor, Color.FromRgb(120,120,120) },
                     { ThemeNames.BorderColor, Colors.DarkGray },
                     { ThemeNames.ActiveBackgroundColor, Colors.LightGreen },
+                    { ThemeNames.LinkColor, Colors.DarkBlue },
                 };
                 mergedDictionaries.Add(lightTheme);
             }

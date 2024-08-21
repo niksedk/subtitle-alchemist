@@ -23,7 +23,7 @@ public class PickerPopup : Popup
             }, 
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star },
             },
             Margin = new Thickness(2),
             Padding = new Thickness(30, 20, 30, 10),
@@ -31,7 +31,8 @@ public class PickerPopup : Popup
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            HeightRequest = 300,
+            WidthRequest = 400,
+            HeightRequest = 220,
         }.BindDynamicTheme();
 
         var titleLabel = new Label
@@ -42,19 +43,24 @@ public class PickerPopup : Popup
         }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
 
-        var picker = new Picker
+        vm.Picker = new Picker
         {
             ItemsSource = vm.Items,
             SelectedItem = vm.SelectedItem,
+            HorizontalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
-        grid.Add(picker, 0, 1);
-
+        vm.Picker.SelectedIndexChanged += (s, e) =>
+        {
+            vm.SelectedItem = vm.Picker.SelectedItem as string;
+        };
+        grid.Add(vm.Picker, 0, 1);
 
         var okButton = new Button
         {
             Text = "OK",
             HorizontalOptions = LayoutOptions.Center,
             Command = vm.OkCommand,
+            Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
 
         var cancelButton = new Button
@@ -68,7 +74,8 @@ public class PickerPopup : Popup
         {
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Center,
-            Padding = new Thickness(15),
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(15),
             Children =
             {
                 okButton,

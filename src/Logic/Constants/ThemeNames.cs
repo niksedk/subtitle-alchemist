@@ -7,5 +7,6 @@
         public const string SecondaryBackgroundColor = "SecondaryBackgroundColor";
         public const string BorderColor = "BorderColor";
         public const string ActiveBackgroundColor = "ActiveBackgroundColor";
+        public const string LinkColor = "LinkColor";
     }
 }

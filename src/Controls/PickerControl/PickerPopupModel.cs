@@ -14,10 +14,17 @@ public partial class PickerPopupModel : ObservableObject
     private string? _selectedItem;
 
     public PickerPopup? Popup { get; set; }
+    public Picker Picker { get; set; } = new();
 
-    public void SetItems(List<string> items)
+    public void SetItems(List<string> items, string? currentModel)
     {
         Items.Clear();
+
+        if (!string.IsNullOrEmpty(currentModel) && !items.Contains(currentModel))
+        {
+            Items.Add(currentModel);
+        }
+
         foreach (var item in items)
         {
             Items.Add(item);
@@ -27,6 +34,16 @@ public partial class PickerPopupModel : ObservableObject
     public void SetSelectedItem(string item)
     {
         SelectedItem = item;
+
+        Popup?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                SelectedItem = item;
+                Picker.SelectedItem = item;
+            });
+            return false;
+        });
     }
 
     [RelayCommand]

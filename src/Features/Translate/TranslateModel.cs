@@ -87,7 +87,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     private TranslationPair? _targetLanguage;
 
     [ObservableProperty]
-    private ObservableCollection<string> _Formalities = new();
+    private ObservableCollection<string> _formalities = new();
 
     [ObservableProperty]
     private string? _selectedFormality;
@@ -434,6 +434,8 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
             Configuration.Settings.Tools.AutoTranslatePapagoApiKeyId = EntryApiUrl.Text.Trim();
             Configuration.Settings.Tools.AutoTranslatePapagoApiKey = EntryApiKey.Text.Trim();
         }
+
+        Configuration.Settings.Tools.AutoTranslateLastName = SelectedAutoTranslator.Name;
     }
 
     public void EngineSelectedIndexChanged(object? sender, EventArgs e)
@@ -576,10 +578,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
         if (engineType == typeof(ChatGptTranslate))
         {
-            if (Configuration.Settings.Tools.ChatGptUrl == null)
-            {
-                Configuration.Settings.Tools.ChatGptUrl = "https://api.openai.com/v1/chat/completions";
-            }
+            Configuration.Settings.Tools.ChatGptUrl ??= "https://api.openai.com/v1/chat/completions";
 
             FillUrls(new List<string>
             {
@@ -591,6 +590,13 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
             EntryModel.IsVisible = true;
             ButtonModel.IsVisible = true;
             _apiModels = ChatGptTranslate.Models.ToList();
+
+            if (string.IsNullOrWhiteSpace(Configuration.Settings.Tools.ChatGptModel))
+            {
+                Configuration.Settings.Tools.ChatGptModel = ChatGptTranslate.Models[0];
+            }
+
+            EntryModel.Text = Configuration.Settings.Tools.ChatGptModel;
 
             EntryApiKey.Text = Configuration.Settings.Tools.ChatGptApiKey;
             LabelApiKey.IsVisible = true;
@@ -935,7 +941,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
     public void MouseEnteredPoweredBy()
     {
-        TitleLabel.TextColor = Colors.LightSkyBlue; //TODO: link color in theme
+        TitleLabel.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
     }
 
     public void MouseExitedPoweredBy()
@@ -958,12 +964,23 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     public async Task Ok()
     {
-        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+        SaveSettings(SelectedAutoTranslator.GetType());
+
+        var anyLinesTranslated = Lines.Any(p=> !string.IsNullOrWhiteSpace(p.TranslatedText));
+
+        if (anyLinesTranslated)
         {
-            { "Page", nameof(TranslatePage) },
-            { "Encoding", Encoding.UTF8 },
-            { "TranslatedRows", Lines.ToList() },
-        });
+            await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+            {
+                { "Page", nameof(TranslatePage) },
+                { "Encoding", Encoding.UTF8 },
+                { "TranslatedRows", Lines.ToList() },
+            });
+        }
+        else
+        {
+            await Cancel();
+        }
     }
 
     public void CollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -1038,12 +1055,12 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     public async Task PickApiUrl()
     {
         var result = await _popupService.ShowPopupAsync<PickerPopupModel>(
-            onPresenting: vm =>
-            {
-                vm.SetItems(_apiUrls);
-                vm.SetSelectedItem(EntryApiUrl.Text);
-            },
-            CancellationToken.None);
+        onPresenting: vm =>
+        {
+            vm.SetItems(_apiUrls, EntryApiUrl.Text);
+            vm.SetSelectedItem(EntryApiUrl.Text);
+        },
+        CancellationToken.None);
         
         if (result is string s)
         {
@@ -1055,12 +1072,12 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
     public async Task PickModel()
     {
         var result = await _popupService.ShowPopupAsync<PickerPopupModel>(
-            onPresenting: vm =>
-            {
-                vm.SetItems(_apiModels);
-                vm.SetSelectedItem(EntryModel.Text);
-            },
-            CancellationToken.None);
+        onPresenting: vm =>
+        {
+            vm.SetItems(_apiModels, EntryModel.Text);
+            vm.SetSelectedItem(EntryModel.Text);
+        },
+        CancellationToken.None);
 
         if (result is string s)
         {

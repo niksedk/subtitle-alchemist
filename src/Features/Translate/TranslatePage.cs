@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Shapes;
+using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
 
@@ -456,7 +457,18 @@ public class TranslatePage : ContentPage
                     tr.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
                     _vm.Lines = _vm.Lines;
                 }
-            }); return false;
+            }); 
+
+            if (!string.IsNullOrWhiteSpace(Configuration.Settings.Tools.AutoTranslateLastName))
+            {
+                var item = _vm.AutoTranslators.FirstOrDefault(p => p.Name == Configuration.Settings.Tools.AutoTranslateLastName);
+                if (item != null)
+                {
+                    _vm.SelectedAutoTranslator = item;
+                }
+            }
+
+            return false;
         });
     }
 }
