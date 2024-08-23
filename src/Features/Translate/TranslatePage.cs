@@ -38,6 +38,13 @@ public class TranslatePage : ContentPage
             },
         };
 
+        var menuFlyoutMain = new MenuFlyout();
+        var flyoutItem = new MenuFlyoutItem();
+        flyoutItem.Text = "Advanced settings...";
+        flyoutItem.Command = vm.ShowAdvancedSettingsCommand;
+        menuFlyoutMain.Add(flyoutItem);
+        FlyoutBase.SetContextFlyout(grid, menuFlyoutMain);
+
         var poweredByLabel = new Label
         {
             Margin = new Thickness(15, 15, 0, 15),
@@ -57,7 +64,7 @@ public class TranslatePage : ContentPage
             TextDecorations = TextDecorations.Underline,
         }.BindDynamicTheme();
 
-        var titleTexts = new StackLayout()
+        var titleTexts = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Start,
@@ -241,6 +248,30 @@ public class TranslatePage : ContentPage
                 return gridTexts;
             })
         }.BindDynamicTheme();
+
+
+        var menuFlyoutLines = new MenuFlyout();
+        var flyoutItem2 = new MenuFlyoutItem();
+        flyoutItem2.Text = "Translate from this line";
+        flyoutItem2.Command = vm.TranslateFromCurrentLineCommand;
+        menuFlyoutLines.Add(flyoutItem2);
+        var flyoutItemCurrentLineOnly = new MenuFlyoutItem();
+        flyoutItemCurrentLineOnly.Text = "Translate this line only";
+        flyoutItemCurrentLineOnly.Command = vm.TranslateCurrentLineOnlyCommand;
+        flyoutItemCurrentLineOnly.KeyboardAccelerators.Add(new KeyboardAccelerator
+        {
+            Modifiers = KeyboardAcceleratorModifiers.Ctrl,
+            Key = "R"
+        });
+        menuFlyoutLines.Add(flyoutItemCurrentLineOnly);
+        menuFlyoutLines.Add(new MenuFlyoutSeparator());
+        var flyoutItemAdvancedSettings = new MenuFlyoutItem();
+        flyoutItemAdvancedSettings.Text = "Advanced settings...";
+        flyoutItemAdvancedSettings.Command = vm.ShowAdvancedSettingsCommand;
+        menuFlyoutLines.Add(flyoutItemAdvancedSettings);
+
+        FlyoutBase.SetContextFlyout(vm.CollectionView, menuFlyoutLines);
+
 
         // Create the header grid
         var headerGrid = new Grid

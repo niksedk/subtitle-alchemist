@@ -50,6 +50,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<DownloadFfmpegPopup, DownloadFfmpegModel>();
             builder.Services.AddTransientPopup<ColorPickerPopup, ColorPickerPopupModel>();
             builder.Services.AddTransientPopup<PickerPopup, PickerPopupModel>();
+            builder.Services.AddTransientPopup<TranslateAdvancedSettingsPopup, TranslateAdvancedSettingsPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
 
