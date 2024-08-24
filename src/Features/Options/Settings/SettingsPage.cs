@@ -247,18 +247,18 @@ public class SettingsPage : ContentPage
             WidthRequest = 400,
             HeightRequest = 400,
         };
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png");
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png");
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png");
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png");
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png");
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png");
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png");
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png");
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png");
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png");
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png");
-        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png", "Settings");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png", "Exit");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png", "Fix all");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png", "456");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png", "123");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png", "Radial");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png", "Maui");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png", "C#");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png", "Nikolaj");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_error.png", "Halo");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_information.png", "Just do it");
+        radial.AddElement("C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\theme_dark_question.png", "More...");
         radial.CenterImage = new RadialElement()
         {
             ImageUrl = "C:\\git\\subtitle-alchemist\\src\\Resources\\Images\\wheel.png",

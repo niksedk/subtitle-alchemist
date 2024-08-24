@@ -15,17 +15,47 @@ public partial class RadialView : ContentView
     private readonly Random _random = new();
     public RadialElement? CenterImage { get; set; }
 
-   public RadialView()
+    public RadialView()
     {
         _elements = new ObservableCollection<RadialElement>();
         _canvasView = new SKCanvasView();
         _canvasView.PaintSurface += OnPaintSurface;
+        _canvasView.EnableTouchEvents = true;
+        _canvasView.Touch += Touch;
         Content = _canvasView;
+
     }
 
-    public void AddElement(string imageUrl)
+    private void Touch(object? sender, SKTouchEventArgs e)
     {
-        _elements.Add(new RadialElement { ImageUrl = imageUrl });
+        if (e.ActionType == SKTouchAction.Pressed)
+        {
+            foreach (var element in _elements)
+            {
+                if (element.Bounds.Contains(e.Location.X, e.Location.Y))
+                {
+                    DeSelectAllExcept(element);
+                    break;
+                }
+            }
+        }
+
+        e.Handled = true;
+    }
+
+    private void DeSelectAllExcept(RadialElement element)
+    {
+        foreach (var radialElement in _elements)
+        {
+            radialElement.IsSelected = radialElement == element;
+        }
+
+        _canvasView.InvalidateSurface();
+    }
+
+    public void AddElement(string imageUrl, string text)
+    {
+        _elements.Add(new RadialElement { ImageUrl = imageUrl, Text = text });
         _canvasView.InvalidateSurface();
     }
 
@@ -116,7 +146,7 @@ public partial class RadialView : ContentView
             using var bitmap = SKBitmap.Decode(CenterImage.ImageUrl); //TODO: cache image
             if (bitmap != null)
             {
-                var angle =  _rotationAngle * -1;
+                var angle = _rotationAngle * -1;
                 using var rotated = Rotate(bitmap, angle);
                 using var paint = new SKPaint();
                 paint.FilterQuality = SKFilterQuality.High;
@@ -130,26 +160,51 @@ public partial class RadialView : ContentView
 
         for (var i = 0; i < _elements.Count; i++)
         {
+            var element = _elements[i];
+
             var angle = (i * 360f / _elements.Count - _rotationAngle) * (float)Math.PI / 180;
             var x = centerX + radius * (float)Math.Cos(angle);
             var y = centerY + radius * (float)Math.Sin(angle);
 
             // draw circle around each image
-            //using (var paint = new SKPaint())
-            //{
-            //    paint.Color = SKColors.DarkOrange;
-            //    canvas.DrawCircle(x, y, 30, paint);
-            //}
+            if (element.IsSelected)
+            {
+                using var paint = new SKPaint();
+                paint.Color = SKColors.DarkOrange;
+                canvas.DrawCircle(x, y, 30, paint);
+            }
 
             // Load and draw the image
+            var imageHeight = 0;
             if (!string.IsNullOrEmpty(_elements[i].ImageUrl)) //TODO: cache images
             {
                 using var bitmap = SKBitmap.Decode(_elements[i].ImageUrl);
+                imageHeight = bitmap.Height;
                 using var paint = new SKPaint();
                 paint.FilterQuality = SKFilterQuality.High;
                 var destRect = new SKRect(x - 25, y - 25, x + 25, y + 25);
                 canvas.DrawBitmap(bitmap, destRect, paint);
+
+                element.Bounds = new SKRect(x - 25, y - 25, x + 25, y + 25 + 18);
             }
+
+            // Set up the font and paint for text
+            using var paintText = new SKPaint
+            {
+                TextSize = 15.0f,
+                IsAntialias = true,
+                FilterQuality = SKFilterQuality.High,
+                Color = SKColors.WhiteSmoke,
+                TextAlign = SKTextAlign.Center
+            };
+
+            // Measure the text width to center it
+            var textX = x;
+            var textY = y + imageHeight + 9; // 9 pixels below the image
+
+            // Draw the text
+            canvas.DrawText(_elements[i].Text, textX, textY, paintText);
+
         }
     }
 }
