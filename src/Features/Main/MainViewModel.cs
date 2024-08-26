@@ -4,7 +4,6 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui.Controls.Shapes;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SharpHook;
@@ -902,6 +901,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task VideoAudioToTextWhisper()
     {
+        if (await CheckIfSubtitleIsEmpty())
+        {
+            return;
+        }
+
         var ffmpegOk = await RequireFfmpegOk();
         if (!ffmpegOk)
         {
@@ -910,7 +914,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         await Shell.Current.GoToAsync(nameof(AudioToTextWhisperPage), new Dictionary<string, object>
         {
-            { "VideoFileName", @"C:\Data\Issues\Whisper video clips\_nikse.mkv" }, // _videoFileName },
+            { "VideoFileName", _videoFileName },
         });
     }
 

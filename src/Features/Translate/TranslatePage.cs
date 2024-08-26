@@ -2,12 +2,13 @@ using Microsoft.Maui.Controls.Shapes;
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
+using SubtitleAlchemist.Logic.Converters;
 
 namespace SubtitleAlchemist.Features.Translate;
 
 public class TranslatePage : ContentPage
 {
-    private TranslateModel _vm;
+    private readonly TranslateModel _vm;
 
     public TranslatePage(TranslateModel vm)
     {
@@ -199,7 +200,6 @@ public class TranslatePage : ContentPage
 
         grid.Add(rightGrid, 1, 1);
 
-
         // Define CollectionView
         vm.CollectionView = new CollectionView
         {
@@ -228,7 +228,7 @@ public class TranslatePage : ContentPage
                 numberLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
 
                 var startTimeLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
-                startTimeLabel.SetBinding(Label.TextProperty, new Binding("StartTime", stringFormat: "{HH:mm:ss.fff}"));
+                startTimeLabel.SetBinding(Label.TextProperty, nameof(TranslateRow.StartTime), BindingMode.Default, new TimeSpanToStringConverter());
                 startTimeLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
 
                 var originalTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();

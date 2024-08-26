@@ -2,6 +2,7 @@
 using SkiaSharp;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
+using SubtitleAlchemist.Logic.Converters;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -29,9 +30,9 @@ public static class InitSubtitleListView
                     new BoxView { BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(0),
                     new Label { Text = "#",  Margin = 5 }.Column(0).BindDynamicTheme(),
                     new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(1),
-                    new Label { Text = "Start", Margin = 5 }.Column(1).BindDynamicTheme(),
+                    new Label { Text = "Show", Margin = 5 }.Column(1).BindDynamicTheme(),
                     new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(2),
-                    new Label { Text = "End", Margin = 5 }.Column(2).BindDynamicTheme(),
+                    new Label { Text = "Hide", Margin = 5 }.Column(2).BindDynamicTheme(),
                     new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(3),
                     new Label { Text = "Duration", Margin = 5 }.Column(3).BindDynamicTheme(),
                     new BoxView { BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BackgroundColor], Margin = 1, ZIndex = -1 }.Column(4),
@@ -51,6 +52,9 @@ public static class InitSubtitleListView
 
     private static Grid MakeGrid(MainViewModel vm)
     {
+        IValueConverter converter = new TimeSpanToStringConverter();
+        IValueConverter converterShort = new TimeSpanToShortStringConverter();
+
         var grid = new Grid
         {
             ColumnDefinitions = new ColumnDefinitionCollection
@@ -73,19 +77,19 @@ public static class InitSubtitleListView
                 {
                     BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
                 }.Column(1),
-                new Label {  Margin = 1, Padding = 5 }.Column(1).Bind("Start").BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
+                new Label {  Margin = 1, Padding = 5 }.Column(1).Bind("Start", BindingMode.Default, converter).BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
 
                 new BoxView
                 {
                     BackgroundColor =(Color)Application.Current.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
                 }.Column(2),
-                new Label { Margin = 1, Padding = 5 }.Column(2).Bind("End").BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
+                new Label { Margin = 1, Padding = 5 }.Column(2).Bind("End", BindingMode.Default, converter).BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
 
                 new BoxView
                 {
                     BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
                 }.Column(3),
-                new Label { Margin = 1, Padding = 5 }.Column(3).Bind("Duration").BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
+                new Label { Margin = 1, Padding = 5 }.Column(3).Bind("Duration", BindingMode.Default, converterShort).BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
 
                 new BoxView
                 {
