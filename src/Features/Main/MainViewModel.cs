@@ -178,6 +178,15 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 }
             }
         }
+
+        if (page == nameof(AudioToTextWhisperPage))
+        {
+            if (query["TranscribedSubtitle"] is Subtitle subtitle)
+            {
+                Paragraphs = subtitle.Paragraphs.Select(p => new DisplayParagraph(p)).ToObservableCollection();
+                SelectParagraph(0);
+            }
+        }
     }
 
     private void AudioVisualizerOnPlayToggle(object? sender, EventArgs e)
@@ -899,7 +908,10 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
-        await Shell.Current.GoToAsync(nameof(AudioToTextWhisperPage));
+        await Shell.Current.GoToAsync(nameof(AudioToTextWhisperPage), new Dictionary<string, object>
+        {
+            { "VideoFileName", @"C:\Data\Issues\Whisper video clips\_nikse.mkv" }, // _videoFileName },
+        });
     }
 
     private async Task<bool> CheckIfSubtitleIsEmpty()
@@ -1010,7 +1022,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         _currentParagraph.P.StartTime = new TimeCode(e.NewValue);
         CurrentStart = TimeSpan.FromMilliseconds(e.NewValue);
-        Paragraphs[Paragraphs.IndexOf(_currentParagraph)].Start = CurrentStart;
+        var idx = Paragraphs.IndexOf(_currentParagraph);
+        if (idx >= 0)
+        {
+            Paragraphs[idx].Start = CurrentStart;
+        }
     }
 
     public void CurrentDurationChanged(object? sender, ValueChangedEventArgs e)

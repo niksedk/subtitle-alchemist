@@ -113,18 +113,10 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
-
         public static Editor BindDynamicTheme(this Editor control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
             control.SetDynamicResource(Editor.TextColorProperty, ThemeNames.TextColor);
-            return control;
-        }
-
-        public static Frame BindDynamicTheme(this Frame control)
-        {
-            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
-            control.SetDynamicResource(Frame.BorderColorProperty, ThemeNames.BorderColor);
             return control;
         }
 

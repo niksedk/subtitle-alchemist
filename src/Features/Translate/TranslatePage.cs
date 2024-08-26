@@ -313,13 +313,15 @@ public class TranslatePage : ContentPage
         vm.CollectionView.SelectionMode = SelectionMode.Single;
         vm.CollectionView.SelectionChanged += vm.CollectionViewSelectionChanged;
 
-        var frame = new Frame
+        var frame = new Border
         {
             Content = gridLayout,
-            HasShadow = true,
-            CornerRadius = 5,
             Padding = new Thickness(5),
             Margin = new Thickness(10),
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
         }.BindDynamicTheme();
         frame.Content = gridLayout;
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Controls.PickerControl;
+using SubtitleAlchemist.Controls.RadialControl;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Main;
@@ -13,6 +14,7 @@ using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
 using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
+using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
 using SubtitleAlchemist.Services;
 
 namespace SubtitleAlchemist
@@ -51,8 +53,11 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<ColorPickerPopup, ColorPickerPopupModel>();
             builder.Services.AddTransientPopup<PickerPopup, PickerPopupModel>();
             builder.Services.AddTransientPopup<TranslateAdvancedSettingsPopup, TranslateAdvancedSettingsPopupModel>();
+            builder.Services.AddTransientPopup<RadialPopup, RadialPopupModel>();
+            builder.Services.AddTransientPopup<DownloadWhisperPopup, DownloadWhisperPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
+            builder.Services.AddHttpClient<IWhisperCppDownloadService, WhisperCppDownloadService>();
 
 #if DEBUG
             builder.Logging.AddDebug();

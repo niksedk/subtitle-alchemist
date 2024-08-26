@@ -74,4 +74,14 @@ internal static class UiUtil
             Console.WriteLine($"Cannot open {type}: {item}{Environment.NewLine}{Environment.NewLine}{exception.Source}: {exception.Message}");
         }
     }
+
+    public static VideoInfo GetVideoInfo(string waveFileName)
+    {
+        return new VideoInfo
+        {
+            TotalMilliseconds = 10000,
+            Width = 1280,
+            Height = 720,
+        };
+    }
 }
