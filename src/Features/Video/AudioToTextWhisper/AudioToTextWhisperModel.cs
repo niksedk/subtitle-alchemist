@@ -25,6 +25,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     public Picker PickerEngine { get; set; } = new();
     public Picker PickerLanguage { get; set; } = new();
     public Picker PickerModel { get; set; } = new();
+    public Button ButtonModel { get; set; } = new();
     public Switch SwitchTranslateToEnglish { get; set; } = new();
     public Switch SwitchAdjustTimings { get; set; } = new();
     public Switch SwitchPostProcessing { get; set; } = new();
@@ -103,7 +104,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     public async Task ShowAdvancedWhisperSettings()
     {
-        //TODO: show popup
+        var result = await _popupService.ShowPopupAsync<WhisperAdvancedPopupModel>();
     }
 
     [RelayCommand]
@@ -284,7 +285,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         _outputText.Add($"Calling whisper ({Configuration.Settings.Tools.WhisperChoice}) with : {process.StartInfo.FileName} {process.StartInfo.Arguments}{Environment.NewLine}");
         _startTicks = DateTime.UtcNow.Ticks;
         _videoInfo = UiUtil.GetVideoInfo(waveFileName);
-      //  timer1.Start();
+        //  timer1.Start();
         if (!_batchMode)
         {
             ShowProgressBar();
@@ -836,5 +837,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             _videoFileName = videoFileName;
         }
+    }
+
+    [RelayCommand]
+    public async Task DownloadModel()
+    {
+        var result = await _popupService.ShowPopupAsync<DownloadWhisperModelPopupModel>(onPresenting: viewModel => viewModel.Models = Models, CancellationToken.None);
     }
 }

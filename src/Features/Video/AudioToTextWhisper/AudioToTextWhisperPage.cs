@@ -105,6 +105,15 @@ public class AudioToTextWhisperPage : ContentPage
         }.BindDynamicTheme();
         vm.PickerModel.SetBinding(Picker.ItemsSourceProperty, new Binding(nameof(vm.Models)));
 
+        vm.ButtonModel = new Button
+        {
+            Margin = new Thickness(15),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+            Text = "...",
+            Command = vm.DownloadModelCommand,
+        }.BindDynamicTheme();
+
         var pickerBar = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -113,6 +122,7 @@ public class AudioToTextWhisperPage : ContentPage
                 vm.PickerEngine,
                 vm.PickerLanguage,
                 vm.PickerModel,
+                vm.ButtonModel,
             }
         };
 
@@ -179,7 +189,7 @@ public class AudioToTextWhisperPage : ContentPage
 
         var labelAdvancedSettings = new Label
         {
-            Text = "--normal",
+            Text = Configuration.Settings.Tools.WhisperExtraSettings,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(15, 5, 15, 5),
         }.BindDynamicTheme();

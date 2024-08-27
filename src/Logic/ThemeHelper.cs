@@ -40,6 +40,12 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static VerticalStackLayout BindDynamicTheme(this VerticalStackLayout control)
+        {
+            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            return control;
+        }
+
         public static Picker BindDynamicTheme(this Picker control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
@@ -123,6 +129,7 @@ namespace SubtitleAlchemist.Logic
         public static Popup BindDynamicTheme(this Popup control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            control.SetDynamicResource(Popup.ColorProperty, ThemeNames.BackgroundColor);
             return control;
         }
     }

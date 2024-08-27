@@ -62,7 +62,7 @@ public partial class SettingsViewModel : ObservableObject
             {
                 if (label.ClassId == pageName.ToString())
                 {
-                    label.TextColor = Colors.BlueViolet;
+                    label.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
                 }
                 else
                 {
@@ -72,8 +72,6 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         await Page.Content.FadeTo(1, 200);
-
-        
     }
 
     [RelayCommand]

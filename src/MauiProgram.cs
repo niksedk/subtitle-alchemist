@@ -55,6 +55,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<TranslateAdvancedSettingsPopup, TranslateAdvancedSettingsPopupModel>();
             builder.Services.AddTransientPopup<RadialPopup, RadialPopupModel>();
             builder.Services.AddTransientPopup<DownloadWhisperPopup, DownloadWhisperPopupModel>();
+            builder.Services.AddTransientPopup<DownloadWhisperModelPopup, DownloadWhisperModelPopupModel>();
+            builder.Services.AddTransientPopup<WhisperAdvancedPopup, WhisperAdvancedPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperCppDownloadService, WhisperCppDownloadService>();
@@ -63,7 +65,7 @@ namespace SubtitleAlchemist
             builder.Logging.AddDebug();
 #endif
 
-//            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            //            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             return builder.Build();
         }
