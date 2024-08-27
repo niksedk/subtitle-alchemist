@@ -46,6 +46,8 @@ public class WhisperAdvancedPopup : Popup
         {
             RowDefinitions =
             {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Star },
             },
             ColumnDefinitions =
@@ -59,6 +61,48 @@ public class WhisperAdvancedPopup : Popup
             HorizontalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
 
+        var closeLine = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.End,
+            Children =
+            {
+                new ImageButton
+                {
+                    Command = vm.CloseCommand,
+                    WidthRequest = 30,
+                    HeightRequest = 30,
+                    Margin = 10,
+                    Source = "btn_close.png",
+                }
+            }
+        };
+        grid.Add(closeLine, 0, 0);
+        Grid.SetColumnSpan(closeLine, 2);
+
+
+        var parameterLine = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.End,
+            Children =
+            {
+                new Label
+                {
+                    Text = "Parameters",
+                    Margin = 2,
+                },
+                new Entry
+                {
+                    Placeholder = "Parameters",
+                    WidthRequest = 600,
+                    Margin = new Thickness(2,2,2, 15),
+                }
+            }
+        };
+        grid.Add(parameterLine, 0, 1);
+        Grid.SetColumnSpan(parameterLine, 2);
+
         vm.LeftMenu = new VerticalStackLayout
         {
             Children =
@@ -69,10 +113,23 @@ public class WhisperAdvancedPopup : Popup
             }
         }.BindDynamicTheme();
 
-        grid.Add(vm.LeftMenu, 0, 0);
-        grid.Add(vm.EnginePage, 1, 0);
+        grid.Add(vm.LeftMenu, 0, 2);
+        grid.Add(vm.EnginePage, 1, 2);
 
-        Content = grid;
+        var windowBorder = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(1),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5),
+            },
+            Content = grid,
+        }.BindDynamicTheme();
+
+        Content = windowBorder;
     }
 
     private static IView MakeLeftMenuItem(WhisperAdvancedPopupModel vm, WhisperEngineNames engineName, string text)
@@ -102,6 +159,8 @@ public class WhisperAdvancedPopup : Popup
             RowSpacing = 20,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
+            WidthRequest = 600,
+            HeightRequest = 600,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -143,6 +202,8 @@ public class WhisperAdvancedPopup : Popup
             RowSpacing = 20,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
+            WidthRequest = 600,
+            HeightRequest = 600,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -184,6 +245,8 @@ public class WhisperAdvancedPopup : Popup
             RowSpacing = 20,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
+            WidthRequest = 600,
+            HeightRequest = 600,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },

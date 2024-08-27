@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using SubtitleAlchemist.Logic.Constants;
 using static SubtitleAlchemist.Features.Video.AudioToTextWhisper.WhisperAdvancedPopup;
 
@@ -41,5 +42,15 @@ public partial class WhisperAdvancedPopupModel : ObservableObject
         }
 
         await EnginePage.Content.FadeTo(1, 200);
+    }
+
+
+    [RelayCommand]
+    private void Close()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Popup?.Close();
+        });
     }
 }

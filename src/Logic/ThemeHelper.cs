@@ -99,6 +99,12 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static ContentView BindDynamicTheme(this ContentView control)
+        {
+            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            return control;
+        }
+
         public static ColorPickerView BindDynamicTheme(this ColorPickerView control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
@@ -129,7 +135,7 @@ namespace SubtitleAlchemist.Logic
         public static Popup BindDynamicTheme(this Popup control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
-            control.SetDynamicResource(Popup.ColorProperty, ThemeNames.BackgroundColor);
+            control.Color = Colors.Transparent;
             return control;
         }
     }
