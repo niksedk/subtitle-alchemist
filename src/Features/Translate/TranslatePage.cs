@@ -111,7 +111,7 @@ public class TranslatePage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             SelectedIndex = 0,
         }.BindDynamicTheme();
-        vm.EnginePicker.SetBinding(Picker.ItemsSourceProperty, "AutoTranslators");
+        vm.EnginePicker.SetBinding(Picker.ItemsSourceProperty, "AutoTranslators", BindingMode.Default, new AutoTranslatorToStringConverter());
         vm.EnginePicker.SetBinding(Picker.SelectedItemProperty, "SelectedAutoTranslator");
         vm.EnginePicker.SelectedIndexChanged += vm.EngineSelectedIndexChanged;
         gridLeft.Add(vm.EnginePicker, 0, 0);

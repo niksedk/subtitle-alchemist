@@ -2,6 +2,7 @@
 using Nikse.SubtitleEdit.Core.Common;
 
 namespace SubtitleAlchemist.Logic.Converters;
+
 public class TimeSpanToShortStringConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)

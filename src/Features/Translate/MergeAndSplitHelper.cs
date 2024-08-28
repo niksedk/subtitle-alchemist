@@ -474,7 +474,7 @@ public static partial class MergeAndSplitHelper
             {
                 var part = GetPartFromItem(text, item);
                 text = text.Remove(0, part.Length).Trim();
-                lines.Add(Utilities.AutoBreakLine(part));
+                lines.Add(part.Length > Configuration.Settings.General.SubtitleLineMaximumLength ? Utilities.AutoBreakLine(part) : part);
             }
         }
 
