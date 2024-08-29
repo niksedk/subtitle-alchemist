@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 using SubtitleAlchemist.Logic;
@@ -84,7 +85,7 @@ public class WhisperAdvancedPopup : Popup
         var parameterLine = new StackLayout
         {
             Orientation = StackOrientation.Vertical,
-            HorizontalOptions = LayoutOptions.End,
+            HorizontalOptions = LayoutOptions.Fill,
             Children =
             {
                 new Label
@@ -95,9 +96,9 @@ public class WhisperAdvancedPopup : Popup
                 new Entry
                 {
                     Placeholder = "Parameters",
-                    WidthRequest = 600,
+                    HorizontalOptions = LayoutOptions.Fill,
                     Margin = new Thickness(2,2,2, 15),
-                }
+                }.Bind(nameof(vm.CurrentParameters))
             }
         };
         grid.Add(parameterLine, 0, 1);
@@ -115,6 +116,40 @@ public class WhisperAdvancedPopup : Popup
 
         grid.Add(vm.LeftMenu, 0, 2);
         grid.Add(vm.EnginePage, 1, 2);
+
+
+
+        var transcribeButton = new Button
+        {
+            Text = "OK",
+           VerticalOptions = LayoutOptions.Center,
+            Command = vm.OkCommand,
+            Margin = new Thickness(5),
+        }.BindDynamicTheme();
+
+        var cancelButton = new Button
+        {
+            Text = "Cancel",
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.CancelCommand,
+            Margin = new Thickness(5),
+        }.BindDynamicTheme();
+
+        var buttonBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Center,
+            Children =
+            {
+                transcribeButton,
+                cancelButton,
+            }
+        };
+
+        grid.Add(buttonBar, 0, 3);
+        grid.SetColumnSpan(buttonBar, 2);
+
+
 
         var windowBorder = new Border
         {

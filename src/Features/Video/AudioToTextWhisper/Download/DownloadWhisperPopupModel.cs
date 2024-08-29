@@ -1,7 +1,9 @@
-﻿using System.Globalization;
+﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Nikse.SubtitleEdit.Core.AudioToText;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Services;

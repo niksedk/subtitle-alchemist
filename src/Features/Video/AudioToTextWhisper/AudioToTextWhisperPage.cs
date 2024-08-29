@@ -187,7 +187,7 @@ public class AudioToTextWhisperPage : ContentPage
         }.BindDynamicTheme();
 
 
-        var labelAdvancedSettings = new Label
+        vm.LabelAdvancedSettings = new Label
         {
             Text = Configuration.Settings.Tools.WhisperExtraSettings,
             VerticalOptions = LayoutOptions.Center,
@@ -200,7 +200,7 @@ public class AudioToTextWhisperPage : ContentPage
             Children =
             {
                 buttonAdvancedSettings,
-                labelAdvancedSettings,
+                vm.LabelAdvancedSettings,
             }
         };
 
@@ -236,7 +236,7 @@ public class AudioToTextWhisperPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.TranscribeCommand,
-            Margin = new Thickness(15),
+            Margin = new Thickness(5, 15, 5, 5),
         }.BindDynamicTheme();
 
         var cancelButton = new Button
@@ -245,12 +245,13 @@ public class AudioToTextWhisperPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.CancelCommand,
-            Margin = new Thickness(15),
+            Margin = new Thickness(5,15,5,5),
         }.BindDynamicTheme();
 
         var buttonBar = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Center,
             Children =
             {
                 transcribeButton,

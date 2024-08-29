@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic.Constants;
 using static SubtitleAlchemist.Features.Video.AudioToTextWhisper.WhisperAdvancedPopup;
 
@@ -11,6 +12,9 @@ public partial class WhisperAdvancedPopupModel : ObservableObject
     public Dictionary<WhisperEngineNames, View> WhisperEngines { get; set; } = new();
     public Border EnginePage { get; set; } = new();
     private WhisperEngineNames _engineName = WhisperEngineNames.WhisperCpp;
+
+    [ObservableProperty]
+    private string _currentParameters = Configuration.Settings.Tools.WhisperExtraSettings;
 
     public VerticalStackLayout LeftMenu { get; set; } = new();
 
@@ -47,6 +51,21 @@ public partial class WhisperAdvancedPopupModel : ObservableObject
 
     [RelayCommand]
     private void Close()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Popup?.Close();
+        });
+    }
+
+    [RelayCommand]
+    private void Ok()
+    {
+        Popup?.Close(CurrentParameters);
+    }
+
+    [RelayCommand]
+    private void Cancel()
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {

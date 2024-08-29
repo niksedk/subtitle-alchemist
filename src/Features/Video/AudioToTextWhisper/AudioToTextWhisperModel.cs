@@ -30,6 +30,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     public Switch SwitchAdjustTimings { get; set; } = new();
     public Switch SwitchPostProcessing { get; set; } = new();
     public Label LabelProgress { get; set; } = new();
+    public Label LabelAdvancedSettings { get; set; } = new();
 
     public AudioToTextWhisperPage? Page { get; set; }
     public ProgressBar ProgressBar { get; set; } = new();
@@ -105,6 +106,12 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     public async Task ShowAdvancedWhisperSettings()
     {
         var result = await _popupService.ShowPopupAsync<WhisperAdvancedPopupModel>();
+
+        if (result is string settings)
+        {
+            Configuration.Settings.Tools.WhisperExtraSettings = settings;
+            LabelAdvancedSettings.Text = settings;
+        }
     }
 
     [RelayCommand]
@@ -842,6 +849,6 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     public async Task DownloadModel()
     {
-        var result = await _popupService.ShowPopupAsync<DownloadWhisperModelPopupModel>(onPresenting: viewModel => viewModel.Models = Models, CancellationToken.None);
+        var result = await _popupService.ShowPopupAsync<DownloadWhisperModelPopupModel>(onPresenting: viewModel => viewModel.SetModels(Models), CancellationToken.None);
     }
 }
