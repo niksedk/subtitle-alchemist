@@ -59,13 +59,41 @@ public class DownloadWhisperModelPopup : Popup
 
         grid.Add(vm.ModelPicker, 0, 1);
 
-        var buttonDownload = new Button
+        var buttonDownload = new ImageButton
         {
-            Text = "Download",
-            HorizontalOptions = LayoutOptions.Center,
+            Source = "download.png",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.End,
+            WidthRequest = 30,
+            HeightRequest = 30,
+            Padding = new Thickness(5, 5, 5, 5),
             Command = vm.DownloadCommand,
         }.BindDynamicTheme();
-        grid.Add(buttonDownload, 1, 1);
+
+
+        var folderBrowse = new ImageButton
+        {
+            Source = "open.png",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.End,
+            WidthRequest = 30,
+            HeightRequest = 30,
+            Padding = new Thickness(10, 5, 5, 5),
+            Command = vm.OpenModelsFolderCommand,
+        }.BindDynamicTheme();
+
+        var buttonBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                buttonDownload,
+                folderBrowse,
+            },
+        };
+
+        grid.Add(buttonBar, 1, 1);
 
 
         var progressLabel = new Label
@@ -111,7 +139,7 @@ public class DownloadWhisperModelPopup : Popup
                 CornerRadius = new CornerRadius(5)
             },
             Content = grid,
-            HeightRequest = 275,
+            HeightRequest = 300,
         }.BindDynamicTheme();
 
         Content = border;

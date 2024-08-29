@@ -18,6 +18,11 @@ public class WhisperCppDownloadService : IWhisperCppDownloadService
         await DownloadHelper.DownloadFileAsync(_httpClient, GetUrl(), destinationFileName, progress, cancellationToken);
     }
 
+    public async Task DownloadFile(string url, string destinationFileName, IProgress<float>? progress, CancellationToken cancellationToken)
+    {
+        await DownloadHelper.DownloadFileAsync(_httpClient, url, destinationFileName, progress, cancellationToken);
+    }
+
     public async Task DownloadWhisperCpp(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken)
     {
         await DownloadHelper.DownloadFileAsync(_httpClient, GetUrl(), stream, progress, cancellationToken);

@@ -9,10 +9,9 @@ public interface IWhisperEngine
     string Url { get; }
     List<WhisperLanguage> Languages { get; }
     List<WhisperModel> Models { get; }
-    Process GetProcess(string audioFilePath, string language, string advancedSettings);
-    void DownloadModel(string model);
-    void DownloadEngine();
+    string Extension { get;  }
     bool IsEngineInstalled();
     string GetAndCreateWhisperFolder();
+    string GetAndCreateWhisperModelFolder();
     bool IsModelInstalled(WhisperModel model);
 }

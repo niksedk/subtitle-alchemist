@@ -168,7 +168,10 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
                 return;
             }
 
-            SelectedWhisperEngine.DownloadModel(model.ModelFolder);
+            var result = await _popupService.ShowPopupAsync<DownloadWhisperModelPopupModel>(onPresenting: viewModel => viewModel.SetModels(Models, SelectedWhisperEngine, model), CancellationToken.None);
+
+
+            return;
         }
 
         var mediaInfo = FfmpegMediaInfo.Parse(_videoFileName);
@@ -357,7 +360,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             translateToEnglish = string.Empty;
         }
 
-        if (Configuration.Settings.Tools.WhisperChoice == WhisperChoice.Cpp || Configuration.Settings.Tools.WhisperChoice == WhisperChoice.CppCuBlas)
+        if (Configuration.Settings.Tools.WhisperChoice is WhisperChoice.Cpp or WhisperChoice.CppCuBlas)
         {
             if (!Configuration.Settings.Tools.WhisperExtraSettings.Contains("--print-progress"))
             {
@@ -367,9 +370,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         var outputSrt = string.Empty;
         var postParams = string.Empty;
-        if (Configuration.Settings.Tools.WhisperChoice == WhisperChoice.Cpp ||
-            Configuration.Settings.Tools.WhisperChoice == WhisperChoice.CppCuBlas ||
-            Configuration.Settings.Tools.WhisperChoice == WhisperChoice.ConstMe)
+        if (Configuration.Settings.Tools.WhisperChoice is WhisperChoice.Cpp or WhisperChoice.CppCuBlas or WhisperChoice.ConstMe)
         {
             outputSrt = "--output-srt ";
         }
@@ -849,6 +850,15 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     public async Task DownloadModel()
     {
-        var result = await _popupService.ShowPopupAsync<DownloadWhisperModelPopupModel>(onPresenting: viewModel => viewModel.SetModels(Models), CancellationToken.None);
+        if (PickerEngine.SelectedItem is not IWhisperEngine engine)
+        {
+            return;
+        }
+
+        var result = await _popupService
+            .ShowPopupAsync<DownloadWhisperModelPopupModel>(onPresenting: viewModel =>
+            {
+                viewModel.SetModels(Models, engine, PickerModel.SelectedItem as WhisperModel);
+            }, CancellationToken.None);
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Nikse.SubtitleEdit.Core.AudioToText;
+﻿using Nikse.SubtitleEdit.Core.AudioToText;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 
@@ -20,21 +19,7 @@ public class WhisperEngineCpp : IWhisperEngine
         }
     }
 
-
-    public Process GetProcess(string audioFilePath, string language, string advancedSettings)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void DownloadModel(string model)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void DownloadEngine()
-    {
-        throw new NotImplementedException();
-    }
+    public string Extension => ".bin";
 
     public bool IsEngineInstalled()
     {
@@ -56,7 +41,20 @@ public class WhisperEngineCpp : IWhisperEngine
             Directory.CreateDirectory(baseFolder);
         }
 
-        var folder = Path.Combine(baseFolder, "WhisperCPP");
+        var folder = Path.Combine(baseFolder, "Cpp");
+        if (!Directory.Exists(folder))
+        {
+            Directory.CreateDirectory(folder);
+        }
+
+        return folder;
+    }
+
+    public string GetAndCreateWhisperModelFolder()
+    {
+        var baseFolder = GetAndCreateWhisperFolder();
+
+        var folder = Path.Combine(baseFolder, "Models");
         if (!Directory.Exists(folder))
         {
             Directory.CreateDirectory(folder);
@@ -67,7 +65,7 @@ public class WhisperEngineCpp : IWhisperEngine
 
     public bool IsModelInstalled(WhisperModel model)
     {
-        var modelFileName = Path.Combine(model.ModelFolder, model.Name + ".pt");
+        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), model.Name + Extension);
         var fileExists = File.Exists(modelFileName);
         return fileExists;
     }
