@@ -33,9 +33,9 @@ public class MainPage : ContentPage
             {
                 var lightTheme = new ResourceDictionary
                 {
-                    { ThemeNames.BackgroundColor, Colors.White },
+                    { ThemeNames.BackgroundColor, Color.FromRgb(240,240,240) },
                     { ThemeNames.TextColor, Colors.Black },
-                    { ThemeNames.SecondaryBackgroundColor, Color.FromRgb(120,120,120) },
+                    { ThemeNames.SecondaryBackgroundColor, Color.FromRgb(253,253,253) },
                     { ThemeNames.BorderColor, Colors.DarkGray },
                     { ThemeNames.ActiveBackgroundColor, Colors.LightGreen },
                     { ThemeNames.LinkColor, Colors.DarkBlue },

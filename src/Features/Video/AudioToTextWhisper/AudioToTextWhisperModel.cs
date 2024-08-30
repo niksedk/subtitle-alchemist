@@ -973,6 +973,6 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     public async Task MouseClickedProcessingSettings(object? sender, TappedEventArgs e)
     {
-        await _popupService.ShowPopupAsync<WhisperPostProcessingPopupModel>(CancellationToken.None);
+        await _popupService.ShowPopupAsync<WhisperPostProcessingPopupModel>(onPresenting: viewModel => viewModel.LoadSettings(), CancellationToken.None);
     }
 }
