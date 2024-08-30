@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
@@ -30,9 +31,9 @@ public class LayoutPickerPopup : Popup
         BindingContext = model;
         _model = model;
 
-        CanBeDismissedByTappingOutsideOfPopup = false;
+        CanBeDismissedByTappingOutsideOfPopup = true;
 
-        Content = new Grid
+        var grid = new Grid
         {
             RowDefinitions = Rows.Define(
                 (Row.Row0, columnHeight),
@@ -134,6 +135,24 @@ public class LayoutPickerPopup : Popup
                 MakeLabel(11, model, 2, 3),
             }
         }.BindDynamicTheme();
+
+        this.BindDynamicTheme();
+
+        var windowBorder = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(1),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5),
+            },
+            BackgroundColor = Colors.Transparent,
+            Content = grid,
+        }.BindDynamicTheme();
+
+        Content = windowBorder;
 
         SharpHookHandler.AddKeyPressed(model.KeyPressed);
         model.Popup = this;
