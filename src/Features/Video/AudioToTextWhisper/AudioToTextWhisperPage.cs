@@ -98,7 +98,7 @@ public class AudioToTextWhisperPage : ContentPage
 
         vm.PickerModel = new Picker
         {
-            Margin = new Thickness(15),
+            Margin = new Thickness(5),
             Title = "Model",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
@@ -108,8 +108,7 @@ public class AudioToTextWhisperPage : ContentPage
         vm.ButtonModel = new Button
         {
             Margin = new Thickness(15),
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.End,
             Text = "...",
             Command = vm.DownloadModelCommand,
         }.BindDynamicTheme();
@@ -174,9 +173,41 @@ public class AudioToTextWhisperPage : ContentPage
         vm.SwitchPostProcessing = new Switch
         {
             VerticalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
 
-        grid.Add(vm.SwitchPostProcessing, 1, 4);
+        vm.LinkLabelProcessingSettings = new Label
+        {
+            Text = "Post-processing settings",
+            VerticalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
+            Padding = new Thickness(0, 0, 0, 0),
+        }.BindDynamicTheme();
+
+        var pgPp = new PointerGestureRecognizer();
+        pgPp.PointerEnteredCommand = new Command(vm.MouseEnteredPostProcessingSettings);
+        pgPp.PointerExitedCommand = new Command(vm.MouseExitedProcessingSettings);
+        vm.LinkLabelProcessingSettings.GestureRecognizers.Add(pgPp);
+        var tgPp = new TapGestureRecognizer();
+        tgPp.Tapped += async(o, args) => await vm.MouseClickedProcessingSettings(o, args);
+        vm.LinkLabelProcessingSettings.GestureRecognizers.Add(tgPp);
+
+        var processingBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
+            Padding = new Thickness(0, 0, 0, 0),
+            Children =
+            {
+                vm.SwitchPostProcessing,
+                vm.LinkLabelProcessingSettings,
+            }
+        };
+
+        grid.Add(processingBar, 1, 4);
 
 
         var buttonAdvancedSettings = new Button
@@ -191,7 +222,7 @@ public class AudioToTextWhisperPage : ContentPage
         {
             Text = Configuration.Settings.Tools.WhisperExtraSettings,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(15, 5, 15, 5),
+            Margin = new Thickness(15, 25, 15, 25),
         }.BindDynamicTheme();
 
         var advancedBar = new StackLayout
@@ -216,6 +247,8 @@ public class AudioToTextWhisperPage : ContentPage
             Progress = 0.5,
             ProgressColor = Colors.Orange,
             HorizontalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(15, 2, 15, 2),
+            IsVisible = false
         };
         vm.ProgressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));
         grid.Add(vm.ProgressBar, 0, 6);
@@ -224,13 +257,14 @@ public class AudioToTextWhisperPage : ContentPage
         vm.LabelProgress = new Label
         {
             Text = string.Empty,
-            FontAttributes = FontAttributes.Bold,
+            IsVisible = false,
+            HorizontalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
         grid.Add(vm.LabelProgress, 0, 7);
         grid.SetColumnSpan(vm.LabelProgress, 2);
 
 
-        var transcribeButton = new Button
+        vm.TranscribeButton = new Button
         {
             Text = "Transcribe",
             HorizontalOptions = LayoutOptions.Fill,
@@ -254,7 +288,7 @@ public class AudioToTextWhisperPage : ContentPage
             HorizontalOptions = LayoutOptions.Center,
             Children =
             {
-                transcribeButton,
+                vm.TranscribeButton,
                 cancelButton,
             }
         };
@@ -285,7 +319,7 @@ public class AudioToTextWhisperPage : ContentPage
                     _vm.PickerEngine.SelectedItem = _vm.WhisperEngines.FirstOrDefault();
                 }
 
-                _vm.SetDefaultLanguageAndModel();
+                _vm.LoadSettings();
             });
 
             return false;

@@ -1,5 +1,4 @@
-﻿using System.Text;
-using CommunityToolkit.Maui;
+﻿using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Markup;
 using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
@@ -57,6 +56,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<DownloadWhisperPopup, DownloadWhisperPopupModel>();
             builder.Services.AddTransientPopup<DownloadWhisperModelPopup, DownloadWhisperModelPopupModel>();
             builder.Services.AddTransientPopup<WhisperAdvancedPopup, WhisperAdvancedPopupModel>();
+            builder.Services.AddTransientPopup<WhisperPostProcessingPopup, WhisperPostProcessingPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

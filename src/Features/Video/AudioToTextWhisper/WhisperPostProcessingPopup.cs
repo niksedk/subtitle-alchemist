@@ -3,11 +3,11 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 
-namespace SubtitleAlchemist.Features.Help.About;
+namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
-public class AboutPopup : Popup
+public class WhisperPostProcessingPopup : Popup
 {
-    public AboutPopup(AboutModel model)
+    public WhisperPostProcessingPopup(WhisperPostProcessingPopupModel model)
     {
         BindingContext = model;
 
@@ -36,12 +36,9 @@ public class AboutPopup : Popup
                     }
                 },
 
-                new Label()
-                    .Text("About Subtitle Alchemist ALPHA 1")
+                new Switch()
                     .BindDynamicTheme()
-                    .FontSize(30)
-                    .Bold()
-                    .Margin(20),
+                    .Margin(10),
 
                 new Label()
                     .Text("Subtitle Alchemist is Free Software under the GNU Public License." + Environment.NewLine + "You may distribute, modify and use it freely.")

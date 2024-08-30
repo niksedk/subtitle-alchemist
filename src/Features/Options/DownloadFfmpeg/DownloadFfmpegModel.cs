@@ -25,7 +25,7 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
         private string _error;
 
         private Task? _downloadTask;
-        private Timer _timer = new System.Timers.Timer();
+        private readonly Timer _timer = new();
 
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly MemoryStream _downloadStream;

@@ -14,7 +14,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Timers;
 using Switch = Microsoft.Maui.Controls.Switch;
+using Timer = System.Timers.Timer;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
@@ -38,13 +40,16 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     public bool RunningOnCuda { get; set; }
 
     public bool UnknownArgument { get; set; }
+    public Button TranscribeButton { get; set; } = new();
+    public Label LinkLabelProcessingSettings { get; set; } = new();
 
     private string? _videoFileName;
+    private string? _waveFileName = string.Empty;
     private int _audioTrackNumber;
     private readonly List<string> _filesToDelete = new();
-    private bool IncompleteModel = false;
+    private bool IncompleteModel;
     private readonly ConcurrentBag<string> _outputText = new();
-    private long _startTicks;
+    private long _startTicks = 0;
     private double _endSeconds;
     private double _showProgressPct = -1;
     private double _lastEstimatedMs = double.MaxValue;
@@ -73,7 +78,9 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     private readonly Regex _timeRegexLong = new Regex(@"^\[\d\d:\d\d:\d\d[\.,]\d\d\d --> \d\d:\d\d:\d\d[\.,]\d\d\d]", RegexOptions.Compiled);
     private readonly Regex _pctWhisper = new Regex(@"^\d+%\|", RegexOptions.Compiled);
     private readonly Regex _pctWhisperFaster = new Regex(@"^\s*\d+%\s*\|", RegexOptions.Compiled);
-
+    private readonly Timer _timer = new();
+    private Process _whisperProcess = new();
+    private Stopwatch _sw = new();
 
     public AudioToTextWhisperModel(IPopupService popupService)
     {
@@ -82,6 +89,71 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisper());
         WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisperXxl());
         WhisperEngines.Add(new WhisperEngineConstMe());
+
+        _timer.Interval = 100;
+        _timer.Elapsed += async (o, args) => await OnTimerOnElapsed(o, args);
+    }
+
+    private async Task OnTimerOnElapsed(object? sender, ElapsedEventArgs args)
+    {
+        if (_abort)
+        {
+            _timer.Stop();
+            _whisperProcess.Kill(true);
+            ProgressBar.IsVisible = false;
+
+            var partialSub = new Subtitle();
+            partialSub.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start).Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
+            MakeResult(partialSub);
+            return;
+        }
+
+        if (!_whisperProcess.HasExited)
+        {
+            var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                LabelProgress.Text = $"Transcribing..., Elapsed: {new TimeCode(durationMs).ToShortDisplayString()}";
+            });
+
+            return;
+        }
+
+        _timer.Stop();
+        _outputText.Add($"Calling whisper {Configuration.Settings.Tools.WhisperChoice} done in {_sw.Elapsed}{Environment.NewLine}");
+
+        _whisperProcess.Dispose();
+
+        if (GetResultFromSrt(_waveFileName, _videoFileName!, out var resultTexts, _outputText, _filesToDelete))
+        {
+            var subtitle = new Subtitle();
+            subtitle.Paragraphs.AddRange(resultTexts.Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
+            MakeResult(subtitle);
+            return;
+        }
+
+        _outputText?.Add("Loading result from STDOUT" + Environment.NewLine);
+
+        var transcribedSubtitle = new Subtitle();
+        transcribedSubtitle.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start).Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
+        MakeResult(transcribedSubtitle);
+    }
+
+    private static void MakeResult(Subtitle? transcribedSubtitle)
+    {
+        var anyLinesTranscribed = transcribedSubtitle != null && transcribedSubtitle.Paragraphs.Count > 0;
+
+        if (anyLinesTranscribed)
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+                {
+                    { "Page", nameof(AudioToTextWhisperPage) },
+                    { "TranscribedSubtitle", transcribedSubtitle! },
+                });
+            });
+        }
     }
 
     public void MouseEnteredPoweredBy()
@@ -113,6 +185,8 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             Configuration.Settings.Tools.WhisperExtraSettings = settings;
             LabelAdvancedSettings.Text = settings;
+
+            SaveSettings();
         }
     }
 
@@ -120,6 +194,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     public async Task Cancel()
     {
         _abort = true;
+        _timer.Stop();
         await Shell.Current.GoToAsync("..");
     }
 
@@ -201,51 +276,43 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        var waveFileName = GenerateWavFile(_videoFileName, _audioTrackNumber);
-        if (string.IsNullOrEmpty(waveFileName))
+        _waveFileName = GenerateWavFile(_videoFileName, _audioTrackNumber);
+        if (string.IsNullOrEmpty(_waveFileName))
         {
             return;
         }
 
         SaveSettings();
 
-        var transcribedSubtitle = TranscribeViaWhisper(waveFileName, _videoFileName);
+        var startOk = TranscribeViaWhisper(_waveFileName, _videoFileName);
 
-        var anyLinesTranscribed = transcribedSubtitle != null && transcribedSubtitle.Paragraphs.Count > 0;
-
-        if (anyLinesTranscribed)
-        {
-            await Shell.Current.GoToAsync("..", new Dictionary<string, object>
-            {
-                { "Page", nameof(AudioToTextWhisperPage) },
-                { "TranscribedSubtitle", transcribedSubtitle! },
-            });
-        }
+        //TODO: some error message
     }
 
-    public Subtitle? TranscribeViaWhisper(string waveFileName, string videoFileName)
+    public bool TranscribeViaWhisper(string waveFileName, string videoFileName)
     {
         if (SelectedWhisperEngine is null)
         {
-            return null;
+            return false;
         }
 
         if (SelectedWhisperEngine is not { } engine)
         {
-            return null;
+            return false;
         }
 
         Configuration.Settings.Tools.WhisperChoice = engine.Choice;
 
         if (PickerModel.SelectedItem is not WhisperModel model)
         {
-            return null;
+            return false;
         }
 
         if (PickerLanguage.SelectedItem is not WhisperLanguage language)
         {
-            return null;
+            return false;
         }
+
 
         _showProgressPct = -1;
 
@@ -258,6 +325,9 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             //TODO: TaskbarList.SetProgressValue(_parentForm.Handle, 1, 100);
         }
+
+        LabelProgress.IsVisible = true;
+        ProgressBar.IsVisible = true;
 
         //Delete invalid preprocessor_config.json file
         if (Configuration.Settings.Tools.WhisperChoice is
@@ -310,12 +380,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             inputFile = videoFileName;
         }
 
-        var process = GetWhisperProcess(engine, inputFile, model.Name, language.Code, SwitchTranslateToEnglish.IsToggled, OutputHandler);
-        var sw = Stopwatch.StartNew();
-        _outputText.Add($"Calling whisper ({Configuration.Settings.Tools.WhisperChoice}) with : {process.StartInfo.FileName} {process.StartInfo.Arguments}{Environment.NewLine}");
+        _whisperProcess = GetWhisperProcess(engine, inputFile, model.Name, language.Code, SwitchTranslateToEnglish.IsToggled, OutputHandler);
+        _sw = Stopwatch.StartNew();
+        _outputText.Add($"Calling whisper ({Configuration.Settings.Tools.WhisperChoice}) with : {_whisperProcess.StartInfo.FileName} {_whisperProcess.StartInfo.Arguments}{Environment.NewLine}");
         _startTicks = DateTime.UtcNow.Ticks;
         _videoInfo = UiUtil.GetVideoInfo(waveFileName);
-        //  timer1.Start();
         if (!_batchMode)
         {
             ShowProgressBar();
@@ -325,64 +394,24 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         _abort = false;
 
         LabelProgress.Text = "Transcribing...";// LanguageSettings.Current.AudioToText.Transcribing;
-        while (!process.HasExited)
-        {
-            Thread.Sleep(100);
-            //TODO: WindowsHelper.PreventStandBy();
+        _timer.Start();
+        TranscribeButton.IsEnabled = false;
 
-            if (_abort)
-            {
-                process.Kill(true);
-                ProgressBar.IsVisible = false;
-                //buttonCancel.Visible = false;
-                //DialogResult = DialogResult.Cancel;
-
-                var partialSub = new Subtitle();
-                partialSub.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start).Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
-                if (partialSub.Paragraphs.Count > 0)
-                {
-                    return partialSub;
-                }
-
-                return null;
-            }
-        }
-
-        _outputText.Add($"Calling whisper {Configuration.Settings.Tools.WhisperChoice} done in {sw.Elapsed}{Environment.NewLine}");
-
-        for (var i = 0; i < 10; i++)
-        {
-            Thread.Sleep(50);
-        }
-
-        process.Dispose();
-
-        if (GetResultFromSrt(waveFileName, videoFileName, out var resultTexts, _outputText, _filesToDelete))
-        {
-            var subtitle = new Subtitle();
-            subtitle.Paragraphs.AddRange(resultTexts.Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
-            return subtitle;
-        }
-
-        _outputText?.Add("Loading result from STDOUT" + Environment.NewLine);
-
-        var sub = new Subtitle();
-        sub.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start).Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
-        return sub;
+        return true;
     }
 
     public static Process GetWhisperProcess(
-        IWhisperEngine engine, 
-        string waveFileName, 
+        IWhisperEngine engine,
+        string waveFileName,
         string model,
-        string language, 
-        bool translate, 
+        string language,
+        bool translate,
         DataReceivedEventHandler? dataReceivedHandler = null)
     {
         Configuration.Settings.Tools.WhisperExtraSettings ??= string.Empty;
 
         Configuration.Settings.Tools.WhisperExtraSettings = Configuration.Settings.Tools.WhisperExtraSettings.Trim();
-        if (Configuration.Settings.Tools.WhisperExtraSettings == "--standard" && 
+        if (Configuration.Settings.Tools.WhisperExtraSettings == "--standard" &&
             (engine.Name != WhisperEnginePurfviewFasterWhisper.StaticName || engine.Name != WhisperEnginePurfviewFasterWhisperXxl.StaticName))
         {
             Configuration.Settings.Tools.WhisperExtraSettings = string.Empty;
@@ -818,11 +847,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         }
 
         var parameters = string.Format(fFmpegWaveTranscodeSettings, videoFileName, outWaveFile, audioParameter);
-        return new System.Diagnostics.Process
+        return new Process
         {
-            StartInfo = new System.Diagnostics.ProcessStartInfo(exeFilePath, parameters)
+            StartInfo = new ProcessStartInfo(exeFilePath, parameters)
             {
-                WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
+                WindowStyle = ProcessWindowStyle.Hidden,
                 CreateNoWindow = true,
                 UseShellExecute = false,
             }
@@ -847,6 +876,9 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             Configuration.Settings.Tools.WhisperModel = model.ToString();
         }
+
+        Configuration.Settings.Tools.WhisperAutoAdjustTimings = SwitchAdjustTimings.IsToggled;
+        Configuration.Settings.Tools.VoskPostProcessing = SwitchPostProcessing.IsToggled;
 
         Configuration.Settings.Save();
     }
@@ -873,10 +905,10 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             Models.Add(model);
         }
 
-        SetDefaultLanguageAndModel();
+        LoadSettings();
     }
 
-    public void SetDefaultLanguageAndModel()
+    public void LoadSettings()
     {
         var language = Languages.FirstOrDefault(l => l.Code == Configuration.Settings.Tools.WhisperLanguageCode);
         if (language != null)
@@ -897,6 +929,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             PickerModel.SelectedItem = Models.FirstOrDefault();
         }
+
+        SwitchAdjustTimings.IsToggled = Configuration.Settings.Tools.WhisperAutoAdjustTimings;
+        SwitchPostProcessing.IsToggled = Configuration.Settings.Tools.VoskPostProcessing;
+        LabelAdvancedSettings.Text = Configuration.Settings.Tools.WhisperExtraSettings;
+        ProgressBar.IsVisible = false;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -920,5 +957,22 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             viewModel.SetModels(Models, engine, PickerModel.SelectedItem as WhisperModel);
         }, CancellationToken.None);
+
+        SaveSettings();
+    }
+
+    public void MouseEnteredPostProcessingSettings(object obj)
+    {
+        LinkLabelProcessingSettings.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
+    }
+
+    public void MouseExitedProcessingSettings(object obj)
+    {
+        LinkLabelProcessingSettings.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+    }
+
+    public async Task MouseClickedProcessingSettings(object? sender, TappedEventArgs e)
+    {
+        await _popupService.ShowPopupAsync<WhisperPostProcessingPopupModel>(CancellationToken.None);
     }
 }
