@@ -21,6 +21,7 @@ public class WhisperEngineConstMe : IWhisperEngine
     }
 
     public string Extension => ".bin";
+    public string UnpackSkipFolder => string.Empty;
 
     public bool IsEngineInstalled()
     {
@@ -71,14 +72,22 @@ public class WhisperEngineConstMe : IWhisperEngine
 
     public bool IsModelInstalled(WhisperModel model)
     {
-        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), model.Name + Extension);
+        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), model.Name);
+        if (Extension.Length > 0 && !modelFileName.EndsWith(Extension))
+        {
+            modelFileName += Extension;
+        }
         var fileExists = File.Exists(modelFileName);
         return fileExists;
     }
 
     public string GetModelForCmdLine(string modelName)
     {
-        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), modelName + Extension);
+        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), modelName);
+        if (Extension.Length > 0 && !modelFileName.EndsWith(Extension))
+        {
+            modelFileName += Extension;
+        }
         return modelFileName;
     }
 

@@ -100,7 +100,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
     }
 
     [RelayCommand]
-    public void Download()
+    public void StartDownload()
     {
         if (SelectedModel is not WhisperModel model)
         {

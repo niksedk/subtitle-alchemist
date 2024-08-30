@@ -67,7 +67,7 @@ public class DownloadWhisperModelPopup : Popup
             WidthRequest = 30,
             HeightRequest = 30,
             Padding = new Thickness(5, 5, 5, 5),
-            Command = vm.DownloadCommand,
+            Command = vm.StartDownloadCommand,
         }.BindDynamicTheme();
 
 

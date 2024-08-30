@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
@@ -27,28 +28,28 @@ public class DownloadWhisperPopup : Popup
                 new ColumnDefinition { Width = GridLength.Auto },
             },
             Margin = new Thickness(2),
-            Padding = new Thickness(30, 20, 30 ,10),
+            Padding = new Thickness(30, 20, 30, 10),
             RowSpacing = 20,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
 
-        var titleLabel = new Label
+        vm.LabelTitle = new Label
         {
-            Text = "Downloading WhisperCPP",
+            Text = "Downloading ...",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
             Padding = new Thickness(0, 0, 0, 10),
         }.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
+        grid.Add(vm.LabelTitle, 0, 0);
 
         var progressLabel = new Label
         {
             Text = "...",
             FontAttributes = FontAttributes.Bold,
             FontSize = 15,
-        }.BindDynamicTheme(); 
+        }.BindDynamicTheme();
         progressLabel.SetBinding(Label.TextProperty, nameof(vm.Progress));
         grid.Add(progressLabel, 0, 1);
 
@@ -86,7 +87,5 @@ public class DownloadWhisperPopup : Popup
         Content = border;
 
         vm.Popup = this;
-
-        vm.StartDownload();
     }
 }

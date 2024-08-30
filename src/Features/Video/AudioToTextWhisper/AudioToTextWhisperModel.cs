@@ -141,6 +141,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return;
         }
 
+        if (SelectedWhisperEngine is not { } engine)
+        {
+            return;
+        }
+
         if (!SelectedWhisperEngine.IsEngineInstalled())
         {
             var answer = await Page.DisplayAlert(
@@ -154,7 +159,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
                 return;
             }
 
-            var result = await _popupService.ShowPopupAsync<DownloadWhisperPopupModel>(CancellationToken.None);
+            var result = await _popupService.ShowPopupAsync<DownloadWhisperPopupModel>(onPresenting: viewModel =>
+            {
+                viewModel.Engine = engine;
+                viewModel.StartDownload();
+            }, CancellationToken.None);
         }
 
         if (!SelectedWhisperEngine.IsModelInstalled(model))
@@ -170,7 +179,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
                 return;
             }
 
-            var result = await _popupService.ShowPopupAsync<DownloadWhisperModelPopupModel>(onPresenting: viewModel => viewModel.SetModels(Models, SelectedWhisperEngine, model), CancellationToken.None);
+            var result = await _popupService.ShowPopupAsync<DownloadWhisperModelPopupModel>(onPresenting: viewModel =>
+            {
+                viewModel.SetModels(Models, SelectedWhisperEngine, model);
+                viewModel.StartDownload();
+            }, CancellationToken.None);
 
 
             return;
@@ -252,7 +265,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
               WhisperChoice.PurfviewFasterWhisperCuda or
               WhisperChoice.PurfviewFasterWhisperXXL)
         {
-            var dir = Path.Combine(WhisperHelper.GetWhisperFolder(), "_models", model.Folder);
+            var dir = Path.Combine(engine.GetAndCreateWhisperModelFolder(), model.Folder);
             if (Directory.Exists(dir))
             {
                 try

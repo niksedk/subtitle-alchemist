@@ -9,8 +9,18 @@ public class WhisperEnginePurfviewFasterWhisper : IWhisperEngine
     public string Choice => WhisperChoice.PurfviewFasterWhisper;
     public string Url => "https://github.com/Purfview/whisper-standalone-win";
     public List<WhisperLanguage> Languages => WhisperLanguage.Languages.OrderBy(p => p.Name).ToList();
-    public List<WhisperModel> Models { get; } = new();
+    public List<WhisperModel> Models
+    {
+        get
+        {
+            var models = new WhisperPurfviewFasterWhisperModel().Models;
+            return models.ToList();
+        }
+    }
+
     public string Extension => string.Empty;
+
+    public string UnpackSkipFolder => "Whisper-Faster/";
 
     public bool IsEngineInstalled()
     {
@@ -51,20 +61,25 @@ public class WhisperEnginePurfviewFasterWhisper : IWhisperEngine
     public string GetExecutable()
     {
         var fullPath = Path.Combine(GetAndCreateWhisperFolder(), GetExecutableFileName());
+
         return fullPath;
     }
 
     public bool IsModelInstalled(WhisperModel model)
     {
-        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), model.Name + Extension);
+        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), model.Name);
+        if (Extension.Length > 0 && !modelFileName.EndsWith(Extension))
+        {
+            modelFileName += Extension;
+        }
         var fileExists = File.Exists(modelFileName);
+
         return fileExists;
     }
 
     public string GetModelForCmdLine(string modelName)
     {
-        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), modelName + Extension);
-        return modelFileName;
+        return modelName;
     }
 
     public override string ToString()

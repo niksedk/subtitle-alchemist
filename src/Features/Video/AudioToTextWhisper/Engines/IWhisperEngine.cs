@@ -11,6 +11,7 @@ public interface IWhisperEngine
     List<WhisperLanguage> Languages { get; }
     List<WhisperModel> Models { get; }
     string Extension { get;  }
+    string UnpackSkipFolder { get; }
     bool IsEngineInstalled();
     string GetAndCreateWhisperFolder();
     string GetAndCreateWhisperModelFolder();
