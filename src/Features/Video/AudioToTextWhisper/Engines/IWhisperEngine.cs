@@ -6,6 +6,7 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 public interface IWhisperEngine
 {
     string Name { get; }
+    string Choice { get; }
     string Url { get; }
     List<WhisperLanguage> Languages { get; }
     List<WhisperModel> Models { get; }
@@ -13,5 +14,7 @@ public interface IWhisperEngine
     bool IsEngineInstalled();
     string GetAndCreateWhisperFolder();
     string GetAndCreateWhisperModelFolder();
+    string GetExecutable();
     bool IsModelInstalled(WhisperModel model);
+    string GetModelForCmdLine(string modelName);
 }

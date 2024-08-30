@@ -1,6 +1,6 @@
 ﻿namespace SubtitleAlchemist.Services;
 
-public interface IWhisperCppDownloadService
+public interface IWhisperDownloadService
 {
     Task DownloadWhisperCpp(string destinationFileName, IProgress<float>? progress, CancellationToken cancellationToken);
     Task DownloadFile(string url, string destinationFileName, IProgress<float>? progress, CancellationToken cancellationToken);

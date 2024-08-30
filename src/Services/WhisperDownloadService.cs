@@ -2,13 +2,13 @@
 
 namespace SubtitleAlchemist.Services;
 
-public class WhisperCppDownloadService : IWhisperCppDownloadService
+public class WhisperDownloadService : IWhisperDownloadService
 {
     private readonly HttpClient _httpClient;
     private const string WindowsUrl = "https://github.com/ggerganov/whisper.cpp/releases/download/v1.6.0/whisper-blas-clblast-bin-x64.zip";
     private const string MacUrl = "https://github.com/ggerganov/whisper.cpp/releases/download/v1.6.0/whisper-blas-clblast-bin-x64.zip";
 
-    public WhisperCppDownloadService(HttpClient httpClient)
+    public WhisperDownloadService(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }

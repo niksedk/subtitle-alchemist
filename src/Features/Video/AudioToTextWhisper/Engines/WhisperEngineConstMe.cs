@@ -2,21 +2,35 @@
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 
-public class WhisperEnginePurfviewFasterWhisperXxl : IWhisperEngine
+public class WhisperEngineConstMe : IWhisperEngine
 {
-    public static string StaticName => "Purfview Faster Whisper XXL";
+    public static string StaticName => "Whisper Const-me";
     public string Name => StaticName;
-    public string Choice => WhisperChoice.PurfviewFasterWhisperXXL;
-    public string Url => "https://github.com/Purfview/whisper-standalone-win";
-    public List<WhisperLanguage> Languages => WhisperLanguage.Languages.OrderBy(p => p.Name).ToList();
-    public List<WhisperModel> Models { get; } = new();
+    public string Choice => WhisperChoice.Cpp;
+    public string Url => "https://github.com/Const-me/Whisper";
 
-    public string Extension => string.Empty;
+    public List<WhisperLanguage> Languages => WhisperLanguage.Languages.OrderBy(p => p.Name).ToList();
+
+    public List<WhisperModel> Models
+    {
+        get
+        {
+            var models = new WhisperConstMeModel().Models;
+            return models.ToList();
+        }
+    }
+
+    public string Extension => ".bin";
 
     public bool IsEngineInstalled()
     {
         var executableFile = GetExecutable();
         return File.Exists(executableFile);
+    }
+
+    public override string ToString()
+    {
+        return Name;
     }
 
     public string GetAndCreateWhisperFolder()
@@ -27,7 +41,7 @@ public class WhisperEnginePurfviewFasterWhisperXxl : IWhisperEngine
             Directory.CreateDirectory(baseFolder);
         }
 
-        var folder = Path.Combine(baseFolder, "Purfview-Whisper-Faster");
+        var folder = Path.Combine(baseFolder, "Const-me");
         if (!Directory.Exists(folder))
         {
             Directory.CreateDirectory(folder);
@@ -40,7 +54,7 @@ public class WhisperEnginePurfviewFasterWhisperXxl : IWhisperEngine
     {
         var baseFolder = GetAndCreateWhisperFolder();
 
-        var folder = Path.Combine(baseFolder, "_models");
+        var folder = Path.Combine(baseFolder, "Models");
         if (!Directory.Exists(folder))
         {
             Directory.CreateDirectory(folder);
@@ -68,13 +82,8 @@ public class WhisperEnginePurfviewFasterWhisperXxl : IWhisperEngine
         return modelFileName;
     }
 
-    public override string ToString()
-    {
-        return Name;
-    }
-
     public string GetExecutableFileName()
     {
-        return "faster-whisper-xxl.exe";
+        return "main.exe";
     }
 }

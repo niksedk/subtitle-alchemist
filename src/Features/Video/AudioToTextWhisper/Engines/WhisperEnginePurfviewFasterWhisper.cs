@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Nikse.SubtitleEdit.Core.AudioToText;
+﻿using Nikse.SubtitleEdit.Core.AudioToText;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 
@@ -7,6 +6,7 @@ public class WhisperEnginePurfviewFasterWhisper : IWhisperEngine
 {
     public static string StaticName => "Purfview Faster Whisper";
     public string Name => StaticName;
+    public string Choice => WhisperChoice.PurfviewFasterWhisper;
     public string Url => "https://github.com/Purfview/whisper-standalone-win";
     public List<WhisperLanguage> Languages => WhisperLanguage.Languages.OrderBy(p => p.Name).ToList();
     public List<WhisperModel> Models { get; } = new();
@@ -14,8 +14,7 @@ public class WhisperEnginePurfviewFasterWhisper : IWhisperEngine
 
     public bool IsEngineInstalled()
     {
-        var folder = GetAndCreateWhisperFolder();
-        var executableFile = Path.Combine(folder, GetExecutableFileName());
+        var executableFile = GetExecutable();
         return File.Exists(executableFile);
     }
 
@@ -49,11 +48,23 @@ public class WhisperEnginePurfviewFasterWhisper : IWhisperEngine
         return folder;
     }
 
+    public string GetExecutable()
+    {
+        var fullPath = Path.Combine(GetAndCreateWhisperFolder(), GetExecutableFileName());
+        return fullPath;
+    }
+
     public bool IsModelInstalled(WhisperModel model)
     {
         var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), model.Name + Extension);
         var fileExists = File.Exists(modelFileName);
         return fileExists;
+    }
+
+    public string GetModelForCmdLine(string modelName)
+    {
+        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), modelName + Extension);
+        return modelFileName;
     }
 
     public override string ToString()

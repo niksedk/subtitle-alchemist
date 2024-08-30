@@ -6,6 +6,7 @@ public class WhisperEngineCpp : IWhisperEngine
 {
     public static string StaticName => "Whisper CPP";
     public string Name => StaticName;
+    public string Choice => WhisperChoice.Cpp;
     public string Url => "https://github.com/ggerganov/whisper.cpp";
 
     public List<WhisperLanguage> Languages => WhisperLanguage.Languages.OrderBy(p => p.Name).ToList();
@@ -23,8 +24,7 @@ public class WhisperEngineCpp : IWhisperEngine
 
     public bool IsEngineInstalled()
     {
-        var folder = GetAndCreateWhisperFolder();
-        var executableFile = Path.Combine(folder, GetExecutableFileName());
+        var executableFile = GetExecutable();
         return File.Exists(executableFile);
     }
 
@@ -63,11 +63,23 @@ public class WhisperEngineCpp : IWhisperEngine
         return folder;
     }
 
+    public string GetExecutable()
+    {
+        var fullPath = Path.Combine(GetAndCreateWhisperFolder(), GetExecutableFileName());
+        return fullPath;
+    }
+
     public bool IsModelInstalled(WhisperModel model)
     {
         var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), model.Name + Extension);
         var fileExists = File.Exists(modelFileName);
         return fileExists;
+    }
+
+    public string GetModelForCmdLine(string modelName)
+    {
+        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), modelName + Extension);
+        return modelFileName;
     }
 
     public string GetExecutableFileName()

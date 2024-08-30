@@ -80,6 +80,8 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         _popupService = popupService;
         WhisperEngines.Add(new WhisperEngineCpp());
         WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisper());
+        WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisperXxl());
+        WhisperEngines.Add(new WhisperEngineConstMe());
     }
 
     public void MouseEnteredPoweredBy()
@@ -215,7 +217,12 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return null;
         }
 
-        var engine = SelectedWhisperEngine as IWhisperEngine;
+        if (SelectedWhisperEngine is not { } engine)
+        {
+            return null;
+        }
+
+        Configuration.Settings.Tools.WhisperChoice = engine.Choice;
 
         if (PickerModel.SelectedItem is not WhisperModel model)
         {
@@ -281,8 +288,8 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         var inputFile = waveFileName;
         if (!_useCenterChannelOnly &&
-            (engine.Name == WhisperEngineCpp.StaticName ||
-             engine.Name == WhisperEnginePurfviewFasterWhisper.StaticName) &&
+            (engine.Name == WhisperEnginePurfviewFasterWhisper.StaticName ||
+             engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName) &&
             (videoFileName.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
              videoFileName.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)) &&
             _audioTrackNumber <= 0)
@@ -290,7 +297,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             inputFile = videoFileName;
         }
 
-        var process = GetWhisperProcess(inputFile, model.Name, language.Code, SwitchTranslateToEnglish.IsToggled, OutputHandler);
+        var process = GetWhisperProcess(engine, inputFile, model.Name, language.Code, SwitchTranslateToEnglish.IsToggled, OutputHandler);
         var sw = Stopwatch.StartNew();
         _outputText.Add($"Calling whisper ({Configuration.Settings.Tools.WhisperChoice}) with : {process.StartInfo.FileName} {process.StartInfo.Arguments}{Environment.NewLine}");
         _startTicks = DateTime.UtcNow.Ticks;
@@ -351,8 +358,23 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         return sub;
     }
 
-    public static Process GetWhisperProcess(string waveFileName, string model, string language, bool translate, DataReceivedEventHandler? dataReceivedHandler = null)
+    public static Process GetWhisperProcess(
+        IWhisperEngine engine, 
+        string waveFileName, 
+        string model,
+        string language, 
+        bool translate, 
+        DataReceivedEventHandler? dataReceivedHandler = null)
     {
+        Configuration.Settings.Tools.WhisperExtraSettings ??= string.Empty;
+
+        Configuration.Settings.Tools.WhisperExtraSettings = Configuration.Settings.Tools.WhisperExtraSettings.Trim();
+        if (Configuration.Settings.Tools.WhisperExtraSettings == "--standard" && 
+            (engine.Name != WhisperEnginePurfviewFasterWhisper.StaticName || engine.Name != WhisperEnginePurfviewFasterWhisperXxl.StaticName))
+        {
+            Configuration.Settings.Tools.WhisperExtraSettings = string.Empty;
+        }
+
         var translateToEnglish = translate ? WhisperHelper.GetWhisperTranslateParameter() : string.Empty;
         if (language.ToLowerInvariant() == "english" || language.ToLowerInvariant() == "en")
         {
@@ -380,8 +402,8 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             postParams = $" -o {srtFileName}.srt";
         }
 
-        var w = WhisperHelper.GetWhisperPathAndFileName();
-        var m = WhisperHelper.GetWhisperModelForCmdLine(model);
+        var w = engine.GetExecutable();
+        var m = engine.GetModelForCmdLine(model);
         var parameters = $"--language {language} --model \"{m}\" {outputSrt}{translateToEnglish}{Configuration.Settings.Tools.WhisperExtraSettings} \"{waveFileName}\"{postParams}";
 
         SeLogger.WhisperInfo($"{w} {parameters}");
@@ -392,7 +414,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"].TrimEnd(';') + ";" + Path.GetDirectoryName(Configuration.Settings.General.FFmpegLocation);
         }
 
-        var whisperFolder = WhisperHelper.GetWhisperFolder();
+        var whisperFolder = engine.GetAndCreateWhisperFolder();
         if (!string.IsNullOrEmpty(whisperFolder))
         {
             if (File.Exists(whisperFolder))

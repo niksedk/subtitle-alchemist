@@ -15,7 +15,7 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
     {
         public DownloadWhisperPopup? Popup { get; set; }
 
-        private readonly IWhisperCppDownloadService _whisperCppDownloadService;
+        private readonly IWhisperDownloadService _whisperCppDownloadService;
 
         [ObservableProperty]
         private float _progressValue;
@@ -34,7 +34,7 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
 
         readonly IWhisperEngine _engine = new WhisperEngineCpp();
 
-        public DownloadWhisperPopupModel(IWhisperCppDownloadService whisperCppDownloadService)
+        public DownloadWhisperPopupModel(IWhisperDownloadService whisperCppDownloadService)
         {
             _whisperCppDownloadService = whisperCppDownloadService;
 

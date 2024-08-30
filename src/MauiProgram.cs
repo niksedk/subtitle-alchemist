@@ -59,7 +59,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<WhisperAdvancedPopup, WhisperAdvancedPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
-            builder.Services.AddHttpClient<IWhisperCppDownloadService, WhisperCppDownloadService>();
+            builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();
 
 #if DEBUG
             builder.Logging.AddDebug();

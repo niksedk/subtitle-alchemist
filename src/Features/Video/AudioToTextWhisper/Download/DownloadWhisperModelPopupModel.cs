@@ -46,12 +46,12 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
 
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
-    private readonly IWhisperCppDownloadService _whisperCppDownloadService;
+    private readonly IWhisperDownloadService _whisperCppDownloadService;
     private WhisperModel _downloadModel;
 
     private const string TemporaryFileExtension = ".$$$";
 
-    public DownloadWhisperModelPopupModel(IWhisperCppDownloadService whisperCppDownloadService)
+    public DownloadWhisperModelPopupModel(IWhisperDownloadService whisperCppDownloadService)
     {
         _whisperCppDownloadService = whisperCppDownloadService;
         _progress = string.Empty;
