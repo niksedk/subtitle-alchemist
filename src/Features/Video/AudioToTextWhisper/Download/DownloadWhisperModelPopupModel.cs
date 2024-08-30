@@ -116,6 +116,8 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
         _timer.Interval = 500;
         _timer.Elapsed += OnTimerOnElapsed;
         _timer.Start();
+
+        ProgressBar.IsVisible = true;
     }
 
     private Progress<float> MakeDownloadProgress()

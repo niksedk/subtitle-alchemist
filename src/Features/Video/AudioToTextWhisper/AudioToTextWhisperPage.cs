@@ -107,7 +107,7 @@ public class AudioToTextWhisperPage : ContentPage
 
         vm.ButtonModel = new Button
         {
-            Margin = new Thickness(15),
+            Margin = new Thickness(5),
             VerticalOptions = LayoutOptions.End,
             Text = "...",
             Command = vm.DownloadModelCommand,

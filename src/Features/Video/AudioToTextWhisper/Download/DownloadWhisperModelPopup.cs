@@ -122,7 +122,7 @@ public class DownloadWhisperModelPopup : Popup
             Text = "Cancel",
             HorizontalOptions = LayoutOptions.Center,
             Command = vm.CancelCommand,
-            Margin = new Thickness(5, 15, 5, 5),
+            Margin = new Thickness(5, 5, 5, 5),
         }.BindDynamicTheme();
         grid.Add(cancelButton, 0, 4);
         grid.SetColumnSpan(cancelButton, 2);
@@ -139,7 +139,7 @@ public class DownloadWhisperModelPopup : Popup
                 CornerRadius = new CornerRadius(5)
             },
             Content = grid,
-            HeightRequest = 300,
+            HeightRequest = 290,
         }.BindDynamicTheme();
 
         Content = border;
