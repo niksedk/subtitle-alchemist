@@ -245,7 +245,7 @@ public class AudioToTextWhisperPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.CancelCommand,
-            Margin = new Thickness(5,15,5,5),
+            Margin = new Thickness(5, 15, 5, 5),
         }.BindDynamicTheme();
 
         var buttonBar = new StackLayout
@@ -273,24 +273,19 @@ public class AudioToTextWhisperPage : ContentPage
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                var engine = _vm.WhisperEngines.FirstOrDefault(e => e.Name == Configuration.Settings.Tools.WhisperChoice);
+                var engine = _vm.WhisperEngines.FirstOrDefault(e => e.Choice == Configuration.Settings.Tools.WhisperChoice);
                 if (engine != null)
                 {
                     _vm.SelectedWhisperEngine = engine;
                     _vm.PickerEngine.SelectedItem = engine;
                 }
-
-                var language = _vm.Languages.FirstOrDefault(l => l.Code == Configuration.Settings.Tools.WhisperLanguageCode);
-                if (language != null)
+                else
                 {
-                    _vm.PickerLanguage.SelectedItem = language;
+                    _vm.SelectedWhisperEngine = _vm.WhisperEngines.FirstOrDefault();
+                    _vm.PickerEngine.SelectedItem = _vm.WhisperEngines.FirstOrDefault();
                 }
 
-                var model = _vm.Models.FirstOrDefault(m => m.ToString() == Configuration.Settings.Tools.WhisperModel);
-                if (model != null)
-                {
-                    _vm.PickerModel.SelectedItem = model;
-                }
+                _vm.SetDefaultLanguageAndModel();
             });
 
             return false;

@@ -1,18 +1,18 @@
-using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SubtitleAlchemist.Logic.Constants;
 using Nikse.SubtitleEdit.Core.AudioToText;
-using SubtitleAlchemist.Logic;
 using Nikse.SubtitleEdit.Core.Common;
-using CommunityToolkit.Maui.Core;
+using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
-using System.Text;
-using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using Switch = Microsoft.Maui.Controls.Switch;
 
@@ -823,7 +823,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        Configuration.Settings.Tools.WhisperChoice = SelectedWhisperEngine.Name;
+        Configuration.Settings.Tools.WhisperChoice = SelectedWhisperEngine.Choice;
 
         if (PickerLanguage.SelectedItem is WhisperLanguage language)
         {
@@ -859,6 +859,31 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             Models.Add(model);
         }
+
+        SetDefaultLanguageAndModel();
+    }
+
+    public void SetDefaultLanguageAndModel()
+    {
+        var language = Languages.FirstOrDefault(l => l.Code == Configuration.Settings.Tools.WhisperLanguageCode);
+        if (language != null)
+        {
+            PickerLanguage.SelectedItem = language;
+        }
+        else
+        {
+            PickerLanguage.SelectedItem = Languages.FirstOrDefault();
+        }
+
+        var model = Models.FirstOrDefault(m => m.ToString() == Configuration.Settings.Tools.WhisperModel);
+        if (model != null)
+        {
+            PickerModel.SelectedItem = model;
+        }
+        else
+        {
+            PickerModel.SelectedItem = Models.FirstOrDefault();
+        }
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -878,9 +903,9 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         }
 
         var result = await _popupService
-            .ShowPopupAsync<DownloadWhisperModelPopupModel>(onPresenting: viewModel =>
-            {
-                viewModel.SetModels(Models, engine, PickerModel.SelectedItem as WhisperModel);
-            }, CancellationToken.None);
+        .ShowPopupAsync<DownloadWhisperModelPopupModel>(onPresenting: viewModel =>
+        {
+            viewModel.SetModels(Models, engine, PickerModel.SelectedItem as WhisperModel);
+        }, CancellationToken.None);
     }
 }
