@@ -1,10 +1,10 @@
 using SubtitleAlchemist.Logic;
 
-namespace SubtitleAlchemist.Features.Tools.AdjustDuration;
+namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 
-public class AdjustDurationPage : ContentPage
+public class FixCommonErrorsPage : ContentPage
 {
-    public AdjustDurationPage(AdjustDurationModel vm)
+    public FixCommonErrorsPage(FixCommonErrorsModel vm)
     {
         this.BindDynamicTheme();
         Content = new Grid
@@ -20,7 +20,7 @@ public class AdjustDurationPage : ContentPage
             },
             Children =
             {
-                new Label { Text = "Adjust duration for all subtitle lines", FontSize = 24, HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center },
+                new Label { Text = "Fix common errors", FontSize = 24, HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center },
             },
         };
     }

@@ -139,5 +139,44 @@ namespace SubtitleAlchemist.Logic
             control.Color = Colors.Transparent;
             return control;
         }
+
+        public static void UpdateTheme(string themeName)
+        {
+            var mergedDictionaries = Application.Current!.Resources.MergedDictionaries;
+            if (mergedDictionaries == null)
+            {
+                return;
+            }
+
+            foreach (var dictionaries in mergedDictionaries)
+            {
+                if (themeName == "Light")
+                {
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.BackgroundColor, Color.FromRgb(240, 240, 240));
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.TextColor, Colors.Black);
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(253, 253, 253));
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Colors.LightGreen);
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.LinkColor, Colors.DarkBlue);
+                }
+                else
+                {
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.BackgroundColor, Color.FromRgb(0x1F, 0x1F, 0x1F));
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.TextColor, Colors.WhiteSmoke);
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(20, 20, 20));
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Colors.DarkGreen);
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.LinkColor, Colors.LightSkyBlue);
+                }
+            }
+        }
+        private static void SetThemeDictionaryColor(ResourceDictionary dictionaries, string name, Color color)
+        {
+            var found = dictionaries.TryGetValue(name, out _);
+            if (found)
+            {
+                dictionaries[name] = color;
+            }
+        }
     }
 }

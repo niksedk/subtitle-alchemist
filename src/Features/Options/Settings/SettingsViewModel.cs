@@ -7,6 +7,7 @@ using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections.ObjectModel;
+using SubtitleAlchemist.Logic;
 using static SubtitleAlchemist.Features.Options.Settings.SettingsPage;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
@@ -24,7 +25,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _theme = "Dark";
 
     [ObservableProperty]
-    private ObservableCollection<string> _themes = new(){ "Light", "Dark", "Custom" };
+    private ObservableCollection<string> _themes = new() { "Light", "Dark", "Custom" };
 
     private readonly IPopupService _popupService;
     private PageNames _pageName = PageNames.General;
@@ -148,45 +149,8 @@ public partial class SettingsViewModel : ObservableObject
 
         Preferences.Set("Theme", Theme);
 
-        var mergedDictionaries = Application.Current!.Resources.MergedDictionaries;
-        if (mergedDictionaries == null)
-        {
-            return;
-        }
-
-        foreach (var dictionaries in mergedDictionaries)
-        {
-            if (Theme == "Light")
-            {
-                SetThemeDictionaryColor(dictionaries, ThemeNames.BackgroundColor, Colors.White);
-                SetThemeDictionaryColor(dictionaries, ThemeNames.TextColor, Colors.Black);
-                SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(120, 120, 120));
-                SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
-                SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Colors.LightGreen);
-            }
-            else
-            {
-                SetThemeDictionaryColor(dictionaries, ThemeNames.BackgroundColor, Color.FromRgb(0x1F, 0x1F, 0x1F));
-                SetThemeDictionaryColor(dictionaries, ThemeNames.TextColor, Colors.WhiteSmoke);
-                SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(20, 20, 20));
-                SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
-                SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGreen);
-            }
-        }
+        ThemeHelper.UpdateTheme(Theme);
 
         await LeftMenuTapped(null, new TappedEventArgs(null), _pageName);
-    }
-
-    private static void SetThemeDictionaryColor(ResourceDictionary dictionaries, string name, Color color)
-    {
-        var found = dictionaries.TryGetValue(name, out _);
-        if (found)
-        {
-            dictionaries[name] = color;
-        }
-        //else
-        //{
-        //    dictionaries.Add(name, color);
-        //}
     }
 }

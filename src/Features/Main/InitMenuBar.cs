@@ -118,8 +118,14 @@ internal static class InitMenuBar
 
         menu.Add(new MenuFlyoutItem
         {
-            Text = "Adjust durations",
+            Text = "Adjust durations...",
             Command = vm.AdjustDurationsShowCommand,
+        });
+
+        menu.Add(new MenuFlyoutItem
+        {
+            Text = "Fix common errors...",
+            Command = vm.FixCommonErrorsShowCommand,
         });
 
         return menu;
@@ -189,7 +195,7 @@ internal static class InitMenuBar
 
     private static MenuBarItem MakeTranslateMenu(MainViewModel vm)
     {
-        var menu = new MenuBarItem { Text = "Auto-translate" };
+        var menu = new MenuBarItem { Text = "Translate" };
 
         menu.Add(new MenuFlyoutItem
         {

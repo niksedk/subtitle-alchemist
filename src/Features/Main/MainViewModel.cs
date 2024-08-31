@@ -22,6 +22,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
+using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using Path = System.IO.Path;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -958,6 +959,12 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private async Task AdjustDurationsShow()
     {
         await Shell.Current.GoToAsync(nameof(AdjustDurationPage));
+    }
+
+    [RelayCommand]
+    private async Task FixCommonErrorsShow()
+    {
+        await Shell.Current.GoToAsync(nameof(FixCommonErrorsPage));
     }
 
     private async Task<bool> RequireFfmpegOk()

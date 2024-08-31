@@ -15,33 +15,21 @@ public class MainPage : ContentPage
         ICollection<ResourceDictionary>? mergedDictionaries = Application.Current?.Resources?.MergedDictionaries;
         if (mergedDictionaries != null)
         {
-            //  mergedDictionaries.Clear(); //TODO: remove default styles!?
-            if (Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme)
+            var theme = new ResourceDictionary
             {
-                var darkTheme = new ResourceDictionary
-                {
-                    { ThemeNames.BackgroundColor, Color.FromRgb(0x1F, 0x1F, 0x1F) },
-                    { ThemeNames.TextColor, Colors.WhiteSmoke },
-                    { ThemeNames.SecondaryBackgroundColor, Color.FromRgb(20,20,20) },
-                    { ThemeNames.BorderColor, Colors.DarkGray },
-                    { ThemeNames.ActiveBackgroundColor, Colors.DarkGreen },
-                    { ThemeNames.LinkColor, Colors.LightSkyBlue },
-                };
-                mergedDictionaries.Add(darkTheme);
-            }
-            else
-            {
-                var lightTheme = new ResourceDictionary
-                {
-                    { ThemeNames.BackgroundColor, Color.FromRgb(240,240,240) },
-                    { ThemeNames.TextColor, Colors.Black },
-                    { ThemeNames.SecondaryBackgroundColor, Color.FromRgb(253,253,253) },
-                    { ThemeNames.BorderColor, Colors.DarkGray },
-                    { ThemeNames.ActiveBackgroundColor, Colors.LightGreen },
-                    { ThemeNames.LinkColor, Colors.DarkBlue },
-                };
-                mergedDictionaries.Add(lightTheme);
-            }
+                { ThemeNames.BackgroundColor, Colors.Pink },
+                { ThemeNames.TextColor, Colors.Pink },
+                { ThemeNames.SecondaryBackgroundColor, Colors.Pink },
+                { ThemeNames.BorderColor, Colors.Pink },
+                { ThemeNames.ActiveBackgroundColor, Colors.Pink },
+                { ThemeNames.LinkColor, Colors.Pink },
+            };
+            mergedDictionaries.Add(theme);
+
+            var themeName = Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme
+                ? "Dark"
+                : "Light";
+            ThemeHelper.UpdateTheme(themeName);
         }
 
         BindingContext = _viewModel;
