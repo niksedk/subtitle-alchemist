@@ -131,7 +131,7 @@ internal static class InitLayout
 
             ColumnDefinitions = Columns.Define(
                 (Column.Left, Stars(2)),
-                (Column.Right, Star)
+                (Column.Right, Stars(2))
             ),
 
             Children =
