@@ -179,7 +179,10 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     public async Task ShowAdvancedWhisperSettings()
     {
-        var result = await _popupService.ShowPopupAsync<WhisperAdvancedPopupModel>();
+        var result = await _popupService.ShowPopupAsync<WhisperAdvancedPopupModel>(onPresenting: async viewModel =>
+        {
+           await viewModel.LeftMenuTapped(WhisperEngines.First().Name);
+        }, CancellationToken.None);
 
         if (result is string settings)
         {

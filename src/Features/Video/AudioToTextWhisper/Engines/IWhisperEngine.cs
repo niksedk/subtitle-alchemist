@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Nikse.SubtitleEdit.Core.AudioToText;
+﻿using Nikse.SubtitleEdit.Core.AudioToText;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 
@@ -18,4 +17,5 @@ public interface IWhisperEngine
     string GetExecutable();
     bool IsModelInstalled(WhisperModel model);
     string GetModelForCmdLine(string modelName);
+    Task<string> GetHelpText();
 }

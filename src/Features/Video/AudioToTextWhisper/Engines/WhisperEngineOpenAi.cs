@@ -75,4 +75,15 @@ public class WhisperEngineOpenAi : IWhisperEngine
 
         return modelFileName;
     }
+
+    public async Task<string> GetHelpText()
+    {
+        var assetName = $"{StaticName.Replace(" ", string.Empty)}.txt";
+        await using var stream = await FileSystem.OpenAppPackageFileAsync(assetName);
+        using var reader = new StreamReader(stream);
+
+        var contents = await reader.ReadToEndAsync();
+
+        return contents;
+    }
 }

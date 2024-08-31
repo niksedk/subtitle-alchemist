@@ -33,7 +33,12 @@ internal static class UiUtil
 
     public static void OpenUrl(string url)
     {
-        OpenItem(url, "url");
+        Launcher.OpenAsync(url);
+    }
+
+    public static async Task OpenUrlAsync(string url)
+    {
+        await Launcher.OpenAsync(url);
     }
 
     public static void OpenFile(string file)

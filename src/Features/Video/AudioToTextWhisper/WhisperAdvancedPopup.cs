@@ -8,25 +8,22 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
 public class WhisperAdvancedPopup : Popup
 {
-
-    public enum WhisperEngineNames
-    {
-        WhisperCpp,
-        WhisperPurfview,
-        WhisperPurfviewXxl,
-    }
-
-    private readonly WhisperAdvancedPopupModel _vm;
-
     public WhisperAdvancedPopup(WhisperAdvancedPopupModel vm)
     {
-        _vm = vm;
         vm.Popup = this;
         this.BindDynamicTheme();
 
-        vm.WhisperEngines.Add(WhisperEngineNames.WhisperCpp, MakeCppPage(vm));
-        vm.WhisperEngines.Add(WhisperEngineNames.WhisperPurfview, MakePurfviewPage(vm));
-        vm.WhisperEngines.Add(WhisperEngineNames.WhisperPurfviewXxl, MakePurfviewXxlPage(vm));
+        vm.WhisperEngines.Add(WhisperEngineCpp.StaticName, MakeCppPage(vm));
+        vm.WhisperEngines.Add(WhisperEnginePurfviewFasterWhisper.StaticName, MakePurfviewPage(vm));
+        vm.WhisperEngines.Add(WhisperEnginePurfviewFasterWhisperXxl.StaticName, MakePurfviewXxlPage(vm));
+        vm.WhisperEngines.Add(WhisperEngineOpenAi.StaticName, MakeOpenAiPage(vm));
+        vm.WhisperEngines.Add(WhisperEngineConstMe.StaticName, MakeConstMePage(vm));
+
+        vm.WhisperHelpLabels.Add(WhisperEngineCpp.StaticName, vm.LabelCppHelpText);
+        vm.WhisperHelpLabels.Add(WhisperEnginePurfviewFasterWhisper.StaticName, vm.LabelPurfviewHelpText);
+        vm.WhisperHelpLabels.Add(WhisperEnginePurfviewFasterWhisperXxl.StaticName, vm.LabelPurfviewXxlHelpText);
+        vm.WhisperHelpLabels.Add(WhisperEngineOpenAi.StaticName, vm.LabelOpenAiHelpText);
+        vm.WhisperHelpLabels.Add(WhisperEngineConstMe.StaticName, vm.LabelConstMeHelpText);
 
         BindingContext = vm;
 
@@ -36,11 +33,13 @@ public class WhisperAdvancedPopup : Popup
             Padding = new Thickness(1),
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
+            WidthRequest = 600,
+            HeightRequest = 600,
             StrokeShape = new RoundRectangle
             {
                 CornerRadius = new CornerRadius(2),
             },
-            Content = vm.WhisperEngines[WhisperEngineNames.WhisperCpp],
+
         }.BindDynamicTheme();
 
         var grid = new Grid
@@ -50,6 +49,7 @@ public class WhisperAdvancedPopup : Popup
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Star },
+                new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
             {
@@ -60,6 +60,7 @@ public class WhisperAdvancedPopup : Popup
             RowSpacing = 20,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
 
         var closeLine = new StackLayout
@@ -81,6 +82,15 @@ public class WhisperAdvancedPopup : Popup
         grid.Add(closeLine, 0, 0);
         Grid.SetColumnSpan(closeLine, 2);
 
+        var title = new Label
+        {
+            Text = "Advanced Whisper Settings",
+            FontSize = 20,
+            FontAttributes = FontAttributes.Bold,
+            HorizontalOptions = LayoutOptions.Start,
+        }.BindDynamicTheme();
+        grid.Add(title, 0, 0);
+        Grid.SetColumnSpan(title, 2);
 
         var parameterLine = new StackLayout
         {
@@ -97,7 +107,7 @@ public class WhisperAdvancedPopup : Popup
                 {
                     Placeholder = "Parameters",
                     HorizontalOptions = LayoutOptions.Fill,
-                    Margin = new Thickness(2,2,2, 15),
+                    Margin = new Thickness(0,0,0, 10),
                 }.Bind(nameof(vm.CurrentParameters))
             }
         };
@@ -108,15 +118,18 @@ public class WhisperAdvancedPopup : Popup
         {
             Children =
             {
-                MakeLeftMenuItem(vm, WhisperEngineNames.WhisperCpp, WhisperEngineCpp.StaticName),
-                MakeLeftMenuItem(vm, WhisperEngineNames.WhisperPurfview, WhisperEnginePurfviewFasterWhisper.StaticName),
-                MakeLeftMenuItem(vm, WhisperEngineNames.WhisperPurfviewXxl, WhisperEnginePurfviewFasterWhisperXxl.StaticName),
-            }
+                MakeLeftMenuItem(vm, WhisperEngineCpp.StaticName),
+                MakeLeftMenuItem(vm, WhisperEnginePurfviewFasterWhisper.StaticName),
+                MakeLeftMenuItem(vm, WhisperEnginePurfviewFasterWhisperXxl.StaticName),
+                MakeLeftMenuItem(vm, WhisperEngineOpenAi.StaticName),
+                MakeLeftMenuItem(vm, WhisperEngineConstMe.StaticName),
+            },
+            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
 
         grid.Add(vm.LeftMenu, 0, 2);
         grid.Add(vm.EnginePage, 1, 2);
-
 
 
         var transcribeButton = new Button
@@ -150,7 +163,6 @@ public class WhisperAdvancedPopup : Popup
         grid.SetColumnSpan(buttonBar, 2);
 
 
-
         var windowBorder = new Border
         {
             StrokeThickness = 1,
@@ -167,7 +179,7 @@ public class WhisperAdvancedPopup : Popup
         Content = windowBorder;
     }
 
-    private static IView MakeLeftMenuItem(WhisperAdvancedPopupModel vm, WhisperEngineNames engineName, string text)
+    private static IView MakeLeftMenuItem(WhisperAdvancedPopupModel vm, string engineName)
     {
         var label = new Label
         {
@@ -175,12 +187,12 @@ public class WhisperAdvancedPopup : Popup
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             FontSize = 17,
-            Text = text,
-            ClassId = engineName.ToString(),
+            Text = engineName,
+            ClassId = engineName,
         }.BindDynamicTheme();
 
         var tapGesture = new TapGestureRecognizer();
-        tapGesture.Tapped += async (sender, e) => await vm.LeftMenuTapped(sender, e, engineName);
+        tapGesture.Tapped += async (sender, e) => await vm.LeftMenuTapped(engineName);
         label.GestureRecognizers.Add(tapGesture);
 
         return label;
@@ -188,6 +200,8 @@ public class WhisperAdvancedPopup : Popup
 
     private static View MakeCppPage(WhisperAdvancedPopupModel vm)
     {
+        var engine = new WhisperEngineCpp();
+
         var grid = new Grid
         {
             Padding = new Thickness(20),
@@ -212,25 +226,122 @@ public class WhisperAdvancedPopup : Popup
 
         var titleLabel = new Label
         {
-            Text = "Whisper CPP",
+            Text = engine.Name,
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
         }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
-        var labelFavoriteSubtitleFormats = new Label
+        vm.LabelCppHelpText = new Editor
         {
-            Text = "Select your favorite subtitle formats",
-            VerticalOptions = LayoutOptions.Center,
+            Text = "...",
+            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Fill,
+            IsReadOnly = true,
         }.BindDynamicTheme();
-        grid.Add(labelFavoriteSubtitleFormats, 0, 1);
+        grid.Add(vm.LabelCppHelpText, 0, 1);
+
+        return grid;
+    }
+
+    private static View MakeConstMePage(WhisperAdvancedPopupModel vm)
+    {
+        var engine = new WhisperEngineConstMe();
+
+        var grid = new Grid
+        {
+            Padding = new Thickness(20),
+            RowSpacing = 20,
+            ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
+            WidthRequest = 600,
+            HeightRequest = 600,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto }
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star }
+            }
+        }.BindDynamicTheme();
+
+        var titleLabel = new Label
+        {
+            Text = engine.Name,
+            FontAttributes = FontAttributes.Bold,
+            FontSize = 18,
+        }.BindDynamicTheme();
+        grid.Add(titleLabel, 0, 0);
+        Grid.SetColumnSpan(titleLabel, 2);
+
+        vm.LabelConstMeHelpText = new Editor
+        {
+            Text = "...",
+            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Fill,
+            IsReadOnly = true,
+        }.BindDynamicTheme();
+        grid.Add(vm.LabelConstMeHelpText, 0, 1);
+
+        return grid;
+    }
+
+    private static View MakeOpenAiPage(WhisperAdvancedPopupModel vm)
+    {
+        var engine = new WhisperEngineOpenAi();
+
+        var grid = new Grid
+        {
+            Padding = new Thickness(20),
+            RowSpacing = 20,
+            ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
+            WidthRequest = 600,
+            HeightRequest = 600,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto }
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star }
+            }
+        }.BindDynamicTheme();
+
+        var titleLabel = new Label
+        {
+            Text = engine.Name,
+            FontAttributes = FontAttributes.Bold,
+            FontSize = 18,
+        }.BindDynamicTheme();
+        grid.Add(titleLabel, 0, 0);
+        Grid.SetColumnSpan(titleLabel, 2);
+
+        vm.LabelOpenAiHelpText = new Editor
+        {
+            Text = "...",
+            VerticalOptions = LayoutOptions.Center,
+            IsReadOnly = true,
+        }.BindDynamicTheme();
+        grid.Add(vm.LabelOpenAiHelpText, 0, 1);
 
         return grid;
     }
 
     private static View MakePurfviewPage(WhisperAdvancedPopupModel vm)
     {
+        var engine = new WhisperEngineOpenAi();
+
         var grid = new Grid
         {
             Padding = new Thickness(20),
@@ -255,25 +366,28 @@ public class WhisperAdvancedPopup : Popup
 
         var titleLabel = new Label
         {
-            Text = "Purfview Faster Whisper",
+            Text = engine.Name,
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
         }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
-        var labelFavoriteSubtitleFormats = new Label
+        vm.LabelPurfviewHelpText = new Editor
         {
-            Text = "Select your favorite subtitle formats",
+            Text = "...",
             VerticalOptions = LayoutOptions.Center,
+            IsReadOnly = true,
         }.BindDynamicTheme();
-        grid.Add(labelFavoriteSubtitleFormats, 0, 1);
+        grid.Add(vm.LabelPurfviewHelpText, 0, 1);
 
         return grid;
     }
 
     private static View MakePurfviewXxlPage(WhisperAdvancedPopupModel vm)
     {
+        var engine = new WhisperEnginePurfviewFasterWhisperXxl();
+
         var grid = new Grid
         {
             Padding = new Thickness(20),
@@ -298,19 +412,20 @@ public class WhisperAdvancedPopup : Popup
 
         var titleLabel = new Label
         {
-            Text = WhisperEnginePurfviewFasterWhisperXxl.StaticName,
+            Text = engine.Name,
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
         }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
-        var labelFavoriteSubtitleFormats = new Label
+        vm.LabelPurfviewXxlHelpText = new Editor
         {
-            Text = "Select your favorite subtitle formats",
+            Text = "...",
             VerticalOptions = LayoutOptions.Center,
+            IsReadOnly = true,
         }.BindDynamicTheme();
-        grid.Add(labelFavoriteSubtitleFormats, 0, 1);
+        grid.Add(vm.LabelPurfviewXxlHelpText, 0, 1);
 
         return grid;
     }

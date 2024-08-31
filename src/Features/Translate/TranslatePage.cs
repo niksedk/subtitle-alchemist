@@ -48,7 +48,7 @@ public class TranslatePage : ContentPage
 
         var poweredByLabel = new Label
         {
-            Margin = new Thickness(15, 15, 0, 15),
+            Margin = new Thickness(15, 15, 0, 0),
             Text = "Powered by ",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
@@ -57,7 +57,7 @@ public class TranslatePage : ContentPage
 
         vm.TitleLabel = new Label
         {
-            Margin = new Thickness(5, 15, 15, 15),
+            Margin = new Thickness(5, 15, 15, 0),
             Text = "...",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
@@ -385,7 +385,7 @@ public class TranslatePage : ContentPage
             Placeholder = "Enter model",
             Margin = new Thickness(3, 0, 0, 0),
         };
-    
+
         vm.ButtonModel = new Button
         {
             Text = "...",
@@ -398,7 +398,7 @@ public class TranslatePage : ContentPage
         {
             Text = "Formality",
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(20,0,0,0),
+            Margin = new Thickness(20, 0, 0, 0),
         }.BindDynamicTheme();
 
         vm.PickerFormality = new Picker
@@ -491,7 +491,7 @@ public class TranslatePage : ContentPage
                     tr.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
                     _vm.Lines = _vm.Lines;
                 }
-            }); 
+            });
 
             if (!string.IsNullOrWhiteSpace(Configuration.Settings.Tools.AutoTranslateLastName))
             {
