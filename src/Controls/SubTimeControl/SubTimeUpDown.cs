@@ -18,6 +18,10 @@ public class SubTimeUpDown : ContentView
         BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(SubTimeUpDown), TimeSpan.Zero,
             propertyChanged: OnTimeChanged);
 
+    public static readonly BindableProperty TextColorProperty =
+        BindableProperty.Create(nameof(Time), typeof(Color), typeof(SubTimeUpDown), Colors.Black,
+            propertyChanged: OnTextColorChanged);
+
     public event EventHandler<ValueChangedEventArgs>? ValueChanged;
 
     /// <summary>
@@ -27,6 +31,15 @@ public class SubTimeUpDown : ContentView
     {
         get => (Color)GetValue(ErrorColorProperty);
         set => SetValue(ErrorColorProperty, value);
+    }
+
+    /// <summary>
+    /// The Color used to display the time code and up/down arrows.
+    /// </summary>
+    public Color TextColor
+    {
+        get => (Color)GetValue(TextColorProperty);
+        set => SetValue(TextColorProperty, value);
     }
 
     /// <summary>
@@ -103,6 +116,16 @@ public class SubTimeUpDown : ContentView
             control._upDown.Value = (float)timeSpan.TotalMilliseconds;
             control.Time = timeSpan;
             control.UpdateDisplayText();
+        }
+    }
+
+    private static void OnTextColorChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        if (newValue is Color color && bindable is SubTimeUpDown control)
+        {
+            control._upDown.TextColor = color;
+            control._upDown.TextColor = color;
+            control._timeLabel.TextColor = color;
         }
     }
 

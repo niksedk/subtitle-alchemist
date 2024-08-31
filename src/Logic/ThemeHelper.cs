@@ -122,6 +122,7 @@ namespace SubtitleAlchemist.Logic
         public static SubTimeUpDown BindDynamicTheme(this SubTimeUpDown control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            control.SetDynamicResource(SubTimeUpDown.TextColorProperty, ThemeNames.TextColor);
             return control;
         }
 
