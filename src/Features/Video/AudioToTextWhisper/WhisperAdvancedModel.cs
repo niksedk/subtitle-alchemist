@@ -6,24 +6,29 @@ using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
-public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
+public partial class WhisperAdvancedModel : ObservableObject
 {
     public WhisperAdvancedPage? Page { get; set; }
     public Dictionary<string, View> WhisperEngines { get; set; } = new();
-    public Dictionary<string, Editor> WhisperHelpLabels { get; set; } = new();
+    public Dictionary<string, Editor> WhisperHelpText { get; set; } = new();
+    public Dictionary<string, ScrollView> WhisperScrollViews { get; set; } = new();
     public Border EnginePage { get; set; } = new();
 
     [ObservableProperty]
     private string _currentParameters = SeSettings.Settings.Tools.WhisperExtraSettings;
 
     public VerticalStackLayout LeftMenu { get; set; } = new();
-    public Editor LabelCppHelpText { get; set; } = new();
-    public Editor LabelConstMeHelpText { get; set; } = new();
-    public Editor LabelOpenAiHelpText { get; set; } = new();
-    public Editor LabelPurfviewHelpText { get; set; } = new();
-    public Editor LabelPurfviewXxlHelpText { get; set; } = new();
+    public Editor EditorCppHelpText { get; set; } = new();
+    public Editor EditorConstMeHelpText { get; set; } = new();
+    public Editor EditorOpenAiHelpText { get; set; } = new();
+    public Editor EditorPurfviewHelpText { get; set; } = new();
+    public Editor EditorPurfviewXxlHelpText { get; set; } = new();
 
-    private string _videoFileName = string.Empty;
+    public ScrollView ScrollViewCppHelpText { get; set; } = new();
+    public ScrollView ScrollViewConstMeHelpText { get; set; } = new();
+    public ScrollView ScrollViewOpenAiHelpText { get; set; } = new();
+    public ScrollView ScrollViewPurfviewHelpText { get; set; } = new();
+    public ScrollView ScrollViewPurfviewXxlHelpText { get; set; } = new();
 
     public async Task LeftMenuTapped(string engineName)
     {
@@ -35,7 +40,7 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
         WhisperEngines[engineName].Opacity = 0;
 
         var engine = WhisperEngineFactory.MakeEngineFromStaticName(engineName);
-        WhisperHelpLabels[engineName].Text = await engine.GetHelpText();
+        WhisperHelpText[engineName].Text = await engine.GetHelpText();
 
         EnginePage.Content = WhisperEngines[engineName];
 
@@ -70,7 +75,6 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
         {
             { "Page", nameof(WhisperAdvancedPage) },
             { "Parameters", CurrentParameters },
-            { "VideoFileName", _videoFileName },
         });
     }
 
@@ -80,11 +84,24 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
         await Shell.Current.GoToAsync("..");
     }
 
-    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    public void OnSizeAllocated(double width, double height)
     {
-        if (query["VideoFileName"] is string videoFileName)
-        {
-            _videoFileName = videoFileName;
-        }
+        var newWidth = Math.Max(100, width - 350);
+        var newHeight = Math.Max(100, height - 350);
+
+        ScrollViewOpenAiHelpText.HeightRequest = newHeight;
+        ScrollViewOpenAiHelpText.WidthRequest = newWidth;
+
+        ScrollViewPurfviewHelpText.HeightRequest = newHeight;
+        ScrollViewPurfviewHelpText.WidthRequest = newWidth;
+
+        ScrollViewPurfviewXxlHelpText.HeightRequest = newHeight;
+        ScrollViewPurfviewXxlHelpText.WidthRequest = newWidth;
+
+        ScrollViewConstMeHelpText.HeightRequest = newHeight;
+        ScrollViewConstMeHelpText.WidthRequest = newWidth;
+
+        ScrollViewCppHelpText.HeightRequest = newHeight;
+        ScrollViewCppHelpText.WidthRequest = newWidth;
     }
 }

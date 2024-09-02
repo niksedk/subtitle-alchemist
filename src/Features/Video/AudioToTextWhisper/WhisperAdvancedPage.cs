@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Markup;
-using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 using SubtitleAlchemist.Logic;
@@ -8,22 +7,31 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
 public class WhisperAdvancedPage : ContentPage
 {
+
+    private readonly WhisperAdvancedModel? _vm;
     public WhisperAdvancedPage(WhisperAdvancedModel vm)
     {
         vm.Page = this;
+        _vm = vm;
         this.BindDynamicTheme();
 
-        vm.WhisperEngines.Add(WhisperEngineCpp.StaticName, MakeCppPage(vm));
-        vm.WhisperEngines.Add(WhisperEnginePurfviewFasterWhisper.StaticName, MakePurfviewPage(vm));
-        vm.WhisperEngines.Add(WhisperEnginePurfviewFasterWhisperXxl.StaticName, MakePurfviewXxlPage(vm));
-        vm.WhisperEngines.Add(WhisperEngineOpenAi.StaticName, MakeOpenAiPage(vm));
-        vm.WhisperEngines.Add(WhisperEngineConstMe.StaticName, MakeConstMePage(vm));
+        vm.WhisperEngines.Add(WhisperEngineCpp.StaticName, MakeEnginePage(new WhisperEngineCpp(), vm.EditorCppHelpText, vm.ScrollViewCppHelpText));
+        vm.WhisperEngines.Add(WhisperEnginePurfviewFasterWhisper.StaticName, MakeEnginePage(new WhisperEnginePurfviewFasterWhisper(), vm.EditorPurfviewHelpText, vm.ScrollViewPurfviewHelpText));
+        vm.WhisperEngines.Add(WhisperEnginePurfviewFasterWhisperXxl.StaticName, MakeEnginePage(new WhisperEnginePurfviewFasterWhisperXxl(), vm.EditorPurfviewXxlHelpText, vm.ScrollViewPurfviewXxlHelpText));
+        vm.WhisperEngines.Add(WhisperEngineOpenAi.StaticName, MakeEnginePage(new WhisperEngineOpenAi(), vm.EditorOpenAiHelpText, vm.ScrollViewOpenAiHelpText));
+        vm.WhisperEngines.Add(WhisperEngineConstMe.StaticName, MakeEnginePage(new WhisperEngineConstMe(), vm.EditorConstMeHelpText, vm.ScrollViewConstMeHelpText));
 
-        vm.WhisperHelpLabels.Add(WhisperEngineCpp.StaticName, vm.LabelCppHelpText);
-        vm.WhisperHelpLabels.Add(WhisperEnginePurfviewFasterWhisper.StaticName, vm.LabelPurfviewHelpText);
-        vm.WhisperHelpLabels.Add(WhisperEnginePurfviewFasterWhisperXxl.StaticName, vm.LabelPurfviewXxlHelpText);
-        vm.WhisperHelpLabels.Add(WhisperEngineOpenAi.StaticName, vm.LabelOpenAiHelpText);
-        vm.WhisperHelpLabels.Add(WhisperEngineConstMe.StaticName, vm.LabelConstMeHelpText);
+        vm.WhisperHelpText.Add(WhisperEngineCpp.StaticName, vm.EditorCppHelpText);
+        vm.WhisperHelpText.Add(WhisperEnginePurfviewFasterWhisper.StaticName, vm.EditorPurfviewHelpText);
+        vm.WhisperHelpText.Add(WhisperEnginePurfviewFasterWhisperXxl.StaticName, vm.EditorPurfviewXxlHelpText);
+        vm.WhisperHelpText.Add(WhisperEngineOpenAi.StaticName, vm.EditorOpenAiHelpText);
+        vm.WhisperHelpText.Add(WhisperEngineConstMe.StaticName, vm.EditorConstMeHelpText);
+
+        vm.WhisperScrollViews.Add(WhisperEngineCpp.StaticName, vm.ScrollViewCppHelpText);
+        vm.WhisperScrollViews.Add(WhisperEnginePurfviewFasterWhisper.StaticName, vm.ScrollViewPurfviewHelpText);
+        vm.WhisperScrollViews.Add(WhisperEnginePurfviewFasterWhisperXxl.StaticName, vm.ScrollViewPurfviewXxlHelpText);
+        vm.WhisperScrollViews.Add(WhisperEngineOpenAi.StaticName, vm.ScrollViewOpenAiHelpText);
+        vm.WhisperScrollViews.Add(WhisperEngineConstMe.StaticName, vm.ScrollViewConstMeHelpText);
 
         BindingContext = vm;
 
@@ -33,8 +41,6 @@ public class WhisperAdvancedPage : ContentPage
             Padding = new Thickness(1),
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            WidthRequest = 600,
-            HeightRequest = 600,
             StrokeShape = new RoundRectangle
             {
                 CornerRadius = new CornerRadius(2),
@@ -46,41 +52,22 @@ public class WhisperAdvancedPage : ContentPage
         {
             RowDefinitions =
             {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Star },
-                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto }, // title
+                new RowDefinition { Height = GridLength.Auto }, // parameters
+                new RowDefinition { Height = GridLength.Star }, // left menu and engine page
+                new RowDefinition { Height = GridLength.Auto }, // buttons
             },
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Star }
             },
-            Padding = new Thickness(20),
-            RowSpacing = 20,
+            Padding = new Thickness(10),
+            RowSpacing = 10,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
-
-        var closeLine = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.End,
-            Children =
-            {
-                new ImageButton
-                {
-                    Command = vm.CloseCommand,
-                    WidthRequest = 30,
-                    HeightRequest = 30,
-                    Margin = 10,
-                    Source = "btn_close.png",
-                }
-            }
-        };
-        grid.Add(closeLine, 0, 0);
-        Grid.SetColumnSpan(closeLine, 2);
 
         var title = new Label
         {
@@ -101,11 +88,11 @@ public class WhisperAdvancedPage : ContentPage
                 new Label
                 {
                     Text = "Parameters",
-                    Margin = 2,
+                    Margin = 0,
                 },
                 new Entry
                 {
-                    Placeholder = "Parameters",
+                    Placeholder = "Enter command line parameters",
                     HorizontalOptions = LayoutOptions.Fill,
                     Margin = new Thickness(0,0,0, 10),
                 }.Bind(nameof(vm.CurrentParameters))
@@ -126,16 +113,17 @@ public class WhisperAdvancedPage : ContentPage
             },
             VerticalOptions = LayoutOptions.Fill,
             HorizontalOptions = LayoutOptions.Start,
+            WidthRequest = 220,
         }.BindDynamicTheme();
 
         grid.Add(vm.LeftMenu, 0, 2);
         grid.Add(vm.EnginePage, 1, 2);
 
 
-        var transcribeButton = new Button
+        var OkButton = new Button
         {
             Text = "OK",
-           VerticalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
             Command = vm.OkCommand,
             Margin = new Thickness(5),
         }.BindDynamicTheme();
@@ -154,7 +142,7 @@ public class WhisperAdvancedPage : ContentPage
             HorizontalOptions = LayoutOptions.Center,
             Children =
             {
-                transcribeButton,
+                OkButton,
                 cancelButton,
             }
         };
@@ -162,21 +150,7 @@ public class WhisperAdvancedPage : ContentPage
         grid.Add(buttonBar, 0, 3);
         grid.SetColumnSpan(buttonBar, 2);
 
-
-        var windowBorder = new Border
-        {
-            StrokeThickness = 1,
-            Padding = new Thickness(1),
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            StrokeShape = new RoundRectangle
-            {
-                CornerRadius = new CornerRadius(5),
-            },
-            Content = grid,
-        }.BindDynamicTheme();
-
-        Content = windowBorder;
+        Content = grid;
     }
 
     private static IView MakeLeftMenuItem(WhisperAdvancedModel vm, string engineName)
@@ -185,8 +159,8 @@ public class WhisperAdvancedPage : ContentPage
         {
             Margin = 5,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            FontSize = 17,
+            VerticalOptions = LayoutOptions.Start,
+            FontSize = 15,
             Text = engineName,
             ClassId = engineName,
         }.BindDynamicTheme();
@@ -198,29 +172,23 @@ public class WhisperAdvancedPage : ContentPage
         return label;
     }
 
-    private static View MakeCppPage(WhisperAdvancedModel vm)
+    private static View MakeEnginePage(IWhisperEngine engine, Editor editor, ScrollView scrollView)
     {
-        var engine = new WhisperEngineCpp();
-
         var grid = new Grid
         {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
+            Padding = new Thickness(10),
+            RowSpacing = 10,
             ColumnSpacing = 10,
-            HorizontalOptions = LayoutOptions.Fill,
-            WidthRequest = 600,
-            HeightRequest = 600,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
             },
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star }
             }
         }.BindDynamicTheme();
 
@@ -229,204 +197,33 @@ public class WhisperAdvancedPage : ContentPage
             Text = engine.Name,
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
+            VerticalOptions = LayoutOptions.Start,
+            HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
-        vm.LabelCppHelpText = new Editor
-        {
-            Text = "...",
-            VerticalOptions = LayoutOptions.Fill,
-            HorizontalOptions = LayoutOptions.Fill,
-            IsReadOnly = true,
-        }.BindDynamicTheme();
-        grid.Add(vm.LabelCppHelpText, 0, 1);
+        editor.Text = "...";
+        editor.VerticalOptions = LayoutOptions.Start;
+        editor.HorizontalOptions = LayoutOptions.Start;
+        editor.FontFamily = "RobotoMono";
+        editor.IsReadOnly = true;
+        editor.BindDynamicTheme();
+
+        scrollView.VerticalOptions = LayoutOptions.Start;
+        scrollView.HorizontalOptions = LayoutOptions.Start;
+        scrollView.HorizontalScrollBarVisibility = ScrollBarVisibility.Always;
+        scrollView.VerticalScrollBarVisibility = ScrollBarVisibility.Always;
+        scrollView.Content = editor;
+        scrollView.BindDynamicTheme();
+        grid.Add(scrollView, 0, 1);
 
         return grid;
     }
 
-    private static View MakeConstMePage(WhisperAdvancedModel vm)
+    protected override void OnSizeAllocated(double width, double height)
     {
-        var engine = new WhisperEngineConstMe();
-
-        var grid = new Grid
-        {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
-            HorizontalOptions = LayoutOptions.Fill,
-            WidthRequest = 600,
-            HeightRequest = 600,
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star }
-            }
-        }.BindDynamicTheme();
-
-        var titleLabel = new Label
-        {
-            Text = engine.Name,
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-        }.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
-        Grid.SetColumnSpan(titleLabel, 2);
-
-        vm.LabelConstMeHelpText = new Editor
-        {
-            Text = "...",
-            VerticalOptions = LayoutOptions.Fill,
-            HorizontalOptions = LayoutOptions.Fill,
-            IsReadOnly = true,
-        }.BindDynamicTheme();
-        grid.Add(vm.LabelConstMeHelpText, 0, 1);
-
-        return grid;
-    }
-
-    private static View MakeOpenAiPage(WhisperAdvancedModel vm)
-    {
-        var engine = new WhisperEngineOpenAi();
-
-        var grid = new Grid
-        {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
-            HorizontalOptions = LayoutOptions.Fill,
-            WidthRequest = 600,
-            HeightRequest = 600,
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star }
-            }
-        }.BindDynamicTheme();
-
-        var titleLabel = new Label
-        {
-            Text = engine.Name,
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-        }.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
-        Grid.SetColumnSpan(titleLabel, 2);
-
-        vm.LabelOpenAiHelpText = new Editor
-        {
-            Text = "...",
-            VerticalOptions = LayoutOptions.Center,
-            IsReadOnly = true,
-        }.BindDynamicTheme();
-        grid.Add(vm.LabelOpenAiHelpText, 0, 1);
-
-        return grid;
-    }
-
-    private static View MakePurfviewPage(WhisperAdvancedModel vm)
-    {
-        var engine = new WhisperEngineOpenAi();
-
-        var grid = new Grid
-        {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
-            HorizontalOptions = LayoutOptions.Fill,
-            WidthRequest = 600,
-            HeightRequest = 600,
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star }
-            }
-        }.BindDynamicTheme();
-
-        var titleLabel = new Label
-        {
-            Text = engine.Name,
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-        }.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
-        Grid.SetColumnSpan(titleLabel, 2);
-
-        vm.LabelPurfviewHelpText = new Editor
-        {
-            Text = "...",
-            VerticalOptions = LayoutOptions.Center,
-            IsReadOnly = true,
-        }.BindDynamicTheme();
-        grid.Add(vm.LabelPurfviewHelpText, 0, 1);
-
-        return grid;
-    }
-
-    private static View MakePurfviewXxlPage(WhisperAdvancedModel vm)
-    {
-        var engine = new WhisperEnginePurfviewFasterWhisperXxl();
-
-        var grid = new Grid
-        {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
-            HorizontalOptions = LayoutOptions.Fill,
-            WidthRequest = 600,
-            HeightRequest = 600,
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star }
-            }
-        }.BindDynamicTheme();
-
-        var titleLabel = new Label
-        {
-            Text = engine.Name,
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-        }.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
-        Grid.SetColumnSpan(titleLabel, 2);
-
-        vm.LabelPurfviewXxlHelpText = new Editor
-        {
-            Text = "...",
-            VerticalOptions = LayoutOptions.Center,
-            IsReadOnly = true,
-        }.BindDynamicTheme();
-        grid.Add(vm.LabelPurfviewXxlHelpText, 0, 1);
-
-        return grid;
+        base.OnSizeAllocated(width, height);
+        _vm?.OnSizeAllocated(width, height);
     }
 }

@@ -133,6 +133,12 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static ScrollView BindDynamicTheme(this ScrollView control)
+        {
+            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            return control;
+        }
+
         public static Popup BindDynamicTheme(this Popup control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
