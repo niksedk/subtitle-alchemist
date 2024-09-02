@@ -7,7 +7,6 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
 public class WhisperAdvancedPage : ContentPage
 {
-
     private readonly WhisperAdvancedModel? _vm;
     public WhisperAdvancedPage(WhisperAdvancedModel vm)
     {
@@ -172,7 +171,7 @@ public class WhisperAdvancedPage : ContentPage
         return label;
     }
 
-    private static View MakeEnginePage(IWhisperEngine engine, Editor editor, ScrollView scrollView)
+    private View MakeEnginePage(IWhisperEngine engine, Editor editor, ScrollView scrollView)
     {
         var grid = new Grid
         {
@@ -218,6 +217,51 @@ public class WhisperAdvancedPage : ContentPage
         scrollView.BindDynamicTheme();
         grid.Add(scrollView, 0, 1);
 
+        if (engine.Name == WhisperEnginePurfviewFasterWhisper.StaticName ||
+            engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName)
+        {
+            var buttonBar = new StackLayout
+            {
+                Orientation = StackOrientation.Horizontal,
+                HorizontalOptions = LayoutOptions.Start,
+                Children =
+                {
+                    new Button
+                    {
+                        Text = "Standard",
+                        Command = _vm?.SetStandardParameterCommand,
+                        Margin = new Thickness(5),
+                    }.BindDynamicTheme(),
+                    new Button
+                    {
+                        Text = "Standard Asia",
+                        Command = _vm?.SetStandardAsiaParameterCommand,
+                        Margin = new Thickness(5),
+                    }.BindDynamicTheme(),
+                    new Button
+                    {
+                        Text = "Sentence",
+                        Command = _vm?.SetSentenceParameterCommand,
+                        Margin = new Thickness(5),
+                    }.BindDynamicTheme(),
+                    new Button
+                    {
+                        Text = "Single words",
+                        Command = _vm?.SetSingleWordsParameterCommand,
+                        Margin = new Thickness(5),
+                    }.BindDynamicTheme(),
+                    new Button
+                    {
+                        Text = "Highlight word",
+                        Command = _vm?.SetHightlightWordParameterCommand,
+                        Margin = new Thickness(5),
+                    }.BindDynamicTheme(),
+                }
+            };
+
+            grid.Add(buttonBar, 0, 2);
+        }
+
         return grid;
     }
 
@@ -225,5 +269,17 @@ public class WhisperAdvancedPage : ContentPage
     {
         base.OnSizeAllocated(width, height);
         _vm?.OnSizeAllocated(width, height);
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+
+        if (_vm == null)
+        {
+            return;
+        }
+
+        await _vm.LeftMenuTapped(_vm.DefaultWhisperEngineName);
     }
 }

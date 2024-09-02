@@ -6,13 +6,14 @@ using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
-public partial class WhisperAdvancedModel : ObservableObject
+public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
 {
     public WhisperAdvancedPage? Page { get; set; }
     public Dictionary<string, View> WhisperEngines { get; set; } = new();
     public Dictionary<string, Editor> WhisperHelpText { get; set; } = new();
     public Dictionary<string, ScrollView> WhisperScrollViews { get; set; } = new();
     public Border EnginePage { get; set; } = new();
+    public string DefaultWhisperEngineName { get; set; } = WhisperEngineCpp.StaticName;
 
     [ObservableProperty]
     private string _currentParameters = SeSettings.Settings.Tools.WhisperExtraSettings;
@@ -103,5 +104,43 @@ public partial class WhisperAdvancedModel : ObservableObject
 
         ScrollViewCppHelpText.HeightRequest = newHeight;
         ScrollViewCppHelpText.WidthRequest = newWidth;
+    }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query.ContainsKey("WhisperEngine") && query["WhisperEngine"] is string engineName)
+        {
+            DefaultWhisperEngineName = engineName;
+        }
+    }
+
+    [RelayCommand]
+    private void SetStandardParameter()
+    {
+        CurrentParameters = "--standard";
+    }
+
+    [RelayCommand]
+    private void SetStandardAsiaParameter()
+    {
+        CurrentParameters = "--standard_asia";
+    }
+
+    [RelayCommand]
+    private void SetSentenceParameter()
+    {
+        CurrentParameters = "--sentence";
+    }
+
+    [RelayCommand]
+    private void SetSingleWordsParameter()
+    {
+        CurrentParameters = "--one_word 2";
+    }
+
+    [RelayCommand]
+    private void SetHightlightWordParameter()
+    {
+        CurrentParameters = "--highlight_words true --max_line_width 43 --max_line_count 2";
     }
 }

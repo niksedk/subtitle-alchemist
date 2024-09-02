@@ -92,15 +92,17 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         WhisperEngines.Add(new WhisperEngineConstMe());
 
         _timer.Interval = 100;
-        _timer.Elapsed += async (o, args) => await OnTimerOnElapsed(o, args);
+        _timer.Elapsed += OnTimerOnElapsed;
     }
 
-    private async Task OnTimerOnElapsed(object? sender, ElapsedEventArgs args)
+    private void OnTimerOnElapsed(object? sender, ElapsedEventArgs args)
     {
         if (_abort)
         {
             _timer.Stop();
+#pragma warning disable CA1416
             _whisperProcess.Kill(true);
+#pragma warning restore CA1416
             ProgressBar.IsVisible = false;
 
             var partialSub = new Subtitle();
@@ -180,24 +182,16 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     public async Task ShowAdvancedWhisperSettings()
     {
+        if (PickerEngine.SelectedItem is not IWhisperEngine engine)
+        {
+            return;
+        }
+
         await Shell.Current.GoToAsync(nameof(WhisperAdvancedPage), new Dictionary<string, object>
         {
             { "Page",  nameof(AudioToTextWhisperPage) },
-            { "VideoFileName", _videoFileName ?? string.Empty },
+            { "WhisperEngine", engine.Name },
         });
-
-        //var result = await _popupService.ShowPopupAsync<WhisperAdvancedModel>(onPresenting: async viewModel =>
-        //{
-        //   await viewModel.LeftMenuTapped(WhisperEngines.First().Name);
-        //}, CancellationToken.None);
-
-        //if (result is string settings)
-        //{
-        //    SeSettings.Settings.Tools.WhisperExtraSettings = settings;
-        //    LabelAdvancedSettings.Text = settings;
-
-        //    SaveSettings();
-        //}
     }
 
     [RelayCommand]
@@ -286,11 +280,13 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        _waveFileName = GenerateWavFile(_videoFileName, _audioTrackNumber);
-        if (string.IsNullOrEmpty(_waveFileName))
+        var genWaveFile = GenerateWavFile(_videoFileName, _audioTrackNumber);
+        if (string.IsNullOrEmpty(genWaveFile))
         {
             return;
         }
+
+        _waveFileName = genWaveFile;
 
         SaveSettings();
 
@@ -463,7 +459,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         var process = new Process { StartInfo = new ProcessStartInfo(w, parameters) { WindowStyle = ProcessWindowStyle.Hidden, CreateNoWindow = true } };
         if (!string.IsNullOrEmpty(SeSettings.Settings.FfmpegPath) && process.StartInfo.EnvironmentVariables["Path"] != null)
         {
-            process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"].TrimEnd(';') + ";" + Path.GetDirectoryName(SeSettings.Settings.FfmpegPath);
+            process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"]?.TrimEnd(';') + ";" + Path.GetDirectoryName(SeSettings.Settings.FfmpegPath);
         }
 
         var whisperFolder = engine.GetAndCreateWhisperFolder();
@@ -482,7 +478,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         if (!string.IsNullOrEmpty(whisperFolder) && process.StartInfo.EnvironmentVariables["Path"] != null)
         {
-            process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"].TrimEnd(';') + ";" + whisperFolder;
+            process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"]?.TrimEnd(';') + ";" + whisperFolder;
         }
 
         if (Configuration.Settings.Tools.WhisperChoice != WhisperChoice.Cpp &&
@@ -504,7 +500,9 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             process.ErrorDataReceived += dataReceivedHandler;
         }
 
+#pragma warning disable CA1416
         process.Start();
+#pragma warning restore CA1416
 
         if (dataReceivedHandler != null)
         {
@@ -739,7 +737,10 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         };
 
         process.StartInfo.RedirectStandardError = true;
+#pragma warning disable CA1416
         var started = process.Start();
+#pragma warning restore CA1416
+
         process.BeginErrorReadLine();
 
         double seconds = 0;
@@ -778,7 +779,10 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
             if (_abort)
             {
-                process.Kill();
+#pragma warning disable CA1416
+                process.Kill(true);
+#pragma warning restore CA1416
+
                 ProgressBar.IsVisible = false;
                 return null;
             }
@@ -964,12 +968,18 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             {
                 SeSettings.Settings.Tools.WhisperExtraSettings = parameters;
                 LabelAdvancedSettings.Text = parameters;
+                SaveSettings();
             }
         }
 
         if (query.ContainsKey("VideoFileName") && query["VideoFileName"] is string videoFileName)
         {
             _videoFileName = videoFileName;
+        }
+
+        if (query.ContainsKey("AudioTrackNumber") && query["AudioTrackNumber"] is int audioTrackNumber)
+        {
+            _audioTrackNumber = audioTrackNumber;
         }
     }
 

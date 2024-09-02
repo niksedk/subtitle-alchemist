@@ -20,7 +20,7 @@ public partial class SettingsViewModel : ObservableObject
     public SettingsPage? SettingsPage { get; set; }
     public BoxView SyntaxErrorColorBox { get; set; }
 
-    [ObservableProperty] private string _ffmpegPath;
+    [ObservableProperty] private string _ffmpegPath = string.Empty;
 
     [ObservableProperty] private string _theme = "Dark";
     [ObservableProperty] private bool _showRecentFiles;
