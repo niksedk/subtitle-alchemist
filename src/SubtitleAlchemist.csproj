@@ -24,7 +24,7 @@
 		<ApplicationTitle>Subtitle Alchemist</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.subtitlealchemist</ApplicationId>
+		<ApplicationId>dk.nikse.subtitlealchemist</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -42,7 +42,7 @@
 		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
 		<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
 		<AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-		<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+		<AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
 		<GenerateTestArtifacts>True</GenerateTestArtifacts>
 		<AppInstallerUri>https://github.com/niksedk/subtitle-alchemist</AppInstallerUri>
 		<HoursBetweenUpdateChecks>120</HoursBetweenUpdateChecks>

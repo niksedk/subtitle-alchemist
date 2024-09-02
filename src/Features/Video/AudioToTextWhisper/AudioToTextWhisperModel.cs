@@ -15,6 +15,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
+using SubtitleAlchemist.Logic.Config;
 using Switch = Microsoft.Maui.Controls.Switch;
 using Timer = System.Timers.Timer;
 
@@ -454,9 +455,9 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         SeLogger.WhisperInfo($"{w} {parameters}");
 
         var process = new Process { StartInfo = new ProcessStartInfo(w, parameters) { WindowStyle = ProcessWindowStyle.Hidden, CreateNoWindow = true } };
-        if (!string.IsNullOrEmpty(Configuration.Settings.General.FFmpegLocation) && process.StartInfo.EnvironmentVariables["Path"] != null)
+        if (!string.IsNullOrEmpty(SeSettings.Settings.FfmpegPath) && process.StartInfo.EnvironmentVariables["Path"] != null)
         {
-            process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"].TrimEnd(';') + ";" + Path.GetDirectoryName(Configuration.Settings.General.FFmpegLocation);
+            process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"].TrimEnd(';') + ";" + Path.GetDirectoryName(SeSettings.Settings.FfmpegPath);
         }
 
         var whisperFolder = engine.GetAndCreateWhisperFolder();
@@ -816,7 +817,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     private Process? GetFfmpegProcess(string videoFileName, int audioTrackNumber, string outWaveFile)
     {
-        if (!File.Exists(Configuration.Settings.General.FFmpegLocation) && Configuration.IsRunningOnWindows)
+        if (!File.Exists(SeSettings.Settings.FfmpegPath) && Configuration.IsRunningOnWindows)
         {
             return null;
         }
@@ -843,7 +844,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         //-ac 2 means 2 channels
         // "-map 0:a:0" is the first audio stream, "-map 0:a:1" is the second audio stream
 
-        var exeFilePath = Configuration.Settings.General.FFmpegLocation;
+        var exeFilePath = SeSettings.Settings.FfmpegPath;
         if (!Configuration.IsRunningOnWindows)
         {
             exeFilePath = "ffmpeg";
@@ -883,7 +884,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         Configuration.Settings.Tools.WhisperAutoAdjustTimings = SwitchAdjustTimings.IsToggled;
         Configuration.Settings.Tools.VoskPostProcessing = SwitchPostProcessing.IsToggled;
 
-        Configuration.Settings.Save();
+        SeSettings.SaveSettings();
     }
 
     public void PickerEngine_SelectedIndexChanged(object? sender, EventArgs e)

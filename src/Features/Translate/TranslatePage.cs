@@ -1,6 +1,7 @@
 using Microsoft.Maui.Controls.Shapes;
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Converters;
 
@@ -493,9 +494,9 @@ public class TranslatePage : ContentPage
                 }
             });
 
-            if (!string.IsNullOrWhiteSpace(Configuration.Settings.Tools.AutoTranslateLastName))
+            if (!string.IsNullOrWhiteSpace(SeSettings.Settings.Tools.AutoTranslateLastName))
             {
-                var item = _vm.AutoTranslators.FirstOrDefault(p => p.Name == Configuration.Settings.Tools.AutoTranslateLastName);
+                var item = _vm.AutoTranslators.FirstOrDefault(p => p.Name == SeSettings.Settings.Tools.AutoTranslateLastName);
                 if (item != null)
                 {
                     _vm.SelectedAutoTranslator = item;

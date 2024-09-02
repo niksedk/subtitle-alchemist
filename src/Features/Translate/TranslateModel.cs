@@ -12,6 +12,7 @@ using System.Text;
 using CommunityToolkit.Maui.Core;
 using SubtitleAlchemist.Controls.PickerControl;
 using System;
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Translate;
 
@@ -498,6 +499,9 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         }
 
         Configuration.Settings.Tools.AutoTranslateLastName = SelectedAutoTranslator.Name;
+        SeSettings.Settings.Tools.AutoTranslateLastName = SelectedAutoTranslator.Name;
+
+        SeSettings.SaveSettings();
     }
 
     public void EngineSelectedIndexChanged(object? sender, EventArgs e)

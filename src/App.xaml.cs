@@ -1,4 +1,6 @@
-﻿using MainViewModel = SubtitleAlchemist.Features.Main.MainViewModel;
+﻿using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
+using MainViewModel = SubtitleAlchemist.Features.Main.MainViewModel;
 
 namespace SubtitleAlchemist
 {
@@ -7,6 +9,8 @@ namespace SubtitleAlchemist
         public App()
         {
             InitializeComponent();
+
+            SeSettings.LoadSettings();
 
             MainPage = new AppShell();
         }

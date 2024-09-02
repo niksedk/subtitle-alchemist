@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Nikse.SubtitleEdit.Core.Common;
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Logic.Media
 {
@@ -62,16 +63,16 @@ namespace SubtitleAlchemist.Logic.Media
                 //-ac 2 means 2 channels
                 // "-map 0:a:0" is the first audio stream, "-map 0:a:1" is the second audio stream
 
-                exeFilePath = Configuration.Settings.General.FFmpegLocation;
+                exeFilePath = SeSettings.Settings.FfmpegPath;
                 if (!Configuration.IsRunningOnWindows)
                 {
                     if (Configuration.IsRunningOnLinux)
                     {
                         exeFilePath = "ffmpeg";
                     }
-                    else if (Configuration.IsRunningOnMac && File.Exists(Configuration.Settings.General.FFmpegLocation))
+                    else if (Configuration.IsRunningOnMac && File.Exists(SeSettings.Settings.FfmpegPath))
                     {
-                        exeFilePath = Configuration.Settings.General.FFmpegLocation;
+                        exeFilePath = SeSettings.Settings.FfmpegPath;
                     }
                     else if (Configuration.IsRunningOnMac && File.Exists("/usr/local/bin/ffmpeg"))
                     {

@@ -8,6 +8,7 @@ using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections.ObjectModel;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 using static SubtitleAlchemist.Features.Options.Settings.SettingsPage;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
@@ -90,14 +91,16 @@ public partial class SettingsViewModel : ObservableObject
 
     public void LoadSettings()
     {
-        Theme = Configuration.Settings.General.UseDarkTheme ? "Dark" : "Light";
-        FfmpegPath = Configuration.Settings.General.FFmpegLocation;
+        Theme = SeSettings.Settings.Theme;
+        FfmpegPath = SeSettings.Settings.FfmpegPath;
     }
 
     public void SaveSettings()
     {
-        Configuration.Settings.General.FFmpegLocation = FfmpegPath;
-        Configuration.Settings.General.UseDarkTheme = Theme == "Dark";
+        SeSettings.Settings.FfmpegPath = FfmpegPath;
+        SeSettings.Settings.Theme = Theme;
+
+        SeSettings.SaveSettings();
     }
 
     public async Task BrowseForFfmpeg(object? sender, EventArgs eventArgs)

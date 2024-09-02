@@ -23,6 +23,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
+using SubtitleAlchemist.Logic.Config;
 using Path = System.IO.Path;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -553,7 +554,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _timer.Stop();
         _audioVisualizer.OnVideoPositionChanged -= AudioVisualizer_OnVideoPositionChanged;
         SharpHookHandler.Clear();
-        Configuration.Settings.Save();
+        SeSettings.SaveSettings();
         SharpHookHandler.Dispose();
     }
     public void Start()
@@ -981,13 +982,13 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         if (File.Exists(DownloadFfmpegModel.GetFfmpegFileName()))
         {
-            Configuration.Settings.General.FFmpegLocation = DownloadFfmpegModel.GetFfmpegFileName();
+            SeSettings.Settings.FfmpegPath = DownloadFfmpegModel.GetFfmpegFileName();
             return true;
         }
 
         if (Configuration.IsRunningOnMac && File.Exists("/usr/local/bin/ffmpeg"))
         {
-            Configuration.Settings.General.FFmpegLocation = "/usr/local/bin/ffmpeg";
+            SeSettings.Settings.FfmpegPath = "/usr/local/bin/ffmpeg";
             return true;
         }
 

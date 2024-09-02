@@ -1,5 +1,6 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Logic.Media
 {
@@ -8,8 +9,8 @@ namespace SubtitleAlchemist.Logic.Media
         public static bool IsFfmpegInstalled()
         {
             Configuration.Settings.General.UseFFmpegForWaveExtraction = true;
-            Configuration.Settings.General.FFmpegLocation = DownloadFfmpegModel.GetFfmpegFileName();
-            return File.Exists(Configuration.Settings.General.FFmpegLocation);
+            SeSettings.Settings.FfmpegPath = DownloadFfmpegModel.GetFfmpegFileName();
+            return File.Exists(SeSettings.Settings.FfmpegPath);
         }
     }
 }
