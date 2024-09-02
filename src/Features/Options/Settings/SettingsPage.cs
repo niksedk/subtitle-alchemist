@@ -1,8 +1,8 @@
+using System.Net.Mail;
 using CommunityToolkit.Maui.Markup;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Controls.RadialControl;
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
 
@@ -223,8 +223,10 @@ public class SettingsPage : ContentPage
         var switchRecentFiles = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().Bind(Switch.IsToggledProperty, nameof(vm.ShowRecentFiles));
+       // switchRecentFiles.SetBinding(Switch.IsToggledProperty, nameof(vm.ShowRecentFiles));
         grid.Add(switchRecentFiles, 1, 1);
+
 
         // Single Line Max Length
         var labelMaxLength = new Label

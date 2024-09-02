@@ -1,14 +1,13 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
+using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections.ObjectModel;
-using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Config;
 using static SubtitleAlchemist.Features.Options.Settings.SettingsPage;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
@@ -24,6 +23,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _ffmpegPath;
 
     [ObservableProperty] private string _theme = "Dark";
+    [ObservableProperty] private bool _showRecentFiles;
 
     [ObservableProperty]
     private ObservableCollection<string> _themes = new() { "Light", "Dark", "Custom" };
@@ -39,9 +39,6 @@ public partial class SettingsViewModel : ObservableObject
         Page = new Border();
         LeftMenu = new VerticalStackLayout();
         SyntaxErrorColorBox = new BoxView();
-
-        Theme = "Dark";
-        _ffmpegPath = string.Empty;
 
         LoadSettings();
     }
@@ -93,12 +90,14 @@ public partial class SettingsViewModel : ObservableObject
     {
         Theme = SeSettings.Settings.Theme;
         FfmpegPath = SeSettings.Settings.FfmpegPath;
+        ShowRecentFiles = SeSettings.Settings.File.ShowRecentFiles;
     }
 
     public void SaveSettings()
     {
         SeSettings.Settings.FfmpegPath = FfmpegPath;
         SeSettings.Settings.Theme = Theme;
+        SeSettings.Settings.File.ShowRecentFiles = ShowRecentFiles;
 
         SeSettings.SaveSettings();
     }

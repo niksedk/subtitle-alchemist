@@ -557,6 +557,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         SeSettings.SaveSettings();
         SharpHookHandler.Dispose();
     }
+
     public void Start()
     {
         _stopping = false;
@@ -569,6 +570,16 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     {
         mainPage.Window.MinimumHeight = 400;
         mainPage.Window.MinimumWidth = 800;
+
+        if (SeSettings.Settings.File.ShowRecentFiles)
+        {
+            var first = SeSettings.Settings.File.RecentFiles.FirstOrDefault();
+            if (first != null && File.Exists(first.SubtitleFileName))
+            {
+                SubtitleOpen(first.SubtitleFileName, first.VideoFileName);
+            }
+        }
+
     }
 
     [RelayCommand]
@@ -606,6 +617,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        SubtitleOpen(subtitleFileName, null);
+    }
+
+    private void SubtitleOpen(string subtitleFileName, string? videoFileName)
+    {
         _subtitle = Subtitle.Parse(subtitleFileName);
         Paragraphs = _subtitle.Paragraphs.Select(p => new DisplayParagraph(p)).ToObservableCollection();
         _subtitleFileName = subtitleFileName;
@@ -614,15 +630,27 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
         }
 
-        if (FindVideoFileName.TryFindVideoFileName(subtitleFileName, out var videoFileName))
+        if (!string.IsNullOrEmpty(videoFileName) && File.Exists(videoFileName))
         {
             VideoOpenFile(videoFileName);
         }
+        else if (FindVideoFileName.TryFindVideoFileName(subtitleFileName, out videoFileName))
+        {
+            VideoOpenFile(videoFileName);
+        }
+
+        AddToRecentFiles();
 
         if (!_stopping)
         {
             _timer.Start();
         }
+    }
+
+    private void AddToRecentFiles()
+    {
+        SeSettings.Settings.File.AddToRecentFiles(_subtitleFileName, _videoFileName, GetFirstSelectedIndex(), CurrentTextEncoding.DisplayName);
+        SeSettings.SaveSettings();
     }
 
     [RelayCommand]
@@ -682,6 +710,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             {
                 Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
             }
+
+            AddToRecentFiles();
         }
     }
 
@@ -703,6 +733,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         var text = UpdatedSubtitle.ToText(CurrentSubtitleFormat);
         await File.WriteAllTextAsync(_subtitleFileName, text);
         ShowStatus("Saved: " + _subtitleFileName);
+
+        AddToRecentFiles();
     }
 
     private void ShowStatus(string statusText)
@@ -857,7 +889,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         }
 
         var current = e.CurrentSelection;
-        var paragraphs = new List<DisplayParagraph>();
         var first = true;
         foreach (var item in current)
         {
@@ -875,7 +906,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
                 paragraph.IsSelected = true;
                 paragraph.BackgroundColor = Colors.DarkGreen;
-                paragraphs.Add(paragraph);
             }
         }
 
