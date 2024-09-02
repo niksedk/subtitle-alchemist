@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.AudioToText;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.ContainerFormats.Matroska;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
@@ -16,6 +17,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
+
 using Switch = Microsoft.Maui.Controls.Switch;
 using Timer = System.Timers.Timer;
 
@@ -57,6 +59,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     private bool _batchMode;
     private int _batchFileNumber;
     private VideoInfo _videoInfo = new();
+    public bool Loading { get; set; } = true;
 
     [ObservableProperty]
     private IWhisperEngine? _selectedWhisperEngine;
@@ -89,6 +92,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         WhisperEngines.Add(new WhisperEngineCpp());
         WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisper());
         WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisperXxl());
+        WhisperEngines.Add(new WhisperEngineOpenAi());
         WhisperEngines.Add(new WhisperEngineConstMe());
 
         _timer.Interval = 100;
@@ -123,7 +127,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         }
 
         _timer.Stop();
-        _outputText.Add($"Calling whisper {Configuration.Settings.Tools.WhisperChoice} done in {_sw.Elapsed}{Environment.NewLine}");
+        _outputText.Add($"Calling whisper {SeSettings.Settings.Tools.WhisperChoice} done in {_sw.Elapsed}{Environment.NewLine}");
 
         _whisperProcess.Dispose();
 
@@ -131,15 +135,149 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             var subtitle = new Subtitle();
             subtitle.Paragraphs.AddRange(resultTexts.Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
-            MakeResult(subtitle);
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                var postProcessedSubtitle = PostProcess(subtitle);
+                MakeResult(postProcessedSubtitle);
+            });
+
             return;
         }
 
         _outputText?.Add("Loading result from STDOUT" + Environment.NewLine);
 
-        var transcribedSubtitle = new Subtitle();
-        transcribedSubtitle.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start).Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
-        MakeResult(transcribedSubtitle);
+        var transcribedSubtitleFromStdOut = new Subtitle();
+        transcribedSubtitleFromStdOut.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start).Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
+        MakeResult(transcribedSubtitleFromStdOut);
+    }
+
+    private Subtitle PostProcess(Subtitle transcript)
+    {
+        if (PickerLanguage.SelectedItem is not WhisperLanguage language)
+        {
+            return transcript;
+        }
+
+        if (SwitchAdjustTimings.IsToggled || SwitchPostProcessing.IsToggled)
+        {
+            LabelProgress.Text = "Post-processing...";
+        }
+
+        var postProcessor = new AudioToTextPostProcessor(SwitchTranslateToEnglish.IsToggled ? "en" : language.Code)
+        {
+            ParagraphMaxChars = Configuration.Settings.General.SubtitleLineMaximumLength * 2,
+        };
+
+        WavePeakData? wavePeaks = null;
+        if (SwitchAdjustTimings.IsToggled)
+        {
+            wavePeaks = MakeWavePeaks();
+        }
+
+        if (SwitchAdjustTimings.IsToggled && wavePeaks != null)
+        {
+            transcript = WhisperTimingFixer.ShortenLongDuration(transcript);
+            transcript = WhisperTimingFixer.ShortenViaWavePeaks(transcript, wavePeaks);
+        }
+
+        transcript = postProcessor.Fix(
+            AudioToTextPostProcessor.Engine.Whisper,
+            transcript,
+            SwitchPostProcessing.IsToggled,
+            SeSettings.Settings.Tools.WhisperPostProcessingAddPeriods,
+            SeSettings.Settings.Tools.WhisperPostProcessingMergeLines,
+            SeSettings.Settings.Tools.WhisperPostProcessingFixCasing,
+            SeSettings.Settings.Tools.WhisperPostProcessingFixShortDuration,
+            SeSettings.Settings.Tools.WhisperPostProcessingSplitLines);
+
+        return transcript;
+    }
+
+    private WavePeakData? MakeWavePeaks()
+    {
+        if (string.IsNullOrEmpty(_videoFileName) || !File.Exists(_videoFileName))
+        {
+            return null;
+        }
+
+        var targetFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".wav");
+        try
+        {
+            var process = GetFfmpegProcess(_videoFileName, _audioTrackNumber, targetFile);
+            if (process == null)
+            {
+                return null;
+            }
+
+#pragma warning disable CA1416
+            process.Start();
+#pragma warning restore CA1416
+
+            while (!process.HasExited)
+            {
+                Task.Delay(100);
+            }
+
+            // check for delay in matroska files
+            var delayInMilliseconds = 0;
+            var audioTrackNames = new List<string>();
+            var mkvAudioTrackNumbers = new Dictionary<int, int>();
+            if (_videoFileName.ToLowerInvariant().EndsWith(".mkv", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    using (var matroska = new MatroskaFile(_videoFileName))
+                    {
+                        if (matroska.IsValid)
+                        {
+                            foreach (var track in matroska.GetTracks())
+                            {
+                                if (track.IsAudio)
+                                {
+                                    if (track.CodecId != null && track.Language != null)
+                                    {
+                                        audioTrackNames.Add("#" + track.TrackNumber + ": " + track.CodecId.Replace("\0", string.Empty) + " - " + track.Language.Replace("\0", string.Empty));
+                                    }
+                                    else
+                                    {
+                                        audioTrackNames.Add("#" + track.TrackNumber);
+                                    }
+
+                                    mkvAudioTrackNumbers.Add(mkvAudioTrackNumbers.Count, track.TrackNumber);
+                                }
+                            }
+
+                            if (mkvAudioTrackNumbers.Count > 0)
+                            {
+                                delayInMilliseconds = (int)matroska.GetAudioTrackDelayMilliseconds(mkvAudioTrackNumbers[0]);
+                            }
+                        }
+                    }
+                }
+                catch (Exception exception)
+                {
+                    SeLogger.Error(exception, $"Error getting delay from mkv: {_videoFileName}");
+                }
+            }
+
+            if (File.Exists(targetFile))
+            {
+                using (var waveFile = new WavePeakGenerator(targetFile))
+                {
+                    if (!string.IsNullOrEmpty(_videoFileName) && File.Exists(_videoFileName))
+                    {
+                        return waveFile.GeneratePeaks(delayInMilliseconds, WavePeakGenerator.GetPeakWaveFileName(_videoFileName));
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return null;
     }
 
     private static void MakeResult(Subtitle? transcribedSubtitle)
@@ -307,7 +445,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return false;
         }
 
-        Configuration.Settings.Tools.WhisperChoice = engine.Choice;
+        SeSettings.Settings.Tools.WhisperChoice = engine.Choice;
 
         if (PickerModel.SelectedItem is not WhisperModel model)
         {
@@ -335,8 +473,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         LabelProgress.IsVisible = true;
         ProgressBar.IsVisible = true;
 
+        _useCenterChannelOnly = Configuration.Settings.General.FFmpegUseCenterChannelOnly &&
+                                FfmpegMediaInfo.Parse(_videoFileName).HasFrontCenterAudio(_audioTrackNumber);
+
         //Delete invalid preprocessor_config.json file
-        if (Configuration.Settings.Tools.WhisperChoice is
+        if (SeSettings.Settings.Tools.WhisperChoice is
               WhisperChoice.PurfviewFasterWhisper or
               WhisperChoice.PurfviewFasterWhisperCuda or
               WhisperChoice.PurfviewFasterWhisperXXL)
@@ -388,7 +529,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         _whisperProcess = GetWhisperProcess(engine, inputFile, model.Name, language.Code, SwitchTranslateToEnglish.IsToggled, OutputHandler);
         _sw = Stopwatch.StartNew();
-        _outputText.Add($"Calling whisper ({Configuration.Settings.Tools.WhisperChoice}) with : {_whisperProcess.StartInfo.FileName} {_whisperProcess.StartInfo.Arguments}{Environment.NewLine}");
+        _outputText.Add($"Calling whisper ({SeSettings.Settings.Tools.WhisperChoice}) with : {_whisperProcess.StartInfo.FileName} {_whisperProcess.StartInfo.Arguments}{Environment.NewLine}");
         _startTicks = DateTime.UtcNow.Ticks;
         _videoInfo = UiUtil.GetVideoInfo(waveFileName);
         if (!_batchMode)
@@ -430,7 +571,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             translateToEnglish = string.Empty;
         }
 
-        if (Configuration.Settings.Tools.WhisperChoice is WhisperChoice.Cpp or WhisperChoice.CppCuBlas)
+        if (SeSettings.Settings.Tools.WhisperChoice is WhisperChoice.Cpp or WhisperChoice.CppCuBlas)
         {
             if (!SeSettings.Settings.Tools.WhisperExtraSettings.Contains("--print-progress"))
             {
@@ -440,11 +581,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         var outputSrt = string.Empty;
         var postParams = string.Empty;
-        if (Configuration.Settings.Tools.WhisperChoice is WhisperChoice.Cpp or WhisperChoice.CppCuBlas or WhisperChoice.ConstMe)
+        if (SeSettings.Settings.Tools.WhisperChoice is WhisperChoice.Cpp or WhisperChoice.CppCuBlas or WhisperChoice.ConstMe)
         {
             outputSrt = "--output-srt ";
         }
-        else if (Configuration.Settings.Tools.WhisperChoice == WhisperChoice.StableTs)
+        else if (SeSettings.Settings.Tools.WhisperChoice == WhisperChoice.StableTs)
         {
             var srtFileName = Path.GetFileNameWithoutExtension(waveFileName);
             postParams = $" -o {srtFileName}.srt";
@@ -481,13 +622,12 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"]?.TrimEnd(';') + ";" + whisperFolder;
         }
 
-        if (Configuration.Settings.Tools.WhisperChoice != WhisperChoice.Cpp &&
-            Configuration.Settings.Tools.WhisperChoice != WhisperChoice.CppCuBlas &&
-             Configuration.Settings.Tools.WhisperChoice != WhisperChoice.ConstMe)
+        if (SeSettings.Settings.Tools.WhisperChoice != WhisperChoice.Cpp &&
+            SeSettings.Settings.Tools.WhisperChoice != WhisperChoice.CppCuBlas &&
+            SeSettings.Settings.Tools.WhisperChoice != WhisperChoice.ConstMe)
         {
             process.StartInfo.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
             process.StartInfo.EnvironmentVariables["PYTHONUTF8"] = "1";
-            //process.StartInfo.EnvironmentVariables["PYTHONLEGACYWINDOWSSTDIO"] = "utf-8";
         }
 
         if (dataReceivedHandler != null)
@@ -874,31 +1014,39 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     private void SaveSettings()
     {
+        if (Loading)
+        {
+            return;
+        }
+
         if (SelectedWhisperEngine is null)
         {
             return;
         }
 
-        Configuration.Settings.Tools.WhisperChoice = SelectedWhisperEngine.Choice;
+        SeSettings.Settings.Tools.WhisperChoice = SelectedWhisperEngine.Choice;
 
         if (PickerLanguage.SelectedItem is WhisperLanguage language)
         {
-            Configuration.Settings.Tools.WhisperLanguageCode = language.Code;
+            SeSettings.Settings.Tools.WhisperLanguageCode = language.Code;
         }
 
         if (PickerModel.SelectedItem is IWhisperModel model)
         {
-            Configuration.Settings.Tools.WhisperModel = model.ToString();
+            SeSettings.Settings.Tools.WhisperModel = model.ToString();
         }
 
-        Configuration.Settings.Tools.WhisperAutoAdjustTimings = SwitchAdjustTimings.IsToggled;
-        Configuration.Settings.Tools.VoskPostProcessing = SwitchPostProcessing.IsToggled;
+        SeSettings.Settings.Tools.WhisperAutoAdjustTimings = SwitchAdjustTimings.IsToggled;
+        SeSettings.Settings.Tools.VoskPostProcessing = SwitchPostProcessing.IsToggled;
+        SeSettings.Settings.Tools.WhisperExtraSettings = LabelAdvancedSettings.Text;
 
         SeSettings.SaveSettings();
     }
 
     public void PickerEngine_SelectedIndexChanged(object? sender, EventArgs e)
     {
+        SaveSettings();
+
         if (PickerEngine.SelectedItem is not IWhisperEngine engine)
         {
             return;
@@ -924,7 +1072,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     public void LoadSettings()
     {
-        var language = Languages.FirstOrDefault(l => l.Code == Configuration.Settings.Tools.WhisperLanguageCode);
+        var language = Languages.FirstOrDefault(l => l.Code == SeSettings.Settings.Tools.WhisperLanguageCode);
         if (language != null)
         {
             PickerLanguage.SelectedItem = language;
@@ -934,7 +1082,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             PickerLanguage.SelectedItem = Languages.FirstOrDefault();
         }
 
-        var model = Models.FirstOrDefault(m => m.ToString() == Configuration.Settings.Tools.WhisperModel);
+        var model = Models.FirstOrDefault(m => m.ToString() == SeSettings.Settings.Tools.WhisperModel);
         if (model != null)
         {
             PickerModel.SelectedItem = model;

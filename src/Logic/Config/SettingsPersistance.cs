@@ -40,7 +40,7 @@ public class SeTools
 
     public bool WhisperDeleteTempFiles { get; set; } = true;
 
-    public string WhisperModel { get; set; } = string.Empty;
+    public string? WhisperModel { get; set; } = string.Empty;
 
     public string WhisperLanguageCode { get; set; } = string.Empty;
 

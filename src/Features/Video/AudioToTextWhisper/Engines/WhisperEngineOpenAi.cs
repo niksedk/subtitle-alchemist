@@ -25,8 +25,7 @@ public class WhisperEngineOpenAi : IWhisperEngine
 
     public bool IsEngineInstalled()
     {
-        var executableFile = GetExecutable();
-        return File.Exists(executableFile);
+        return true;
     }
 
     public override string ToString()

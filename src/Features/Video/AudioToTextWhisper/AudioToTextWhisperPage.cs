@@ -321,6 +321,7 @@ public class AudioToTextWhisperPage : ContentPage
                 }
 
                 _vm.LoadSettings();
+                _vm.Loading = false;
             });
 
             return false;
