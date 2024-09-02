@@ -482,7 +482,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
               WhisperChoice.PurfviewFasterWhisperCuda or
               WhisperChoice.PurfviewFasterWhisperXXL)
         {
-            var dir = Path.Combine(engine.GetAndCreateWhisperModelFolder(), model.Folder);
+            var dir = Path.Combine(engine.GetAndCreateWhisperModelFolder(model), model.Folder);
             if (Directory.Exists(dir))
             {
                 try

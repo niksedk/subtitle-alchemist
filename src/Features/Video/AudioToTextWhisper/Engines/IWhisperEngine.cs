@@ -13,9 +13,10 @@ public interface IWhisperEngine
     string UnpackSkipFolder { get; }
     bool IsEngineInstalled();
     string GetAndCreateWhisperFolder();
-    string GetAndCreateWhisperModelFolder();
+    string GetAndCreateWhisperModelFolder(WhisperModel? whisperModel);
     string GetExecutable();
     bool IsModelInstalled(WhisperModel model);
     string GetModelForCmdLine(string modelName);
     Task<string> GetHelpText();
+    string GetWhisperModelDownloadFileName(WhisperModel whisperModel, string url);
 }

@@ -39,7 +39,7 @@ public class WhisperEngineOpenAi : IWhisperEngine
         return folder;
     }
 
-    public string GetAndCreateWhisperModelFolder()
+    public string GetAndCreateWhisperModelFolder(WhisperModel? whisperModel)
     {
         var folder = new WhisperModel().ModelFolder;
         return folder;
@@ -53,7 +53,7 @@ public class WhisperEngineOpenAi : IWhisperEngine
 
     public bool IsModelInstalled(WhisperModel model)
     {
-        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), model.Name);
+        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(model), model.Name);
         if (Extension.Length > 0 && !modelFileName.EndsWith(Extension))
         {
             modelFileName += Extension;
@@ -66,7 +66,7 @@ public class WhisperEngineOpenAi : IWhisperEngine
 
     public string GetModelForCmdLine(string modelName)
     {
-        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), modelName);
+        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(null), modelName);
         if (Extension.Length > 0 && !modelFileName.EndsWith(Extension))
         {
             modelFileName += Extension;
@@ -84,5 +84,12 @@ public class WhisperEngineOpenAi : IWhisperEngine
         var contents = await reader.ReadToEndAsync();
 
         return contents;
+    }
+
+    public string GetWhisperModelDownloadFileName(WhisperModel whisperModel, string url)
+    {
+        var folder = GetAndCreateWhisperModelFolder(whisperModel);
+        var fileName = Path.Combine(folder, whisperModel.Name + Extension);
+        return fileName;
     }
 }

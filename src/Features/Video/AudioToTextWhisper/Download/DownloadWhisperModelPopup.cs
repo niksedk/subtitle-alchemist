@@ -69,6 +69,7 @@ public class DownloadWhisperModelPopup : Popup
             Padding = new Thickness(5, 5, 5, 5),
             Command = vm.StartDownloadCommand,
         }.BindDynamicTheme();
+        ToolTipProperties.SetText(buttonDownload, "Click to download model");
 
 
         var folderBrowse = new ImageButton
@@ -81,6 +82,7 @@ public class DownloadWhisperModelPopup : Popup
             Padding = new Thickness(10, 5, 5, 5),
             Command = vm.OpenModelsFolderCommand,
         }.BindDynamicTheme();
+        ToolTipProperties.SetText(folderBrowse, "Click to open models folder");
 
         var buttonBar = new StackLayout
         {

@@ -45,7 +45,7 @@ public class WhisperEnginePurfviewFasterWhisper : IWhisperEngine
         return folder;
     }
 
-    public string GetAndCreateWhisperModelFolder()
+    public string GetAndCreateWhisperModelFolder(WhisperModel? whisperModel)
     {
         var baseFolder = GetAndCreateWhisperFolder();
 
@@ -53,6 +53,15 @@ public class WhisperEnginePurfviewFasterWhisper : IWhisperEngine
         if (!Directory.Exists(folder))
         {
             Directory.CreateDirectory(folder);
+        }
+
+        if (whisperModel != null)
+        {
+            folder = Path.Combine(folder, "faster-whisper-" + whisperModel.Name);
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
         }
 
         return folder;
@@ -67,7 +76,7 @@ public class WhisperEnginePurfviewFasterWhisper : IWhisperEngine
 
     public bool IsModelInstalled(WhisperModel model)
     {
-        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(), model.Name);
+        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(model), model.Name);
         if (Extension.Length > 0 && !modelFileName.EndsWith(Extension))
         {
             modelFileName += Extension;
@@ -96,6 +105,14 @@ public class WhisperEnginePurfviewFasterWhisper : IWhisperEngine
         var contents = await reader.ReadToEndAsync();
 
         return contents;
+    }
+
+    public string GetWhisperModelDownloadFileName(WhisperModel whisperModel, string url)
+    {
+        var folder = GetAndCreateWhisperModelFolder(whisperModel);
+        var fileNameOnly = Path.GetFileName(url);
+        var fileName = Path.Combine(folder, fileNameOnly);
+        return fileName;
     }
 
     public string GetExecutableFileName()

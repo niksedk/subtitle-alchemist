@@ -96,7 +96,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
     [RelayCommand]
     public void OpenModelsFolder()
     {
-        var folderName = _whisperEngine.GetAndCreateWhisperModelFolder();
+        var folderName = _whisperEngine.GetAndCreateWhisperModelFolder(null);
         UiUtil.OpenFolder(folderName);
     }
 
@@ -108,11 +108,13 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
             return;
         }
 
+        //TODO: disable download buttons
+
         _downloadUrls.Clear();
         _downloadUrls.AddRange(model.Urls);
         _downloadIndex = 0;
         _downloadModel = model;
-        _downloadFileName = GetDownloadFileName(model) + TemporaryFileExtension;
+        _downloadFileName = GetDownloadFileName(model, _downloadUrls[_downloadIndex]) + TemporaryFileExtension;
         _downloadTask = _whisperCppDownloadService.DownloadFile(_downloadUrls[_downloadIndex], _downloadFileName, MakeDownloadProgress(), _cancellationTokenSource.Token);
         _timer.Interval = 500;
         _timer.Elapsed += OnTimerOnElapsed;
@@ -132,10 +134,9 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
         });
     }
 
-    private string GetDownloadFileName(WhisperModel whisperModel)
+    private string GetDownloadFileName(WhisperModel whisperModel, string url)
     {
-        var folder = _whisperEngine.GetAndCreateWhisperModelFolder();
-        var fileName = Path.Combine(folder, whisperModel.Name + _whisperEngine.Extension);
+        var fileName = _whisperEngine.GetWhisperModelDownloadFileName(whisperModel, url);
         return fileName;
     }
 
@@ -150,8 +151,11 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
             _downloadIndex++;
             if (_downloadIndex < _downloadUrls.Count)
             {
-                _downloadFileName = GetDownloadFileName(_downloadModel);
-                _downloadTask = _whisperCppDownloadService.DownloadWhisperCpp(_downloadFileName + ".$$$", MakeDownloadProgress(), _cancellationTokenSource.Token);
+                _downloadFileName = GetDownloadFileName(_downloadModel, _downloadUrls[_downloadIndex]) + TemporaryFileExtension; 
+                _downloadTask = _whisperCppDownloadService.DownloadFile(_downloadUrls[_downloadIndex], _downloadFileName, MakeDownloadProgress(), _cancellationTokenSource.Token);
+                ProgressValue = 0;
+                _timer.Start();
+
                 return;
             }
 
@@ -187,7 +191,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
 
     private void CompleteDownload()
     {
-        if (string.IsNullOrEmpty(_downloadFileName))
+        if (string.IsNullOrEmpty(_downloadFileName) || !File.Exists(_downloadFileName))
         {
             return;
         }
