@@ -7,6 +7,7 @@ using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
@@ -15,7 +16,6 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
-using SubtitleAlchemist.Logic.Config;
 using Switch = Microsoft.Maui.Controls.Switch;
 using Timer = System.Timers.Timer;
 
@@ -45,7 +45,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     public Label LinkLabelProcessingSettings { get; set; } = new();
 
     private string? _videoFileName;
-    private string? _waveFileName = string.Empty;
+    private string _waveFileName = string.Empty;
     private int _audioTrackNumber;
     private readonly List<string> _filesToDelete = new();
     private bool IncompleteModel;
@@ -180,18 +180,24 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     public async Task ShowAdvancedWhisperSettings()
     {
-        var result = await _popupService.ShowPopupAsync<WhisperAdvancedPopupModel>(onPresenting: async viewModel =>
+        await Shell.Current.GoToAsync(nameof(WhisperAdvancedPage), new Dictionary<string, object>
         {
-           await viewModel.LeftMenuTapped(WhisperEngines.First().Name);
-        }, CancellationToken.None);
+            { "Page",  nameof(AudioToTextWhisperPage) },
+            { "VideoFileName", _videoFileName ?? string.Empty },
+        });
 
-        if (result is string settings)
-        {
-            Configuration.Settings.Tools.WhisperExtraSettings = settings;
-            LabelAdvancedSettings.Text = settings;
+        //var result = await _popupService.ShowPopupAsync<WhisperAdvancedModel>(onPresenting: async viewModel =>
+        //{
+        //   await viewModel.LeftMenuTapped(WhisperEngines.First().Name);
+        //}, CancellationToken.None);
 
-            SaveSettings();
-        }
+        //if (result is string settings)
+        //{
+        //    SeSettings.Settings.Tools.WhisperExtraSettings = settings;
+        //    LabelAdvancedSettings.Text = settings;
+
+        //    SaveSettings();
+        //}
     }
 
     [RelayCommand]
@@ -412,13 +418,13 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         bool translate,
         DataReceivedEventHandler? dataReceivedHandler = null)
     {
-        Configuration.Settings.Tools.WhisperExtraSettings ??= string.Empty;
+        SeSettings.Settings.Tools.WhisperExtraSettings ??= string.Empty;
 
-        Configuration.Settings.Tools.WhisperExtraSettings = Configuration.Settings.Tools.WhisperExtraSettings.Trim();
-        if (Configuration.Settings.Tools.WhisperExtraSettings == "--standard" &&
+        SeSettings.Settings.Tools.WhisperExtraSettings = SeSettings.Settings.Tools.WhisperExtraSettings.Trim();
+        if (SeSettings.Settings.Tools.WhisperExtraSettings == "--standard" &&
             (engine.Name != WhisperEnginePurfviewFasterWhisper.StaticName || engine.Name != WhisperEnginePurfviewFasterWhisperXxl.StaticName))
         {
-            Configuration.Settings.Tools.WhisperExtraSettings = string.Empty;
+            SeSettings.Settings.Tools.WhisperExtraSettings = string.Empty;
         }
 
         var translateToEnglish = translate ? WhisperHelper.GetWhisperTranslateParameter() : string.Empty;
@@ -430,7 +436,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         if (Configuration.Settings.Tools.WhisperChoice is WhisperChoice.Cpp or WhisperChoice.CppCuBlas)
         {
-            if (!Configuration.Settings.Tools.WhisperExtraSettings.Contains("--print-progress"))
+            if (!SeSettings.Settings.Tools.WhisperExtraSettings.Contains("--print-progress"))
             {
                 translateToEnglish += "--print-progress ";
             }
@@ -450,7 +456,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         var w = engine.GetExecutable();
         var m = engine.GetModelForCmdLine(model);
-        var parameters = $"--language {language} --model \"{m}\" {outputSrt}{translateToEnglish}{Configuration.Settings.Tools.WhisperExtraSettings} \"{waveFileName}\"{postParams}";
+        var parameters = $"--language {language} --model \"{m}\" {outputSrt}{translateToEnglish}{SeSettings.Settings.Tools.WhisperExtraSettings} \"{waveFileName}\"{postParams}";
 
         SeLogger.WhisperInfo($"{w} {parameters}");
 
@@ -934,15 +940,34 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             PickerModel.SelectedItem = Models.FirstOrDefault();
         }
 
-        SwitchAdjustTimings.IsToggled = Configuration.Settings.Tools.WhisperAutoAdjustTimings;
-        SwitchPostProcessing.IsToggled = Configuration.Settings.Tools.VoskPostProcessing;
-        LabelAdvancedSettings.Text = Configuration.Settings.Tools.WhisperExtraSettings;
+        SwitchAdjustTimings.IsToggled = SeSettings.Settings.Tools.WhisperAutoAdjustTimings;
+        SwitchPostProcessing.IsToggled = SeSettings.Settings.Tools.VoskPostProcessing;
+        LabelAdvancedSettings.Text = SeSettings.Settings.Tools.WhisperExtraSettings;
         ProgressBar.IsVisible = false;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (query["VideoFileName"] is string videoFileName)
+        if (!query.ContainsKey("Page"))
+        {
+            throw new ArgumentException("\"Page\" not found in shell query attributes");
+        }
+
+        if (query["Page"] is not string page)
+        {
+            throw new ArgumentException("\"Page\" shell query attribute is not a string");
+        }
+
+        if (page == nameof(WhisperAdvancedPage))
+        {
+            if (query.ContainsKey("Parameters") && query["Parameters"] is string parameters)
+            {
+                SeSettings.Settings.Tools.WhisperExtraSettings = parameters;
+                LabelAdvancedSettings.Text = parameters;
+            }
+        }
+
+        if (query.ContainsKey("VideoFileName") && query["VideoFileName"] is string videoFileName)
         {
             _videoFileName = videoFileName;
         }

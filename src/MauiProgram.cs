@@ -48,6 +48,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<AdjustDurationModel>();
             builder.Services.AddTransient<FixCommonErrorsPage>();
             builder.Services.AddTransient<FixCommonErrorsModel>();
+            builder.Services.AddTransient<WhisperAdvancedPage>();
+            builder.Services.AddTransient<WhisperAdvancedModel>();
 
             builder.Services.AddTransientPopup<AboutPopup, AboutModel>();
             builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerModel>();
@@ -58,7 +60,6 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<RadialPopup, RadialPopupModel>();
             builder.Services.AddTransientPopup<DownloadWhisperPopup, DownloadWhisperPopupModel>();
             builder.Services.AddTransientPopup<DownloadWhisperModelPopup, DownloadWhisperModelPopupModel>();
-            builder.Services.AddTransientPopup<WhisperAdvancedPopup, WhisperAdvancedPopupModel>();
             builder.Services.AddTransientPopup<WhisperPostProcessingPopup, WhisperPostProcessingPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();

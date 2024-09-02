@@ -1,5 +1,6 @@
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
@@ -220,7 +221,7 @@ public class AudioToTextWhisperPage : ContentPage
 
         vm.LabelAdvancedSettings = new Label
         {
-            Text = Configuration.Settings.Tools.WhisperExtraSettings,
+            Text = SeSettings.Settings.Tools.WhisperExtraSettings,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(15, 25, 15, 25),
         }.BindDynamicTheme();

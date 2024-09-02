@@ -916,6 +916,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         await Shell.Current.GoToAsync(nameof(AudioToTextWhisperPage), new Dictionary<string, object>
         {
+            { "Page", nameof(MainPage) },
             { "VideoFileName", _videoFileName },
         });
     }

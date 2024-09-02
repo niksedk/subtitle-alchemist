@@ -6,11 +6,11 @@ using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
-public class WhisperAdvancedPopup : Popup
+public class WhisperAdvancedPage : ContentPage
 {
-    public WhisperAdvancedPopup(WhisperAdvancedPopupModel vm)
+    public WhisperAdvancedPage(WhisperAdvancedModel vm)
     {
-        vm.Popup = this;
+        vm.Page = this;
         this.BindDynamicTheme();
 
         vm.WhisperEngines.Add(WhisperEngineCpp.StaticName, MakeCppPage(vm));
@@ -179,7 +179,7 @@ public class WhisperAdvancedPopup : Popup
         Content = windowBorder;
     }
 
-    private static IView MakeLeftMenuItem(WhisperAdvancedPopupModel vm, string engineName)
+    private static IView MakeLeftMenuItem(WhisperAdvancedModel vm, string engineName)
     {
         var label = new Label
         {
@@ -198,7 +198,7 @@ public class WhisperAdvancedPopup : Popup
         return label;
     }
 
-    private static View MakeCppPage(WhisperAdvancedPopupModel vm)
+    private static View MakeCppPage(WhisperAdvancedModel vm)
     {
         var engine = new WhisperEngineCpp();
 
@@ -245,7 +245,7 @@ public class WhisperAdvancedPopup : Popup
         return grid;
     }
 
-    private static View MakeConstMePage(WhisperAdvancedPopupModel vm)
+    private static View MakeConstMePage(WhisperAdvancedModel vm)
     {
         var engine = new WhisperEngineConstMe();
 
@@ -292,7 +292,7 @@ public class WhisperAdvancedPopup : Popup
         return grid;
     }
 
-    private static View MakeOpenAiPage(WhisperAdvancedPopupModel vm)
+    private static View MakeOpenAiPage(WhisperAdvancedModel vm)
     {
         var engine = new WhisperEngineOpenAi();
 
@@ -338,7 +338,7 @@ public class WhisperAdvancedPopup : Popup
         return grid;
     }
 
-    private static View MakePurfviewPage(WhisperAdvancedPopupModel vm)
+    private static View MakePurfviewPage(WhisperAdvancedModel vm)
     {
         var engine = new WhisperEngineOpenAi();
 
@@ -384,7 +384,7 @@ public class WhisperAdvancedPopup : Popup
         return grid;
     }
 
-    private static View MakePurfviewXxlPage(WhisperAdvancedPopupModel vm)
+    private static View MakePurfviewXxlPage(WhisperAdvancedModel vm)
     {
         var engine = new WhisperEnginePurfviewFasterWhisperXxl();
 

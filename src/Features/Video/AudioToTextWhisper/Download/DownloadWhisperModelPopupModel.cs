@@ -35,11 +35,11 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
     private IWhisperEngine _whisperEngine = new WhisperEngineCpp();
 
     [ObservableProperty]
-    private string _error;
+    private string _error = string.Empty;
 
     private Task? _downloadTask;
-    private List<string> _downloadUrls = new();
-    private int _downloadIndex = 0;
+    private readonly List<string> _downloadUrls = new();
+    private int _downloadIndex;
     private string _downloadFileName = string.Empty;
 
     private readonly Timer _timer = new();
@@ -56,6 +56,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
         _whisperCppDownloadService = whisperCppDownloadService;
         _progress = string.Empty;
         ProgressValue = 0;
+        _downloadModel = new WhisperModel();
     }
 
     private void Close()

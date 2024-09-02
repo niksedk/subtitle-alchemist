@@ -1,21 +1,20 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
+using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
-public partial class WhisperAdvancedPopupModel : ObservableObject
+public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
 {
-    public WhisperAdvancedPopup? Popup { get; set; }
+    public WhisperAdvancedPage? Page { get; set; }
     public Dictionary<string, View> WhisperEngines { get; set; } = new();
     public Dictionary<string, Editor> WhisperHelpLabels { get; set; } = new();
     public Border EnginePage { get; set; } = new();
-    private string _engineName = WhisperEngineCpp.StaticName;
 
     [ObservableProperty]
-    private string _currentParameters = Configuration.Settings.Tools.WhisperExtraSettings;
+    private string _currentParameters = SeSettings.Settings.Tools.WhisperExtraSettings;
 
     public VerticalStackLayout LeftMenu { get; set; } = new();
     public Editor LabelCppHelpText { get; set; } = new();
@@ -24,10 +23,10 @@ public partial class WhisperAdvancedPopupModel : ObservableObject
     public Editor LabelPurfviewHelpText { get; set; } = new();
     public Editor LabelPurfviewXxlHelpText { get; set; } = new();
 
+    private string _videoFileName = string.Empty;
+
     public async Task LeftMenuTapped(string engineName)
     {
-        _engineName = engineName;
-
         if (EnginePage.Content != null)
         {
             await EnginePage.Content.FadeTo(0, 200);
@@ -59,26 +58,33 @@ public partial class WhisperAdvancedPopupModel : ObservableObject
     }
 
     [RelayCommand]
-    private void Close()
+    private async Task Close()
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        await Shell.Current.GoToAsync("..");
+    }
+
+    [RelayCommand]
+    private async Task Ok()
+    {
+        await Shell.Current.GoToAsync($"..", new Dictionary<string, object>
         {
-            Popup?.Close();
+            { "Page", nameof(WhisperAdvancedPage) },
+            { "Parameters", CurrentParameters },
+            { "VideoFileName", _videoFileName },
         });
     }
 
     [RelayCommand]
-    private void Ok()
+    private async Task Cancel()
     {
-        Popup?.Close(CurrentParameters);
+        await Shell.Current.GoToAsync("..");
     }
 
-    [RelayCommand]
-    private void Cancel()
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        if (query["VideoFileName"] is string videoFileName)
         {
-            Popup?.Close();
-        });
+            _videoFileName = videoFileName;
+        }
     }
 }
