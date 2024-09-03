@@ -27,10 +27,10 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
     public Picker ModelPicker { get; set; } = new();
     public ProgressBar ProgressBar { get; set; } = new();
 
-    [ObservableProperty] private ObservableCollection<IWhisperModel> _models = new();
+    [ObservableProperty] private ObservableCollection<AudioToTextWhisperModel.WhisperModelDisplay> _models = new();
 
     [ObservableProperty]
-    private IWhisperModel? _selectedModel;
+    private AudioToTextWhisperModel.WhisperModelDisplay? _selectedModel;
 
     private IWhisperEngine _whisperEngine = new WhisperEngineCpp();
 
@@ -59,11 +59,11 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
         _downloadModel = new WhisperModel();
     }
 
-    private void Close()
+    private void Close(WhisperModel downloadModel)
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Popup?.Close();
+            Popup?.Close(downloadModel);
         });
     }
 
@@ -71,10 +71,13 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
     public void Cancel()
     {
         _cancellationTokenSource.Cancel();
-        Close();
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Popup?.Close();
+        });
     }
 
-    public void SetModels(ObservableCollection<IWhisperModel> models, IWhisperEngine whisperEngine, WhisperModel? whisperModel)
+    public void SetModels(ObservableCollection<AudioToTextWhisperModel.WhisperModelDisplay> models, IWhisperEngine whisperEngine, AudioToTextWhisperModel.WhisperModelDisplay? whisperModel)
     {
         _whisperEngine = whisperEngine;
 
@@ -103,7 +106,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
     [RelayCommand]
     public void StartDownload()
     {
-        if (SelectedModel is not WhisperModel model)
+        if (SelectedModel is not AudioToTextWhisperModel.WhisperModelDisplay model)
         {
             return;
         }
@@ -111,10 +114,10 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
         //TODO: disable download buttons
 
         _downloadUrls.Clear();
-        _downloadUrls.AddRange(model.Urls);
+        _downloadUrls.AddRange(model.Model.Urls);
         _downloadIndex = 0;
-        _downloadModel = model;
-        _downloadFileName = GetDownloadFileName(model, _downloadUrls[_downloadIndex]) + TemporaryFileExtension;
+        _downloadModel = model.Model;
+        _downloadFileName = GetDownloadFileName(model.Model, _downloadUrls[_downloadIndex]);
         _downloadTask = _whisperCppDownloadService.DownloadFile(_downloadUrls[_downloadIndex], _downloadFileName, MakeDownloadProgress(), _cancellationTokenSource.Token);
         _timer.Interval = 500;
         _timer.Elapsed += OnTimerOnElapsed;
@@ -137,7 +140,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
     private string GetDownloadFileName(WhisperModel whisperModel, string url)
     {
         var fileName = _whisperEngine.GetWhisperModelDownloadFileName(whisperModel, url);
-        return fileName;
+        return fileName + TemporaryFileExtension;
     }
 
     private void OnTimerOnElapsed(object? sender, ElapsedEventArgs args)
@@ -151,7 +154,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
             _downloadIndex++;
             if (_downloadIndex < _downloadUrls.Count)
             {
-                _downloadFileName = GetDownloadFileName(_downloadModel, _downloadUrls[_downloadIndex]) + TemporaryFileExtension; 
+                _downloadFileName = GetDownloadFileName(_downloadModel, _downloadUrls[_downloadIndex]); 
                 _downloadTask = _whisperCppDownloadService.DownloadFile(_downloadUrls[_downloadIndex], _downloadFileName, MakeDownloadProgress(), _cancellationTokenSource.Token);
                 ProgressValue = 0;
                 _timer.Start();
@@ -163,7 +166,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
 
             if (Popup != null)
             {
-                Close(); // supply download model as parameter
+                Close(_downloadModel); 
             }
 
             return;
@@ -175,7 +178,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
             if (ex is OperationCanceledException)
             {
                 Progress = "Download canceled";
-                Close();
+                Cancel();
             }
             else
             {

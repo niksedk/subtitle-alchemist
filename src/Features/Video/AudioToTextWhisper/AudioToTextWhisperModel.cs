@@ -5,6 +5,7 @@ using Nikse.SubtitleEdit.Core.AudioToText;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.ContainerFormats.Matroska;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using Nikse.SubtitleEdit.Core.TextToSpeech;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 using SubtitleAlchemist.Logic;
@@ -71,7 +72,48 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     private ObservableCollection<WhisperLanguage> _languages = new();
 
     [ObservableProperty]
-    private ObservableCollection<IWhisperModel> _models = new();
+    private ObservableCollection<WhisperModelDisplay> _models = new();
+
+    public class WhisperModelDisplay
+    {
+        public WhisperModel Model { get; set; } = new WhisperModel();
+        public string? Display { get; set; }
+        public IWhisperEngine Engine { get; set; } = new WhisperEngineCpp();
+
+        public override string ToString()
+        {
+            if (Display == null)
+            {
+                RefreshDownloadStatus();;
+            }
+
+            return Display!;
+        }
+
+        private string IsInstalled()
+        {
+            if (!Engine.IsModelInstalled(Model))
+            {
+                return ", not installed";
+            }
+
+            return string.Empty;
+        }
+
+        public void RefreshDownloadStatus()
+        {
+            Display = Model.Name;
+
+            if (!string.IsNullOrEmpty(Model.Size))
+            {
+                Display += $" ({Model.Size}{IsInstalled()})";
+            }
+            else
+            {
+                Display += $" ({IsInstalled().TrimStart(',').TrimStart()})";
+            }
+        }
+    }
 
     private bool _abort;
 
@@ -348,7 +390,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        if (PickerModel.SelectedItem is not WhisperModel model)
+        if (PickerModel.SelectedItem is not WhisperModelDisplay model)
         {
             return;
         }
@@ -383,11 +425,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             }, CancellationToken.None);
         }
 
-        if (!SelectedWhisperEngine.IsModelInstalled(model))
+        if (!SelectedWhisperEngine.IsModelInstalled(model.Model))
         {
             var answer = await Page.DisplayAlert(
                 $"Download {model}?",
-                $"Download and use {model.Name}?",
+                $"Download and use {model.Model.Name}?",
                 "Yes",
                 "No");
 
@@ -402,6 +444,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
                 viewModel.StartDownload();
             }, CancellationToken.None);
 
+            RefreshDownloadStatus(result as WhisperModel);
 
             return;
         }
@@ -447,7 +490,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         SeSettings.Settings.Tools.WhisperChoice = engine.Choice;
 
-        if (PickerModel.SelectedItem is not WhisperModel model)
+        if (PickerModel.SelectedItem is not WhisperModelDisplay model)
         {
             return false;
         }
@@ -482,7 +525,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
               WhisperChoice.PurfviewFasterWhisperCuda or
               WhisperChoice.PurfviewFasterWhisperXXL)
         {
-            var dir = Path.Combine(engine.GetAndCreateWhisperModelFolder(model), model.Folder);
+            var dir = Path.Combine(engine.GetAndCreateWhisperModelFolder(model.Model), model.Model.Folder);
             if (Directory.Exists(dir))
             {
                 try
@@ -527,7 +570,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             inputFile = videoFileName;
         }
 
-        _whisperProcess = GetWhisperProcess(engine, inputFile, model.Name, language.Code, SwitchTranslateToEnglish.IsToggled, OutputHandler);
+        _whisperProcess = GetWhisperProcess(engine, inputFile, model.Model.Name, language.Code, SwitchTranslateToEnglish.IsToggled, OutputHandler);
         _sw = Stopwatch.StartNew();
         _outputText.Add($"Calling whisper ({SeSettings.Settings.Tools.WhisperChoice}) with : {_whisperProcess.StartInfo.FileName} {_whisperProcess.StartInfo.Arguments}{Environment.NewLine}");
         _startTicks = DateTime.UtcNow.Ticks;
@@ -1064,7 +1107,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         Models.Clear();
         foreach (var model in engine.Models)
         {
-            Models.Add(model);
+            Models.Add(new WhisperModelDisplay
+            {
+                Model = model,
+                Engine = engine,
+            });
         }
 
         LoadSettings();
@@ -1139,13 +1186,51 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return;
         }
 
+        if (PickerModel.SelectedItem is not WhisperModelDisplay model)
+        {
+            return;
+        }
+
         var result = await _popupService
         .ShowPopupAsync<DownloadWhisperModelPopupModel>(onPresenting: viewModel =>
         {
-            viewModel.SetModels(Models, engine, PickerModel.SelectedItem as WhisperModel);
+            viewModel.SetModels(Models, engine, model);
         }, CancellationToken.None);
+        RefreshDownloadStatus(result as WhisperModel);
 
         SaveSettings();
+    }
+
+    private void RefreshDownloadStatus(WhisperModel? result)
+    {
+        if (PickerEngine.SelectedItem is not IWhisperEngine engine)
+        {
+            return;
+        }
+
+        if (PickerModel.SelectedItem is not WhisperModelDisplay oldModel)
+        {
+            return;
+        }
+
+        Models.Clear();
+        foreach (var model in engine.Models)
+        {
+            Models.Add(new WhisperModelDisplay
+            {
+                Model = model,
+                Engine = engine,
+            });
+        }
+
+        if (result != null)
+        {
+            PickerModel.SelectedItem = Models.FirstOrDefault(m => m.Model.Name == result.Name);
+        }
+        else
+        {
+            PickerModel.SelectedItem = Models.FirstOrDefault(m=>m.Model.Name == oldModel.Model.Name);
+        }
     }
 
     public void MouseEnteredPostProcessingSettings(object obj)

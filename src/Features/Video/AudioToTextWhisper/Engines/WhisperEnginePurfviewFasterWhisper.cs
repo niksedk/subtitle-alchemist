@@ -76,14 +76,23 @@ public class WhisperEnginePurfviewFasterWhisper : IWhisperEngine
 
     public bool IsModelInstalled(WhisperModel model)
     {
-        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(model), model.Name);
-        if (Extension.Length > 0 && !modelFileName.EndsWith(Extension))
+        var baseFolder = GetAndCreateWhisperFolder();
+        var folder = Path.Combine(baseFolder, "_models");
+        folder = Path.Combine(folder, "faster-whisper-" + model.Name);
+        if (!Directory.Exists(folder))
         {
-            modelFileName += Extension;
+            return false;
         }
-        var fileExists = File.Exists(modelFileName);
 
-        return fileExists;
+        var binFileName = Path.GetFileName(model.Urls.First(p => p.EndsWith(".bin")));
+        binFileName = Path.Combine(folder, binFileName);
+        if (!File.Exists(binFileName))
+        {
+            return false;
+        }
+
+        var fileInfo = new FileInfo(binFileName);
+        return fileInfo.Length > 10_000_000;
     }
 
     public string GetModelForCmdLine(string modelName)

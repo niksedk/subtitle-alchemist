@@ -73,15 +73,26 @@ public class WhisperEngineCpp : IWhisperEngine
 
     public bool IsModelInstalled(WhisperModel model)
     {
-        var modelFileName = Path.Combine(GetAndCreateWhisperModelFolder(null), model.Name);
+        var baseFolder = GetAndCreateWhisperFolder();
+        var folder = Path.Combine(baseFolder, "Models");
+        if (!Directory.Exists(folder))
+        {
+            return false;
+        }
+
+        var modelFileName = Path.Combine(folder, model.Name);
         if (Extension.Length > 0 && !modelFileName.EndsWith(Extension))
         {
             modelFileName += Extension;
         }
 
-        var fileExists = File.Exists(modelFileName);
+        if (!File.Exists(modelFileName))
+        {
+            return false;
+        }
 
-        return fileExists;
+        var fileInfo = new FileInfo(modelFileName);
+        return fileInfo.Length > 10_000_000;
     }
 
     public string GetModelForCmdLine(string modelName)
