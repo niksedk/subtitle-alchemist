@@ -7,9 +7,9 @@ namespace SubtitleAlchemist.Features.Help.About;
 
 public class AboutPopup : Popup
 {
-    public AboutPopup(AboutModel model)
+    public AboutPopup(AboutPopupModel popupModel)
     {
-        BindingContext = model;
+        BindingContext = popupModel;
 
         CanBeDismissedByTappingOutsideOfPopup = false;
 
@@ -27,7 +27,7 @@ public class AboutPopup : Popup
                     {
                         new ImageButton
                         {
-                            Command = model.CloseCommand,
+                            Command = popupModel.CloseCommand,
                         }
                         .Width(30)
                         .Height(30)
@@ -79,7 +79,7 @@ public class AboutPopup : Popup
 
         this.BindDynamicTheme();
   
-        model.Popup = this;
+        popupModel.Popup = this;
     }
 }
 

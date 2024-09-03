@@ -52,7 +52,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<WhisperAdvancedPage>();
             builder.Services.AddTransient<WhisperAdvancedModel>();
 
-            builder.Services.AddTransientPopup<AboutPopup, AboutModel>();
+            builder.Services.AddTransientPopup<AboutPopup, AboutPopupModel>();
             builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerModel>();
             builder.Services.AddTransientPopup<DownloadFfmpegPopup, DownloadFfmpegModel>();
             builder.Services.AddTransientPopup<ColorPickerPopup, ColorPickerPopupModel>();
@@ -62,6 +62,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<DownloadWhisperPopup, DownloadWhisperPopupModel>();
             builder.Services.AddTransientPopup<DownloadWhisperModelPopup, DownloadWhisperModelPopupModel>();
             builder.Services.AddTransientPopup<WhisperPostProcessingPopup, WhisperPostProcessingPopupModel>();
+            builder.Services.AddTransientPopup<WhisperAdvancedHistoryPopup, WhisperAdvancedHistoryPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

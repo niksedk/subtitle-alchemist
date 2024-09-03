@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 using SubtitleAlchemist.Logic.Config;
@@ -30,6 +31,15 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     public ScrollView ScrollViewOpenAiHelpText { get; set; } = new();
     public ScrollView ScrollViewPurfviewHelpText { get; set; } = new();
     public ScrollView ScrollViewPurfviewXxlHelpText { get; set; } = new();
+
+    private string _engineName;
+    private readonly IPopupService _popupService;
+
+    public WhisperAdvancedModel(IPopupService popupService)
+    {
+        _engineName = DefaultWhisperEngineName;
+        _popupService = popupService;
+    }
 
     public async Task LeftMenuTapped(string engineName)
     {
@@ -72,6 +82,13 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task Ok()
     {
+        var param = CurrentParameters.Trim();
+        if (!string.IsNullOrWhiteSpace(param) && !SeSettings.Settings.Tools.WhisperExtraSettings.Contains(param))
+        {
+            SeSettings.Settings.Tools.WhisperExtraSettingsHistory =
+                param + Environment.NewLine + SeSettings.Settings.Tools.WhisperExtraSettingsHistory;
+        }
+
         await Shell.Current.GoToAsync($"..", new Dictionary<string, object>
         {
             { "Page", nameof(WhisperAdvancedPage) },
@@ -115,6 +132,18 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
+    public async Task ShowHistory()
+    {
+        var engine = WhisperEngineFactory.MakeEngineFromStaticName(_engineName);
+        SeSettings.Settings.Tools.WhisperChoice = engine.Choice;
+        var command = await _popupService.ShowPopupAsync<WhisperAdvancedHistoryPopupModel>(CancellationToken.None);
+        if (command is string commandString)
+        {
+            CurrentParameters = commandString;
+        }
+    }
+
+    [RelayCommand]
     private void SetStandardParameter()
     {
         CurrentParameters = "--standard";
@@ -139,7 +168,7 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
-    private void SetHightlightWordParameter()
+    private void SetHighlightWordParameter()
     {
         CurrentParameters = "--highlight_words true --max_line_width 43 --max_line_count 2";
     }

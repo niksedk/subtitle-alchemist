@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Markup;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Markup;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 using SubtitleAlchemist.Logic;
@@ -59,7 +60,7 @@ public class WhisperAdvancedPage : ContentPage
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star }
+                new ColumnDefinition { Width = GridLength.Star },
             },
             Padding = new Thickness(10),
             RowSpacing = 10,
@@ -78,27 +79,53 @@ public class WhisperAdvancedPage : ContentPage
         grid.Add(title, 0, 0);
         Grid.SetColumnSpan(title, 2);
 
-        var parameterLine = new StackLayout
+
+        var parameterGrid = new Grid
         {
-            Orientation = StackOrientation.Vertical,
-            HorizontalOptions = LayoutOptions.Fill,
-            Children =
+            RowDefinitions =
             {
-                new Label
-                {
-                    Text = "Parameters",
-                    Margin = 0,
-                },
-                new Entry
-                {
-                    Placeholder = "Enter command line parameters",
-                    HorizontalOptions = LayoutOptions.Fill,
-                    Margin = new Thickness(0,0,0, 10),
-                }.Bind(nameof(vm.CurrentParameters))
-            }
-        };
-        grid.Add(parameterLine, 0, 1);
-        Grid.SetColumnSpan(parameterLine, 2);
+                new RowDefinition { Height = GridLength.Auto }, // title
+                new RowDefinition { Height = GridLength.Auto }, // parameters + button
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Auto },
+            },
+            Padding = new Thickness(0),
+            RowSpacing = 10,
+            ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        }.BindDynamicTheme();
+
+        var parameterLabel = new Label
+        {
+            Text = "Parameters",
+            Margin = 0,
+        }.BindDynamicTheme();
+        parameterGrid.Add(parameterLabel, 0, 0);
+        parameterGrid.SetColumnSpan(parameterLabel, 2);
+
+        var parameterEntry = new Entry
+        {
+            Placeholder = "Enter command line parameters",
+            HorizontalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 10),
+        }.Bind(nameof(vm.CurrentParameters));
+        parameterGrid.Add(parameterEntry, 0, 1);
+
+        var parameterButton = new Button
+        {
+            Text = "...",
+            Margin = new Thickness(5),
+            Command = vm.ShowHistoryCommand,
+        }.BindDynamicTheme();
+        parameterGrid.Add(parameterButton, 1, 1);
+    
+        grid.Add(parameterGrid, 0, 1);
+        Grid.SetColumnSpan(parameterGrid, 2);
+
 
         vm.LeftMenu = new VerticalStackLayout
         {
@@ -253,7 +280,7 @@ public class WhisperAdvancedPage : ContentPage
                     new Button
                     {
                         Text = "Highlight word",
-                        Command = _vm?.SetHightlightWordParameterCommand,
+                        Command = _vm?.SetHighlightWordParameterCommand,
                         Margin = new Thickness(5),
                     }.BindDynamicTheme(),
                 }

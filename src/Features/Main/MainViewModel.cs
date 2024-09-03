@@ -103,7 +103,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private bool _updating;
     private bool _stopping = false;
 
-
     private readonly IPopupService _popupService;
 
     public MainViewModel(IPopupService popupService)
@@ -598,7 +597,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     public async Task ShowAbout()
     {
-        await _popupService.ShowPopupAsync<AboutModel>(CancellationToken.None);
+        await _popupService.ShowPopupAsync<AboutPopupModel>(CancellationToken.None);
     }
 
     [RelayCommand]

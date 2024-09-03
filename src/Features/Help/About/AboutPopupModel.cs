@@ -3,11 +3,11 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace SubtitleAlchemist.Features.Help.About
 {
-    public partial class AboutModel : ObservableObject
+    public partial class AboutPopupModel : ObservableObject
     {
         public AboutPopup? Popup { get; set; }
 
-        public AboutModel()
+        public AboutPopupModel()
         {
         }
 
