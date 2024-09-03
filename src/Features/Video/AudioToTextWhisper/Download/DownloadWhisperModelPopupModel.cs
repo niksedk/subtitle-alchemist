@@ -26,6 +26,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
 
     public Picker ModelPicker { get; set; } = new();
     public ProgressBar ProgressBar { get; set; } = new();
+    public ImageButton ButtonDownload { get; set; } = new();
 
     [ObservableProperty] private ObservableCollection<AudioToTextWhisperModel.WhisperModelDisplay> _models = new();
 
@@ -106,12 +107,12 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
     [RelayCommand]
     public void StartDownload()
     {
-        if (SelectedModel is not AudioToTextWhisperModel.WhisperModelDisplay model)
+        if (SelectedModel is not { } model)
         {
             return;
         }
 
-        //TODO: disable download buttons
+        ButtonDownload.IsEnabled = false;
 
         _downloadUrls.Clear();
         _downloadUrls.AddRange(model.Model.Urls);
@@ -154,7 +155,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
             _downloadIndex++;
             if (_downloadIndex < _downloadUrls.Count)
             {
-                _downloadFileName = GetDownloadFileName(_downloadModel, _downloadUrls[_downloadIndex]); 
+                _downloadFileName = GetDownloadFileName(_downloadModel, _downloadUrls[_downloadIndex]);
                 _downloadTask = _whisperCppDownloadService.DownloadFile(_downloadUrls[_downloadIndex], _downloadFileName, MakeDownloadProgress(), _cancellationTokenSource.Token);
                 ProgressValue = 0;
                 _timer.Start();
@@ -166,7 +167,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
 
             if (Popup != null)
             {
-                Close(_downloadModel); 
+                Close(_downloadModel);
             }
 
             return;
@@ -194,20 +195,35 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
 
     private void CompleteDownload()
     {
-        if (string.IsNullOrEmpty(_downloadFileName) || !File.Exists(_downloadFileName))
+        var downloadFileName = _downloadFileName;
+        if (string.IsNullOrEmpty(downloadFileName) || !File.Exists(downloadFileName))
         {
             return;
         }
 
-        var fileInfo = new FileInfo(_downloadFileName);
+        var fileInfo = new FileInfo(downloadFileName);
+        if (fileInfo.Length == 0)
+        {
+            try
+            {
+                File.Delete(downloadFileName);
+            }
+            catch
+            {
+                // ignore
+            }
+
+            return;
+        }
+        
         if (fileInfo.Length < 50)
         {
-            var text = FileUtil.ReadAllTextShared(_downloadFileName, Encoding.UTF8);
+            var text = FileUtil.ReadAllTextShared(downloadFileName, Encoding.UTF8);
             if (text.StartsWith("Entry not found", StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
-                    File.Delete(_downloadFileName);
+                    File.Delete(downloadFileName);
                 }
                 catch
                 {
@@ -223,14 +239,14 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
             }
         }
 
-        var newFileName = _downloadFileName.Replace(TemporaryFileExtension, string.Empty);
+        var newFileName = downloadFileName.Replace(TemporaryFileExtension, string.Empty);
 
         if (File.Exists(newFileName))
         {
             File.Delete(newFileName);
         }
 
-        File.Move(_downloadFileName, newFileName);
+        File.Move(downloadFileName, newFileName);
         _downloadFileName = string.Empty;
     }
 }

@@ -59,7 +59,7 @@ public class DownloadWhisperModelPopup : Popup
 
         grid.Add(vm.ModelPicker, 0, 1);
 
-        var buttonDownload = new ImageButton
+        vm.ButtonDownload = new ImageButton
         {
             Source = "download.png",
             HorizontalOptions = LayoutOptions.Start,
@@ -69,7 +69,7 @@ public class DownloadWhisperModelPopup : Popup
             Padding = new Thickness(5, 5, 5, 5),
             Command = vm.StartDownloadCommand,
         }.BindDynamicTheme();
-        ToolTipProperties.SetText(buttonDownload, "Click to download model");
+        ToolTipProperties.SetText(vm.ButtonDownload, "Click to download model");
 
 
         var folderBrowse = new ImageButton
@@ -90,7 +90,7 @@ public class DownloadWhisperModelPopup : Popup
             HorizontalOptions = LayoutOptions.Fill,
             Children =
             {
-                buttonDownload,
+                vm.ButtonDownload,
                 folderBrowse,
             },
         };
