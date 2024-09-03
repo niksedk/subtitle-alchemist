@@ -216,6 +216,7 @@ public class AudioToTextWhisperPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Command = vm.ShowAdvancedWhisperSettingsCommand,
             Text = "Advanced settings",
+            Margin = new Thickness(15, 2, 2, 2),
         }.BindDynamicTheme();
 
 
@@ -259,10 +260,45 @@ public class AudioToTextWhisperPage : ContentPage
         {
             Text = string.Empty,
             IsVisible = false,
-            HorizontalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.Start,
+            Margin = new Thickness(15, 2, 2, 2),
+            FontSize = 16,
         }.BindDynamicTheme();
-        grid.Add(vm.LabelProgress, 0, 7);
-        grid.SetColumnSpan(vm.LabelProgress, 2);
+        //vm.ProgressBar.SetBinding(Label.TextProperty, nameof(vm.Progre));
+
+        var labelElapsedText = new Label
+        {
+            Text = "Elapsed time: ",
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(15, 2, 2, 2),
+            FontSize = 16,
+        }.BindDynamicTheme();
+        labelElapsedText.SetBinding(Label.TextProperty, nameof(vm.ElapsedText));
+
+        var labelElapsedText2 = new Label
+        {
+            Text = "Elapsed time2: ",
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(15, 2, 2, 2),
+            FontSize = 16,
+        }.BindDynamicTheme();
+        labelElapsedText2.SetBinding(Label.TextProperty, nameof(vm.EstimatedText));
+
+        var progressLine = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            VerticalOptions = LayoutOptions.Start,
+            HorizontalOptions = LayoutOptions.Start,
+            Children =
+            {
+                vm.LabelProgress,
+                labelElapsedText,
+                labelElapsedText2,
+            }
+        };
+
+        grid.Add(progressLine, 0, 7);
+        grid.SetColumnSpan(progressLine, 2);
 
 
         vm.TranscribeButton = new Button

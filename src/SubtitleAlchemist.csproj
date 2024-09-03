@@ -468,4 +468,19 @@
 		</PackageReference>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Compile Update="Platforms\Android\TaskbarList.cs">
+	    <ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
+	  </Compile>
+	  <Compile Update="Platforms\iOS\TaskbarList.cs">
+	    <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+	  </Compile>
+	  <Compile Update="Platforms\MacCatalyst\TaskbarList.cs">
+	    <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+	  </Compile>
+	  <Compile Update="Platforms\Tizen\TaskbarList.cs">
+	    <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+	  </Compile>
+	</ItemGroup>
+
 </Project>

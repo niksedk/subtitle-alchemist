@@ -5,7 +5,6 @@ using Nikse.SubtitleEdit.Core.AudioToText;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.ContainerFormats.Matroska;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
-using Nikse.SubtitleEdit.Core.TextToSpeech;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 using SubtitleAlchemist.Logic;
@@ -18,7 +17,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
-
+using SubtitleAlchemist.Logic.Media;
 using Switch = Microsoft.Maui.Controls.Switch;
 using Timer = System.Timers.Timer;
 
@@ -26,7 +25,15 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
 public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributable
 {
-    public float ProgressValue { get; set; }
+    [ObservableProperty]
+    private float _progressValue;
+
+    [ObservableProperty]
+    private string _elapsedText = string.Empty;
+
+    [ObservableProperty]
+    private string _estimatedText = string.Empty;
+
     public Label TitleLabel { get; set; } = new();
     public Picker PickerEngine { get; set; } = new();
     public Picker PickerLanguage { get; set; } = new();
@@ -60,6 +67,9 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     private bool _batchMode;
     private int _batchFileNumber;
     private VideoInfo _videoInfo = new();
+    private readonly TaskbarList _taskbarList;
+    private readonly IntPtr _windowHandle;
+
     public bool Loading { get; set; } = true;
 
     [ObservableProperty]
@@ -128,9 +138,16 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     private Process _whisperProcess = new();
     private Stopwatch _sw = new();
 
-    public AudioToTextWhisperModel(IPopupService popupService)
+    public AudioToTextWhisperModel(IPopupService popupService, TaskbarList taskbarList)
     {
         _popupService = popupService;
+        _taskbarList = taskbarList;
+
+        _windowHandle = IntPtr.Zero;
+#if WINDOWS  
+		_windowHandle = ((MauiWinUIWindow)App.Current.Windows[0].Handler.PlatformView).WindowHandle;  
+#endif         
+
         WhisperEngines.Add(new WhisperEngineCpp());
         WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisper());
         WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisperXxl());
@@ -162,8 +179,46 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                LabelProgress.Text = $"Transcribing..., Elapsed: {new TimeCode(durationMs).ToShortDisplayString()}";
+                LabelProgress.Text = "Transcribing...";
             });
+
+            ElapsedText = $"Elapsed time: {new TimeCode(durationMs).ToShortDisplayString()}";
+            if (_endSeconds <= 0 || _videoInfo == null)
+            {
+                if (_showProgressPct > 0)
+                {
+                    SetProgressBarPct(_showProgressPct);
+                }
+
+                return;
+            }
+
+            ShowProgressBar();
+
+
+            _videoInfo.TotalSeconds = Math.Max(_endSeconds, _videoInfo.TotalSeconds);
+            var msPerFrame = durationMs / (_endSeconds * 1000.0);
+            var estimatedTotalMs = msPerFrame * _videoInfo.TotalMilliseconds;
+            var msEstimatedLeft = estimatedTotalMs - durationMs;
+            if (msEstimatedLeft > _lastEstimatedMs)
+            {
+                msEstimatedLeft = _lastEstimatedMs;
+            }
+            else
+            {
+                _lastEstimatedMs = msEstimatedLeft;
+            }
+
+            if (_showProgressPct > 0)
+            {
+                SetProgressBarPct(_showProgressPct);
+            }
+            else
+            {
+                SetProgressBarPct(_endSeconds * 100.0 / _videoInfo.TotalSeconds);
+            }
+
+            EstimatedText = ProgressHelper.ToProgressTime(msEstimatedLeft);
 
             return;
         }
@@ -192,6 +247,27 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         var transcribedSubtitleFromStdOut = new Subtitle();
         transcribedSubtitleFromStdOut.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start).Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
         MakeResult(transcribedSubtitleFromStdOut);
+    }
+
+    private void SetProgressBarPct(double pct)
+    {
+        var p =  pct / 100.0;
+
+        if (p > 1)
+        {
+            p = 1;
+        }
+
+        if (p < 0)
+        {
+            p = 0;
+        }
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ProgressValue = (float)p;
+            _taskbarList.SetProgressValue(_windowHandle, p, 100);
+        });
     }
 
     private Subtitle PostProcess(Subtitle transcript)
@@ -449,7 +525,9 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        var mediaInfo = FfmpegMediaInfo.Parse(_videoFileName);
+        TranscribeButton.IsEnabled = false;
+
+        var mediaInfo = FfmpegMediaInfo2.Parse(_videoFileName);
         if (mediaInfo.Tracks.Count(p => p.TrackType == FfmpegTrackType.Audio) == 0)
         {
             var answer = await Page.DisplayAlert(
@@ -458,12 +536,22 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
                 "OK",
                 "No");
 
+            TranscribeButton.IsEnabled = true;
             return;
         }
 
+
+        _videoInfo.TotalMilliseconds = mediaInfo.Duration.TotalMilliseconds;
+        _videoInfo.TotalSeconds = mediaInfo.Duration.TotalSeconds;
+        _videoInfo.Width = mediaInfo.Dimension.Width;
+        _videoInfo.Height = mediaInfo.Dimension.Height;
+
+        LabelProgress.IsVisible = true;
+        LabelProgress.Text = "Generating wav file...";
         var genWaveFile = GenerateWavFile(_videoFileName, _audioTrackNumber);
         if (string.IsNullOrEmpty(genWaveFile))
         {
+            TranscribeButton.IsEnabled = true;
             return;
         }
 
@@ -478,17 +566,15 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     public bool TranscribeViaWhisper(string waveFileName, string videoFileName)
     {
-        if (SelectedWhisperEngine is null)
-        {
-            return false;
-        }
-
         if (SelectedWhisperEngine is not { } engine)
         {
             return false;
         }
 
-        SeSettings.Settings.Tools.WhisperChoice = engine.Choice;
+        if (_videoFileName == null)
+        {
+            return false;
+        }
 
         if (PickerModel.SelectedItem is not WhisperModelDisplay model)
         {
@@ -500,6 +586,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return false;
         }
 
+        SeSettings.Settings.Tools.WhisperChoice = engine.Choice;
 
         _showProgressPct = -1;
 
@@ -510,14 +597,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         }
         else
         {
-            //TODO: TaskbarList.SetProgressValue(_parentForm.Handle, 1, 100);
+            _taskbarList.SetProgressValue(_windowHandle, 1, 100);
         }
 
-        LabelProgress.IsVisible = true;
-        ProgressBar.IsVisible = true;
-
         _useCenterChannelOnly = Configuration.Settings.General.FFmpegUseCenterChannelOnly &&
-                                FfmpegMediaInfo.Parse(_videoFileName).HasFrontCenterAudio(_audioTrackNumber);
+                                FfmpegMediaInfo2.Parse(_videoFileName).HasFrontCenterAudio(_audioTrackNumber);
 
         //Delete invalid preprocessor_config.json file
         if (SeSettings.Settings.Tools.WhisperChoice is
@@ -574,18 +658,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         _sw = Stopwatch.StartNew();
         _outputText.Add($"Calling whisper ({SeSettings.Settings.Tools.WhisperChoice}) with : {_whisperProcess.StartInfo.FileName} {_whisperProcess.StartInfo.Arguments}{Environment.NewLine}");
         _startTicks = DateTime.UtcNow.Ticks;
-        _videoInfo = UiUtil.GetVideoInfo(waveFileName);
-        if (!_batchMode)
-        {
-            ShowProgressBar();
-            //ProgressBar.Style = ProgressBarStyle.Marquee;
-        }
 
         _abort = false;
 
         LabelProgress.Text = "Transcribing...";// LanguageSettings.Current.AudioToText.Transcribing;
         _timer.Start();
-        TranscribeButton.IsEnabled = false;
 
         return true;
     }
@@ -698,8 +775,14 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     private void ShowProgressBar()
     {
-        ProgressValue = 0;
-        ProgressBar.IsVisible = true;
+        if (!ProgressBar.IsVisible)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ProgressValue = 0;
+                ProgressBar.IsVisible = true;
+            });
+        }
     }
 
     public static bool GetResultFromSrt(string waveFileName, string videoFileName, out List<ResultText> resultTexts, ConcurrentBag<string> outputText, List<string> filesToDelete)
@@ -949,16 +1032,16 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         while (!process.HasExited)
         {
-            System.Threading.Thread.Sleep(100);
-            seconds += 0.1;
-            if (seconds < 60)
-            {
-                LabelProgress.Text = "Seconds left: " + seconds; // string.Format(LanguageSettings.Current.AddWaveform.ExtractingSeconds, seconds);
-            }
-            else
-            {
-                LabelProgress.Text = "Minutes left: " + ((int)(seconds / 60)); // string.Format(LanguageSettings.Current.AddWaveform.ExtractingMinutes, (int)(seconds / 60), (int)(seconds % 60));
-            }
+            Thread.Sleep(100);
+            //seconds += 0.1;
+            //if (seconds < 60)
+            //{
+            //    ElapsedText = "Estimated left: Seconds left: " + seconds; // string.Format(LanguageSettings.Current.AddWaveform.ExtractingSeconds, seconds);
+            //}
+            //else
+            //{
+            //    ElapsedText = "Minutes left: " + ((int)(seconds / 60)); // string.Format(LanguageSettings.Current.AddWaveform.ExtractingMinutes, (int)(seconds / 60), (int)(seconds % 60));
+            //}
 
             if (_abort)
             {

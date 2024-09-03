@@ -51,6 +51,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<FixCommonErrorsModel>();
             builder.Services.AddTransient<WhisperAdvancedPage>();
             builder.Services.AddTransient<WhisperAdvancedModel>();
+            builder.Services.AddTransient<TaskbarList>();
 
             builder.Services.AddTransientPopup<AboutPopup, AboutPopupModel>();
             builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerModel>();
@@ -71,7 +72,7 @@ namespace SubtitleAlchemist
             builder.Logging.AddDebug();
 #endif
 
-            //            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             return builder.Build();
         }
