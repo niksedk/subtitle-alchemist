@@ -10,7 +10,7 @@ namespace SubtitleAlchemist
         {
             InitializeComponent();
 
-            SeSettings.LoadSettings();
+            Se.LoadSettings();
 
             MainPage = new AppShell();
         }

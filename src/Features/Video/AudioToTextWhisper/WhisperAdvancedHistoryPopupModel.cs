@@ -21,12 +21,12 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper
 
         public void SetItems()
         {
-            var items = SeSettings.Settings.Tools.WhisperExtraSettingsHistory.SplitToLines();
+            var items = Se.Settings.Tools.WhisperExtraSettingsHistory.SplitToLines();
 
             Items.Clear();
             Items.Add(string.Empty);
 
-            if (SeSettings.Settings.Tools.WhisperChoice 
+            if (Se.Settings.Tools.WhisperChoice 
                 is WhisperChoice.PurfviewFasterWhisper or WhisperChoice.PurfviewFasterWhisperXXL 
                 && !items.Contains("--standard"))
             {

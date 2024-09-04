@@ -494,9 +494,9 @@ public class TranslatePage : ContentPage
                 }
             });
 
-            if (!string.IsNullOrWhiteSpace(SeSettings.Settings.Tools.AutoTranslateLastName))
+            if (!string.IsNullOrWhiteSpace(Se.Settings.Tools.AutoTranslateLastName))
             {
-                var item = _vm.AutoTranslators.FirstOrDefault(p => p.Name == SeSettings.Settings.Tools.AutoTranslateLastName);
+                var item = _vm.AutoTranslators.FirstOrDefault(p => p.Name == Se.Settings.Tools.AutoTranslateLastName);
                 if (item != null)
                 {
                     _vm.SelectedAutoTranslator = item;

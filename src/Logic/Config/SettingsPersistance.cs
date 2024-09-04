@@ -1,7 +1,8 @@
-﻿using System.Text;
-using System.Text.Json;
-using Nikse.SubtitleEdit.Core.Common;
+﻿using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
+using System.Globalization;
+using System.Text;
+using System.Text.Json;
 
 namespace SubtitleAlchemist.Logic.Config;
 
@@ -59,6 +60,7 @@ public class SeTools
     public string WhisperCppModelLocation { get; set; } = string.Empty;
 
     public string WhisperCustomCommandLineArguments { get; set; } = string.Empty;
+    public bool WhisperCustomCommandLineArgumentsPurfviewBlank { get; set; }
 
     public string WhisperExtraSettingsHistory { get; set; } = string.Empty;
 
@@ -79,16 +81,16 @@ public class SeTools
     public string AutoTranslateLastName { get; set; } = string.Empty;
 }
 
-public class SeSettings
+public class Se
 {
     public string FfmpegPath { get; set; }
     public string Theme { get; set; }
     public SeFile File { get; set; }
     public SeTools Tools { get; set; }
 
-    public static SeSettings Settings { get; set; } = new();
+    public static Se Settings { get; set; } = new();
 
-    public SeSettings()
+    public Se()
     {
         FfmpegPath = string.Empty;
         Theme = "Dark";
@@ -122,11 +124,47 @@ public class SeSettings
         if (System.IO.File.Exists(settingsFileName))
         {
             var json = System.IO.File.ReadAllText(settingsFileName);
-            Settings = JsonSerializer.Deserialize<SeSettings>(json)!;
+            Settings = JsonSerializer.Deserialize<Se>(json)!;
 
             UpdateLibSeSettings();
         }
     }
+
+    public static void WriteWhisperLog(string log)
+    {
+        try
+        {
+            var filePath = GetWhisperLogFilePath();
+            using var writer = new StreamWriter(filePath, true, Encoding.UTF8);
+            writer.WriteLine("-----------------------------------------------------------------------------");
+            writer.WriteLine($"Date: {DateTime.Now.ToString(CultureInfo.InvariantCulture)}");
+            writer.WriteLine($"SE: {GetSeInfo()}");
+            writer.WriteLine(log);
+            writer.WriteLine();
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private static string GetSeInfo()
+    {
+        try
+        {
+            return $"{System.Reflection.Assembly.GetEntryAssembly()!.GetName().Version} - {Environment.OSVersion} - {IntPtr.Size * 8}-bit";
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    public static string GetWhisperLogFilePath()
+    {
+        return Path.Combine(FileSystem.Current.AppDataDirectory, "whisper_log.txt");
+    }
+
 
     private static void UpdateLibSeSettings()
     {

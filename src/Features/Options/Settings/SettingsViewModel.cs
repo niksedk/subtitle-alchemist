@@ -88,18 +88,18 @@ public partial class SettingsViewModel : ObservableObject
 
     public void LoadSettings()
     {
-        Theme = SeSettings.Settings.Theme;
-        FfmpegPath = SeSettings.Settings.FfmpegPath;
-        ShowRecentFiles = SeSettings.Settings.File.ShowRecentFiles;
+        Theme = Se.Settings.Theme;
+        FfmpegPath = Se.Settings.FfmpegPath;
+        ShowRecentFiles = Se.Settings.File.ShowRecentFiles;
     }
 
     public void SaveSettings()
     {
-        SeSettings.Settings.FfmpegPath = FfmpegPath;
-        SeSettings.Settings.Theme = Theme;
-        SeSettings.Settings.File.ShowRecentFiles = ShowRecentFiles;
+        Se.Settings.FfmpegPath = FfmpegPath;
+        Se.Settings.Theme = Theme;
+        Se.Settings.File.ShowRecentFiles = ShowRecentFiles;
 
-        SeSettings.SaveSettings();
+        Se.SaveSettings();
     }
 
     public async Task BrowseForFfmpeg(object? sender, EventArgs eventArgs)

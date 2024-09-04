@@ -17,7 +17,7 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     public string DefaultWhisperEngineName { get; set; } = WhisperEngineCpp.StaticName;
 
     [ObservableProperty]
-    private string _currentParameters = SeSettings.Settings.Tools.WhisperCustomCommandLineArguments;
+    private string _currentParameters = Se.Settings.Tools.WhisperCustomCommandLineArguments;
 
     public VerticalStackLayout LeftMenu { get; set; } = new();
     public Editor EditorCppHelpText { get; set; } = new();
@@ -83,10 +83,10 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     private async Task Ok()
     {
         var param = CurrentParameters.Trim();
-        if (!string.IsNullOrWhiteSpace(param) && !SeSettings.Settings.Tools.WhisperCustomCommandLineArguments.Contains(param))
+        if (!string.IsNullOrWhiteSpace(param) && !Se.Settings.Tools.WhisperCustomCommandLineArguments.Contains(param))
         {
-            SeSettings.Settings.Tools.WhisperExtraSettingsHistory =
-                param + Environment.NewLine + SeSettings.Settings.Tools.WhisperExtraSettingsHistory;
+            Se.Settings.Tools.WhisperExtraSettingsHistory =
+                param + Environment.NewLine + Se.Settings.Tools.WhisperExtraSettingsHistory;
         }
 
         await Shell.Current.GoToAsync($"..", new Dictionary<string, object>
@@ -135,7 +135,7 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     public async Task ShowHistory()
     {
         var engine = WhisperEngineFactory.MakeEngineFromStaticName(_engineName);
-        SeSettings.Settings.Tools.WhisperChoice = engine.Choice;
+        Se.Settings.Tools.WhisperChoice = engine.Choice;
         var command = await _popupService.ShowPopupAsync<WhisperAdvancedHistoryPopupModel>(CancellationToken.None);
         if (command is string commandString)
         {

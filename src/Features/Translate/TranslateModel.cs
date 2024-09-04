@@ -499,9 +499,9 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         }
 
         Configuration.Settings.Tools.AutoTranslateLastName = SelectedAutoTranslator.Name;
-        SeSettings.Settings.Tools.AutoTranslateLastName = SelectedAutoTranslator.Name;
+        Se.Settings.Tools.AutoTranslateLastName = SelectedAutoTranslator.Name;
 
-        SeSettings.SaveSettings();
+        Se.SaveSettings();
     }
 
     public void EngineSelectedIndexChanged(object? sender, EventArgs e)

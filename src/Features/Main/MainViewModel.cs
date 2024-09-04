@@ -74,6 +74,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     private DisplayParagraph? _currentParagraph;
 
+    private bool _loading = true;
 
     private Subtitle UpdatedSubtitle
     {
@@ -183,7 +184,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             if (query["TranscribedSubtitle"] is Subtitle subtitle)
             {
-                Paragraphs = subtitle.Paragraphs.Select(p => new DisplayParagraph(p)).ToObservableCollection();
+                Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+                ShowStatus($"{Paragraphs.Count} lines generated from Whisper");
                 SelectParagraph(0);
             }
         }
@@ -553,7 +555,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _timer.Stop();
         _audioVisualizer.OnVideoPositionChanged -= AudioVisualizer_OnVideoPositionChanged;
         SharpHookHandler.Clear();
-        SeSettings.SaveSettings();
+        Se.SaveSettings();
         SharpHookHandler.Dispose();
     }
 
@@ -567,18 +569,24 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     public void Loaded(MainPage mainPage)
     {
+        if (!_loading)
+        {
+            return;
+        }
+
         mainPage.Window.MinimumHeight = 400;
         mainPage.Window.MinimumWidth = 800;
 
-        if (SeSettings.Settings.File.ShowRecentFiles)
+        if (Se.Settings.File.ShowRecentFiles)
         {
-            var first = SeSettings.Settings.File.RecentFiles.FirstOrDefault();
+            var first = Se.Settings.File.RecentFiles.FirstOrDefault();
             if (first != null && File.Exists(first.SubtitleFileName))
             {
                 SubtitleOpen(first.SubtitleFileName, first.VideoFileName);
             }
         }
 
+        _loading = false;
     }
 
     [RelayCommand]
@@ -648,8 +656,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     private void AddToRecentFiles()
     {
-        SeSettings.Settings.File.AddToRecentFiles(_subtitleFileName, _videoFileName, GetFirstSelectedIndex(), CurrentTextEncoding.DisplayName);
-        SeSettings.SaveSettings();
+        Se.Settings.File.AddToRecentFiles(_subtitleFileName, _videoFileName, GetFirstSelectedIndex(), CurrentTextEncoding.DisplayName);
+        Se.SaveSettings();
     }
 
     [RelayCommand]
@@ -1012,13 +1020,13 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         if (File.Exists(DownloadFfmpegModel.GetFfmpegFileName()))
         {
-            SeSettings.Settings.FfmpegPath = DownloadFfmpegModel.GetFfmpegFileName();
+            Se.Settings.FfmpegPath = DownloadFfmpegModel.GetFfmpegFileName();
             return true;
         }
 
         if (Configuration.IsRunningOnMac && File.Exists("/usr/local/bin/ffmpeg"))
         {
-            SeSettings.Settings.FfmpegPath = "/usr/local/bin/ffmpeg";
+            Se.Settings.FfmpegPath = "/usr/local/bin/ffmpeg";
             return true;
         }
 
