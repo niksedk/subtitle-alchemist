@@ -58,7 +58,7 @@ public class SeTools
 
     public string WhisperCppModelLocation { get; set; } = string.Empty;
 
-    public string WhisperExtraSettings { get; set; } = string.Empty;
+    public string WhisperCustomCommandLineArguments { get; set; } = string.Empty;
 
     public string WhisperExtraSettingsHistory { get; set; } = string.Empty;
 
@@ -145,7 +145,7 @@ public class SeSettings
         Configuration.Settings.Tools.WhisperXLocation = Settings.Tools.WhisperXLocation;
         Configuration.Settings.Tools.WhisperStableTsLocation = Settings.Tools.WhisperStableTsLocation;
         Configuration.Settings.Tools.WhisperCppModelLocation = Settings.Tools.WhisperCppModelLocation;
-        Configuration.Settings.Tools.WhisperExtraSettings = Settings.Tools.WhisperExtraSettings;
+        Configuration.Settings.Tools.WhisperExtraSettings = Settings.Tools.WhisperCustomCommandLineArguments;
         Configuration.Settings.Tools.WhisperExtraSettingsHistory = Settings.Tools.WhisperExtraSettingsHistory;
         Configuration.Settings.Tools.WhisperAutoAdjustTimings = Settings.Tools.WhisperAutoAdjustTimings;
         Configuration.Settings.Tools.WhisperUseLineMaxChars = Settings.Tools.WhisperUseLineMaxChars;

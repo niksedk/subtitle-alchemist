@@ -24,9 +24,12 @@ public partial class TaskbarList
 
     public partial void SetProgressValue(IntPtr hwnd, double value, double max)
     {
+        var v = (ulong)value;
+        var m = (ulong)max;
+
         if (Supported && hwnd != IntPtr.Zero)
         {
-            Taskbar.SetProgressValue(hwnd, (ulong)value, (ulong)max);
+            Taskbar.SetProgressValue(hwnd, v, m);
         }
     }
 

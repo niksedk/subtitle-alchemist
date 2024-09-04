@@ -20,7 +20,7 @@ public class AudioToTextWhisperPage : ContentPage
             Margin = new Thickness(10, 10, 10, 10),
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            RowDefinitions = new RowDefinitionCollection
+            RowDefinitions = new()
             {
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
@@ -30,12 +30,15 @@ public class AudioToTextWhisperPage : ContentPage
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
             },
-            ColumnDefinitions = new ColumnDefinitionCollection
+            ColumnDefinitions = new()
             {
+                new() { Width = new GridLength(1, GridUnitType.Auto) },
                 new() { Width = new GridLength(1, GridUnitType.Auto) },
                 new() { Width = new GridLength(1, GridUnitType.Star) },
             },
         };
+
+        MakeConsoleLogWindow(grid, vm);
 
         var poweredByLabel = new Label
         {
@@ -222,7 +225,7 @@ public class AudioToTextWhisperPage : ContentPage
 
         vm.LabelAdvancedSettings = new Label
         {
-            Text = SeSettings.Settings.Tools.WhisperExtraSettings,
+            Text = SeSettings.Settings.Tools.WhisperCustomCommandLineArguments,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(15, 25, 15, 25),
         }.BindDynamicTheme();
@@ -334,6 +337,42 @@ public class AudioToTextWhisperPage : ContentPage
         grid.SetColumnSpan(buttonBar, 2);
 
         Content = grid;
+    }
+
+    private void MakeConsoleLogWindow(Grid grid, AudioToTextWhisperModel vm)
+    {
+        var scrollView = new ScrollView
+        {
+            Margin = new Thickness(10, 0, 10, 10),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        };
+
+        var consoleLabel = new Label
+        {
+            Text = "Console log",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(10, 10, 10, 10),
+        }.BindDynamicTheme();
+
+        vm.ConsoleText = new Editor
+        {
+            Margin = new Thickness(0, 0, 0, 0),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            IsReadOnly = true,
+            Text = string.Empty,
+            FontSize = 10,
+            FontFamily = "RobotoMono",
+        }.BindDynamicTheme();
+        //vm.ConsoleText.SetBinding(Editor.TextProperty, nameof(vm.ConsoleText));
+
+        scrollView.Content = vm.ConsoleText;
+
+        grid.Add(consoleLabel, 2, 0);
+        grid.Add(scrollView, 2, 1);
+        Grid.SetRowSpan(scrollView, 8);
     }
 
     protected override void OnAppearing()

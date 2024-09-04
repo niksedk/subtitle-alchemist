@@ -17,7 +17,7 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     public string DefaultWhisperEngineName { get; set; } = WhisperEngineCpp.StaticName;
 
     [ObservableProperty]
-    private string _currentParameters = SeSettings.Settings.Tools.WhisperExtraSettings;
+    private string _currentParameters = SeSettings.Settings.Tools.WhisperCustomCommandLineArguments;
 
     public VerticalStackLayout LeftMenu { get; set; } = new();
     public Editor EditorCppHelpText { get; set; } = new();
@@ -83,7 +83,7 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     private async Task Ok()
     {
         var param = CurrentParameters.Trim();
-        if (!string.IsNullOrWhiteSpace(param) && !SeSettings.Settings.Tools.WhisperExtraSettings.Contains(param))
+        if (!string.IsNullOrWhiteSpace(param) && !SeSettings.Settings.Tools.WhisperCustomCommandLineArguments.Contains(param))
         {
             SeSettings.Settings.Tools.WhisperExtraSettingsHistory =
                 param + Environment.NewLine + SeSettings.Settings.Tools.WhisperExtraSettingsHistory;

@@ -10,6 +10,7 @@ using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
+using SubtitleAlchemist.Logic.Media;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -17,7 +18,6 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
-using SubtitleAlchemist.Logic.Media;
 using Switch = Microsoft.Maui.Controls.Switch;
 using Timer = System.Timers.Timer;
 
@@ -66,11 +66,12 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     private double _lastEstimatedMs = double.MaxValue;
     private bool _batchMode;
     private int _batchFileNumber;
-    private VideoInfo _videoInfo = new();
+    private readonly VideoInfo _videoInfo = new();
     private readonly TaskbarList _taskbarList;
-    private readonly IntPtr _windowHandle;
+    private IntPtr _windowHandle;
 
     public bool Loading { get; set; } = true;
+    public Editor ConsoleText { get; set; } = new();
 
     [ObservableProperty]
     private IWhisperEngine? _selectedWhisperEngine;
@@ -94,7 +95,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             if (Display == null)
             {
-                RefreshDownloadStatus();;
+                RefreshDownloadStatus(); ;
             }
 
             return Display!;
@@ -144,9 +145,6 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         _taskbarList = taskbarList;
 
         _windowHandle = IntPtr.Zero;
-#if WINDOWS  
-		_windowHandle = ((MauiWinUIWindow)App.Current.Windows[0].Handler.PlatformView).WindowHandle;  
-#endif         
 
         WhisperEngines.Add(new WhisperEngineCpp());
         WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisper());
@@ -182,7 +180,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
                 LabelProgress.Text = "Transcribing...";
             });
 
-            ElapsedText = $"Elapsed time: {new TimeCode(durationMs).ToShortDisplayString()}";
+            ElapsedText = $"Time elapsed: {new TimeCode(durationMs).ToShortDisplayString()}";
             if (_endSeconds <= 0 || _videoInfo == null)
             {
                 if (_showProgressPct > 0)
@@ -194,7 +192,6 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             }
 
             ShowProgressBar();
-
 
             _videoInfo.TotalSeconds = Math.Max(_endSeconds, _videoInfo.TotalSeconds);
             var msPerFrame = durationMs / (_endSeconds * 1000.0);
@@ -223,8 +220,13 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return;
         }
 
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await ProgressBar.ProgressTo(1, 500, Easing.Linear);
+        });
+
         _timer.Stop();
-        _outputText.Add($"Calling whisper {SeSettings.Settings.Tools.WhisperChoice} done in {_sw.Elapsed}{Environment.NewLine}");
+        LogToConsole($"Calling whisper {SeSettings.Settings.Tools.WhisperChoice} done in {_sw.Elapsed}{Environment.NewLine}");
 
         _whisperProcess.Dispose();
 
@@ -249,9 +251,18 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         MakeResult(transcribedSubtitleFromStdOut);
     }
 
+    private void LogToConsole(string s)
+    {
+        _outputText.Add(s);
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ConsoleText.Text += s + "\n\n";
+        });
+    }
+
     private void SetProgressBarPct(double pct)
     {
-        var p =  pct / 100.0;
+        var p = pct / 100.0;
 
         if (p > 1)
         {
@@ -266,7 +277,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         MainThread.BeginInvokeOnMainThread(() =>
         {
             ProgressValue = (float)p;
-            _taskbarList.SetProgressValue(_windowHandle, p, 100);
+            _taskbarList.SetProgressValue(_windowHandle, Math.Max(0, Math.Min((int)pct, 100)), 100);
         });
     }
 
@@ -398,7 +409,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         return null;
     }
 
-    private static void MakeResult(Subtitle? transcribedSubtitle)
+    private void MakeResult(Subtitle? transcribedSubtitle)
     {
         var anyLinesTranscribed = transcribedSubtitle != null && transcribedSubtitle.Paragraphs.Count > 0;
 
@@ -411,6 +422,27 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
                     { "Page", nameof(AudioToTextWhisperPage) },
                     { "TranscribedSubtitle", transcribedSubtitle! },
                 });
+            });
+        }
+        else
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                TranscribeButton.IsEnabled = true;
+
+                if (IncompleteModel)
+                {
+                    Page?.DisplayAlert("Incomplete model", "The model is incomplete. Please download the full model.", "OK");
+                }
+                else if (UnknownArgument && !string.IsNullOrEmpty(SeSettings.Settings.Tools.WhisperCustomCommandLineArguments))
+                {
+                    //TODO: not working for whisper?
+                    Page?.DisplayAlert($"Unknown argument: {SeSettings.Settings.Tools.WhisperCustomCommandLineArguments}", "Unknown argument. Please check the advanced settings.", "OK");
+                }
+                else
+                {
+                    Page?.DisplayAlert("No result", "No result from whisper. Please check the log", "OK");
+                }
             });
         }
     }
@@ -526,12 +558,13 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         }
 
         TranscribeButton.IsEnabled = false;
+        ConsoleText.Text = string.Empty;
 
         var mediaInfo = FfmpegMediaInfo2.Parse(_videoFileName);
         if (mediaInfo.Tracks.Count(p => p.TrackType == FfmpegTrackType.Audio) == 0)
         {
             var answer = await Page.DisplayAlert(
-                $"No audio track found",
+                "No audio track found",
                 $"No audio track was found in {_videoFileName}",
                 "OK",
                 "No");
@@ -595,10 +628,6 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             LabelProgress.Text = string.Format("Transcribing {0} of {1}", _batchFileNumber, 0); // TODO: listViewInputFiles.Items.Count);
         }
-        else
-        {
-            _taskbarList.SetProgressValue(_windowHandle, 1, 100);
-        }
 
         _useCenterChannelOnly = Configuration.Settings.General.FFmpegUseCenterChannelOnly &&
                                 FfmpegMediaInfo2.Parse(_videoFileName).HasFrontCenterAudio(_audioTrackNumber);
@@ -656,7 +685,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         _whisperProcess = GetWhisperProcess(engine, inputFile, model.Model.Name, language.Code, SwitchTranslateToEnglish.IsToggled, OutputHandler);
         _sw = Stopwatch.StartNew();
-        _outputText.Add($"Calling whisper ({SeSettings.Settings.Tools.WhisperChoice}) with : {_whisperProcess.StartInfo.FileName} {_whisperProcess.StartInfo.Arguments}{Environment.NewLine}");
+        LogToConsole($"Calling whisper ({SeSettings.Settings.Tools.WhisperChoice}) with : {_whisperProcess.StartInfo.FileName} {_whisperProcess.StartInfo.Arguments}{Environment.NewLine}");
         _startTicks = DateTime.UtcNow.Ticks;
 
         _abort = false;
@@ -675,13 +704,13 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         bool translate,
         DataReceivedEventHandler? dataReceivedHandler = null)
     {
-        SeSettings.Settings.Tools.WhisperExtraSettings ??= string.Empty;
+        SeSettings.Settings.Tools.WhisperCustomCommandLineArguments ??= string.Empty;
 
-        SeSettings.Settings.Tools.WhisperExtraSettings = SeSettings.Settings.Tools.WhisperExtraSettings.Trim();
-        if (SeSettings.Settings.Tools.WhisperExtraSettings == "--standard" &&
+        SeSettings.Settings.Tools.WhisperCustomCommandLineArguments = SeSettings.Settings.Tools.WhisperCustomCommandLineArguments.Trim();
+        if (SeSettings.Settings.Tools.WhisperCustomCommandLineArguments == "--standard" &&
             (engine.Name != WhisperEnginePurfviewFasterWhisper.StaticName || engine.Name != WhisperEnginePurfviewFasterWhisperXxl.StaticName))
         {
-            SeSettings.Settings.Tools.WhisperExtraSettings = string.Empty;
+            SeSettings.Settings.Tools.WhisperCustomCommandLineArguments = string.Empty;
         }
 
         var translateToEnglish = translate ? WhisperHelper.GetWhisperTranslateParameter() : string.Empty;
@@ -693,7 +722,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         if (SeSettings.Settings.Tools.WhisperChoice is WhisperChoice.Cpp or WhisperChoice.CppCuBlas)
         {
-            if (!SeSettings.Settings.Tools.WhisperExtraSettings.Contains("--print-progress"))
+            if (!SeSettings.Settings.Tools.WhisperCustomCommandLineArguments.Contains("--print-progress"))
             {
                 translateToEnglish += "--print-progress ";
             }
@@ -713,7 +742,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         var w = engine.GetExecutable();
         var m = engine.GetModelForCmdLine(model);
-        var parameters = $"--language {language} --model \"{m}\" {outputSrt}{translateToEnglish}{SeSettings.Settings.Tools.WhisperExtraSettings} \"{waveFileName}\"{postParams}";
+        var parameters = $"--language {language} --model \"{m}\" {outputSrt}{translateToEnglish}{SeSettings.Settings.Tools.WhisperCustomCommandLineArguments} \"{waveFileName}\"{postParams}";
 
         SeLogger.WhisperInfo($"{w} {parameters}");
 
@@ -779,6 +808,12 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
+#if WINDOWS
+                _windowHandle = ((MauiWinUIWindow)App.Current.Windows[0].Handler.PlatformView).WindowHandle;
+                //_windowHandle = (TitleLabel.Window.Handler.PlatformView as MauiWinUIWindow).WindowHandle;  
+                //var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_windowHandle);
+#endif
+
                 ProgressValue = 0;
                 ProgressBar.IsVisible = true;
             });
@@ -889,7 +924,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             RunningOnCuda = true;
         }
 
-        _outputText.Add(outLine.Data.Trim() + Environment.NewLine);
+        LogToConsole(outLine.Data.Trim() + Environment.NewLine);
 
         foreach (var line in outLine.Data.SplitToLines())
         {
@@ -1164,7 +1199,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         SeSettings.Settings.Tools.WhisperAutoAdjustTimings = SwitchAdjustTimings.IsToggled;
         SeSettings.Settings.Tools.VoskPostProcessing = SwitchPostProcessing.IsToggled;
-        SeSettings.Settings.Tools.WhisperExtraSettings = LabelAdvancedSettings.Text;
+        SeSettings.Settings.Tools.WhisperCustomCommandLineArguments = LabelAdvancedSettings.Text;
 
         SeSettings.SaveSettings();
     }
@@ -1224,7 +1259,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         SwitchAdjustTimings.IsToggled = SeSettings.Settings.Tools.WhisperAutoAdjustTimings;
         SwitchPostProcessing.IsToggled = SeSettings.Settings.Tools.VoskPostProcessing;
-        LabelAdvancedSettings.Text = SeSettings.Settings.Tools.WhisperExtraSettings;
+        LabelAdvancedSettings.Text = SeSettings.Settings.Tools.WhisperCustomCommandLineArguments;
         ProgressBar.IsVisible = false;
     }
 
@@ -1244,7 +1279,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             if (query.ContainsKey("Parameters") && query["Parameters"] is string parameters)
             {
-                SeSettings.Settings.Tools.WhisperExtraSettings = parameters;
+                SeSettings.Settings.Tools.WhisperCustomCommandLineArguments = parameters;
                 LabelAdvancedSettings.Text = parameters;
                 SaveSettings();
             }
@@ -1312,7 +1347,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         }
         else
         {
-            PickerModel.SelectedItem = Models.FirstOrDefault(m=>m.Model.Name == oldModel.Model.Name);
+            PickerModel.SelectedItem = Models.FirstOrDefault(m => m.Model.Name == oldModel.Model.Name);
         }
     }
 
