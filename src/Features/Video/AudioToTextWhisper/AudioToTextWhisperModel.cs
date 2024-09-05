@@ -202,7 +202,26 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return;
         }
 
+        if (string.IsNullOrEmpty(_videoFileName))
+        {
+            TranscribeButton.IsEnabled = true;
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                Page?.DisplayAlert("No video file", "No video file found!", "OK");
+            });
+
+            return;
+        }
+
         var startOk = TranscribeViaWhisper(_waveFileName, _videoFileName);
+        if (!startOk)
+        {
+            TranscribeButton.IsEnabled = true;
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                Page?.DisplayAlert("Unknown error", "Unable to start Whisper!", "OK");
+            });
+        }
     }
 
     private void OnTimerWhisperOnElapsed(object? sender, ElapsedEventArgs args)
@@ -915,9 +934,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             MainThread.BeginInvokeOnMainThread(() =>
             {
 #if WINDOWS
-                _windowHandle = ((MauiWinUIWindow)App.Current.Windows[0].Handler.PlatformView).WindowHandle;
-                //_windowHandle = (TitleLabel.Window.Handler.PlatformView as MauiWinUIWindow).WindowHandle;  
-                //var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_windowHandle);
+                _windowHandle = ((MauiWinUIWindow)App.Current!.Windows[0]!.Handler!.PlatformView!).WindowHandle;
 #endif
 
                 ProgressValue = 0;
@@ -1123,6 +1140,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     private bool GenerateWavFile(string videoFileName, int audioTrackNumber)
     {
+        if (string.IsNullOrEmpty(videoFileName))
+        {
+            return false;
+        }
+
         if (videoFileName.EndsWith(".wav"))
         {
             try

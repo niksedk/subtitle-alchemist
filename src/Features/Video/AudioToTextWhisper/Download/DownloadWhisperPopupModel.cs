@@ -1,5 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SharpCompress.Archives.SevenZip;
+using SharpCompress.Common;
+using SharpCompress.Readers;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Services;
@@ -54,22 +57,58 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
             _timer.Stop();
             if (_downloadTask is { IsCompleted: true })
             {
-                if (_downloadStream.Length == 0)
-                {
-                    Progress = "Download failed";
-                    Error = "No data received";
-                    return;
-                }
+                Progress = "Unpacking 7-zip archive...";
 
-                var folder = Engine.GetAndCreateWhisperFolder();
-                Unpack(folder, Engine.UnpackSkipFolder);
-
-                if (Popup != null)
+                if (Engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName)
                 {
-                    MainThread.BeginInvokeOnMainThread(() =>
+                    var dir = Engine.GetAndCreateWhisperFolder();
+                    var tempFileName = Path.Combine(dir, Engine.Name + ".7z");
+
+                    Extract7Zip(tempFileName, dir);
+
+                    try
                     {
-                        Popup.Close(folder);
-                    });
+                        File.Delete(tempFileName);
+                    }
+                    catch 
+                    {
+                        // ignore
+                    }
+
+                    if (_cancellationTokenSource.IsCancellationRequested)
+                    {
+                        Cancel();
+                        return;
+                    }
+
+                    if (Popup != null)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            Popup.Close(dir);
+                        });
+                    }
+
+                }
+                else
+                {
+                    if (_downloadStream.Length == 0)
+                    {
+                        Progress = "Download failed";
+                        Error = "No data received";
+                        return;
+                    }
+
+                    var folder = Engine.GetAndCreateWhisperFolder();
+                    Unpack(folder, Engine.UnpackSkipFolder);
+
+                    if (Popup != null)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            Popup.Close(folder);
+                        });
+                    }
                 }
 
                 return;
@@ -93,6 +132,68 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
             }
 
             _timer.Start();
+        }
+
+        private void Extract7Zip(string tempFileName, string dir)
+        {
+            using Stream stream = File.OpenRead(tempFileName);
+            using var archive = SevenZipArchive.Open(stream);
+            double totalSize = archive.TotalUncompressSize;
+            double unpackedSize = 0;
+
+            var reader = archive.ExtractAllEntries();
+            while (reader.MoveToNextEntry())
+            {
+                if (_cancellationTokenSource.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                var skipFolderLevel = "Faster-Whisper-XXL";
+                if (!string.IsNullOrEmpty(reader.Entry.Key))
+                {
+                    var entryFullName = reader.Entry.Key;
+                    if (!string.IsNullOrEmpty(skipFolderLevel) && entryFullName.StartsWith(skipFolderLevel))
+                    {
+                        entryFullName = entryFullName[skipFolderLevel.Length..];
+                    }
+
+                    entryFullName = entryFullName.Replace('/', Path.DirectorySeparatorChar);
+                    entryFullName = entryFullName.TrimStart(Path.DirectorySeparatorChar);
+
+                    var fullFileName = Path.Combine(dir, entryFullName);
+
+                    if (reader.Entry.IsDirectory)
+                    {
+                        if (!Directory.Exists(fullFileName))
+                        {
+                            Directory.CreateDirectory(fullFileName);
+                        }
+
+                        continue;
+                    }
+
+                    var fullPath = Path.GetDirectoryName(fullFileName);
+                    if (fullPath == null)
+                    {
+                        continue;
+                    }
+
+                    var displayName = entryFullName;
+                    if (displayName.Length > 30)
+                    {
+                        displayName = "..." + displayName.Remove(0, displayName.Length - 26).Trim();
+                    }
+
+                    Progress = $"Unpacking: {displayName}";
+                    ProgressValue = (float)(unpackedSize / totalSize);
+                    reader.WriteEntryToDirectory(fullPath,
+                        new ExtractionOptions() { ExtractFullPath = false, Overwrite = true });
+                    unpackedSize += reader.Entry.Size;
+                }
+            }
+
+            ProgressValue = 1.0f;
         }
 
         private void Unpack(string folder, string skipFolderLevel)
@@ -140,6 +241,12 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
             else if (Engine is WhisperEnginePurfviewFasterWhisper)
             {
                 _downloadTask = _whisperCppDownloadService.DownloadWhisperPurfviewFasterWhisper(_downloadStream, downloadProgress, _cancellationTokenSource.Token);
+            }
+            else if (Engine is WhisperEnginePurfviewFasterWhisperXxl)
+            {
+                var dir = Engine.GetAndCreateWhisperFolder();
+                var tempFileName = Path.Combine(dir, Engine.Name + ".7z");
+                _downloadTask = _whisperCppDownloadService.DownloadWhisperPurfviewFasterWhisperXxl(tempFileName, downloadProgress, _cancellationTokenSource.Token);
             }
         }
     }
