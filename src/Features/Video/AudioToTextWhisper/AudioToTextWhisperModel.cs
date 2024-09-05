@@ -235,6 +235,8 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
                     if (!answer)
                     {
+                        _resultList.Clear();
+                        partialSub.Paragraphs.Clear();
                         await Shell.Current.GoToAsync("..");
                         return;
                     }

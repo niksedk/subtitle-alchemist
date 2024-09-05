@@ -215,26 +215,39 @@ public class AudioToTextWhisperPage : ContentPage
 
         grid.Add(processingBar, 1, 4);
 
+        var labelAdvancedSettings = new Label
+        {
+            Text = "Advanced settings",
+            VerticalOptions = LayoutOptions.Start,
+            HorizontalOptions = LayoutOptions.Start,
+            Margin = new Thickness(15, 10, 10, 10),
+        }.BindDynamicTheme();
+        grid.Add(labelAdvancedSettings, 0, 5);
 
         var buttonAdvancedSettings = new Button
         {
-            VerticalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Start,
+            HorizontalOptions = LayoutOptions.Start,
             Command = vm.ShowAdvancedWhisperSettingsCommand,
-            Text = "Advanced settings",
-            Margin = new Thickness(15, 2, 2, 2),
+            Text = "...",
+            Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
-
 
         vm.LabelAdvancedSettings = new Label
         {
             Text = Se.Settings.Tools.WhisperCustomCommandLineArguments,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(15, 25, 15, 25),
+            Margin = new Thickness(0, 5, 0, 25),
+            FontSize = 10,
+            FontFamily = "RobotoMono",
         }.BindDynamicTheme();
 
         var advancedBar = new StackLayout
         {
-            Orientation = StackOrientation.Horizontal,
+            Orientation = StackOrientation.Vertical,
+            Margin = new Thickness(0, 0, 0, 25),
+            VerticalOptions = LayoutOptions.Start,
+            HorizontalOptions = LayoutOptions.Start,
             Children =
             {
                 buttonAdvancedSettings,
@@ -242,8 +255,8 @@ public class AudioToTextWhisperPage : ContentPage
             }
         };
 
-        grid.Add(advancedBar, 0, 5);
-        grid.SetColumnSpan(advancedBar, 2);
+        grid.Add(advancedBar, 1, 5);
+        
 
         vm.PickerEngine.ItemsSource = vm.WhisperEngines;
         vm.PickerEngine.SetBinding(Picker.SelectedItemProperty, new Binding(nameof(vm.SelectedWhisperEngine), BindingMode.TwoWay));
@@ -269,25 +282,24 @@ public class AudioToTextWhisperPage : ContentPage
             Margin = new Thickness(15, 2, 2, 2),
             FontSize = 16,
         }.BindDynamicTheme();
-        //vm.ProgressBar.SetBinding(Label.TextProperty, nameof(vm.Progre));
 
         var labelElapsedText = new Label
         {
-            Text = "Elapsed time: ",
+            Text = "Time elapsed: ",
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(15, 2, 2, 2),
+            Margin = new Thickness(15, 10, 2, 2),
             FontSize = 16,
         }.BindDynamicTheme();
         labelElapsedText.SetBinding(Label.TextProperty, nameof(vm.ElapsedText));
 
-        var labelElapsedText2 = new Label
+        var labelEstimatedText = new Label
         {
-            Text = "Elapsed time2: ",
+            Text = "Time estimated: ",
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(15, 2, 2, 2),
             FontSize = 16,
         }.BindDynamicTheme();
-        labelElapsedText2.SetBinding(Label.TextProperty, nameof(vm.EstimatedText));
+        labelEstimatedText.SetBinding(Label.TextProperty, nameof(vm.EstimatedText));
 
         var progressLine = new StackLayout
         {
@@ -298,7 +310,7 @@ public class AudioToTextWhisperPage : ContentPage
             {
                 vm.LabelProgress,
                 labelElapsedText,
-                labelElapsedText2,
+                labelEstimatedText,
             }
         };
 
