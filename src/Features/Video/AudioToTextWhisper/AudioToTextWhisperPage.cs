@@ -324,7 +324,7 @@ public class AudioToTextWhisperPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.TranscribeCommand,
-            Margin = new Thickness(5, 15, 5, 5),
+            Margin = new Thickness(5, 5, 5, 5),
         }.BindDynamicTheme();
 
         var cancelButton = new Button
@@ -333,7 +333,7 @@ public class AudioToTextWhisperPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.CancelCommand,
-            Margin = new Thickness(5, 15, 5, 5),
+            Margin = new Thickness(5, 5, 5, 5),
         }.BindDynamicTheme();
 
         var buttonBar = new StackLayout
