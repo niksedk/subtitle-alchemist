@@ -40,6 +40,8 @@ public class AudioToTextWhisperPage : ContentPage
 
         MakeConsoleLogWindow(grid, vm);
 
+        MakeContextMenu(vm);
+
         var poweredByLabel = new Label
         {
             Margin = new Thickness(15, 15, 0, 15),
@@ -337,6 +339,16 @@ public class AudioToTextWhisperPage : ContentPage
         grid.SetColumnSpan(buttonBar, 2);
 
         Content = grid;
+    }
+
+    private void MakeContextMenu(AudioToTextWhisperModel vm)
+    {
+        var menuFlyoutMain = new MenuFlyout();
+        var flyoutItem = new MenuFlyoutItem();
+        flyoutItem.Text = "Show whisper log";
+        flyoutItem.Command = vm.ShowWhisperLogCommand;
+        menuFlyoutMain.Add(flyoutItem);
+        FlyoutBase.SetContextFlyout(this, menuFlyoutMain);
     }
 
     private void MakeConsoleLogWindow(Grid grid, AudioToTextWhisperModel vm)

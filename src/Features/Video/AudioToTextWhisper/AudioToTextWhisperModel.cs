@@ -206,17 +206,40 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     private void OnTimerWhisperOnElapsed(object? sender, ElapsedEventArgs args)
     {
+        if (Page == null)
+        {
+            return;
+        }
+
         if (_abort)
         {
             _timerWhisper.Stop();
 #pragma warning disable CA1416
             _whisperProcess.Kill(true);
 #pragma warning restore CA1416
-            ProgressBar.IsVisible = false;
 
-            var partialSub = new Subtitle();
-            partialSub.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start).Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
-            MakeResult(partialSub);
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                ProgressBar.IsVisible = false;
+                var partialSub = new Subtitle();
+                partialSub.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start).Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
+
+                if (partialSub.Paragraphs.Count > 0)
+                {
+                    var answer = await Page.DisplayAlert(
+                        $"Keep partial transcription?",
+                        $"Do you want to keep {partialSub.Paragraphs.Count} lines?",
+                        "Yes",
+                        "No");
+
+                    if (!answer)
+                    {
+                        await Shell.Current.GoToAsync("..");
+                    }
+                }
+
+                MakeResult(partialSub);
+            });
             return;
         }
 
@@ -229,7 +252,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             });
 
             ElapsedText = $"Time elapsed: {new TimeCode(durationMs).ToShortDisplayString()}";
-            if (_endSeconds <= 0 || _videoInfo == null)
+            if (_endSeconds <= 0)
             {
                 if (_showProgressPct > 0)
                 {
@@ -273,33 +296,30 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             await ProgressBar.ProgressTo(1, 500, Easing.Linear);
-        });
 
-        Task.Delay(250);
+            LogToConsole($"Whisper ({Se.Settings.Tools.WhisperChoice}) done in {_sw.Elapsed}{Environment.NewLine}");
 
-        LogToConsole($"Whisper ({Se.Settings.Tools.WhisperChoice}) done in {_sw.Elapsed}{Environment.NewLine}");
+            _whisperProcess.Dispose();
 
-        _whisperProcess.Dispose();
-
-        if (GetResultFromSrt(_waveFileName, _videoFileName!, out var resultTexts, _outputText, _filesToDelete))
-        {
-            var subtitle = new Subtitle();
-            subtitle.Paragraphs.AddRange(resultTexts.Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
-
-            MainThread.BeginInvokeOnMainThread(() =>
+            if (GetResultFromSrt(_waveFileName, _videoFileName!, out var resultTexts, _outputText, _filesToDelete))
             {
+                var subtitle = new Subtitle();
+                subtitle.Paragraphs.AddRange(resultTexts
+                    .Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
+
                 var postProcessedSubtitle = PostProcess(subtitle);
                 MakeResult(postProcessedSubtitle);
-            });
 
-            return;
-        }
+                return;
+            }
 
-        _outputText.Add("Loading result from STDOUT" + Environment.NewLine);
+            _outputText.Add("Loading result from STDOUT" + Environment.NewLine);
 
-        var transcribedSubtitleFromStdOut = new Subtitle();
-        transcribedSubtitleFromStdOut.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start).Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
-        MakeResult(transcribedSubtitleFromStdOut);
+            var transcribedSubtitleFromStdOut = new Subtitle();
+            transcribedSubtitleFromStdOut.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start)
+                .Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
+            MakeResult(transcribedSubtitleFromStdOut);
+        });
     }
 
     private void LogToConsole(string s)
@@ -458,51 +478,42 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         return null;
     }
 
-    private void MakeResult(Subtitle? transcribedSubtitle)
+    private async Task MakeResult(Subtitle? transcribedSubtitle)
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        var sbLog = new StringBuilder();
+        foreach (var s in _outputText)
         {
-            var sbLog = new StringBuilder();
-            foreach (var s in _outputText)
-            {
-                sbLog.AppendLine(s);
-            }
+            sbLog.AppendLine(s);
+        }
 
-            Se.WriteWhisperLog(sbLog.ToString().Trim());
-        });
+        Se.WriteWhisperLog(sbLog.ToString().Trim());
 
         var anyLinesTranscribed = transcribedSubtitle != null && transcribedSubtitle.Paragraphs.Count > 0;
 
         if (anyLinesTranscribed)
         {
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+            await Shell.Current.GoToAsync("..", new Dictionary<string, object>
                 {
                     { "Page", nameof(AudioToTextWhisperPage) },
                     { "TranscribedSubtitle", transcribedSubtitle! },
                 });
-            });
         }
         else
         {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                TranscribeButton.IsEnabled = true;
+            TranscribeButton.IsEnabled = true;
 
-                if (IncompleteModel)
-                {
-                    Page?.DisplayAlert("Incomplete model", "The model is incomplete. Please download the full model.", "OK");
-                }
-                else if (UnknownArgument && !string.IsNullOrEmpty(Se.Settings.Tools.WhisperCustomCommandLineArguments))
-                {
-                    Page?.DisplayAlert($"Unknown argument: {Se.Settings.Tools.WhisperCustomCommandLineArguments}", "Unknown argument. Please check the advanced settings.", "OK");
-                }
-                else
-                {
-                    Page?.DisplayAlert("No result", "No result from whisper. Please check the log", "OK");
-                }
-            });
+            if (IncompleteModel)
+            {
+                Page?.DisplayAlert("Incomplete model", "The model is incomplete. Please download the full model.", "OK");
+            }
+            else if (UnknownArgument && !string.IsNullOrEmpty(Se.Settings.Tools.WhisperCustomCommandLineArguments))
+            {
+                Page?.DisplayAlert($"Unknown argument: {Se.Settings.Tools.WhisperCustomCommandLineArguments}", "Unknown argument. Please check the advanced settings.", "OK");
+            }
+            else
+            {
+                Page?.DisplayAlert("No result", "No result from whisper. Please check the log", "OK");
+            }
         }
     }
 
@@ -557,8 +568,29 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     public async Task Cancel()
     {
         _abort = true;
-        _timerWhisper.Stop();
-        await Shell.Current.GoToAsync("..");
+
+        if (TranscribeButton.IsEnabled)
+        {
+            await Shell.Current.GoToAsync("..");
+        }
+    }
+
+    [RelayCommand]
+    public async Task ShowWhisperLog()
+    {
+        if (Page == null)
+        {
+            return;
+        }
+
+        var whisperLogFile = Se.GetWhisperLogFilePath();
+
+        if (!File.Exists(whisperLogFile))
+        {
+            await Page.DisplayAlert("Whisper log", "No Whisper log file yet.", "OK");
+        }
+
+        UiUtil.OpenFile(Se.GetWhisperLogFilePath());
     }
 
     [RelayCommand]
