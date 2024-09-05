@@ -72,6 +72,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     public bool Loading { get; set; } = true;
     public Editor ConsoleText { get; set; } = new();
+    public ScrollView ConsoleTextScrollView { get; set; } = new();
 
     [ObservableProperty]
     private IWhisperEngine? _selectedWhisperEngine;
@@ -235,11 +236,13 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
                     if (!answer)
                     {
                         await Shell.Current.GoToAsync("..");
+                        return;
                     }
                 }
 
-                MakeResult(partialSub);
+                await MakeResult(partialSub);
             });
+
             return;
         }
 
@@ -308,7 +311,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
                     .Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
 
                 var postProcessedSubtitle = PostProcess(subtitle);
-                MakeResult(postProcessedSubtitle);
+                await MakeResult(postProcessedSubtitle);
 
                 return;
             }
@@ -318,7 +321,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             var transcribedSubtitleFromStdOut = new Subtitle();
             transcribedSubtitleFromStdOut.Paragraphs.AddRange(_resultList.OrderBy(p => p.Start)
                 .Select(p => new Paragraph(p.Text, (double)p.Start * 1000.0, (double)p.End * 1000.0)).ToList());
-            MakeResult(transcribedSubtitleFromStdOut);
+            await MakeResult(transcribedSubtitleFromStdOut);
         });
     }
 
@@ -328,6 +331,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         MainThread.BeginInvokeOnMainThread(() =>
         {
             ConsoleText.Text += s + "\n";
+            ConsoleTextScrollView.ScrollToAsync(0, ConsoleText.Height, true);
         });
     }
 
@@ -497,6 +501,10 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
                     { "Page", nameof(AudioToTextWhisperPage) },
                     { "TranscribedSubtitle", transcribedSubtitle! },
                 });
+        }
+        else if (_abort)
+        {
+            await Shell.Current.GoToAsync("..");
         }
         else
         {

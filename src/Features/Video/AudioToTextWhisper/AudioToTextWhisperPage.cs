@@ -197,7 +197,7 @@ public class AudioToTextWhisperPage : ContentPage
         pgPp.PointerExitedCommand = new Command(vm.MouseExitedProcessingSettings);
         vm.LinkLabelProcessingSettings.GestureRecognizers.Add(pgPp);
         var tgPp = new TapGestureRecognizer();
-        tgPp.Tapped += async(o, args) => await vm.MouseClickedProcessingSettings(o, args);
+        tgPp.Tapped += async (o, args) => await vm.MouseClickedProcessingSettings(o, args);
         vm.LinkLabelProcessingSettings.GestureRecognizers.Add(tgPp);
 
         var processingBar = new StackLayout
@@ -351,13 +351,15 @@ public class AudioToTextWhisperPage : ContentPage
         FlyoutBase.SetContextFlyout(this, menuFlyoutMain);
     }
 
-    private void MakeConsoleLogWindow(Grid grid, AudioToTextWhisperModel vm)
+    private static void MakeConsoleLogWindow(Grid grid, AudioToTextWhisperModel vm)
     {
-        var scrollView = new ScrollView
+        vm.ConsoleTextScrollView = new ScrollView
         {
             Margin = new Thickness(10, 0, 10, 10),
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Always,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Always,
         };
 
         var consoleLabel = new Label
@@ -371,20 +373,20 @@ public class AudioToTextWhisperPage : ContentPage
         vm.ConsoleText = new Editor
         {
             Margin = new Thickness(0, 0, 0, 0),
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
             IsReadOnly = true,
             Text = string.Empty,
             FontSize = 10,
             FontFamily = "RobotoMono",
+            AutoSize = EditorAutoSizeOption.TextChanges,
         }.BindDynamicTheme();
-        //vm.ConsoleText.SetBinding(Editor.TextProperty, nameof(vm.ConsoleText));
 
-        scrollView.Content = vm.ConsoleText;
+        vm.ConsoleTextScrollView.Content = vm.ConsoleText;
 
         grid.Add(consoleLabel, 2, 0);
-        grid.Add(scrollView, 2, 1);
-        Grid.SetRowSpan(scrollView, 8);
+        grid.Add(vm.ConsoleTextScrollView, 2, 1);
+        Grid.SetRowSpan(vm.ConsoleTextScrollView, 8);
     }
 
     protected override void OnAppearing()
