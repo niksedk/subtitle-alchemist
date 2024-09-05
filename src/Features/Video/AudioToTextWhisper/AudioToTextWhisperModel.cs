@@ -51,6 +51,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     public bool RunningOnCuda { get; set; }
 
     public bool UnknownArgument { get; set; }
+    public bool CudaOutOfMemory { get; set; }
     public Button TranscribeButton { get; set; } = new();
     public Label LinkLabelProcessingSettings { get; set; } = new();
 
@@ -79,6 +80,8 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     public readonly List<IWhisperEngine> WhisperEngines = new();
 
+    [ObservableProperty]
+    private string _reDownloadWhisper = string.Empty;
 
     [ObservableProperty]
     private ObservableCollection<WhisperLanguage> _languages = new();
@@ -539,6 +542,10 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             {
                 Page?.DisplayAlert($"Unknown argument: {Se.Settings.Tools.WhisperCustomCommandLineArguments}", "Unknown argument. Please check the advanced settings.", "OK");
             }
+            else if (CudaOutOfMemory)
+            {
+                Page?.DisplayAlert($"CUDA failed", "Whisper ran out of CUDA memory - try a smaller model or run on CPU.", "OK");
+            }
             else
             {
                 Page?.DisplayAlert("No result", "No result from whisper. Please check the log", "OK");
@@ -602,6 +609,32 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             await Shell.Current.GoToAsync("..");
         }
+    }
+
+    [RelayCommand]
+    public async Task DownloadWhisper()
+    {
+        if (SelectedWhisperEngine is not { } engine)
+        {
+            return;
+        }
+
+        var answer = await Page.DisplayAlert(
+            $"Download {SelectedWhisperEngine.Name}?",
+            $"Download and use {SelectedWhisperEngine.Name}?",
+            "Yes",
+            "No");
+
+        if (!answer)
+        {
+            return;
+        }
+
+        var result = await _popupService.ShowPopupAsync<DownloadWhisperPopupModel>(onPresenting: viewModel =>
+        {
+            viewModel.Engine = engine;
+            viewModel.StartDownload();
+        }, CancellationToken.None);
     }
 
     [RelayCommand]
@@ -1051,7 +1084,10 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             UnknownArgument = true;
         }
-
+        else if (outLine.Data.Contains("CUDA failed with error out of memory", StringComparison.OrdinalIgnoreCase))
+        {
+            CudaOutOfMemory = true;
+        }
         if (outLine.Data.Contains("running on: CUDA", StringComparison.OrdinalIgnoreCase))
         {
             RunningOnCuda = true;
@@ -1274,6 +1310,8 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             return;
         }
+
+        ReDownloadWhisper = $"Download Whisper engine \"{engine.Name}\"";
 
         SelectedWhisperEngine = engine;
         TitleLabel.Text = engine.Name;

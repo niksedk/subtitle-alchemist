@@ -57,13 +57,12 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
             _timer.Stop();
             if (_downloadTask is { IsCompleted: true })
             {
-                Progress = "Unpacking 7-zip archive...";
-
                 if (Engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName)
                 {
                     var dir = Engine.GetAndCreateWhisperFolder();
                     var tempFileName = Path.Combine(dir, Engine.Name + ".7z");
 
+                    Progress = "Unpacking 7-zip archive...";
                     Extract7Zip(tempFileName, dir);
 
                     try

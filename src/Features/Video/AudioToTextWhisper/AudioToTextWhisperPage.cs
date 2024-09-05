@@ -360,6 +360,16 @@ public class AudioToTextWhisperPage : ContentPage
         flyoutItem.Text = "Show whisper log";
         flyoutItem.Command = vm.ShowWhisperLogCommand;
         menuFlyoutMain.Add(flyoutItem);
+
+        var separator = new MenuFlyoutSeparator();
+        menuFlyoutMain.Add(separator);
+
+        // Add reDownload Whisper
+        flyoutItem = new MenuFlyoutItem();
+        flyoutItem.Command = vm.DownloadWhisperCommand;
+        flyoutItem.SetBinding(MenuFlyoutItem.TextProperty, new Binding(nameof(vm.ReDownloadWhisper)));
+        menuFlyoutMain.Add(flyoutItem);
+
         FlyoutBase.SetContextFlyout(this, menuFlyoutMain);
     }
 
