@@ -1475,4 +1475,22 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     {
         await _popupService.ShowPopupAsync<WhisperPostProcessingPopupModel>(onPresenting: viewModel => viewModel.LoadSettings(), CancellationToken.None);
     }
+
+    public void DeleteTempFiles()
+    {
+        foreach (var file in _filesToDelete)
+        {
+            try
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+    }
 }

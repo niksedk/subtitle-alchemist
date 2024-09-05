@@ -438,4 +438,10 @@ public class AudioToTextWhisperPage : ContentPage
             return false;
         });
     }
+
+    protected override void OnDisappearing()
+    {
+        _vm.DeleteTempFiles();
+        base.OnDisappearing();
+    }
 }
