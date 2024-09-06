@@ -104,10 +104,10 @@ public partial class TranslateAdvancedSettingsPopupModel : ObservableObject
         {
             Configuration.Settings.Tools.GroqPrompt = PromptEntry.Text;
         }
-        //else if (_engineType == typeof(OpenRouterTranslate))
-        //{
-        //    Configuration.Settings.Tools.OpenRouterPrompt = PromptEntry.Text;
-        //}
+        else if (engineType == typeof(OpenRouterTranslate))
+        {
+            Configuration.Settings.Tools.OpenRouterPrompt = PromptEntry.Text;
+        }
 
         if (LineMergeSelectedItem != null && LineMergeItems.IndexOf(LineMergeSelectedItem) == 1)
         {
@@ -199,14 +199,14 @@ public partial class TranslateAdvancedSettingsPopupModel : ObservableObject
                         PromptEntry.Text = new ToolsSettings().GroqPrompt;
                     }
                 }
-                //else if (_engineType == typeof(OpenRouterTranslate))
-                //{
-                //    PromptEntry.Text = Configuration.Settings.Tools.OpenRouterPrompt;
-                //    if (string.IsNullOrWhiteSpace(PromptEntry.Text))
-                //    {
-                //        PromptEntry.Text = new ToolsSettings().OpenRouterPrompt;
-                //    }
-                //}
+                else if (engineType == typeof(OpenRouterTranslate))
+                {
+                    PromptEntry.Text = Configuration.Settings.Tools.OpenRouterPrompt;
+                    if (string.IsNullOrWhiteSpace(PromptEntry.Text))
+                    {
+                        PromptEntry.Text = new ToolsSettings().OpenRouterPrompt;
+                    }
+                }
                 else
                 {
                     PromptLabel.IsVisible = false;

@@ -119,7 +119,7 @@
 		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="4.1.0" />
 		<PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="4.0.1" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-		<PackageReference Include="libse" Version="4.0.7" />
+		<PackageReference Include="libse" Version="4.0.8" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.82" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.82" />

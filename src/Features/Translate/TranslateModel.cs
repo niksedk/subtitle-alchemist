@@ -64,7 +64,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
             new OllamaTranslate(),
             new AnthropicTranslate(),
             new GroqTranslate(),
-           // new OpenRouterTranslate(),
+            new OpenRouterTranslate(),
             new GeminiTranslate(),
             new PapagoTranslate(),
             new NoLanguageLeftBehindServe(),
@@ -481,11 +481,11 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
             Configuration.Settings.Tools.GroqModel = apiModel.Trim();
         }
 
-        //if (engineType == typeof(OpenRouterTranslate))
-        //{
-        //    Configuration.Settings.Tools.OpenRouterApiKey = apiKey.Trim();
-        //    Configuration.Settings.Tools.OpenRouterModel = apiModel.Trim();
-        //}
+        if (engineType == typeof(OpenRouterTranslate))
+        {
+            Configuration.Settings.Tools.OpenRouterApiKey = apiKey.Trim();
+            Configuration.Settings.Tools.OpenRouterModel = apiModel.Trim();
+        }
 
         if (engineType == typeof(GeminiTranslate))
         {
@@ -754,28 +754,26 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
         }
 
 
-        //if (engineType == typeof(OpenRouterTranslate))
-        //{
-        //    FillUrls(new List<string>
-        //    {
-        //        Configuration.Settings.Tools.OpenRouterUrl,
-        //    });
+        if (engineType == typeof(OpenRouterTranslate))
+        {
+            FillUrls(new List<string>
+            {
+                Configuration.Settings.Tools.OpenRouterUrl,
+            });
 
-        //    EntrypiKey.Text = Configuration.Settings.Tools.OpenRouterApiKey;
-        //    labelApiKey.IsVisible = true;
-        //    EntryApiKey.IsVisible = true;
+            EntryApiKey.Text = Configuration.Settings.Tools.OpenRouterApiKey;
+            LabelApiKey.IsVisible = true;
+            EntryApiKey.IsVisible = true;
 
-        //    labelFormality.Text = LanguageSettings.Current.AudioToText.Model;
-        //    labelFormality.IsVisible = true;
-        //    comboBoxFormality.Left = labelFormality.Right + 3;
-        //    comboBoxFormality.IsVisible = true;
-        //    comboBoxFormality.DropDownStyle = ComboBoxStyle.DropDown;
-        //    comboBoxFormality.Items.Clear();
-        //    comboBoxFormality.Items.AddRange(OpenRouterTranslate.Models);
-        //    comboBoxFormality.Text = Configuration.Settings.Tools.OpenRouterModel;
+            _apiModels = OpenRouterTranslate.Models.ToList();
+            EntryModel.IsVisible = true;
+            LabelModel.IsVisible = true;
+            ButtonModel.IsVisible = true;
+            EntryModel.Text = string.IsNullOrEmpty(Configuration.Settings.Tools.OpenRouterModel) ? _apiModels[0] : Configuration.Settings.Tools.OpenRouterModel;
+            EntryModel.IsVisible = true;
 
-        //    return;
-        //}
+            return;
+        }
 
         if (engineType == typeof(GeminiTranslate))
         {

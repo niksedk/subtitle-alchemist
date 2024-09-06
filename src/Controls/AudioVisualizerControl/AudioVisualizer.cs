@@ -561,7 +561,13 @@ public class AudioVisualizer : SKCanvasView
         {
             Paragraph? prev = null;
             Paragraph? next = null;
-            var paragraphs = _subtitle.Paragraphs.ToList();
+
+            List<Paragraph> paragraphs;
+            lock (_lock)
+            {
+                paragraphs = _subtitle.Paragraphs.ToList();
+            }
+
             for (var i = 0; i < paragraphs.Count; i++)
             {
                 var p2 = paragraphs[i];
@@ -596,7 +602,11 @@ public class AudioVisualizer : SKCanvasView
             _wholeParagraphMaxMilliseconds = double.MaxValue;
             if (_mouseDownParagraph != null)
             {
-                var paragraphs = _subtitle.Paragraphs.ToList();
+                List<Paragraph> paragraphs;
+                lock (_lock)
+                {
+                    paragraphs = _subtitle.Paragraphs.ToList();
+                }
                 var p = paragraphs.FirstOrDefault(p => p.Id == _mouseDownParagraph.Id);
 
                 if (p == null)
@@ -613,7 +623,7 @@ public class AudioVisualizer : SKCanvasView
                         _wholeParagraphMinMilliseconds = paragraphs[curIdx - 1].EndTime.TotalMilliseconds + Configuration.Settings.General.MinimumMillisecondsBetweenLines;
                     }
 
-                    if (curIdx < _subtitle.Paragraphs.Count - 1)
+                    if (curIdx < paragraphs.Count - 1)
                     {
                         _wholeParagraphMaxMilliseconds = paragraphs[curIdx + 1].StartTime.TotalMilliseconds - Configuration.Settings.General.MinimumMillisecondsBetweenLines;
                     }
@@ -659,6 +669,7 @@ public class AudioVisualizer : SKCanvasView
                     _mouseDownParagraph = null;
                     _mouseDownParagraphs = new List<Paragraph> { prev, paragraph }.ToArray();
                     _mouseDownParagraphType = MouseDownParagraphType.StartOrEnd;
+                    OnStatus?.Invoke(this, new ParagraphEventArgs(new Paragraph() { Text = "MouseDownParagraphType.StartOrEnd" }));
                     return true;
                 }
             }
@@ -667,6 +678,7 @@ public class AudioVisualizer : SKCanvasView
             _mouseDownParagraph = paragraph;
             _mouseDownParagraphs = null;
             _mouseDownParagraphType = MouseDownParagraphType.Start;
+            OnStatus?.Invoke(this, new ParagraphEventArgs(new Paragraph() { Text = "MouseDownParagraphType.Start" }));
             return true;
         }
 
@@ -681,6 +693,7 @@ public class AudioVisualizer : SKCanvasView
                     _mouseDownParagraph = null;
                     _mouseDownParagraphs = new List<Paragraph> { paragraph, next }.ToArray();
                     _mouseDownParagraphType = MouseDownParagraphType.StartOrEnd;
+                    OnStatus?.Invoke(this, new ParagraphEventArgs(new Paragraph() { Text = "MouseDownParagraphType.StartOrEnd" }));
                     return true;
                 }
             }
@@ -689,6 +702,7 @@ public class AudioVisualizer : SKCanvasView
             _mouseDownParagraph = paragraph;
             _mouseDownParagraphs = null;
             _mouseDownParagraphType = MouseDownParagraphType.End;
+            OnStatus?.Invoke(this, new ParagraphEventArgs(new Paragraph() { Text = "MouseDownParagraphType.End" }));
             return true;
         }
 
@@ -812,6 +826,12 @@ public class AudioVisualizer : SKCanvasView
             return;
         }
 
+        List<Paragraph> paragraphs;
+        lock (_lock)
+        {
+            paragraphs = _subtitle.Paragraphs.ToList();
+        }
+
         var x = (int)Math.Round(point.Value.X, MidpointRounding.AwayFromZero);
 
         var oldMouseMoveLastX = _mouseMoveLastX;
@@ -931,9 +951,9 @@ public class AudioVisualizer : SKCanvasView
                 {
                     var seconds = RelativeXPositionToSeconds(x);
                     var milliseconds = (int)(seconds * TimeCode.BaseUnit);
-                    var subtitleIndex = _subtitle.Paragraphs.IndexOf(_mouseDownParagraph);
-                    _prevParagraph = _subtitle.GetParagraphOrDefault(subtitleIndex - 1);
-                    _nextParagraph = _subtitle.GetParagraphOrDefault(subtitleIndex + 1);
+                    var subtitleIndex = paragraphs.IndexOf(_mouseDownParagraph);
+                    _prevParagraph = GetParagraphOrDefault(paragraphs, subtitleIndex - 1);
+                    _nextParagraph = GetParagraphOrDefault(paragraphs, subtitleIndex + 1);
 
                     if (_firstMove && Math.Abs(oldMouseMoveLastX - x) < Configuration.Settings.General.MinimumMillisecondsBetweenLines && GetParagraphAtMilliseconds(milliseconds) == null)
                     {
@@ -954,7 +974,8 @@ public class AudioVisualizer : SKCanvasView
                         // decide which paragraph to move
                         if (_firstMove && x > oldMouseMoveLastX && _nextParagraph != null && _mouseDownParagraphType == MouseDownParagraphType.End)
                         {
-                            if (milliseconds >= _nextParagraph.StartTime.TotalMilliseconds && milliseconds < _nextParagraph.EndTime.TotalMilliseconds)
+                            if (milliseconds >= _nextParagraph.StartTime.TotalMilliseconds && milliseconds < _nextParagraph.EndTime.TotalMilliseconds &&
+                                (_mouseDownParagraph == null || _nextParagraph.Id != _mouseDownParagraph.Id))
                             {
                                 _mouseDownParagraph = _nextParagraph;
                                 _mouseDownParagraphType = MouseDownParagraphType.Start;
@@ -1184,6 +1205,13 @@ public class AudioVisualizer : SKCanvasView
         }
     }
 
+    public Paragraph? GetParagraphOrDefault(List<Paragraph> paragraphs, int index)
+    {
+        return paragraphs.Count <= index || index < 0
+            ? null
+            : paragraphs[index];
+    }
+
     CursorIcon _lastCursor = CursorIcon.Arrow;
     private void SetCursor(CursorIcon cursor)
     {
@@ -1238,7 +1266,12 @@ public class AudioVisualizer : SKCanvasView
         _wholeParagraphMaxMilliseconds = double.MaxValue;
         if (_mouseDownParagraph != null)
         {
-            var paragraphs = _subtitle.Paragraphs.ToList();
+            List<Paragraph> paragraphs;
+            lock (_lock)
+            {
+                paragraphs = _subtitle.Paragraphs.ToList();
+            }
+
             var curIdx = paragraphs.IndexOf(_mouseDownParagraph);
             if (curIdx >= 0)
             {
@@ -1254,7 +1287,12 @@ public class AudioVisualizer : SKCanvasView
         _wholeParagraphMaxMilliseconds = double.MaxValue;
         if (_mouseDownParagraph != null)
         {
-            var paragraphs = _subtitle.Paragraphs;
+            List<Paragraph> paragraphs;
+            lock (_lock)
+            {
+                paragraphs = _subtitle.Paragraphs.ToList();
+            }
+
             var curIdx = paragraphs.IndexOf(_mouseDownParagraph);
             if (curIdx >= 0)
             {

@@ -34,47 +34,6 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     [ObservableProperty]
     private string _estimatedText = string.Empty;
 
-    public Label TitleLabel { get; set; } = new();
-    public Picker PickerEngine { get; set; } = new();
-    public Picker PickerLanguage { get; set; } = new();
-    public Picker PickerModel { get; set; } = new();
-    public Button ButtonModel { get; set; } = new();
-    public Switch SwitchTranslateToEnglish { get; set; } = new();
-    public Switch SwitchAdjustTimings { get; set; } = new();
-    public Switch SwitchPostProcessing { get; set; } = new();
-    public Label LabelProgress { get; set; } = new();
-    public Label LabelAdvancedSettings { get; set; } = new();
-
-    public AudioToTextWhisperPage? Page { get; set; }
-    public ProgressBar ProgressBar { get; set; } = new();
-
-    public bool RunningOnCuda { get; set; }
-
-    public bool UnknownArgument { get; set; }
-    public bool CudaOutOfMemory { get; set; }
-    public Button TranscribeButton { get; set; } = new();
-    public Label LinkLabelProcessingSettings { get; set; } = new();
-
-    private string? _videoFileName;
-    private string _waveFileName = string.Empty;
-    private int _audioTrackNumber;
-    private readonly List<string> _filesToDelete = new();
-    private bool IncompleteModel;
-    private readonly ConcurrentBag<string> _outputText = new();
-    private long _startTicks = 0;
-    private double _endSeconds;
-    private double _showProgressPct = -1;
-    private double _lastEstimatedMs = double.MaxValue;
-    private bool _batchMode;
-    private int _batchFileNumber;
-    private readonly VideoInfo _videoInfo = new();
-    private readonly TaskbarList _taskbarList;
-    private IntPtr _windowHandle;
-
-    public bool Loading { get; set; } = true;
-    public Editor ConsoleText { get; set; } = new();
-    public ScrollView ConsoleTextScrollView { get; set; } = new();
-
     [ObservableProperty]
     private IWhisperEngine? _selectedWhisperEngine;
 
@@ -88,6 +47,43 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     [ObservableProperty]
     private ObservableCollection<WhisperModelDisplay> _models = new();
+
+
+    public Label TitleLabel { get; set; } = new();
+    public Picker PickerEngine { get; set; } = new();
+    public Picker PickerLanguage { get; set; } = new();
+    public Picker PickerModel { get; set; } = new();
+    public Button ButtonModel { get; set; } = new();
+    public Switch SwitchTranslateToEnglish { get; set; } = new();
+    public Switch SwitchAdjustTimings { get; set; } = new();
+    public Switch SwitchPostProcessing { get; set; } = new();
+    public Label LabelProgress { get; set; } = new();
+    public Label LabelAdvancedSettings { get; set; } = new();
+    public AudioToTextWhisperPage? Page { get; set; }
+    public ProgressBar ProgressBar { get; set; } = new();
+    public Button TranscribeButton { get; set; } = new();
+    public Label LinkLabelProcessingSettings { get; set; } = new();
+    public Editor ConsoleText { get; set; } = new();
+    public ScrollView ConsoleTextScrollView { get; set; } = new();
+
+    public bool Loading { get; set; } = true;
+
+    private bool _runningOnCuda;
+    private bool _unknownArgument;
+    private bool _cudaOutOfMemory;
+    private bool _incompleteModel;
+    private string? _videoFileName;
+    private string _waveFileName = string.Empty;
+    private int _audioTrackNumber;
+    private readonly List<string> _filesToDelete = new();
+    private readonly ConcurrentBag<string> _outputText = new();
+    private long _startTicks = 0;
+    private double _endSeconds;
+    private double _showProgressPct = -1;
+    private double _lastEstimatedMs = double.MaxValue;
+    private readonly VideoInfo _videoInfo = new();
+    private readonly TaskbarList _taskbarList;
+    private IntPtr _windowHandle;
 
     public class WhisperModelDisplay
     {
@@ -133,16 +129,16 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     private bool _abort;
 
     private readonly IPopupService _popupService;
-    private List<ResultText> _resultList = new();
+    private readonly List<ResultText> _resultList = new();
     private bool _useCenterChannelOnly;
-    private readonly Regex _timeRegexShort = new Regex(@"^\[\d\d:\d\d[\.,]\d\d\d --> \d\d:\d\d[\.,]\d\d\d\]", RegexOptions.Compiled);
-    private readonly Regex _timeRegexLong = new Regex(@"^\[\d\d:\d\d:\d\d[\.,]\d\d\d --> \d\d:\d\d:\d\d[\.,]\d\d\d]", RegexOptions.Compiled);
-    private readonly Regex _pctWhisper = new Regex(@"^\d+%\|", RegexOptions.Compiled);
-    private readonly Regex _pctWhisperFaster = new Regex(@"^\s*\d+%\s*\|", RegexOptions.Compiled);
+    private readonly Regex _timeRegexShort = new(@"^\[\d\d:\d\d[\.,]\d\d\d --> \d\d:\d\d[\.,]\d\d\d\]", RegexOptions.Compiled);
+    private readonly Regex _timeRegexLong = new(@"^\[\d\d:\d\d:\d\d[\.,]\d\d\d --> \d\d:\d\d:\d\d[\.,]\d\d\d]", RegexOptions.Compiled);
+    private readonly Regex _pctWhisper = new(@"^\d+%\|", RegexOptions.Compiled);
+    private readonly Regex _pctWhisperFaster = new(@"^\s*\d+%\s*\|", RegexOptions.Compiled);
     private readonly Timer _timerWhisper = new();
     private Process _whisperProcess = new();
 
-    private Process _waveExtractProcess = new();
+    private Process? _waveExtractProcess = new();
     private readonly Timer _timerWaveExtract = new();
 
     private Stopwatch _sw = new();
@@ -170,6 +166,11 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     private void OnTimerWaveExtractOnElapsed(object? sender, ElapsedEventArgs e)
     {
+        if (_waveExtractProcess == null)
+        {
+            return;
+        }
+
         if (_abort)
         {
             _timerWaveExtract.Stop();
@@ -534,15 +535,15 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             TranscribeButton.IsEnabled = true;
 
-            if (IncompleteModel)
+            if (_incompleteModel)
             {
                 Page?.DisplayAlert("Incomplete model", "The model is incomplete. Please download the full model.", "OK");
             }
-            else if (UnknownArgument && !string.IsNullOrEmpty(Se.Settings.Tools.WhisperCustomCommandLineArguments))
+            else if (_unknownArgument && !string.IsNullOrEmpty(Se.Settings.Tools.WhisperCustomCommandLineArguments))
             {
                 Page?.DisplayAlert($"Unknown argument: {Se.Settings.Tools.WhisperCustomCommandLineArguments}", "Unknown argument. Please check the advanced settings.", "OK");
             }
-            else if (CudaOutOfMemory)
+            else if (_cudaOutOfMemory)
             {
                 Page?.DisplayAlert($"CUDA failed", "Whisper ran out of CUDA memory - try a smaller model or run on CPU.", "OK");
             }
@@ -614,14 +615,14 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     public async Task DownloadWhisper()
     {
-        if (SelectedWhisperEngine is not { } engine)
+        if (SelectedWhisperEngine is not { } engine || Page == null)
         {
             return;
         }
 
         var answer = await Page.DisplayAlert(
-            $"Download {SelectedWhisperEngine.Name}?",
-            $"Download and use {SelectedWhisperEngine.Name}?",
+            $"Download {engine.Name}?",
+            $"Download and use {engine.Name}?",
             "Yes",
             "No");
 
@@ -1069,28 +1070,28 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         if (outLine.Data.Contains("not all tensors loaded from model file"))
         {
-            IncompleteModel = true;
+            _incompleteModel = true;
         }
 
         if (outLine.Data.Contains("error: unknown argument: ", StringComparison.OrdinalIgnoreCase))
         {
-            UnknownArgument = true;
+            _unknownArgument = true;
         }
         else if (outLine.Data.Contains("error: unrecognized argument: ", StringComparison.OrdinalIgnoreCase))
         {
-            UnknownArgument = true;
+            _unknownArgument = true;
         }
         else if (outLine.Data.Contains("error: unrecognized arguments: ", StringComparison.OrdinalIgnoreCase))
         {
-            UnknownArgument = true;
+            _unknownArgument = true;
         }
         else if (outLine.Data.Contains("CUDA failed with error out of memory", StringComparison.OrdinalIgnoreCase))
         {
-            CudaOutOfMemory = true;
+            _cudaOutOfMemory = true;
         }
         if (outLine.Data.Contains("running on: CUDA", StringComparison.OrdinalIgnoreCase))
         {
-            RunningOnCuda = true;
+            _runningOnCuda = true;
         }
 
         LogToConsole(outLine.Data.Trim() + Environment.NewLine);
@@ -1237,12 +1238,10 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             audioParameter = $"-map 0:a:{audioTrackNumber}";
         }
 
-        //TODo:    labelFC.Text = string.Empty;
         var fFmpegWaveTranscodeSettings = "-i \"{0}\" -vn -ar 16000 -ac 1 -ab 32k -af volume=1.75 -f wav {2} \"{1}\"";
         if (_useCenterChannelOnly)
         {
             fFmpegWaveTranscodeSettings = "-i \"{0}\" -vn -ar 16000 -ab 32k -af volume=1.75 -af \"pan=mono|c0=FC\" -f wav {2} \"{1}\"";
-            //TODO:  labelFC.Text = "FC";
         }
 
         //-i indicates the input
