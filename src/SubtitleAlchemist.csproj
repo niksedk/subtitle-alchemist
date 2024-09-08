@@ -128,6 +128,7 @@
 		<PackageReference Include="SharpHook" Version="5.3.7" />
 		<PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
 		<PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="2.88.8" />
+		<PackageReference Include="WeCantSpell.Hunspell" Version="5.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -465,7 +466,7 @@
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
 		<PackageReference Include="Xamarin.Kotlin.StdLib">
-			<Version>2.0.0.2</Version>
+			<Version>2.0.10</Version>
 		</PackageReference>
 	</ItemGroup>
 
