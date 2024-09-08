@@ -17,7 +17,7 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     public string DefaultWhisperEngineName { get; set; } = WhisperEngineCpp.StaticName;
 
     [ObservableProperty]
-    private string _currentParameters = Se.Settings.Tools.WhisperCustomCommandLineArguments;
+    private string _currentParameters = Se.Settings.Tools.AudioToText.WhisperCustomCommandLineArguments;
 
     public VerticalStackLayout LeftMenu { get; set; } = new();
     public Editor EditorCppHelpText { get; set; } = new();
@@ -34,6 +34,7 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
 
     private string _engineName;
     private readonly IPopupService _popupService;
+    private static readonly SeAudioToText _settings = Se.Settings.Tools.AudioToText;
 
     public WhisperAdvancedModel(IPopupService popupService)
     {
@@ -83,10 +84,10 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     private async Task Ok()
     {
         var param = CurrentParameters.Trim();
-        if (!string.IsNullOrWhiteSpace(param) && !Se.Settings.Tools.WhisperCustomCommandLineArguments.Contains(param))
+        if (!string.IsNullOrWhiteSpace(param) && !_settings.WhisperCustomCommandLineArguments.Contains(param))
         {
-            Se.Settings.Tools.WhisperExtraSettingsHistory =
-                param + Environment.NewLine + Se.Settings.Tools.WhisperExtraSettingsHistory;
+            _settings.WhisperExtraSettingsHistory =
+                param + Environment.NewLine + _settings.WhisperExtraSettingsHistory;
         }
 
         await Shell.Current.GoToAsync($"..", new Dictionary<string, object>
@@ -135,7 +136,7 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     public async Task ShowHistory()
     {
         var engine = WhisperEngineFactory.MakeEngineFromStaticName(_engineName);
-        Se.Settings.Tools.WhisperChoice = engine.Choice;
+        _settings.WhisperChoice = engine.Choice;
         var command = await _popupService.ShowPopupAsync<WhisperAdvancedHistoryPopupModel>(CancellationToken.None);
         if (command is string commandString)
         {

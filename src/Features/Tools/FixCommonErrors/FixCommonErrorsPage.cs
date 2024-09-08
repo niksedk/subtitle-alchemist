@@ -144,6 +144,47 @@ public class FixCommonErrorsPage : ContentPage
 
         grid.Add(border, 0, 1);
 
+
+        var buttonAll = new Button
+        {
+            Text = "Select all",
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.RulesSelectAllCommand,
+        }.BindDynamicTheme();
+
+        var buttonInverse = new Button
+        {
+            Text = "Inverse selection",
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.RulesInverseSelectedCommand,
+        }.BindDynamicTheme();
+
+
+        var pickerProfile = new Picker
+        {
+            Title = "Profile",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+
+        var buttonProfile = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+
+
+        var stackLayoutLeft = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Children = { buttonAll, buttonInverse, pickerProfile, buttonProfile },
+        }.BindDynamicTheme();
+
         var buttonNext = new Button
         {
             Text = "Apply fixes >",
@@ -160,7 +201,7 @@ public class FixCommonErrorsPage : ContentPage
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
 
-        var stackLayout = new StackLayout
+        var stackLayoutRight = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.End,
@@ -168,11 +209,26 @@ public class FixCommonErrorsPage : ContentPage
             Children = { buttonNext, buttonCancel },
         }.BindDynamicTheme();
 
-        grid.Add(stackLayout, 0, 2);
+        var buttonBarGrid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+            RowDefinitions = new RowDefinitionCollection
+            {
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
+            },
+            ColumnDefinitions = new ColumnDefinitionCollection
+            {
+                new() { Width = new GridLength(1, GridUnitType.Star) },
+                new() { Width = new GridLength(1, GridUnitType.Auto) },
+            },
+        };
+
+        buttonBarGrid.Add(stackLayoutLeft, 0, 0);
+        buttonBarGrid.Add(stackLayoutRight, 1, 0);
+        grid.Add(buttonBarGrid, 0, 2);
 
         collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.FixRules));
-
-        vm.InitStep1();
 
         return grid;
     }

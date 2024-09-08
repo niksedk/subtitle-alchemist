@@ -4,7 +4,14 @@ namespace SubtitleAlchemist.Logic.Config;
 
 public class SeTools
 {
-    public bool VoskPostProcessing { get; set; } = true;
+    public SeAudioToText AudioToText { get; set; } = new();
+    public SeFixCommonErrors FixCommonErrors { get; set; } = new();
+    public string AutoTranslateLastName { get; set; } = string.Empty;
+}
+
+public class SeAudioToText
+{
+    public bool PostProcessing { get; set; } = true;
 
     public string WhisperChoice { get; set; } = WhisperEngineCpp.StaticName;
 
@@ -48,6 +55,4 @@ public class SeTools
     public bool WhisperPostProcessingFixCasing { get; set; } = false;
 
     public bool WhisperPostProcessingFixShortDuration { get; set; } = true;
-
-    public string AutoTranslateLastName { get; set; } = string.Empty;
 }

@@ -102,6 +102,24 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         await Shell.Current.GoToAsync("..");
     }
 
+    [RelayCommand]
+    public void RulesSelectAll()
+    {
+        foreach (var rule in FixRules)
+        {
+            rule.IsSelected = true;
+        }
+    }
+
+    [RelayCommand]
+    public void RulesInverseSelected()
+    {
+        foreach (var rule in FixRules)
+        {
+            rule.IsSelected = !rule.IsSelected;
+        }
+    }
+
     public void InitStep1()
     {
         var languages = new List<LanguageDisplayItem>();
@@ -111,6 +129,12 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         }
         Languages = new ObservableCollection<LanguageDisplayItem>(languages.OrderBy(p=>p.ToString()));
 
+        var languageCode = LanguageAutoDetect.AutoDetectGoogleLanguage(_originalSubtitle); // Guess language based on subtitle contents
+        SelectedLanguage = Languages.FirstOrDefault(p => p.Code.TwoLetterISOLanguageName == languageCode);
+        if (SelectedLanguage != null)
+        {
+            SelectedLanguage = Languages.First(p => p.Code.TwoLetterISOLanguageName == "en");
+        }
 
         _allFixRules = new List<FixRuleDisplayItem>
         {
@@ -145,7 +169,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
             //    FixAction = string.Format(LanguageSettings.Current.FixCommonErrors.FixContinuationStyleX, UiUtil.GetContinuationStyleName(Configuration.Settings.General.ContinuationStyle))
             //}.Fix(Subtitle, this), ce.FixContinuationStyleTicked),
             new (_language.FixMissingOpenBracket, _language.FixMissingOpenBracketExample, 1, true, nameof(FixMissingOpenBracket)),
-//                new FixErrorDisplayItem(_language.FixCommonOcrErrors, _language.FixOcrErrorExample, () => FixOcrErrorsViaReplaceList(threeLetterIsoLanguageName), ce.FixOcrErrorsViaReplaceListTicked),
+            //new (_language.FixCommonOcrErrors, _language.FixOcrErrorExample, 1, true, () => FixOcrErrorsViaReplaceList(threeLetterIsoLanguageName), ce.FixOcrErrorsViaReplaceListTicked),
             new (_language.FixUppercaseIInsideLowercaseWords, _language.FixUppercaseIInsideLowercaseWordsExample, 1, true, nameof(FixUppercaseIInsideWords)),
             new (_language.RemoveSpaceBetweenNumber, _language.FixSpaceBetweenNumbersExample, 1, true, nameof(RemoveSpaceBetweenNumbers)),
             new (_language.BreakDialogsOnOneLine, _language.FixDialogsOneLineExample, 1, true, nameof(FixDialogsOnOneLine)),
@@ -157,28 +181,31 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         //{
         //    _fixActions.Add(new FixErrorDisplayItem(_language.FixEllipsesStart, _language.FixEllipsesStartExample, 1, true, nameof(FixEllipsesStart)),
         //}
-        //if (Language == "en")
-        //{
-        //    _indexAloneLowercaseIToUppercaseIEnglish = _fixActions.Count;
-        //    _fixActions.Add(new FixErrorDisplayItem(_language.FixLowercaseIToUppercaseI, _language.FixLowercaseIToUppercaseIExample, 1, true, nameof(FixAloneLowercaseIToUppercaseI)),
-        //}
-        //if (Language == "tr")
-        //{
-        //    _turkishAnsiIndex = _fixActions.Count;
-        //    _fixActions.Add(new FixErrorDisplayItem(_language.FixTurkishAnsi, "Ý > İ, Ð > Ğ, Þ > Ş, ý > ı, ð > ğ, þ > ş", 1, true, nameof(FixTurkishAnsiToUnicode)),
-        //}
 
-        //if (Language == "da")
-        //{
-        //    _danishLetterIIndex = _fixActions.Count;
-        //    _fixActions.Add(new FixErrorDisplayItem(_language.FixDanishLetterI, "Jeg synes i er søde. -> Jeg synes I er søde.", 1, true, nameof(FixDanishLetterI)),
-        //}
+        if (Language == "en")
+        {
+            _allFixRules.Add(new FixRuleDisplayItem(_language.FixLowercaseIToUppercaseI,
+                _language.FixLowercaseIToUppercaseIExample, 1, true, nameof(FixAloneLowercaseIToUppercaseI)));
+        }
 
-        //if (Language == "es")
-        //{
-        //    _spanishInvertedQuestionAndExclamationMarksIndex = _fixActions.Count;
-        //    _fixActions.Add(new FixErrorDisplayItem(_language.FixSpanishInvertedQuestionAndExclamationMarks, "Hablas bien castellano? -> ¿Hablas bien castellano?", 1, true, nameof(FixSpanishInvertedQuestionAndExclamationMarks)),
-        //}
+        if (Language == "tr")
+        {
+            _allFixRules.Add(new FixRuleDisplayItem(_language.FixTurkishAnsi,
+                "Ý > İ, Ð > Ğ, Þ > Ş, ý > ı, ð > ğ, þ > ş", 1, true, nameof(FixTurkishAnsiToUnicode)));
+        }
+
+        if (Language == "da")
+        {
+            _allFixRules.Add(new FixRuleDisplayItem(_language.FixDanishLetterI,
+                "Jeg synes i er søde. -> Jeg synes I er søde.", 1, true, nameof(FixDanishLetterI)));
+        }
+
+        if (Language == "es")
+        {
+            _allFixRules.Add(new FixRuleDisplayItem(_language.FixSpanishInvertedQuestionAndExclamationMarks,
+                "Hablas bien castellano? -> ¿Hablas bien castellano?", 1, true,
+                nameof(FixSpanishInvertedQuestionAndExclamationMarks)));
+        }
 
         FixRules = new ObservableCollection<FixRuleDisplayItem>(_allFixRules);
     }
@@ -201,12 +228,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
             Format = format;
         }
 
-        var languageCode = LanguageAutoDetect.AutoDetectGoogleLanguage(_originalSubtitle); // Guess language based on subtitle contents
-        SelectedLanguage = Languages.FirstOrDefault(p => p.Code.TwoLetterISOLanguageName == languageCode);
-        if (SelectedLanguage != null)
-        {
-            SelectedLanguage = Languages.First(p => p.Code.TwoLetterISOLanguageName == "en");
-        }
+        InitStep1();
     }
 
     public void EntrySearch_TextChanged(object? sender, TextChangedEventArgs e)

@@ -19,14 +19,16 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper
         [ObservableProperty]
         private string? _selectedItem;
 
+        private static readonly SeAudioToText _settings = Se.Settings.Tools.AudioToText;
+
         public void SetItems()
         {
-            var items = Se.Settings.Tools.WhisperExtraSettingsHistory.SplitToLines();
+            var items = _settings.WhisperExtraSettingsHistory.SplitToLines();
 
             Items.Clear();
             Items.Add(string.Empty);
 
-            if (Se.Settings.Tools.WhisperChoice 
+            if (_settings.WhisperChoice 
                 is WhisperChoice.PurfviewFasterWhisper or WhisperChoice.PurfviewFasterWhisperXXL 
                 && !items.Contains("--standard"))
             {

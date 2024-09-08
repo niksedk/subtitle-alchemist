@@ -235,7 +235,7 @@ public class AudioToTextWhisperPage : ContentPage
 
         vm.LabelAdvancedSettings = new Label
         {
-            Text = Se.Settings.Tools.WhisperCustomCommandLineArguments,
+            Text = Se.Settings.Tools.AudioToText.WhisperCustomCommandLineArguments,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 5, 0, 25),
             FontSize = 10,
