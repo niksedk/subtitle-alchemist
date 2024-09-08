@@ -988,6 +988,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         await Shell.Current.GoToAsync(nameof(TranslatePage), new Dictionary<string, object>
         {
+            { "Page", nameof(MainPage) },
             { nameof(Paragraphs), Paragraphs },
             { "Encoding", Encoding.UTF8 },
             { "Subtitle", UpdatedSubtitle },
@@ -1003,7 +1004,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task FixCommonErrorsShow()
     {
-        await Shell.Current.GoToAsync(nameof(FixCommonErrorsPage));
+        await Shell.Current.GoToAsync(nameof(FixCommonErrorsPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
+        });
     }
 
     private async Task<bool> RequireFfmpegOk()

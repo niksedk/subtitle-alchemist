@@ -1,85 +1,9 @@
-﻿using Nikse.SubtitleEdit.Core.Common;
-using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
-
+using Nikse.SubtitleEdit.Core.Common;
+using SubtitleAlchemist.Logic.Config.Language;
 namespace SubtitleAlchemist.Logic.Config;
-
-public class RecentFile
-{
-    public string SubtitleFileName { get; set; } = string.Empty;
-    public string VideoFileName { get; set; } = string.Empty;
-    public int SelectedLine { get; set; }
-    public string Encoding { get; set; } = string.Empty;
-}
-
-public class SeFile
-{
-    public bool ShowRecentFiles { get; set; } = true;
-    public int RecentFilesMaximum { get; set; } = 25;
-    public List<RecentFile> RecentFiles { get; set; } = new();
-
-    public void AddToRecentFiles(string subtitleFileName, string videoFileName, int selectedLine, string encoding)
-    {
-        RecentFiles.RemoveAll(rf => rf.SubtitleFileName == subtitleFileName);
-        RecentFiles.Insert(0, new RecentFile { SubtitleFileName = subtitleFileName, VideoFileName = videoFileName, SelectedLine = selectedLine, Encoding = encoding });
-        if (RecentFiles.Count > RecentFilesMaximum)
-        {
-            RecentFiles.RemoveAt(RecentFiles.Count - 1);
-        }
-    }
-}
-
-public class SeTools
-{
-    public bool VoskPostProcessing { get; set; } = true;
-
-    public string WhisperChoice { get; set; } = WhisperEngineCpp.StaticName;
-
-    public bool WhisperIgnoreVersion { get; set; } = false;
-
-    public bool WhisperDeleteTempFiles { get; set; } = true;
-
-    public string? WhisperModel { get; set; } = string.Empty;
-
-    public string WhisperLanguageCode { get; set; } = string.Empty;
-
-    public string WhisperLocation { get; set; } = string.Empty;
-
-    public string WhisperCtranslate2Location { get; set; } = string.Empty;
-
-    public string WhisperPurfviewFasterWhisperLocation { get; set; } = string.Empty;
-
-    public string WhisperPurfviewFasterWhisperDefaultCmd { get; set; } = string.Empty;
-
-    public string WhisperXLocation { get; set; } = string.Empty;
-
-    public string WhisperStableTsLocation { get; set; } = string.Empty;
-
-    public string WhisperCppModelLocation { get; set; } = string.Empty;
-
-    public string WhisperCustomCommandLineArguments { get; set; } = string.Empty;
-    public bool WhisperCustomCommandLineArgumentsPurfviewBlank { get; set; }
-
-    public string WhisperExtraSettingsHistory { get; set; } = string.Empty;
-
-    public bool WhisperAutoAdjustTimings { get; set; } = true;
-
-    public bool WhisperUseLineMaxChars { get; set; } = true;
-
-    public bool WhisperPostProcessingAddPeriods { get; set; } = false;
-
-    public bool WhisperPostProcessingMergeLines { get; set; } = true;
-
-    public bool WhisperPostProcessingSplitLines { get; set; } = true;
-
-    public bool WhisperPostProcessingFixCasing { get; set; } = false;
-
-    public bool WhisperPostProcessingFixShortDuration { get; set; } = true;
-
-    public string AutoTranslateLastName { get; set; } = string.Empty;
-}
 
 public class Se
 {
@@ -87,7 +11,7 @@ public class Se
     public string Theme { get; set; }
     public SeFile File { get; set; }
     public SeTools Tools { get; set; }
-
+    public static SeLanguage Language { get; set; } = new();
     public static Se Settings { get; set; } = new();
 
     public Se()

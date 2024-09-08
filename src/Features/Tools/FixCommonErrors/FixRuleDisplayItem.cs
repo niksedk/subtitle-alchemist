@@ -1,20 +1,36 @@
-﻿using Nikse.SubtitleEdit.Core.Forms.FixCommonErrors;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Nikse.SubtitleEdit.Core.Forms.FixCommonErrors;
 using Nikse.SubtitleEdit.Core.Interfaces;
 
 namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 
-public class FixErrorItem
+public partial class FixRuleDisplayItem : ObservableObject
 {
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public int SortOrder { get; set; }
-    public bool IsSelected { get; set; }
+    [ObservableProperty]
+    private string _name;
+
+    [ObservableProperty]
+    private string _example;
+
+    [ObservableProperty] 
+    private bool _isSelected;
+
+    [ObservableProperty] 
+    private int _sortOrder;
+
     public string FixCommonErrorFunctionName { get; set; }
 
-    public FixErrorItem(string name, string description, int sortOrder, bool isSelected, string fixCommonErrorFunctionName)
+    public FixRuleDisplayItem()
+    {
+        Name = string.Empty;
+        Example = string.Empty;
+        FixCommonErrorFunctionName = string.Empty;
+    }
+
+    public FixRuleDisplayItem(string name, string example, int sortOrder, bool isSelected, string fixCommonErrorFunctionName)
     {
         Name = name;
-        Description = description;
+        Example = example;
         SortOrder = sortOrder;
         IsSelected = isSelected;
         FixCommonErrorFunctionName = fixCommonErrorFunctionName;

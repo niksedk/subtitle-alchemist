@@ -47,7 +47,6 @@ public class DownloadFfmpegPopup : Popup
         {
             Text = "...",
             FontAttributes = FontAttributes.Bold,
-            FontSize = 15,
         }.BindDynamicTheme(); 
         progressLabel.SetBinding(Label.TextProperty, nameof(vm.Progress));
         grid.Add(progressLabel, 0, 1);
