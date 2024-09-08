@@ -1008,6 +1008,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             { "Page", nameof(MainPage) },
             { "Subtitle", UpdatedSubtitle },
+            { "Encoding", CurrentEncoding },
+            { "Format", CurrentSubtitleFormat },
         });
     }
 

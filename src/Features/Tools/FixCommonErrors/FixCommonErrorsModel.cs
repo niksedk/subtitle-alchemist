@@ -8,11 +8,13 @@ using System.Collections.ObjectModel;
 using System.Text;
 using Nikse.SubtitleEdit.Core.Interfaces;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using SubtitleAlchemist.Features.Main;
 
 namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 
 public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable, IFixCallbacks
 {
+
     [ObservableProperty]
     private string _searchText = string.Empty;
 
@@ -20,16 +22,27 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
     private ObservableCollection<LanguageDisplayItem> _languages = new();
 
     [ObservableProperty]
-    private ObservableCollection<FixRuleDisplayItem> _fixItems = new();
+    private LanguageDisplayItem? _selectedLanguage;
 
-    private List<FixRuleDisplayItem> _allFixItems = new();
+    [ObservableProperty]
+    private ObservableCollection<FixRuleDisplayItem> _fixRules = new();
 
+    [ObservableProperty]
+    private ObservableCollection<FixDisplayItem> _fixes = new();
+
+    [ObservableProperty]
+    private ObservableCollection<DisplayParagraph> _paragraphs = new();
 
     public FixCommonErrorsPage? Page { get; set; }
     public Grid? Step1Grid { get; set; }
     public Grid? Step2Grid { get; set; }
     public Entry EntrySearch { get; set; } = new();
 
+    public SubtitleFormat Format { get; set; } = new SubRip();
+    public Encoding Encoding { get; set; } = Encoding.UTF8;
+    public string Language { get; set; } = "en";
+
+    private List<FixRuleDisplayItem> _allFixRules = new();
     private Subtitle _originalSubtitle = new();
     private Subtitle _fixSubtitle = new();
     private readonly LanguageFixCommonErrors _language;
@@ -60,14 +73,16 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         _totalFixes = 0;
         _totalErrors = 0;
 
-        foreach (var fix in _allFixItems)
+        foreach (var fix in _allFixRules)
         {
             if (fix.IsSelected)
             {
                 var fixCommonError = fix.GetFixCommonErrorFunction();
-                fixCommonError.Fix(_originalSubtitle, this);
+                fixCommonError.Fix(_fixSubtitle, this);
             }
         }
+
+        Paragraphs = new ObservableCollection<DisplayParagraph>(_fixSubtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
     }
 
     [RelayCommand]
@@ -94,10 +109,10 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         {
             languages.Add(new LanguageDisplayItem(ci, ci.EnglishName));
         }
-        Languages = new ObservableCollection<LanguageDisplayItem>(languages);
+        Languages = new ObservableCollection<LanguageDisplayItem>(languages.OrderBy(p=>p.ToString()));
 
 
-        _allFixItems = new List<FixRuleDisplayItem>
+        _allFixRules = new List<FixRuleDisplayItem>
         {
             new (_language.RemovedEmptyLinesUnusedLineBreaks, "Has only one valid line!</br><i> -> Has only one valid line!", 1, true, nameof(FixEmptyLines)),
             new (_language.FixOverlappingDisplayTimes, string.Empty, 1, true, nameof(FixOverlappingDisplayTimes)),
@@ -165,7 +180,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         //    _fixActions.Add(new FixErrorDisplayItem(_language.FixSpanishInvertedQuestionAndExclamationMarks, "Hablas bien castellano? -> ¿Hablas bien castellano?", 1, true, nameof(FixSpanishInvertedQuestionAndExclamationMarks)),
         //}
 
-        FixItems = new ObservableCollection<FixRuleDisplayItem>(_allFixItems);
+        FixRules = new ObservableCollection<FixRuleDisplayItem>(_allFixRules);
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -175,21 +190,38 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
             _originalSubtitle = subtitle;
             _fixSubtitle = new Subtitle(subtitle, false);
         }
+
+        if (query["Encoding"] is Encoding encoding)
+        {
+            Encoding = encoding;
+        }
+
+        if (query["Format"] is SubtitleFormat format)
+        {
+            Format = format;
+        }
+
+        var languageCode = LanguageAutoDetect.AutoDetectGoogleLanguage(_originalSubtitle); // Guess language based on subtitle contents
+        SelectedLanguage = Languages.FirstOrDefault(p => p.Code.TwoLetterISOLanguageName == languageCode);
+        if (SelectedLanguage != null)
+        {
+            SelectedLanguage = Languages.First(p => p.Code.TwoLetterISOLanguageName == "en");
+        }
     }
 
     public void EntrySearch_TextChanged(object? sender, TextChangedEventArgs e)
     {
         if (string.IsNullOrEmpty(e.NewTextValue))
         {
-            FixItems = new ObservableCollection<FixRuleDisplayItem>(_allFixItems);
+            FixRules = new ObservableCollection<FixRuleDisplayItem>(_allFixRules);
             return;
         }
 
         var searchText = e.NewTextValue.ToLower();
-        var items = _allFixItems
+        var items = _allFixRules
             .Where(p => p.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                                         p.Example.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
-        FixItems = new ObservableCollection<FixRuleDisplayItem>(items);
+        FixRules = new ObservableCollection<FixRuleDisplayItem>(items);
     }
 
     public bool AllowFix(Paragraph p, string action)
@@ -199,12 +231,12 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
 
     public void AddFixToListView(Paragraph p, string action, string before, string after)
     {
-        //
+        Fixes.Add(new FixDisplayItem(p, action, before, after, true));
     }
 
     public void AddFixToListView(Paragraph p, string action, string before, string after, bool isChecked)
     {
-        //
+        Fixes.Add(new FixDisplayItem(p, action, before, after, isChecked));
     }
 
     public void LogStatus(string sender, string message)
@@ -246,30 +278,5 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
     public void AddToDeleteIndices(int index)
     {
         //TODO:
-    }
-
-    public SubtitleFormat Format
-    {
-        get
-        {
-            return new SubRip();
-        }
-    }
-
-
-    public Encoding Encoding
-    {
-        get
-        {
-            return Encoding.UTF8;
-        }
-    }
-
-    public string Language
-    {
-        get
-        {
-            return "en";
-        }
     }
 }
