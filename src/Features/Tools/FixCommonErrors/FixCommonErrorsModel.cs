@@ -6,6 +6,7 @@ using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Config.Language;
 using System.Collections.ObjectModel;
 using System.Text;
+using Nikse.SubtitleEdit.Core.Enums;
 using Nikse.SubtitleEdit.Core.Interfaces;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Features.Main;
@@ -48,12 +49,14 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
     private readonly LanguageFixCommonErrors _language;
     private int _totalFixes;
     private int _totalErrors;
+    private bool _previewMode = true;
+    private List<FixDisplayItem> _oldFixes = new();
+
 
     public FixCommonErrorsModel()
     {
         _language = Se.Language.FixCommonErrors;
     }
-
 
     [RelayCommand]
     public void GoToStep2()
@@ -64,21 +67,21 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         }
 
         Page.Content = Step2Grid;
-
         ApplyFixes();
+        _previewMode = true;
     }
 
     private void ApplyFixes()
     {
-        _totalFixes = 0;
         _totalErrors = 0;
 
+        var subtitle = _previewMode ? new Subtitle(_fixSubtitle, false) : _fixSubtitle;
         foreach (var fix in _allFixRules)
         {
             if (fix.IsSelected)
             {
                 var fixCommonError = fix.GetFixCommonErrorFunction();
-                fixCommonError.Fix(_fixSubtitle, this);
+                fixCommonError.Fix(subtitle, this);
             }
         }
 
@@ -95,6 +98,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
 
         if (Page.Content == Step2Grid)
         {
+            _previewMode = true;
             Page.Content = Step1Grid;
             return;
         }
@@ -120,6 +124,64 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         }
     }
 
+
+    [RelayCommand]
+    public void FixesSelectAll()
+    {
+        foreach (var rule in FixRules)
+        {
+            rule.IsSelected = !rule.IsSelected;
+        }
+    }
+
+    [RelayCommand]
+    public void FixesInverseSelected()
+    {
+        foreach (var fix in Fixes)
+        {
+            fix.IsSelected = !fix.IsSelected;
+        }
+    }
+
+    [RelayCommand]
+    public void RefreshFixes()
+    {
+        _oldFixes = new List<FixDisplayItem>(Fixes);
+        Fixes.Clear();
+        _previewMode = true;
+        ApplyFixes();
+    }
+
+    [RelayCommand]
+    public void ApplySelectedFixes()
+    {
+        _previewMode = false;
+        ApplyFixes();
+
+        RefreshFixes();
+    }
+
+    [RelayCommand]
+    public async Task Ok()
+    {
+        //SaveSettings?
+
+        if (_totalFixes > 0)
+        {
+            await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+            {
+                { "Page", nameof(FixCommonErrorsPage) },
+                { "Encoding", Encoding },
+                { "Subtitle", _fixSubtitle },
+                { "TotalFixes", _totalFixes },
+            });
+        }
+        else
+        {
+            await Cancel();
+        }
+    }
+
     public void InitStep1()
     {
         var languages = new List<LanguageDisplayItem>();
@@ -127,7 +189,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         {
             languages.Add(new LanguageDisplayItem(ci, ci.EnglishName));
         }
-        Languages = new ObservableCollection<LanguageDisplayItem>(languages.OrderBy(p=>p.ToString()));
+        Languages = new ObservableCollection<LanguageDisplayItem>(languages.OrderBy(p => p.ToString()));
 
         var languageCode = LanguageAutoDetect.AutoDetectGoogleLanguage(_originalSubtitle); // Guess language based on subtitle contents
         SelectedLanguage = Languages.FirstOrDefault(p => p.Code.TwoLetterISOLanguageName == languageCode);
@@ -177,10 +239,12 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
             new (_language.NormalizeStrings, string.Empty, 1, true, nameof(NormalizeStrings)),
     };
 
-        //if (Configuration.Settings.General.ContinuationStyle == ContinuationStyle.None)
-        //{
-        //    _fixActions.Add(new FixErrorDisplayItem(_language.FixEllipsesStart, _language.FixEllipsesStartExample, 1, true, nameof(FixEllipsesStart)),
-        //}
+        if (Configuration.Settings.General.ContinuationStyle == ContinuationStyle.None)
+        {
+            _allFixRules.Add(
+                new FixRuleDisplayItem(_language.FixEllipsesStart, _language.FixEllipsesStartExample, 1,
+                true, nameof(FixEllipsesStart)));
+        }
 
         if (Language == "en")
         {
@@ -248,17 +312,43 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
 
     public bool AllowFix(Paragraph p, string action)
     {
-        return true;
+        if (_previewMode)
+        {
+            return true;
+        }
+
+        var allowFix = Fixes.Any(f => f.Paragraph.Id == p.Id && f.Action == action && f.IsSelected);
+        return allowFix;
     }
 
     public void AddFixToListView(Paragraph p, string action, string before, string after)
     {
-        Fixes.Add(new FixDisplayItem(p, action, before, after, true));
+        if (!_previewMode)
+        {
+            return;
+        }
+
+        var oldFix = _oldFixes.FirstOrDefault(f => f.Paragraph.Id == p.Id && f.Action == action);
+        var isSelected = oldFix is not { IsSelected: false };
+
+        Fixes.Add(new FixDisplayItem(p, action, before, after, isSelected));
     }
 
     public void AddFixToListView(Paragraph p, string action, string before, string after, bool isChecked)
     {
-        Fixes.Add(new FixDisplayItem(p, action, before, after, isChecked));
+        if (!_previewMode)
+        {
+            return;
+        }
+
+        var oldFix = _oldFixes.FirstOrDefault(f => f.Paragraph.Id == p.Id && f.Action == action);
+        var isSelected = isChecked;
+        if (oldFix is { IsSelected: false })
+        {
+            isSelected = false;
+        }
+
+        Fixes.Add(new FixDisplayItem(p, action, before, after, isSelected));
     }
 
     public void LogStatus(string sender, string message)
@@ -273,10 +363,15 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
 
     public void UpdateFixStatus(int fixes, string message)
     {
+        if (_previewMode)
+        {
+            return;
+        }
+
         if (fixes > 0)
         {
             _totalFixes += fixes;
-//            LogStatus(message, string.Format(LanguageSettings.Current.FixCommonErrors.XFixesApplied, fixes));
+            //            LogStatus(message, string.Format(LanguageSettings.Current.FixCommonErrors.XFixesApplied, fixes));
         }
     }
 

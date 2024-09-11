@@ -189,6 +189,23 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 SelectParagraph(0);
             }
         }
+
+        if (page == nameof(FixCommonErrorsPage))
+        {
+            var totalFixes = 0;
+            if (query["TotalFixes"] is int totalFixesNumber)
+            {
+                totalFixes = totalFixesNumber;
+            }
+
+            if (query["Subtitle"] is Subtitle subtitle)
+            {
+                Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+                ShowStatus($"{totalFixes} fixes applied");
+                SelectParagraph(0);
+            }
+        }
+
     }
 
     private void AudioVisualizerOnPlayToggle(object? sender, EventArgs e)

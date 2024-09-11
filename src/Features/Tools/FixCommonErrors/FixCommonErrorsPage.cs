@@ -1,6 +1,7 @@
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Converters;
 
 namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 
@@ -38,7 +39,7 @@ public class FixCommonErrorsPage : ContentPage
 
         var labelTitle = new Label
         {
-            Text = "Select common errors to fix",
+            Text = "Fix common errors - step 1 - select rules to fix",
             FontSize = 18,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
@@ -46,7 +47,7 @@ public class FixCommonErrorsPage : ContentPage
 
         vm.EntrySearch = new Entry
         {
-            Margin = new Thickness(50, 0, 0, 0),
+            Margin = new Thickness(75, 0, 0, 0),
             Placeholder = "Search",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
@@ -56,7 +57,7 @@ public class FixCommonErrorsPage : ContentPage
 
         var imageSearch = new Image
         {
-            Margin = new Thickness(0, 0, 40, 0),
+            Margin = new Thickness(0, 0, 75, 0),
             Source = "theme_dark_find.png",
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
@@ -104,29 +105,29 @@ public class FixCommonErrorsPage : ContentPage
             SelectionMode = SelectionMode.Single,
             ItemTemplate = new DataTemplate(() =>
             {
-                var fixItemsGrid = new Grid
+                var rulesItemsGrid = new Grid
                 {
                     ColumnDefinitions =
                     {
-                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
-                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
                         new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) },
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
                     },
                 };
 
+                var isSelectedSwitch = new Switch().BindDynamicTheme();
+                isSelectedSwitch.SetBinding(Switch.IsToggledProperty, "IsSelected");
+                rulesItemsGrid.Add(isSelectedSwitch, 0, 0);
+
                 var nameLabel = new Label { }.BindDynamicTheme();
                 nameLabel.SetBinding(Label.TextProperty, "Name");
-                fixItemsGrid.Add(nameLabel, 0, 0);
+                rulesItemsGrid.Add(nameLabel, 1, 0);
 
                 var exampleLabel = new Label { }.BindDynamicTheme();
                 exampleLabel.SetBinding(Label.TextProperty, "Example");
-                fixItemsGrid.Add(exampleLabel, 1, 0);
+                rulesItemsGrid.Add(exampleLabel, 2, 0);
 
-                var isSelectedSwitch = new Switch().BindDynamicTheme();
-                isSelectedSwitch.SetBinding(Switch.IsToggledProperty, "IsSelected");
-                fixItemsGrid.Add(isSelectedSwitch, 2, 0);
-
-                return fixItemsGrid;
+                return rulesItemsGrid;
             })
         }.BindDynamicTheme();
 
@@ -150,6 +151,7 @@ public class FixCommonErrorsPage : ContentPage
             Text = "Select all",
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 5, 0),
             Command = vm.RulesSelectAllCommand,
         }.BindDynamicTheme();
 
@@ -158,6 +160,7 @@ public class FixCommonErrorsPage : ContentPage
             Text = "Inverse selection",
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 5, 0),
             Command = vm.RulesInverseSelectedCommand,
         }.BindDynamicTheme();
 
@@ -174,6 +177,7 @@ public class FixCommonErrorsPage : ContentPage
             Text = "...",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 5, 0),
         }.BindDynamicTheme();
 
 
@@ -190,6 +194,7 @@ public class FixCommonErrorsPage : ContentPage
             Text = "Apply fixes >",
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 5, 0),
             Command = vm.GoToStep2Command,
         }.BindDynamicTheme();
 
@@ -198,6 +203,7 @@ public class FixCommonErrorsPage : ContentPage
             Text = "Cancel",
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 5, 0),
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
 
@@ -245,9 +251,8 @@ public class FixCommonErrorsPage : ContentPage
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
                 new() { Height = new GridLength(1, GridUnitType.Star) }, // fixes
-                new() { Height = new GridLength(1, GridUnitType.Star) }, // sutitle
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Star) }, // subtitle
+                new() { Height = new GridLength(1, GridUnitType.Auto) }, // back and ok buttons
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
@@ -259,10 +264,10 @@ public class FixCommonErrorsPage : ContentPage
         var titleLabel = new Label
         {
             Margin = new Thickness(5, 15, 15, 0),
-            Text = "Fix common errors",
+            Text = "Fix common errors - step 2 - apply fixes",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            FontSize = 17,
+            FontSize = 18,
         }.BindDynamicTheme();
 
         var titleTexts = new StackLayout
@@ -292,7 +297,8 @@ public class FixCommonErrorsPage : ContentPage
             Text = "OK",
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
-            Command = vm.GoToStep2Command,
+            Margin = new Thickness(5, 0, 5, 0),
+            Command = vm.OkCommand,
         }.BindDynamicTheme();
 
         var buttonCancel = new Button
@@ -300,6 +306,7 @@ public class FixCommonErrorsPage : ContentPage
             Text = "< Back to fix list",
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 5, 0),
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
 
@@ -312,6 +319,7 @@ public class FixCommonErrorsPage : ContentPage
         }.BindDynamicTheme();
 
         grid.Add(stackLayout, 0, 4);
+        Grid.SetColumnSpan(stackLayout, 2);
 
         return grid;
     }
@@ -326,6 +334,7 @@ public class FixCommonErrorsPage : ContentPage
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
                 new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
                 new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
                 new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }
@@ -336,31 +345,38 @@ public class FixCommonErrorsPage : ContentPage
         gridHeader.Add(
             new Label
             {
-                Text = "Number",
+                Text = "Apply",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
             }, 0, 0);
         gridHeader.Add(
             new Label
             {
-                Text = "Action",
+                Text = "Line#",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
             }, 1, 0);
         gridHeader.Add(
             new Label
             {
-                Text = "Before",
+                Text = "Action",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
             }, 2, 0);
         gridHeader.Add(
             new Label
             {
-                Text = "After",
+                Text = "Before",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
             }, 3, 0);
+        gridHeader.Add(
+            new Label
+            {
+                Text = "After",
+                FontAttributes = FontAttributes.Bold,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 4, 0);
 
 
         var gridFixes = new CollectionView
@@ -375,15 +391,19 @@ public class FixCommonErrorsPage : ContentPage
                         new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
                         new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
                         new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
-                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }
+                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
+                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
                     },
                     RowDefinitions =
                     {
-                        new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) }
+                        new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) },
                     }
                 };
 
                 // Bind each cell to the appropriate property
+                var isSelectedSwitch = new Switch().BindDynamicTheme();
+                isSelectedSwitch.SetBinding(Switch.IsToggledProperty, "IsSelected");
+
                 var labelNumber =
                     new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
                 labelNumber.SetBinding(Label.TextProperty, "Number");
@@ -401,22 +421,67 @@ public class FixCommonErrorsPage : ContentPage
                 labelAfter.SetBinding(Label.TextProperty, nameof(FixDisplayItem.After));
 
                 // Add labels to grid
-                gridTexts.Add(labelNumber, 0, 0);
-                gridTexts.Add(labelAction, 1, 0);
-                gridTexts.Add(labelBefore, 2, 0);
-                gridTexts.Add(labelAfter, 3, 0);
+                gridTexts.Add(isSelectedSwitch, 0, 0);
+                gridTexts.Add(labelNumber, 1, 0);
+                gridTexts.Add(labelAction, 2, 0);
+                gridTexts.Add(labelBefore, 3, 0);
+                gridTexts.Add(labelAfter, 4, 0);
 
                 return gridTexts;
             })
         }.BindDynamicTheme();
         gridFixes.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Fixes));
 
+        var buttonFixBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                new Button
+                {
+                    Text = "Select all",
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(5, 0, 5, 0),
+                    Command = vm.FixesSelectAllCommand,
+                }.BindDynamicTheme(),
+                new Button
+                {
+                    Text = "Inverse selection",
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(5, 0, 5, 0),
+
+                    Command = vm.FixesInverseSelectedCommand,
+                }.BindDynamicTheme(),
+                new Button
+                {
+                    Text = "Refresh fixes",
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(5, 0, 5, 0),
+                    Command = vm.RefreshFixesCommand,
+                }.BindDynamicTheme(),
+                new Button
+                {
+                    Text = "Apply selected fixes",
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(5, 0, 5, 0),
+                    Command = vm.ApplySelectedFixesCommand,
+                }.BindDynamicTheme(),
+            }
+        }.BindDynamicTheme();
+
         var gridLayout = new Grid
         {
             RowDefinitions = new RowDefinitionCollection
             {
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Star) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) }, // header
+                new() { Height = new GridLength(1, GridUnitType.Star) }, // fixes list
+                new() { Height = new GridLength(1, GridUnitType.Auto) }, // buttons: select all, inverse selection, refresh fixes, apply selected fixes
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
@@ -426,6 +491,7 @@ public class FixCommonErrorsPage : ContentPage
 
         gridLayout.Add(gridHeader, 0, 0);
         gridLayout.Add(gridFixes, 0, 1);
+        gridLayout.Add(buttonFixBar, 0, 2);
 
         var border = new Border
         {
@@ -527,18 +593,17 @@ public class FixCommonErrorsPage : ContentPage
 
                 var labelShow =
                     new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
-                labelShow.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Start));
+                labelShow.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Start), BindingMode.Default, new TimeSpanToStringConverter());
 
                 var labelHide =
                     new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
-                labelHide.SetBinding(Label.TextProperty, nameof(DisplayParagraph.End));
+                labelHide.SetBinding(Label.TextProperty, nameof(DisplayParagraph.End), BindingMode.Default, new TimeSpanToStringConverter());
 
                 var labelDuration =
                     new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
-                labelDuration.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Duration));
+                labelDuration.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Duration), BindingMode.Default, new TimeSpanToShortStringConverter());
 
-                var labelText =
-                    new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
+                var labelText = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
                 labelText.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Text));
 
                 // Add labels to grid

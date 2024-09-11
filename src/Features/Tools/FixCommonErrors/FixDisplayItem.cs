@@ -17,11 +17,11 @@ public partial class FixDisplayItem : ObservableObject
     [ObservableProperty] 
     private bool _isSelected;
 
-    private Paragraph? _paragraph = null;
+    public Paragraph Paragraph { get; set; }
 
     public FixDisplayItem(Paragraph p, string action, string before, string after, bool isChecked)
     {
-        _paragraph = p;
+        Paragraph = p;
         _action = action;
         _before = before;
         _after = after;
