@@ -1,21 +1,20 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.Enums;
 using Nikse.SubtitleEdit.Core.Forms.FixCommonErrors;
+using Nikse.SubtitleEdit.Core.Interfaces;
+using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Config.Language;
 using System.Collections.ObjectModel;
 using System.Text;
-using Nikse.SubtitleEdit.Core.Enums;
-using Nikse.SubtitleEdit.Core.Interfaces;
-using Nikse.SubtitleEdit.Core.SubtitleFormats;
-using SubtitleAlchemist.Features.Main;
 
 namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 
 public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable, IFixCallbacks
 {
-
     [ObservableProperty]
     private string _searchText = string.Empty;
 
@@ -33,6 +32,18 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
 
     [ObservableProperty]
     private ObservableCollection<DisplayParagraph> _paragraphs = new();
+
+    [ObservableProperty]
+    private DisplayParagraph? _selectedParagraph;
+
+    [ObservableProperty]
+    private string _editText;
+
+    [ObservableProperty]
+    private TimeSpan _editShow = new();
+
+    [ObservableProperty]
+    private TimeSpan _editDuration = new();
 
     public FixCommonErrorsPage? Page { get; set; }
     public Grid? Step1Grid { get; set; }
@@ -100,6 +111,8 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         {
             _previewMode = true;
             Page.Content = Step1Grid;
+            _oldFixes = new List<FixDisplayItem>();
+            Fixes.Clear();
             return;
         }
 
@@ -331,7 +344,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         var oldFix = _oldFixes.FirstOrDefault(f => f.Paragraph.Id == p.Id && f.Action == action);
         var isSelected = oldFix is not { IsSelected: false };
 
-        Fixes.Add(new FixDisplayItem(p, action, before, after, isSelected));
+        Fixes.Add(new FixDisplayItem(p, p.Number, action, before, after, isSelected));
     }
 
     public void AddFixToListView(Paragraph p, string action, string before, string after, bool isChecked)
@@ -348,7 +361,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
             isSelected = false;
         }
 
-        Fixes.Add(new FixDisplayItem(p, action, before, after, isSelected));
+        Fixes.Add(new FixDisplayItem(p, p.Number, action, before, after, isSelected));
     }
 
     public void LogStatus(string sender, string message)
@@ -395,5 +408,67 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
     public void AddToDeleteIndices(int index)
     {
         //TODO:
+    }
+
+    public void OnCollectionViewFixesSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection is not { Count: 1 } || e.CurrentSelection[0] is not FixDisplayItem fixItem)
+        {
+            SelectedParagraph = null;
+            EditText = string.Empty;
+            EditShow = new TimeSpan();
+            EditDuration = new TimeSpan();
+            return;
+        }
+
+        var p = Paragraphs.FirstOrDefault(p => p.P.Id == fixItem.Paragraph.Id);
+        SelectedParagraph = p;
+    }
+
+    public void OnCollectionViewSubtitleSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection is not { Count: 1 } || e.CurrentSelection[0] is not DisplayParagraph dp)
+        {
+            SelectedParagraph = null;
+            EditText = string.Empty;
+            EditShow = new TimeSpan();
+            EditDuration = new TimeSpan();
+            return;
+        }
+
+        EditText = dp.Text;
+        EditShow = dp.Start;
+        EditDuration = dp.Duration;
+    }
+
+    public void EditorTextTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (SelectedParagraph != null)
+        {
+            SelectedParagraph.Text = e.NewTextValue;
+            SelectedParagraph.P.Text = e.NewTextValue;
+        }
+    }
+
+    public void EditShowChanged(object? sender, ValueChangedEventArgs e)
+    {
+        if (SelectedParagraph != null)
+        {
+            var dur = SelectedParagraph.Duration.TotalMilliseconds;
+            SelectedParagraph.Start = TimeSpan.FromMilliseconds(e.NewValue);
+            SelectedParagraph.End = TimeSpan.FromMilliseconds(SelectedParagraph.End.TotalMilliseconds + dur);
+            SelectedParagraph.P.StartTime = new TimeCode(SelectedParagraph.Start);
+            SelectedParagraph.P.EndTime = new TimeCode(SelectedParagraph.End);
+        }
+    }
+
+    public void EditDurationChanged(object? sender, ValueChangedEventArgs e)
+    {
+        if (SelectedParagraph != null)
+        {
+            SelectedParagraph.Duration = TimeSpan.FromMilliseconds(e.NewValue);
+            SelectedParagraph.End = TimeSpan.FromMilliseconds(SelectedParagraph.Start.TotalMilliseconds + e.NewValue);
+            SelectedParagraph.P.EndTime = new TimeCode(SelectedParagraph.End);
+        }
     }
 }

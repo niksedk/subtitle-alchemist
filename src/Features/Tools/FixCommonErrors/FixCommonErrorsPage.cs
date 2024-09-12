@@ -1,4 +1,6 @@
+using CommunityToolkit.Maui.Markup;
 using Microsoft.Maui.Controls.Shapes;
+using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Converters;
@@ -116,15 +118,15 @@ public class FixCommonErrorsPage : ContentPage
                 };
 
                 var isSelectedSwitch = new Switch().BindDynamicTheme();
-                isSelectedSwitch.SetBinding(Switch.IsToggledProperty, "IsSelected");
+                isSelectedSwitch.SetBinding(Switch.IsToggledProperty, nameof(FixRuleDisplayItem.IsSelected));
                 rulesItemsGrid.Add(isSelectedSwitch, 0, 0);
 
                 var nameLabel = new Label { }.BindDynamicTheme();
-                nameLabel.SetBinding(Label.TextProperty, "Name");
+                nameLabel.SetBinding(Label.TextProperty, nameof(FixRuleDisplayItem.Name));
                 rulesItemsGrid.Add(nameLabel, 1, 0);
 
                 var exampleLabel = new Label { }.BindDynamicTheme();
-                exampleLabel.SetBinding(Label.TextProperty, "Example");
+                exampleLabel.SetBinding(Label.TextProperty, nameof(FixRuleDisplayItem.Example));
                 rulesItemsGrid.Add(exampleLabel, 2, 0);
 
                 return rulesItemsGrid;
@@ -333,7 +335,7 @@ public class FixCommonErrorsPage : ContentPage
             Padding = new Thickness(5),
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
                 new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
                 new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
                 new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
@@ -352,7 +354,7 @@ public class FixCommonErrorsPage : ContentPage
         gridHeader.Add(
             new Label
             {
-                Text = "Line#",
+                Text = "#",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
             }, 1, 0);
@@ -379,8 +381,9 @@ public class FixCommonErrorsPage : ContentPage
             }, 4, 0);
 
 
-        var gridFixes = new CollectionView
+        var collectionViewFixes = new CollectionView
         {
+            SelectionMode = SelectionMode.Single,
             ItemTemplate = new DataTemplate(() =>
             {
                 var gridTexts = new Grid
@@ -388,9 +391,9 @@ public class FixCommonErrorsPage : ContentPage
                     Padding = new Thickness(5),
                     ColumnDefinitions =
                     {
+                        new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
                         new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
                         new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
-                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
                         new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
                         new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
                     },
@@ -402,11 +405,11 @@ public class FixCommonErrorsPage : ContentPage
 
                 // Bind each cell to the appropriate property
                 var isSelectedSwitch = new Switch().BindDynamicTheme();
-                isSelectedSwitch.SetBinding(Switch.IsToggledProperty, "IsSelected");
+                isSelectedSwitch.SetBinding(Switch.IsToggledProperty, nameof(FixDisplayItem.IsSelected));
 
                 var labelNumber =
                     new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
-                labelNumber.SetBinding(Label.TextProperty, "Number");
+                labelNumber.SetBinding(Label.TextProperty, nameof(FixDisplayItem.Number));
 
                 var labelAction =
                     new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
@@ -430,7 +433,8 @@ public class FixCommonErrorsPage : ContentPage
                 return gridTexts;
             })
         }.BindDynamicTheme();
-        gridFixes.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Fixes));
+        collectionViewFixes.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Fixes));
+        collectionViewFixes.SelectionChanged += vm.OnCollectionViewFixesSelectionChanged;
 
         var buttonFixBar = new StackLayout
         {
@@ -490,7 +494,7 @@ public class FixCommonErrorsPage : ContentPage
         }.BindDynamicTheme();
 
         gridLayout.Add(gridHeader, 0, 0);
-        gridLayout.Add(gridFixes, 0, 1);
+        gridLayout.Add(collectionViewFixes, 0, 1);
         gridLayout.Add(buttonFixBar, 0, 2);
 
         var border = new Border
@@ -528,7 +532,7 @@ public class FixCommonErrorsPage : ContentPage
         gridHeader.Add(
             new Label
             {
-                Text = "Number",
+                Text = "#",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
             }, 0, 0);
@@ -562,8 +566,9 @@ public class FixCommonErrorsPage : ContentPage
             }, 4, 0);
 
 
-        var gridSubtitle = new CollectionView
+        var collectionViewSubtitle = new CollectionView
         {
+            SelectionMode = SelectionMode.Single,
             VerticalOptions = LayoutOptions.Fill,
             ItemTemplate = new DataTemplate(() =>
             {
@@ -616,10 +621,13 @@ public class FixCommonErrorsPage : ContentPage
                 return gridTexts;
             })
         }.BindDynamicTheme();
-        gridSubtitle.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Paragraphs));
+        collectionViewSubtitle.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Paragraphs));
+        collectionViewSubtitle.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedParagraph));
+        collectionViewSubtitle.SelectionChanged += vm.OnCollectionViewSubtitleSelectionChanged;
 
         var gridEdit = new Grid
         {
+            Margin = new Thickness(5, 15, 5, 5),
             RowDefinitions = new RowDefinitionCollection
             {
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
@@ -632,11 +640,69 @@ public class FixCommonErrorsPage : ContentPage
             }
         };
 
+        var leftGrid = new Grid
+        {
+            Margin = new Thickness(10),
+            ColumnDefinitions = new ColumnDefinitionCollection
+            {
+                new(GridLength.Auto),
+                new(GridLength.Auto),
+            },
+            RowDefinitions = new RowDefinitionCollection
+            {
+                new() { Height = GridLength.Auto },
+                new() { Height = GridLength.Auto },
+            },
+        };
+
+        var startTimeUpDown = new SubTimeUpDown
+            {
+                DisplayText = "00:00:00,000",
+                HorizontalOptions = LayoutOptions.Start,
+            }
+            .BindDynamicTheme()
+            .Column(0)
+            .Row(1);
+        startTimeUpDown.BindingContext = vm;
+        startTimeUpDown.ValueChanged += vm.EditShowChanged;
+        startTimeUpDown.Bind(SubTimeUpDown.TimeProperty, nameof(vm.EditShow), BindingMode.TwoWay);
+
+        var durationUpDown = new SubTimeUpDown
+            {
+                DisplayText = "00,000",
+                UseShortFormat = true,
+                HorizontalOptions = LayoutOptions.Start,
+            }
+            .BindDynamicTheme()
+            .Column(0)
+            .Row(1);
+        durationUpDown.BindingContext = vm;
+        durationUpDown.ValueChanged += vm.EditDurationChanged;
+        durationUpDown.Bind(SubTimeUpDown.TimeProperty, nameof(vm.EditDuration), BindingMode.TwoWay);
+
+        leftGrid.Add(new Label
+        {
+            Text = "Show",
+            VerticalOptions = LayoutOptions.End,
+            Padding = new Thickness(0, 0, 5, 5),
+        }.BindDynamicTheme(), 0, 0);
+        leftGrid.Add(startTimeUpDown, 1, 0);
+        leftGrid.Add(new Label
+        {
+            Text = "Duration",
+            VerticalOptions = LayoutOptions.End,
+            Padding = new Thickness(0, 0, 5, 5),
+        }.BindDynamicTheme(), 0, 1);
+        leftGrid.Add(durationUpDown, 1, 1);
+        gridEdit.Add(leftGrid, 0, 0);
+
         var editorText = new Editor
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
+        editorText.SetBinding(Editor.TextProperty, nameof(vm.EditText));
+        editorText.TextChanged += vm.EditorTextTextChanged;
         gridEdit.Add(editorText, 1, 0);
 
         var gridLayout = new Grid
@@ -655,7 +721,7 @@ public class FixCommonErrorsPage : ContentPage
         }.BindDynamicTheme();
 
         gridLayout.Add(gridHeader, 0, 0);
-        gridLayout.Add(gridSubtitle, 0, 1);
+        gridLayout.Add(collectionViewSubtitle, 0, 1);
         gridLayout.Add(gridEdit, 0, 2);
 
         var border = new Border
