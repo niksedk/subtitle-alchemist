@@ -5,6 +5,7 @@ using SkiaSharp.Views.Maui.Controls.Hosting;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Controls.PickerControl;
 using SubtitleAlchemist.Controls.RadialControl;
+using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Main;
@@ -16,9 +17,9 @@ using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Dictionaries;
 using SubtitleAlchemist.Services;
-using FixCommonErrorsProfilePopupModel = SubtitleAlchemist.Features.Tools.FixCommonErrors.FixCommonErrorsProfilePopupModel;
 
 namespace SubtitleAlchemist
 {
@@ -56,8 +57,11 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<WhisperAdvancedModel>();
             builder.Services.AddTransient<SpellCheckerPage>();
             builder.Services.AddTransient<SpellCheckerPageModel>();
+            builder.Services.AddTransient<RestoreAutoBackupPage>();
+            builder.Services.AddTransient<RestoreAutoBackupModel>();
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<INamesList, SeNamesList>();
+            builder.Services.AddTransient<IAutoBackup, AutoBackup>();
 
             builder.Services.AddTransientPopup<AboutPopup, AboutPopupModel>();
             builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerModel>();

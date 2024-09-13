@@ -62,9 +62,9 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
 
                 var ffmpegFileName = GetFfmpegFileName();
 
-                if (File.Exists(ffmpegFileName))
+                if (System.IO.File.Exists(ffmpegFileName))
                 {
-                    File.Delete(ffmpegFileName);
+                    System.IO.File.Delete(ffmpegFileName);
                 }
 
                 UnpackFfmpeg(ffmpegFileName);

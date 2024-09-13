@@ -22,11 +22,13 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
+using System.Timers;
 using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Dictionaries;
 using Path = System.IO.Path;
+using SubtitleAlchemist.Features.Files;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -52,6 +54,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     public Picker? SubtitleFormatPicker { get; internal set; }
     public Picker? EncodingPicker { get; internal set; }
     public static IList EncodingNames => EncodingHelper.GetEncodings().Select(p => p.DisplayName).ToList();
+    public MenuFlyoutSubItem MenuFlyoutItemReopen { get; set; } = new();
+
 
     [ObservableProperty]
     private string _selectedLineInfo;
@@ -103,17 +107,24 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private string _subtitleFileName;
     private string _videoFileName;
     private readonly System.Timers.Timer _timer;
+    private readonly System.Timers.Timer _timerAutoBackup;
     private bool _updating;
     private bool _stopping = false;
+    private bool _firstPlay = true;
+    private int _changeSubtitleHash = -1;
+    private int _autoBackupSubtitleHash = -1;
 
     private readonly IPopupService _popupService;
+    private readonly IAutoBackup _autoBackup;
 
-    public MainViewModel(IPopupService popupService)
+    public MainViewModel(IPopupService popupService, IAutoBackup autoBackup)
     {
         _popupService = popupService;
+        _autoBackup = autoBackup;
         VideoPlayer = new MediaElement { BackgroundColor = Colors.Orange, ZIndex = -10000 };
         SubtitleList = new CollectionView();
         _timer = new System.Timers.Timer(19);
+        _timerAutoBackup = new System.Timers.Timer(60_0 * 5); //TODO: use settings
         _statusText = string.Empty;
         _selectedLineInfo = string.Empty;
         _videoFileName = string.Empty;
@@ -139,29 +150,25 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             ShowStatus(args.Paragraph.Text);
         };
 
-        //VideoPlayer.MediaOpened += (sender, args) =>
-        //{
-        //    VideoPlayer.SetTimerInterval(19);
-        //};
-
-        //VideoPlayer.StateChanged += (sender, args) =>
-        //{
-        //    if (!_firstPlay)
-        //    {
-        //        return;
-        //    }
-
-        //    if (VideoPlayer.CurrentState == MediaElementState.Playing)
-        //    {
-        //        VideoPlayer.SetTimerInterval(19);
-        //        _firstPlay = false;
-        //    }
-        //};
-
         SetTimer();
+        _timerAutoBackup.Elapsed += AutoBackupTimerOnElapsed;
     }
 
-    private bool _firstPlay = true;
+    private readonly object _autoBackupLock = new();
+    private void AutoBackupTimerOnElapsed(object? sender, ElapsedEventArgs e)
+    {
+        lock (_autoBackupLock)
+        {
+            var hash = GetFastSubtitleHash();
+            if (_changeSubtitleHash == hash || Paragraphs.Count == 0 || hash == _autoBackupSubtitleHash || _loading)
+            {
+                return;
+            }
+
+            _autoBackupSubtitleHash = hash;
+            _autoBackup.SaveAutoBackup(_subtitle, CurrentSubtitleFormat);
+        }
+    }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -574,6 +581,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _timer.Stop();
         _audioVisualizer.OnVideoPositionChanged -= AudioVisualizer_OnVideoPositionChanged;
         SharpHookHandler.Clear();
+        Se.Settings.File.AddToRecentFiles(_subtitleFileName, _videoFileName, GetFirstSelectedIndex(), CurrentTextEncoding.DisplayName);
         Se.SaveSettings();
         SharpHookHandler.Dispose();
     }
@@ -601,7 +609,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             var first = Se.Settings.File.RecentFiles.FirstOrDefault();
             if (first != null && File.Exists(first.SubtitleFileName))
             {
-                SubtitleOpen(first.SubtitleFileName, first.VideoFileName);
+                ReopenSubtitle(first.SubtitleFileName);
             }
         }
 
@@ -634,8 +642,16 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
+    public async Task ShowRestoreAutoBackup()
+    {
+        await Shell.Current.GoToAsync(nameof(RestoreAutoBackupPage));
+    }
+
+    [RelayCommand]
     public async Task SubtitleOpen()
     {
+        Se.Settings.File.AddToRecentFiles(_subtitleFileName, _videoFileName, GetFirstSelectedIndex(), CurrentTextEncoding.DisplayName);
+
         var fileHelper = new FileHelper();
         var subtitleFileName = await fileHelper.PickAndShowSubtitleFile("Open subtitle file");
         if (string.IsNullOrEmpty(subtitleFileName))
@@ -648,6 +664,14 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     private void SubtitleOpen(string subtitleFileName, string? videoFileName)
     {
+        if (string.IsNullOrEmpty(subtitleFileName))
+        {
+            SubtitleNew();
+            return;
+        }
+
+        _timerAutoBackup.Stop();
+
         _subtitle = Subtitle.Parse(subtitleFileName);
         Paragraphs = _subtitle.Paragraphs.Select(p => new DisplayParagraph(p)).ToObservableCollection();
         _subtitleFileName = subtitleFileName;
@@ -669,7 +693,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         if (!_stopping)
         {
+            _changeSubtitleHash = GetFastSubtitleHash();
             _timer.Start();
+            _timerAutoBackup.Start();
         }
     }
 
@@ -677,11 +703,47 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     {
         Se.Settings.File.AddToRecentFiles(_subtitleFileName, _videoFileName, GetFirstSelectedIndex(), CurrentTextEncoding.DisplayName);
         Se.SaveSettings();
+
+
+        //TODO: cannot update - very annoying bug, see https://github.com/microsoft/microsoft-ui-xaml/issues/7797
+        MenuFlyoutItemReopen.Clear();
+        foreach (var recentFile in Se.Settings.File.RecentFiles)
+        {
+            MenuFlyoutItemReopen.Add(new MenuFlyoutItem() { Text = recentFile.SubtitleFileName });
+        }
+        // Hack to update menu
+        InitMenuBar.CreateMenuBar(MainPage!, this);
+    }
+
+    public void ReopenSubtitle(string subtitleFileName)
+    {
+        var recentFile = Se.Settings.File.RecentFiles.FirstOrDefault(p => p.SubtitleFileName == subtitleFileName);
+        if (recentFile != null)
+        {
+            SubtitleOpen(recentFile.SubtitleFileName, recentFile.VideoFileName);
+
+            var idx = recentFile.SelectedLine >= 0 && recentFile.SelectedLine < Paragraphs.Count
+                ? recentFile.SelectedLine
+                : 0;
+
+            SelectParagraph(idx);
+            SubtitleList.ScrollTo(idx, -1, ScrollToPosition.MakeVisible, false);
+            SubtitleList.ScrollTo(idx, -1, ScrollToPosition.MakeVisible, false);
+            SubtitleList.ScrollTo(idx, -1, ScrollToPosition.MakeVisible, false);
+            SubtitleList.ScrollTo(idx, -1, ScrollToPosition.MakeVisible, false);
+        }
+        else
+        {
+            SubtitleOpen(subtitleFileName, null);
+        }
     }
 
     [RelayCommand]
     public void SubtitleNew()
     {
+        Se.Settings.File.AddToRecentFiles(_subtitleFileName, _videoFileName, GetFirstSelectedIndex(), CurrentTextEncoding.DisplayName);
+
+        _timerAutoBackup.Stop();
         _timer.Stop();
         _subtitleFileName = string.Empty;
         _videoFileName = string.Empty;
@@ -706,7 +768,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         if (!_stopping)
         {
+            _changeSubtitleHash = GetFastSubtitleHash();
             _timer.Start();
+            _timerAutoBackup.Start();
         }
     }
 
@@ -1145,7 +1209,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
-
         var selectedParagraphs = Paragraphs.Where(p => p.IsSelected).ToList();
         var text = selectedParagraphs.Count > 1
             ? $"Delete {selectedParagraphs.Count} lines?"
@@ -1347,6 +1410,57 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                     VideoPlayer.SeekTo(TimeSpan.FromSeconds(paragraph.Start.TotalSeconds));
                 }
             }
+        }
+    }
+
+    private int GetFastSubtitleHash()
+    {
+        var pre = _subtitleFileName + CurrentTextEncoding.DisplayName;
+        unchecked // Overflow is fine, just wrap
+        {
+            var hash = 17;
+            hash = hash * 23 + pre.GetHashCode();
+
+            if (_subtitle.Header != null)
+            {
+                hash = hash * 23 + _subtitle.Header.Trim().GetHashCode();
+            }
+
+            if (_subtitle.Footer != null)
+            {
+                hash = hash * 23 + _subtitle.Footer.Trim().GetHashCode();
+            }
+
+            var max = Paragraphs.Count;
+            for (var i = 0; i < max; i++)
+            {
+                var p = Paragraphs[i];
+                hash = hash * 23 + p.Number.GetHashCode();
+                hash = hash * 23 + p.Start.TotalMilliseconds.GetHashCode();
+                hash = hash * 23 + p.End.TotalMilliseconds.GetHashCode();
+
+                foreach (var line in p.Text.SplitToLines())
+                {
+                    hash = hash * 23 + line.GetHashCode();
+                }
+//                hash = hash * 23 + p.Text.GetHashCode();
+
+                if (p.P.Style != null)
+                {
+                    hash = hash * 23 + p.P.Style.GetHashCode();
+                }
+                if (p.P.Extra != null)
+                {
+                    hash = hash * 23 + p.P.Extra.GetHashCode();
+                }
+                if (p.P.Actor != null)
+                {
+                    hash = hash * 23 + p.P.Actor.GetHashCode();
+                }
+                hash = hash * 23 + p.P.Layer.GetHashCode();
+            }
+
+            return hash;
         }
     }
 }

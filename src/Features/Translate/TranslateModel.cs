@@ -11,7 +11,6 @@ using System.Globalization;
 using System.Text;
 using CommunityToolkit.Maui.Core;
 using SubtitleAlchemist.Controls.PickerControl;
-using System;
 using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Translate;

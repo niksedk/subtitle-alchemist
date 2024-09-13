@@ -15,6 +15,7 @@ public class Se
     public static SeLanguage Language { get; set; } = new();
     public static Se Settings { get; set; } = new();
     public static string DictionariesFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "Dictionaries");
+    public static string AutoBackupFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "AutoBackup");
 
     public Se()
     {

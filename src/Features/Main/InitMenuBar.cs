@@ -1,23 +1,40 @@
-﻿namespace SubtitleAlchemist.Features.Main;
+﻿using SubtitleAlchemist.Logic.Config;
+
+namespace SubtitleAlchemist.Features.Main;
 
 internal static class InitMenuBar
 {
-    internal static void CreateMenuBar(MainPage page, MainViewModel viewModel)
+    internal static void CreateMenuBar(MainPage page, MainViewModel vm)
     {
-        page.MenuBarItems.Add(MakeFileMenu(viewModel));
-        page.MenuBarItems.Add(MakeEditMenu(viewModel));
-        page.MenuBarItems.Add(MakeToolsMenu(viewModel));
-        page.MenuBarItems.Add(MakeSpellCheckMenu(viewModel));
-        page.MenuBarItems.Add(MakeVideoMenu(viewModel));
-        page.MenuBarItems.Add(MakeSynchronizationMenu(viewModel));
-        page.MenuBarItems.Add(MakeOptionsMenu(viewModel));
-        page.MenuBarItems.Add(MakeTranslateMenu(viewModel));
-        page.MenuBarItems.Add(MakeHelpMenu(viewModel));
+        page.MenuBarItems.Clear();
+        page.MenuBarItems.Add(MakeFileMenu(vm));
+        page.MenuBarItems.Add(MakeEditMenu(vm));
+        page.MenuBarItems.Add(MakeToolsMenu(vm));
+        page.MenuBarItems.Add(MakeSpellCheckMenu(vm));
+        page.MenuBarItems.Add(MakeVideoMenu(vm));
+        page.MenuBarItems.Add(MakeSynchronizationMenu(vm));
+        page.MenuBarItems.Add(MakeOptionsMenu(vm));
+        page.MenuBarItems.Add(MakeTranslateMenu(vm));
+        page.MenuBarItems.Add(MakeHelpMenu(vm));
     }
 
     private static MenuBarItem MakeFileMenu(MainViewModel vm)
     {
         var menu = new MenuBarItem { Text = "File" };
+
+        vm.MenuFlyoutItemReopen = new MenuFlyoutSubItem
+        {
+            Text = "Reopen",
+        };
+        foreach (var recentFile in Se.Settings.File.RecentFiles)
+        {
+            var reopenItem = new MenuFlyoutItem
+            {
+                Text = recentFile.SubtitleFileName,
+                Command = new Command(() => vm.ReopenSubtitle(recentFile.SubtitleFileName))
+            };
+            vm.MenuFlyoutItemReopen.Add(reopenItem);
+        }
 
         menu.Add(new MenuFlyoutItem
         {
@@ -29,10 +46,7 @@ internal static class InitMenuBar
             Text = "Open",
             Command = vm.SubtitleOpenCommand,
         });
-        menu.Add(new MenuFlyoutItem
-        {
-            Text = "Reopen",
-        });
+        menu.Add(vm.MenuFlyoutItemReopen);
         menu.Add(new MenuFlyoutItem
         {
             Text = "Save",
@@ -46,6 +60,7 @@ internal static class InitMenuBar
         menu.Add(new MenuFlyoutItem
         {
             Text = "Restore auto-backup...",
+            Command = vm.ShowRestoreAutoBackupCommand,
         });
         menu.Add(new MenuFlyoutSeparator());
         menu.Add(new MenuFlyoutItem

@@ -1,4 +1,4 @@
-﻿using SubtitleAlchemist.Features.Main;
+﻿using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
@@ -22,6 +22,7 @@ namespace SubtitleAlchemist
             Routing.RegisterRoute(nameof(AdjustDurationPage), typeof(AdjustDurationPage));
             Routing.RegisterRoute(nameof(FixCommonErrorsPage), typeof(FixCommonErrorsPage));
             Routing.RegisterRoute(nameof(SpellCheckerPage), typeof(SpellCheckerPage));
+            Routing.RegisterRoute(nameof(RestoreAutoBackupPage), typeof(RestoreAutoBackupPage));
         }
     }
 }
