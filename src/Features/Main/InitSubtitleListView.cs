@@ -67,37 +67,13 @@ public static class InitSubtitleListView
             },
             Children =
             {
-                new BoxView
-                {
-                    BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
-                }.Column(0),
                 new Label {  Margin = 1, Padding = 5 }.Column(0).Bind("Number").BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
-
-                new BoxView
-                {
-                    BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
-                }.Column(1),
                 new Label {  Margin = 1, Padding = 5 }.Column(1).Bind("Start", BindingMode.Default, converter).BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
-
-                new BoxView
-                {
-                    BackgroundColor =(Color)Application.Current.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
-                }.Column(2),
                 new Label { Margin = 1, Padding = 5 }.Column(2).Bind("End", BindingMode.Default, converter).BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
-
-                new BoxView
-                {
-                    BackgroundColor = (Color)Application.Current !.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
-                }.Column(3),
                 new Label { Margin = 1, Padding = 5 }.Column(3).Bind("Duration", BindingMode.Default, converterShort).BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
-
-                new BoxView
-                {
-                    BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BorderColor], Margin = 0, ZIndex = -1
-                }.Column(4),
                 new Label { Margin = 1, Padding = 5 }.Column(4).Bind("Text").BindDynamicThemeTextColorOnly().Bind(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor),
             }
-        }.BindDynamicTheme();
+        };
 
         var tapGestureRecognizer = new TapGestureRecognizer();
         tapGestureRecognizer.NumberOfTapsRequired = 2;

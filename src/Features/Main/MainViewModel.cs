@@ -20,7 +20,6 @@ using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
-using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Dictionaries;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections;
@@ -28,6 +27,10 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Timers;
+using SubtitleAlchemist.Features.Edit;
+using SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export;
+using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
+using SubtitleAlchemist.Features.Files.ExportBinary.PacExport;
 using Path = System.IO.Path;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -554,11 +557,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         foreach (var item in Paragraphs)
         {
             item.IsSelected = false;
-            item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
         }
 
         paragraph.IsSelected = true;
-        paragraph.BackgroundColor = Colors.DarkGreen;
         _currentParagraph = paragraph;
         CurrentText = paragraph.Text;
         CurrentStart = paragraph.Start;
@@ -639,9 +640,36 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
+    public async Task ExportCavena890()
+    {
+        //TODO: fix
+        await _popupService.ShowPopupAsync<ExportCavena890PopupModel>(CancellationToken.None);
+    }
+
+    [RelayCommand]
+    public async Task ExportPac()
+    {
+        //TODO: fix
+        await _popupService.ShowPopupAsync<ExportPacPopupModel>(CancellationToken.None);
+    }
+
+    [RelayCommand]
+    public async Task ExportEbuStl()
+    {
+        //TODO: fix
+        await _popupService.ShowPopupAsync<ExportEbuPopupModel>(CancellationToken.None);
+    }
+
+    [RelayCommand]
     public async Task ShowAbout()
     {
         await _popupService.ShowPopupAsync<AboutPopupModel>(CancellationToken.None);
+    }
+
+    [RelayCommand]
+    public async Task ShowGoToLineNumber()
+    {
+        await _popupService.ShowPopupAsync<GoToLineNumberPopupModel>(CancellationToken.None);
     }
 
     [RelayCommand]
@@ -988,7 +1016,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         foreach (var item in Paragraphs)
         {
             item.IsSelected = false;
-            item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
         }
 
         var current = e.CurrentSelection;
@@ -1008,7 +1035,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 }
 
                 paragraph.IsSelected = true;
-                paragraph.BackgroundColor = Colors.DarkGreen;
             }
         }
 
@@ -1260,7 +1286,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         if (firstIdx >= 0)
         {
             Paragraphs[firstIdx].IsSelected = true;
-            Paragraphs[firstIdx].BackgroundColor = Colors.DarkGreen;
 
             _currentParagraph = Paragraphs[firstIdx];
         }

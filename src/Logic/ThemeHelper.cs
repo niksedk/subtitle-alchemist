@@ -41,6 +41,11 @@ namespace SubtitleAlchemist.Logic
             control.SetDynamicResource(Label.TextColorProperty, ThemeNames.TextColor);
             return control;
         }
+        public static Switch BindDynamicThemeTextColorOnly(this Switch control)
+        {
+            //control.SetDynamicResource(Switch.property.TextColorProperty, ThemeNames.TextColor);
+            return control;
+        }
 
         public static Grid BindDynamicTheme(this Grid control)
         {

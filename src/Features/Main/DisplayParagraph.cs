@@ -15,19 +15,16 @@ public partial class DisplayParagraph : ObservableObject
     [ObservableProperty]
     public TimeSpan _duration;
 
-    [ObservableProperty] 
+    [ObservableProperty]
     private string _text;
 
-    [ObservableProperty] 
+    [ObservableProperty]
     private bool _isSelected;
 
     [ObservableProperty]
     private int _number;
 
     public Paragraph P { get; set; }
-
-    [ObservableProperty]
-    public Color _backgroundColor;
 
     public DisplayParagraph(Paragraph paragraph)
     {
@@ -36,7 +33,6 @@ public partial class DisplayParagraph : ObservableObject
         End = paragraph.EndTime.TimeSpan;
         Duration = paragraph.Duration.TimeSpan;
         Text = paragraph.Text;
-        BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
         IsSelected = false;
         Number = paragraph.Number;
     }
@@ -48,7 +44,6 @@ public partial class DisplayParagraph : ObservableObject
         End = paragraph.End;
         Duration = paragraph.Duration;
         Text = paragraph.Text;
-        BackgroundColor = paragraph.BackgroundColor;
         IsSelected = paragraph.IsSelected;
         Number = paragraph.Number;
     }

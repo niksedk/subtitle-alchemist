@@ -5,7 +5,11 @@ using SkiaSharp.Views.Maui.Controls.Hosting;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Controls.PickerControl;
 using SubtitleAlchemist.Controls.RadialControl;
+using SubtitleAlchemist.Features.Edit;
 using SubtitleAlchemist.Features.Files;
+using SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export;
+using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
+using SubtitleAlchemist.Features.Files.ExportBinary.PacExport;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Main;
@@ -75,6 +79,10 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<WhisperPostProcessingPopup, WhisperPostProcessingPopupModel>();
             builder.Services.AddTransientPopup<WhisperAdvancedHistoryPopup, WhisperAdvancedHistoryPopupModel>();
             builder.Services.AddTransientPopup<FixCommonErrorsProfilePopup, FixCommonErrorsProfilePopupModel>();
+            builder.Services.AddTransientPopup<GoToLineNumberPopup, GoToLineNumberPopupModel>();
+            builder.Services.AddTransientPopup<ExportCavena890Popup, ExportCavena890PopupModel>();
+            builder.Services.AddTransientPopup<ExportEbuPopup, ExportEbuPopupModel>();
+            builder.Services.AddTransientPopup<ExportPacPopup, ExportPacPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

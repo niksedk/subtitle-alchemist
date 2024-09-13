@@ -1,4 +1,5 @@
-﻿using SubtitleAlchemist.Logic.Config;
+﻿using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -68,10 +69,28 @@ internal static class InitMenuBar
             Command = vm.ShowRestoreAutoBackupCommand,
         });
         menu.Add(new MenuFlyoutSeparator());
-        menu.Add(new MenuFlyoutItem
+
+        var exportMenuItem = new MenuFlyoutSubItem
         {
             Text = "Export",
+        };
+        exportMenuItem.Add(new MenuFlyoutItem
+        {
+            Text = Cavena890.NameOfFormat,
+            Command = vm.ExportCavena890Command,
         });
+        exportMenuItem.Add(new MenuFlyoutItem
+        {
+            Text = Pac.NameOfFormat,
+            Command = vm.ExportPacCommand,
+        });
+        exportMenuItem.Add(new MenuFlyoutItem
+        {
+            Text = Ebu.NameOfFormat,
+            Command = vm.ExportEbuStlCommand,
+        });
+
+        menu.Add(exportMenuItem);
         menu.Add(new MenuFlyoutSeparator());
         menu.Add(new MenuFlyoutItem
         {
@@ -118,6 +137,7 @@ internal static class InitMenuBar
         menu.Add(new MenuFlyoutItem
         {
             Text = "Go to subtitle number...",
+            Command = vm.ShowGoToLineNumberCommand,
         });
         menu.Add(new MenuFlyoutSeparator());
         menu.Add(new MenuFlyoutItem

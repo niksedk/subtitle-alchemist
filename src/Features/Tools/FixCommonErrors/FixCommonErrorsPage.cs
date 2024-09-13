@@ -13,6 +13,7 @@ public class FixCommonErrorsPage : ContentPage
     {
         this.BindDynamicTheme();
         Padding = new Thickness(10);
+        Resources.Add(ThemeHelper.GetGridSelectionStyle());
         vm.Page = this;
         vm.Step1Grid = MakeStep1Grid(vm);
         vm.Step2Grid = MakeStep2Grid(vm);
@@ -121,27 +122,27 @@ public class FixCommonErrorsPage : ContentPage
                 var isSelectedSwitch = new Switch
                 {
                     VerticalOptions = LayoutOptions.Center,
-                }.BindDynamicTheme();
+                }.BindDynamicThemeTextColorOnly();
                 isSelectedSwitch.SetBinding(Switch.IsToggledProperty, nameof(FixRuleDisplayItem.IsSelected));
                 rulesItemsGrid.Add(isSelectedSwitch, 0, 0);
 
                 var nameLabel = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
-                }.BindDynamicTheme();
+                }.BindDynamicThemeTextColorOnly();
                 nameLabel.SetBinding(Label.TextProperty, nameof(FixRuleDisplayItem.Name));
                 rulesItemsGrid.Add(nameLabel, 1, 0);
 
                 var exampleLabel = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
-                }.BindDynamicTheme();
+                }.BindDynamicThemeTextColorOnly();
                 exampleLabel.SetBinding(Label.TextProperty, nameof(FixRuleDisplayItem.Example));
                 rulesItemsGrid.Add(exampleLabel, 2, 0);
 
                 return rulesItemsGrid;
             })
-        }.BindDynamicTheme();
+        };
 
         var border = new Border
         {
@@ -369,21 +370,21 @@ public class FixCommonErrorsPage : ContentPage
                 Text = "Apply",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
-            }, 0, 0);
+            }.BindDynamicThemeTextColorOnly(), 0, 0);
         gridHeader.Add(
             new Label
             {
                 Text = "#",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
-            }, 1, 0);
+            }.BindDynamicThemeTextColorOnly(), 1, 0);
         gridHeader.Add(
             new Label
             {
                 Text = "Action",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
-            }, 2, 0);
+            }.BindDynamicThemeTextColorOnly(), 2, 0);
         gridHeader.Add(
             new Label
             {
@@ -397,7 +398,7 @@ public class FixCommonErrorsPage : ContentPage
                 Text = "After",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
-            }, 4, 0);
+            }.BindDynamicThemeTextColorOnly(), 4, 0);
 
 
         var collectionViewFixes = new CollectionView
@@ -423,7 +424,7 @@ public class FixCommonErrorsPage : ContentPage
                 };
 
                 // Bind each cell to the appropriate property
-                var isSelectedSwitch = new Switch().BindDynamicTheme();
+                var isSelectedSwitch = new Switch().BindDynamicThemeTextColorOnly();
                 isSelectedSwitch.SetBinding(Switch.IsToggledProperty, nameof(FixDisplayItem.IsSelected));
 
                 var labelNumber =
@@ -451,7 +452,7 @@ public class FixCommonErrorsPage : ContentPage
 
                 return gridTexts;
             })
-        }.BindDynamicTheme();
+        };
         collectionViewFixes.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Fixes));
         collectionViewFixes.SelectionChanged += vm.OnCollectionViewFixesSelectionChanged;
 
@@ -639,7 +640,7 @@ public class FixCommonErrorsPage : ContentPage
 
                 return gridTexts;
             })
-        }.BindDynamicTheme();
+        };
         collectionViewSubtitle.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Paragraphs));
         collectionViewSubtitle.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedParagraph));
         collectionViewSubtitle.SelectionChanged += vm.OnCollectionViewSubtitleSelectionChanged;
