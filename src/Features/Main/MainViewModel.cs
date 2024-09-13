@@ -22,8 +22,10 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
+using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Logic.Config;
+using SubtitleAlchemist.Logic.Dictionaries;
 using Path = System.IO.Path;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -1021,12 +1023,23 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task FixCommonErrorsShow()
     {
+        await DictionaryLoader.UnpackIfNotFound();
         await Shell.Current.GoToAsync(nameof(FixCommonErrorsPage), new Dictionary<string, object>
         {
             { "Page", nameof(MainPage) },
             { "Subtitle", UpdatedSubtitle },
             { "Encoding", CurrentEncoding },
             { "Format", CurrentSubtitleFormat },
+        });
+    }
+
+    [RelayCommand]
+    private async Task SpellCheckShow()
+    {
+        await Shell.Current.GoToAsync(nameof(SpellCheckerPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
         });
     }
 

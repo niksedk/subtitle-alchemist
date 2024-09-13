@@ -10,12 +10,15 @@ using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Features.Options.Settings;
+using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
+using SubtitleAlchemist.Logic.Dictionaries;
 using SubtitleAlchemist.Services;
+using FixCommonErrorsProfilePopupModel = SubtitleAlchemist.Features.Tools.FixCommonErrors.FixCommonErrorsProfilePopupModel;
 
 namespace SubtitleAlchemist
 {
@@ -51,7 +54,10 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<FixCommonErrorsModel>();
             builder.Services.AddTransient<WhisperAdvancedPage>();
             builder.Services.AddTransient<WhisperAdvancedModel>();
+            builder.Services.AddTransient<SpellCheckerPage>();
+            builder.Services.AddTransient<SpellCheckerPageModel>();
             builder.Services.AddTransient<TaskbarList>();
+            builder.Services.AddTransient<INamesList, SeNamesList>();
 
             builder.Services.AddTransientPopup<AboutPopup, AboutPopupModel>();
             builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerModel>();
@@ -64,6 +70,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<DownloadWhisperModelPopup, DownloadWhisperModelPopupModel>();
             builder.Services.AddTransientPopup<WhisperPostProcessingPopup, WhisperPostProcessingPopupModel>();
             builder.Services.AddTransientPopup<WhisperAdvancedHistoryPopup, WhisperAdvancedHistoryPopupModel>();
+            builder.Services.AddTransientPopup<FixCommonErrorsProfilePopup, FixCommonErrorsProfilePopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

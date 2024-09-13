@@ -1,6 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Forms.FixCommonErrors;
 using Nikse.SubtitleEdit.Core.Interfaces;
+using SkiaSharp;
+using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 
@@ -51,7 +55,10 @@ public partial class FixRuleDisplayItem : ObservableObject
             new Fix3PlusLines(),
             new FixAloneLowercaseIToUppercaseI(),
             new FixCommas(),
-            new FixContinuationStyle(),
+            new FixContinuationStyle
+            {
+                FixAction = string.Format(Se.Language.FixCommonErrors.FixContinuationStyleX, Se.Language.Settings.GetContinuationStyleName(Configuration.Settings.General.ContinuationStyle))
+            },
             new FixDanishLetterI(),
             new FixDialogsOnOneLine(),
             new FixDoubleApostrophes(),
@@ -73,7 +80,7 @@ public partial class FixRuleDisplayItem : ObservableObject
             new FixShortGaps(),
             new FixShortLines(),
             new FixShortLinesAll(),
-            //new FixShortLinesPixelWidth(),
+            new FixShortLinesPixelWidth(CalcPixelWidth),
             new FixSpanishInvertedQuestionAndExclamationMarks(),
             new FixStartWithUppercaseLetterAfterColon(),
             new FixStartWithUppercaseLetterAfterParagraph(),
@@ -89,5 +96,13 @@ public partial class FixRuleDisplayItem : ObservableObject
         };
 
         return list;
+    }
+
+    private static int CalcPixelWidth(string arg)
+    {
+        using var paint = new SKPaint();
+        paint.TextSize = 14;
+        var width = paint.MeasureText(arg);
+        return (int)Math.Round(width, MidpointRounding.AwayFromZero);
     }
 }

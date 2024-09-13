@@ -95,6 +95,7 @@
 
 	<ItemGroup>
 		<None Remove="Resources\Images\theme_dark_open.png" />
+		<None Remove="Resources\Raw\Dictionaries.zip" />
 		<None Remove="Resources\Raw\layout_01.png" />
 		<None Remove="Resources\Raw\layout_02.png" />
 		<None Remove="Resources\Raw\layout_03.png" />
@@ -461,7 +462,6 @@
 	<ItemGroup>
 		<Folder Include="Features\Edit\" />
 		<Folder Include="Features\Sync\" />
-		<Folder Include="Features\SpellCheck\" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">

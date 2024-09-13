@@ -28,6 +28,13 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static SearchBar BindDynamicTheme(this SearchBar control)
+        {
+            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            control.SetDynamicResource(SearchBar.TextColorProperty, ThemeNames.TextColor);
+            return control;
+        }
+
         public static Label BindDynamicThemeTextColorOnly(this Label control)
         {
             control.SetDynamicResource(Label.TextColorProperty, ThemeNames.TextColor);

@@ -47,32 +47,33 @@ public class FixCommonErrorsPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
 
-        vm.EntrySearch = new Entry
+        var searchBar = new SearchBar
         {
-            Margin = new Thickness(75, 0, 0, 0),
+            Margin = new Thickness(0, 0, 25, 0),
             Placeholder = "Search",
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme();
-        vm.EntrySearch.SetBinding(Entry.TextProperty, nameof(vm.SearchText));
-        vm.EntrySearch.TextChanged += vm.EntrySearch_TextChanged;
-
-        var imageSearch = new Image
-        {
-            Margin = new Thickness(0, 0, 75, 0),
-            Source = "theme_dark_find.png",
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
-        };
+            WidthRequest = 300,
+        }.BindDynamicTheme();
+        searchBar.SetBinding(Entry.TextProperty, nameof(vm.SearchText));
+        searchBar.TextChanged += vm.EntrySearch_TextChanged;
+
+        var labelLanguage = new Label
+        {
+            Margin = new Thickness(5, 0, 5, 0),
+            Text = "Language",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
 
         var pickerLanguage = new Picker
         {
-            Title = "Select language",
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
         pickerLanguage.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Languages));
         pickerLanguage.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedLanguage), BindingMode.TwoWay);
+        pickerLanguage.SelectedIndexChanged += vm.PickerLanguageSelectedIndexChanged;
 
         var topBarGrid = new Grid
         {
@@ -93,8 +94,8 @@ public class FixCommonErrorsPage : ContentPage
         };
 
         topBarGrid.Add(labelTitle, 0, 0);
-        topBarGrid.Add(vm.EntrySearch, 1, 0);
-        topBarGrid.Add(imageSearch, 2, 0);
+        topBarGrid.Add(searchBar, 1, 0);
+        topBarGrid.Add(labelLanguage, 2, 0);
         topBarGrid.Add(pickerLanguage, 3, 0);
 
         grid.Add(topBarGrid, 0, 0);
@@ -117,15 +118,24 @@ public class FixCommonErrorsPage : ContentPage
                     },
                 };
 
-                var isSelectedSwitch = new Switch().BindDynamicTheme();
+                var isSelectedSwitch = new Switch
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicTheme();
                 isSelectedSwitch.SetBinding(Switch.IsToggledProperty, nameof(FixRuleDisplayItem.IsSelected));
                 rulesItemsGrid.Add(isSelectedSwitch, 0, 0);
 
-                var nameLabel = new Label { }.BindDynamicTheme();
+                var nameLabel = new Label
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicTheme();
                 nameLabel.SetBinding(Label.TextProperty, nameof(FixRuleDisplayItem.Name));
                 rulesItemsGrid.Add(nameLabel, 1, 0);
 
-                var exampleLabel = new Label { }.BindDynamicTheme();
+                var exampleLabel = new Label
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicTheme();
                 exampleLabel.SetBinding(Label.TextProperty, nameof(FixRuleDisplayItem.Example));
                 rulesItemsGrid.Add(exampleLabel, 2, 0);
 
@@ -166,13 +176,21 @@ public class FixCommonErrorsPage : ContentPage
             Command = vm.RulesInverseSelectedCommand,
         }.BindDynamicTheme();
 
-
-        var pickerProfile = new Picker
+        var labelProfile = new Label
         {
-            Title = "Profile",
+            Margin = new Thickness(25, 0, 5, 0),
+            Text = "Profile",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
+        var pickerProfile = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        pickerProfile.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Profiles));
+        pickerProfile.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedProfile), BindingMode.TwoWay);
+        pickerProfile.SelectedIndexChanged += vm.PickerProfileSelectedIndexChanged;
 
         var buttonProfile = new Button
         {
@@ -180,6 +198,7 @@ public class FixCommonErrorsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(5, 0, 5, 0),
+            Command = vm.EditProfilesCommand,
         }.BindDynamicTheme();
 
 
@@ -188,7 +207,7 @@ public class FixCommonErrorsPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Children = { buttonAll, buttonInverse, pickerProfile, buttonProfile },
+            Children = { buttonAll, buttonInverse, labelProfile, pickerProfile, buttonProfile },
         }.BindDynamicTheme();
 
         var buttonNext = new Button
@@ -631,11 +650,11 @@ public class FixCommonErrorsPage : ContentPage
             RowDefinitions = new RowDefinitionCollection
             {
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Star) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
+                new() { Width = new GridLength(1, GridUnitType.Auto) },
+                new() { Width = new GridLength(1, GridUnitType.Auto) },
                 new() { Width = new GridLength(1, GridUnitType.Auto) },
             }
         };
@@ -700,10 +719,50 @@ public class FixCommonErrorsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
+            MinimumWidthRequest = 500,
         }.BindDynamicTheme();
         editorText.SetBinding(Editor.TextProperty, nameof(vm.EditText));
         editorText.TextChanged += vm.EditorTextTextChanged;
         gridEdit.Add(editorText, 1, 0);
+
+        var buttonWrap = new Image
+        {
+            Source = "wrap.png",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = 16,
+            HeightRequest = 16,
+        }; 
+        ToolTipProperties.SetText(buttonWrap, "Auto-break");
+        var buttonWrapTapGestureRecognizer = new TapGestureRecognizer();
+        buttonWrapTapGestureRecognizer.Tapped += vm.AutoBreak;
+        buttonWrap.GestureRecognizers.Add(buttonWrapTapGestureRecognizer);
+
+        var buttonUnwrap = new Image
+        {
+            Source = "unwrap.png",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = 16,
+            HeightRequest = 16,
+            Margin = new Thickness(0,10,0,0),
+        }; 
+        ToolTipProperties.SetText(buttonUnwrap, "Un-break");
+        var buttonUnwrapTapGestureRecognizer = new TapGestureRecognizer();
+        buttonUnwrapTapGestureRecognizer.Tapped += vm.Unbreak;
+        buttonUnwrap.GestureRecognizers.Add(buttonUnwrapTapGestureRecognizer);
+
+        var wrapBar = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5),
+            Padding = new Thickness(5,5,5,5),
+            Children = { buttonWrap, buttonUnwrap },
+        }.BindDynamicTheme();
+
+        gridEdit.Add(wrapBar, 2, 0);
 
         var gridLayout = new Grid
         {

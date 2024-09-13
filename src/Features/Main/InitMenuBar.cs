@@ -138,13 +138,13 @@ internal static class InitMenuBar
         menu.Add(new MenuFlyoutItem
         {
             Text = "Spell check...",
+            Command = vm.SpellCheckShowCommand,
         });
         menu.Add(new MenuFlyoutSeparator());
         menu.Add(new MenuFlyoutItem
         {
             Text = "Get dictionaries",
         });
-        menu.Add(new MenuFlyoutSeparator());
 
         return menu;
     }

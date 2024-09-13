@@ -112,7 +112,7 @@ public class LanguageFixCommonErrors
     public string SetDefault { get; set; }
     public string FixContinuationStyleX { get; set; }
     public string FixUnnecessaryLeadingDots { get; set; }
-
+    
     public LanguageFixCommonErrors()
     {
         Title = "Fix common errors";

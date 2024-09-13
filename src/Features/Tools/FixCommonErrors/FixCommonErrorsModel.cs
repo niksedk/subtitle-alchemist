@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Enums;
@@ -9,7 +10,9 @@ using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Config.Language;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Text;
+using SubtitleAlchemist.Logic.Dictionaries;
 
 namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 
@@ -37,18 +40,23 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
     private DisplayParagraph? _selectedParagraph;
 
     [ObservableProperty]
-    private string _editText;
+    private string _editText = string.Empty;
 
     [ObservableProperty]
-    private TimeSpan _editShow = new();
+    private TimeSpan _editShow;
 
     [ObservableProperty]
-    private TimeSpan _editDuration = new();
+    private TimeSpan _editDuration;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _profiles = new();
+
+    [ObservableProperty]
+    private string? _selectedProfile;
 
     public FixCommonErrorsPage? Page { get; set; }
     public Grid? Step1Grid { get; set; }
     public Grid? Step2Grid { get; set; }
-    public Entry EntrySearch { get; set; } = new();
 
     public SubtitleFormat Format { get; set; } = new SubRip();
     public Encoding Encoding { get; set; } = Encoding.UTF8;
@@ -62,11 +70,73 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
     private int _totalErrors;
     private bool _previewMode = true;
     private List<FixDisplayItem> _oldFixes = new();
+    private LanguageDisplayItem _oldSelectedLanguage = new(CultureInfo.InvariantCulture, "English");
+    private string _oldSelectedProfile = "Default";
 
+    private readonly IPopupService _popupService;
+    private readonly INamesList _namesList;
 
-    public FixCommonErrorsModel()
+    public FixCommonErrorsModel(IPopupService popupService, INamesList namesList)
     {
+        _popupService = popupService;
+        _namesList = namesList;
         _language = Se.Language.FixCommonErrors;
+
+        Profiles = new ObservableCollection<string>(Se.Settings.Tools.FixCommonErrors.Profiles.Select(p => p.ProfileName));
+        if (Profiles.Count == 0)
+        {
+            Profiles.Add("Default");
+        }
+
+        var profileName = Se.Settings.Tools.FixCommonErrors.LastProfileName;
+        SelectedProfile = Profiles.Contains(profileName)
+            ? profileName
+            : Profiles.First();
+    }
+
+    private void UpdateRulesSelection()
+    {
+        if (string.IsNullOrEmpty(SelectedProfile))
+        {
+            return;
+        }
+
+        var profile = Se.Settings.Tools.FixCommonErrors.Profiles.FirstOrDefault(p => p.ProfileName == SelectedProfile);
+        if (profile == null)
+        {
+            return;
+        }
+
+        foreach (var rule in FixRules)
+        {
+            rule.IsSelected = profile.SelectedRules.Contains(rule.Name);
+        }
+    }
+
+    private void SaveRulesSelection()
+    {
+        if (string.IsNullOrEmpty(SelectedProfile))
+        {
+            return;
+        }
+
+        var profile = Se.Settings.Tools.FixCommonErrors.Profiles.FirstOrDefault(p => p.ProfileName == SelectedProfile);
+        if (profile == null)
+        {
+            return;
+        }
+
+        profile.SelectedRules.Clear();
+        foreach (var rule in FixRules)
+        {
+            if (rule.IsSelected)
+            {
+                profile.SelectedRules.Add(rule.Name);
+            }
+        }
+
+        Se.Settings.Tools.FixCommonErrors.LastProfileName = SelectedProfile;
+        Se.SaveSettings();
     }
 
     [RelayCommand]
@@ -76,6 +146,10 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         {
             return;
         }
+
+        SaveRulesSelection();
+        _oldSelectedLanguage = SelectedLanguage!;
+        _oldSelectedProfile = SelectedProfile!;
 
         Page.Content = Step2Grid;
         ApplyFixes();
@@ -87,6 +161,11 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         _totalErrors = 0;
 
         var subtitle = _previewMode ? new Subtitle(_fixSubtitle, false) : _fixSubtitle;
+        foreach (var paragraph in subtitle.Paragraphs)
+        {
+            paragraph.Text = string.Join(Environment.NewLine, paragraph.Text.SplitToLines());
+        }
+
         foreach (var fix in _allFixRules)
         {
             if (fix.IsSelected)
@@ -100,6 +179,44 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
+    public async Task EditProfiles()
+    {
+        var result = await _popupService
+            .ShowPopupAsync<FixCommonErrorsProfilePopupModel>(onPresenting: viewModel
+                => viewModel.SetValues(Profiles.ToList()), CancellationToken.None);
+
+        if (result is List<string> profiles)
+        {
+            Profiles = new ObservableCollection<string>(profiles);
+            if (Profiles.Count == 0)
+            {
+                Profiles.Add("Default");
+            }
+
+            SelectedProfile = SelectedProfile != null && Profiles.Contains(SelectedProfile)
+                ? SelectedProfile
+                : Profiles.First();
+
+            var settingProfiles = Se.Settings.Tools.FixCommonErrors.Profiles
+                .Where(p => Profiles.Contains(p.ProfileName)).ToList();
+            foreach (var profile in profiles)
+            {
+                if (settingProfiles.All(p => p.ProfileName != profile))
+                {
+                    settingProfiles.Add(new SeFixCommonErrorsProfile
+                    {
+                        ProfileName = profile,
+                        SelectedRules = new List<string>(),
+                    });
+                }
+            }
+            Se.Settings.Tools.FixCommonErrors.Profiles = settingProfiles;
+
+            UpdateRulesSelection();
+        }
+    }
+
+    [RelayCommand]
     public async Task Cancel()
     {
         if (Page == null)
@@ -109,10 +226,15 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
 
         if (Page.Content == Step2Grid)
         {
-            _previewMode = true;
-            Page.Content = Step1Grid;
-            _oldFixes = new List<FixDisplayItem>();
-            Fixes.Clear();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                _previewMode = true;
+                Page.Content = Step1Grid;
+                _oldFixes = new List<FixDisplayItem>();
+                Fixes.Clear();
+                SelectedProfile = _oldSelectedProfile;
+                SelectedLanguage = _oldSelectedLanguage;
+            });
             return;
         }
 
@@ -137,13 +259,12 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         }
     }
 
-
     [RelayCommand]
     public void FixesSelectAll()
     {
-        foreach (var rule in FixRules)
+        foreach (var fix in Fixes)
         {
-            rule.IsSelected = !rule.IsSelected;
+            fix.IsSelected = true;
         }
     }
 
@@ -177,8 +298,6 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     public async Task Ok()
     {
-        //SaveSettings?
-
         if (_totalFixes > 0)
         {
             await Shell.Current.GoToAsync("..", new Dictionary<string, object>
@@ -191,26 +310,12 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         }
         else
         {
-            await Cancel();
+            await Shell.Current.GoToAsync("..");
         }
     }
 
-    public void InitStep1()
+    public void InitStep1(string languageCode)
     {
-        var languages = new List<LanguageDisplayItem>();
-        foreach (var ci in Utilities.GetSubtitleLanguageCultures(true))
-        {
-            languages.Add(new LanguageDisplayItem(ci, ci.EnglishName));
-        }
-        Languages = new ObservableCollection<LanguageDisplayItem>(languages.OrderBy(p => p.ToString()));
-
-        var languageCode = LanguageAutoDetect.AutoDetectGoogleLanguage(_originalSubtitle); // Guess language based on subtitle contents
-        SelectedLanguage = Languages.FirstOrDefault(p => p.Code.TwoLetterISOLanguageName == languageCode);
-        if (SelectedLanguage != null)
-        {
-            SelectedLanguage = Languages.First(p => p.Code.TwoLetterISOLanguageName == "en");
-        }
-
         _allFixRules = new List<FixRuleDisplayItem>
         {
             new (_language.RemovedEmptyLinesUnusedLineBreaks, "Has only one valid line!</br><i> -> Has only one valid line!", 1, true, nameof(FixEmptyLines)),
@@ -226,7 +331,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
             new (_language.BreakLongLines, string.Empty, 1, true, nameof(FixLongLines)),
             new (_language.RemoveLineBreaks, "Foo</br>bar! -> Foo bar!", 1, true, nameof(FixShortLines)),
             new (_language.RemoveLineBreaksAll, string.Empty, 1, true, nameof(FixShortLinesAll)),
-            //new (_language.RemoveLineBreaksPixelWidth, string.Empty, 1, true, nameof(FixShortLinesPixelWidth(TextWidth.CalcPixelWidth).Fix(Subtitle, this), ce.MergeShortLinesPixelWidthTicked),
+            new (_language.RemoveLineBreaksPixelWidth, string.Empty, 1, true, nameof(FixShortLinesPixelWidth)),
             new (_language.FixDoubleApostrophes, "''Has double single quotes'' -> \"Has single double quote\"", 1, true, nameof(FixDoubleApostrophes)),
             new (_language.FixMusicNotation, _language.FixMusicNotationExample, 1, true, nameof(FixMusicNotation)),
             new (_language.AddPeriods, "Hello world -> Hello world.", 1, true, nameof(FixMissingPeriodsAtEndOfLine)),
@@ -234,20 +339,17 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
             new (_language.StartWithUppercaseLetterAfterPeriodInsideParagraph, "Hello there! how are you?  -> Hello there! How are you?", 1, true, nameof(FixStartWithUppercaseLetterAfterPeriodInsideParagraph)),
             new (_language.StartWithUppercaseLetterAfterColon, "Speaker: hello world! -> Speaker: Hello world!", 1, true, nameof(FixStartWithUppercaseLetterAfterColon)),
             new (_language.AddMissingQuotes, _language.AddMissingQuotesExample, 1, true, nameof(AddMissingQuotes)),
-            //new ( string.Format(_language.FixHyphensInDialogs, GetDialogStyle(Configuration.Settings.General.DialogStyle)), string.Empty, 1, true, nameof(FixHyphensInDialog)),
+            new (_language.BreakDialogsOnOneLine, _language.FixDialogsOneLineExample, 1, true, nameof(FixDialogsOnOneLine)),
+            new ( string.Format(_language.FixHyphensInDialogs, GetDialogStyle(Configuration.Settings.General.DialogStyle)), string.Empty, 1, true, nameof(FixHyphensInDialog)),
             new ( _language.RemoveHyphensSingleLine, "- Foobar. -> Foobar.", 1, true, nameof(FixHyphensRemoveDashSingleLine)),
             new (_language.Fix3PlusLines, "Foo</br>bar</br>baz! -> Foo bar baz!", 1, true, nameof(Fix3PlusLines)),
             new (_language.FixDoubleDash, _language.FixDoubleDashExample, 1, true, nameof(FixDoubleDash)),
             new (_language.FixDoubleGreaterThan, _language.FixDoubleGreaterThanExample, 1, true, nameof(FixDoubleGreaterThan)),
-            //new ( string.Format(_language.FixContinuationStyleX, UiUtil.GetContinuationStyleName(Configuration.Settings.General.ContinuationStyle)), string.Empty, 1, true, nameof(FixContinuationStyle
-            //{
-            //    FixAction = string.Format(LanguageSettings.Current.FixCommonErrors.FixContinuationStyleX, UiUtil.GetContinuationStyleName(Configuration.Settings.General.ContinuationStyle))
-            //}.Fix(Subtitle, this), ce.FixContinuationStyleTicked),
+            new ( string.Format(_language.FixContinuationStyleX, Se.Language.Settings.GetContinuationStyleName(Configuration.Settings.General.ContinuationStyle)), string.Empty, 1, true, nameof(FixContinuationStyle)),
             new (_language.FixMissingOpenBracket, _language.FixMissingOpenBracketExample, 1, true, nameof(FixMissingOpenBracket)),
             //new (_language.FixCommonOcrErrors, _language.FixOcrErrorExample, 1, true, () => FixOcrErrorsViaReplaceList(threeLetterIsoLanguageName), ce.FixOcrErrorsViaReplaceListTicked),
             new (_language.FixUppercaseIInsideLowercaseWords, _language.FixUppercaseIInsideLowercaseWordsExample, 1, true, nameof(FixUppercaseIInsideWords)),
             new (_language.RemoveSpaceBetweenNumber, _language.FixSpaceBetweenNumbersExample, 1, true, nameof(RemoveSpaceBetweenNumbers)),
-            new (_language.BreakDialogsOnOneLine, _language.FixDialogsOneLineExample, 1, true, nameof(FixDialogsOnOneLine)),
             new (_language.RemoveDialogFirstInNonDialogs, _language.RemoveDialogFirstInNonDialogsExample, 1, true, nameof(RemoveDialogFirstLineInNonDialogs)),
             new (_language.NormalizeStrings, string.Empty, 1, true, nameof(NormalizeStrings)),
     };
@@ -259,25 +361,25 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
                 true, nameof(FixEllipsesStart)));
         }
 
-        if (Language == "en")
+        if (languageCode == "en")
         {
             _allFixRules.Add(new FixRuleDisplayItem(_language.FixLowercaseIToUppercaseI,
                 _language.FixLowercaseIToUppercaseIExample, 1, true, nameof(FixAloneLowercaseIToUppercaseI)));
         }
 
-        if (Language == "tr")
+        if (languageCode == "tr")
         {
             _allFixRules.Add(new FixRuleDisplayItem(_language.FixTurkishAnsi,
                 "Ý > İ, Ð > Ğ, Þ > Ş, ý > ı, ð > ğ, þ > ş", 1, true, nameof(FixTurkishAnsiToUnicode)));
         }
 
-        if (Language == "da")
+        if (languageCode == "da")
         {
             _allFixRules.Add(new FixRuleDisplayItem(_language.FixDanishLetterI,
                 "Jeg synes i er søde. -> Jeg synes I er søde.", 1, true, nameof(FixDanishLetterI)));
         }
 
-        if (Language == "es")
+        if (languageCode == "es")
         {
             _allFixRules.Add(new FixRuleDisplayItem(_language.FixSpanishInvertedQuestionAndExclamationMarks,
                 "Hablas bien castellano? -> ¿Hablas bien castellano?", 1, true,
@@ -285,6 +387,49 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
         }
 
         FixRules = new ObservableCollection<FixRuleDisplayItem>(_allFixRules);
+    }
+
+        private static string GetDialogStyle(DialogType dialogStyle)
+        {
+            if (dialogStyle == DialogType.DashSecondLineWithoutSpace)
+            {
+                return Se.Language.Settings.DialogStyleDashSecondLineWithoutSpace;
+            }
+
+            if (dialogStyle == DialogType.DashSecondLineWithSpace)
+            {
+                return Se.Language.Settings.DialogStyleDashSecondLineWithSpace;
+            }
+
+            if (dialogStyle == DialogType.DashBothLinesWithoutSpace)
+            {
+                return Se.Language.Settings.DialogStyleDashBothLinesWithoutSpace;
+            }
+
+            return Se.Language.Settings.DialogStyleDashBothLinesWithSpace;
+        }
+
+    private string InitLanguage()
+    {
+        var languages = new List<LanguageDisplayItem>();
+        foreach (var ci in Utilities.GetSubtitleLanguageCultures(true))
+        {
+            languages.Add(new LanguageDisplayItem(ci, ci.EnglishName));
+        }
+
+        Languages = new ObservableCollection<LanguageDisplayItem>(languages.OrderBy(p => p.ToString()));
+
+        var languageCode =
+            LanguageAutoDetect.AutoDetectGoogleLanguage(_originalSubtitle); // Guess language based on subtitle contents
+        Language = languageCode;
+
+        SelectedLanguage = Languages.FirstOrDefault(p => p.Code.TwoLetterISOLanguageName == languageCode);
+        if (SelectedLanguage != null)
+        {
+            SelectedLanguage = Languages.First(p => p.Code.TwoLetterISOLanguageName == "en");
+        }
+
+        return languageCode;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -305,7 +450,9 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
             Format = format;
         }
 
-        InitStep1();
+        var languageCode = InitLanguage();
+        InitStep1(languageCode);
+        UpdateRulesSelection();
     }
 
     public void EntrySearch_TextChanged(object? sender, TextChangedEventArgs e)
@@ -390,14 +537,12 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
 
     public bool IsName(string candidate)
     {
-        //TODO:
-        return false;
+        return _namesList.IsName(candidate);
     }
 
     public HashSet<string> GetAbbreviations()
     {
-        //TODO:
-        return new HashSet<string>();
+        return _namesList.GetAbbreviations();
     }
 
     public void AddToTotalErrors(int count)
@@ -452,23 +597,62 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
 
     public void EditShowChanged(object? sender, ValueChangedEventArgs e)
     {
-        if (SelectedParagraph != null)
+        if (SelectedParagraph == null)
         {
-            var dur = SelectedParagraph.Duration.TotalMilliseconds;
-            SelectedParagraph.Start = TimeSpan.FromMilliseconds(e.NewValue);
-            SelectedParagraph.End = TimeSpan.FromMilliseconds(SelectedParagraph.End.TotalMilliseconds + dur);
-            SelectedParagraph.P.StartTime = new TimeCode(SelectedParagraph.Start);
-            SelectedParagraph.P.EndTime = new TimeCode(SelectedParagraph.End);
+            return;
         }
+
+        var dur = SelectedParagraph.Duration.TotalMilliseconds;
+        SelectedParagraph.Start = TimeSpan.FromMilliseconds(e.NewValue);
+        SelectedParagraph.End = TimeSpan.FromMilliseconds(SelectedParagraph.End.TotalMilliseconds + dur);
+        SelectedParagraph.P.StartTime = new TimeCode(SelectedParagraph.Start);
+        SelectedParagraph.P.EndTime = new TimeCode(SelectedParagraph.End);
     }
 
     public void EditDurationChanged(object? sender, ValueChangedEventArgs e)
     {
+        if (SelectedParagraph == null)
+        {
+            return;
+        }
+
+        SelectedParagraph.Duration = TimeSpan.FromMilliseconds(e.NewValue);
+        SelectedParagraph.End = TimeSpan.FromMilliseconds(SelectedParagraph.Start.TotalMilliseconds + e.NewValue);
+        SelectedParagraph.P.EndTime = new TimeCode(SelectedParagraph.End);
+    }
+
+    public void PickerProfileSelectedIndexChanged(object? sender, EventArgs e)
+    {
+        UpdateRulesSelection();
+    }
+
+    public void PickerLanguageSelectedIndexChanged(object? sender, EventArgs e)
+    {
+        if (SelectedLanguage == null)
+        {
+            return;
+        }
+
+        Language = SelectedLanguage.Code.TwoLetterISOLanguageName;
+        InitStep1(Language);
+        UpdateRulesSelection();
+    }
+
+    public void AutoBreak(object? sender, TappedEventArgs e)
+    {
         if (SelectedParagraph != null)
         {
-            SelectedParagraph.Duration = TimeSpan.FromMilliseconds(e.NewValue);
-            SelectedParagraph.End = TimeSpan.FromMilliseconds(SelectedParagraph.Start.TotalMilliseconds + e.NewValue);
-            SelectedParagraph.P.EndTime = new TimeCode(SelectedParagraph.End);
+            var text = Utilities.AutoBreakLine(Utilities.UnbreakLine(SelectedParagraph.Text));
+            EditText = text;
+        }
+    }
+
+    public void Unbreak(object? sender, TappedEventArgs e)
+    {
+        if (SelectedParagraph != null)
+        {
+            var text = Utilities.UnbreakLine(SelectedParagraph.Text);
+            EditText = text;
         }
     }
 }

@@ -21,7 +21,6 @@ public class CircularButton : GraphicsView
     {
         get => (string)GetValue(ImageProperty);
         set => SetValue(ImageProperty, value);
-
     }
 
     public new bool IsVisible

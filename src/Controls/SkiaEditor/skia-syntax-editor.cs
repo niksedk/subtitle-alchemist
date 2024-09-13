@@ -24,6 +24,8 @@ namespace SubtitleAlchemist.Controls.SkiaEditor
 
         public SkiaSyntaxEditor()
         {
+            _coloredTokens = new List<(string text, SKColor color)>();
+
             _textPaint = new SKPaint
             {
                 Color = SKColors.Black,

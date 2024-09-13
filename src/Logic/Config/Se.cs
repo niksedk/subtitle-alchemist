@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.Forms.FixCommonErrors;
 using SubtitleAlchemist.Logic.Config.Language;
 namespace SubtitleAlchemist.Logic.Config;
 
@@ -13,6 +14,7 @@ public class Se
     public SeTools Tools { get; set; }
     public static SeLanguage Language { get; set; } = new();
     public static Se Settings { get; set; } = new();
+    public static string DictionariesFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "Dictionaries");
 
     public Se()
     {
@@ -50,7 +52,33 @@ public class Se
             var json = System.IO.File.ReadAllText(settingsFileName);
             Settings = JsonSerializer.Deserialize<Se>(json)!;
 
+            SetDefaultValues();
+
             UpdateLibSeSettings();
+        }
+    }
+
+    private static void SetDefaultValues()
+    {
+        if (Settings.Tools.FixCommonErrors.Profiles.Count == 0)
+        {
+            Settings.Tools.FixCommonErrors.Profiles.Add(new SeFixCommonErrorsProfile
+            {
+                ProfileName = "Default",
+                SelectedRules = new()
+                {
+                    nameof(FixEmptyLines),
+                    nameof(FixOverlappingDisplayTimes),
+                    nameof(FixLongDisplayTimes),
+                    nameof(FixShortDisplayTimes),
+                    nameof(FixShortGaps),
+                    nameof(FixInvalidItalicTags),
+                    nameof(FixUnneededSpaces),
+                    nameof(FixMissingSpaces),
+                    nameof(FixUnneededPeriods),
+                },
+            });
+            Settings.Tools.FixCommonErrors.LastProfileName = "Default";
         }
     }
 
