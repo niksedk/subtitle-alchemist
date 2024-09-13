@@ -4,11 +4,16 @@ using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic;
 using System.Collections.ObjectModel;
 using SubtitleAlchemist.Logic.Constants;
+using SharpHook.Native;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace SubtitleAlchemist.Features.Files;
 
 public partial class RestoreAutoBackupModel : ObservableObject
 {
+    [ObservableProperty]
+    private bool _isOkButtonEnabled;
+
     [ObservableProperty]
     private DisplayFile? _selectedFile;
 
@@ -16,7 +21,7 @@ public partial class RestoreAutoBackupModel : ObservableObject
     private ObservableCollection<DisplayFile> _files = new();
 
     public RestoreAutoBackupPage? Page { get; set; }
-    public Label LabelOpenFolder { get; set; }
+    public Label LabelOpenFolder { get; set; } = new();
 
     private readonly IAutoBackup _autoBackup;
 
@@ -39,12 +44,10 @@ public partial class RestoreAutoBackupModel : ObservableObject
             return;
         }
 
-        var subtitle = Subtitle.Parse(SelectedFile.FullFileName);
-
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(RestoreAutoBackupPage) },
-            { "Subtitle", subtitle },
+            { "SubtitleFileName", SelectedFile.FullPath },
         });
     }
 
@@ -67,10 +70,18 @@ public partial class RestoreAutoBackupModel : ObservableObject
             Files.Add(new DisplayFile(fileName, displayDate, Utilities.FormatBytesToDisplayFileSize(fileInfo.Length)));
         }
 
-        if (Files.Count > 0)
+
+        Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
-            SelectedFile = Files[0];
-        }
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (Files.Count > 0)
+                {
+                    SelectedFile = Files[0];
+                }
+            });
+            return false;
+        });
     }
 
     public void OpenContainingFolderTapped()
@@ -80,16 +91,21 @@ public partial class RestoreAutoBackupModel : ObservableObject
             return;
         }
 
-        UiUtil.OpenFolderFromFileName(SelectedFile.FullFileName);
+        UiUtil.OpenFolderFromFileName(file.FullPath);
     }
 
     public void OpenContainingFolderPointerEntered(object? sender, PointerEventArgs e)
     {
-        LabelOpenFolder.TextColor = (Color)Application.Current.Resources[ThemeNames.LinkColor];
+        LabelOpenFolder.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
     }
 
     public void OpenContainingFolderPointerExited(object? sender, PointerEventArgs e)
     {
-        LabelOpenFolder.TextColor = (Color)Application.Current.Resources[ThemeNames.TextColor];
+        LabelOpenFolder.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+    }
+
+    public void SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        IsOkButtonEnabled = e.CurrentSelection.FirstOrDefault() is DisplayFile;
     }
 }

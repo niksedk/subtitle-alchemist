@@ -191,7 +191,7 @@ public class FixCommonErrorsPage : ContentPage
         pickerProfile.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Profiles));
         pickerProfile.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedProfile), BindingMode.TwoWay);
         pickerProfile.SelectedIndexChanged += vm.PickerProfileSelectedIndexChanged;
-
+        
         var buttonProfile = new Button
         {
             Text = "...",

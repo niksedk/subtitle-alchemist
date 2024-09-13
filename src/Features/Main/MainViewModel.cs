@@ -8,27 +8,27 @@ using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SharpHook;
 using SubtitleAlchemist.Controls.AudioVisualizerControl;
+using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Features.Options.Settings;
+using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
+using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
+using SubtitleAlchemist.Logic.Dictionaries;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Timers;
-using SubtitleAlchemist.Features.SpellCheck;
-using SubtitleAlchemist.Features.Tools.FixCommonErrors;
-using SubtitleAlchemist.Logic.Config;
-using SubtitleAlchemist.Logic.Dictionaries;
 using Path = System.IO.Path;
-using SubtitleAlchemist.Features.Files;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -175,6 +175,15 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         if (!query.ContainsKey("Page") || query["Page"] is not string page)
         {
             return;
+        }
+
+        if (page == nameof(RestoreAutoBackupPage))
+        {
+            if (query["SubtitleFileName"] is string subtitleFileName && !string.IsNullOrWhiteSpace(subtitleFileName))
+            {
+                _subtitleFileName = subtitleFileName;
+                SubtitleOpen(subtitleFileName, null);
+            }
         }
 
         if (page == nameof(TranslatePage))
@@ -601,8 +610,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
-        mainPage.Window.MinimumHeight = 400;
-        mainPage.Window.MinimumWidth = 800;
+        mainPage.Window.MinimumHeight = 600;
+        mainPage.Window.MinimumWidth = 900;
 
         if (Se.Settings.File.ShowRecentFiles)
         {
@@ -820,8 +829,12 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        _autoBackup.SaveAutoBackup(_subtitle, CurrentSubtitleFormat);
+        _changeSubtitleHash = GetFastSubtitleHash();
+
         var text = UpdatedSubtitle.ToText(CurrentSubtitleFormat);
         await File.WriteAllTextAsync(_subtitleFileName, text);
+
         ShowStatus("Saved: " + _subtitleFileName);
 
         AddToRecentFiles();
@@ -1443,7 +1456,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 {
                     hash = hash * 23 + line.GetHashCode();
                 }
-//                hash = hash * 23 + p.Text.GetHashCode();
+                //                hash = hash * 23 + p.Text.GetHashCode();
 
                 if (p.P.Style != null)
                 {

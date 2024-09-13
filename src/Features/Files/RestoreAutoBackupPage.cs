@@ -1,5 +1,7 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
+using static Microsoft.Maui.Controls.VisualStateManager;
 
 namespace SubtitleAlchemist.Features.Files;
 
@@ -11,6 +13,7 @@ public partial class RestoreAutoBackupPage : ContentPage
         Padding = new Thickness(10);
         vm.Page = this;
         BindingContext = vm;
+        Resources.Add(ThemeHelper.GetGridSelectionStyle());
 
         var grid = new Grid
         {
@@ -85,6 +88,7 @@ public partial class RestoreAutoBackupPage : ContentPage
             Command = vm.OkCommand,
             Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
+        buttonOk.SetBinding(IsEnabledProperty, nameof(RestoreAutoBackupModel.IsOkButtonEnabled));
 
         var buttonCancel = new Button
         {
@@ -108,7 +112,7 @@ public partial class RestoreAutoBackupPage : ContentPage
         Content = grid;
     }
 
-    private static CollectionView MakeCollectionView(RestoreAutoBackupModel vm)
+    private CollectionView MakeCollectionView(RestoreAutoBackupModel vm)
     {
         var collectionView = new CollectionView
         {
@@ -131,37 +135,40 @@ public partial class RestoreAutoBackupPage : ContentPage
                 var labelDateAndTime = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
-                }.BindDynamicTheme();
+                }.BindDynamicThemeTextColorOnly();
                 labelDateAndTime.SetBinding(Label.TextProperty, nameof(DisplayFile.DateAndTime));
                 rulesItemsGrid.Add(labelDateAndTime, 0, 0);
 
                 var labelFileName = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
-                }.BindDynamicTheme();
+                }.BindDynamicThemeTextColorOnly();
                 labelFileName.SetBinding(Label.TextProperty, nameof(DisplayFile.FileName));
                 rulesItemsGrid.Add(labelFileName, 1, 0);
 
                 var labelExtension = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
-                }.BindDynamicTheme();
+                }.BindDynamicThemeTextColorOnly();
                 labelExtension.SetBinding(Label.TextProperty, nameof(DisplayFile.Extension));
                 rulesItemsGrid.Add(labelExtension, 2, 0);
 
                 var labelSize = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
-                }.BindDynamicTheme();
+                }.BindDynamicThemeTextColorOnly();
                 labelSize.SetBinding(Label.TextProperty, nameof(DisplayFile.Size));
                 rulesItemsGrid.Add(labelSize, 3, 0);
 
                 return rulesItemsGrid;
             }),
-        }.BindDynamicTheme();
+        }; 
         
         collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(RestoreAutoBackupModel.Files));
-        collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(RestoreAutoBackupModel.SelectedFile), BindingMode.TwoWay);
+        collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(RestoreAutoBackupModel.SelectedFile));
+
+        collectionView.SelectionChanged += vm.SelectionChanged;
+
         return collectionView;
     }
 

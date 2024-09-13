@@ -28,6 +28,11 @@ internal static class InitMenuBar
         };
         foreach (var recentFile in Se.Settings.File.RecentFiles)
         {
+            if (string.IsNullOrEmpty(recentFile.SubtitleFileName))
+            {
+                continue;
+            }
+
             var reopenItem = new MenuFlyoutItem
             {
                 Text = recentFile.SubtitleFileName,

@@ -3,6 +3,7 @@ using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Controls.UpDownControl;
 using SubtitleAlchemist.Logic.Constants;
+using static Microsoft.Maui.Controls.VisualStateManager;
 
 namespace SubtitleAlchemist.Logic
 {
@@ -153,6 +154,22 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        /// <summary>
+        /// Get the style for a grid selection, with background color set to the "active background" color.
+        /// </summary>
+        /// <returns>Style for setting on Page</returns>
+        public static Style GetGridSelectionStyle()
+        {
+            Setter backgroundColorSetter = new() { Property = VisualElement.BackgroundColorProperty, Value = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor] };
+            VisualState stateSelected = new() { Name = CommonStates.Selected, Setters = { backgroundColorSetter } };
+            VisualState stateNormal = new() { Name = CommonStates.Normal };
+            VisualStateGroup visualStateGroup = new() { Name = nameof(CommonStates), States = { stateSelected, stateNormal } };
+            VisualStateGroupList visualStateGroupList = new() { visualStateGroup };
+            Setter vsgSetter = new() { Property = VisualStateGroupsProperty, Value = visualStateGroupList };
+            Style style = new(typeof(Grid)) { Setters = { vsgSetter } };
+            return style;
+        }
+
         public static void UpdateTheme(string themeName)
         {
             var mergedDictionaries = Application.Current!.Resources.MergedDictionaries;
@@ -172,17 +189,18 @@ namespace SubtitleAlchemist.Logic
                     SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Colors.LightGreen);
                     SetThemeDictionaryColor(dictionaries, ThemeNames.LinkColor, Colors.DarkBlue);
                 }
-                else
+                else if (themeName == "Dark")
                 {
                     SetThemeDictionaryColor(dictionaries, ThemeNames.BackgroundColor, Color.FromRgb(0x1F, 0x1F, 0x1F));
                     SetThemeDictionaryColor(dictionaries, ThemeNames.TextColor, Colors.WhiteSmoke);
                     SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(20, 20, 20));
                     SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
-                    SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Colors.DarkGreen);
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Color.FromRgb(24,52,75));
                     SetThemeDictionaryColor(dictionaries, ThemeNames.LinkColor, Colors.LightSkyBlue);
                 }
             }
         }
+
         private static void SetThemeDictionaryColor(ResourceDictionary dictionaries, string name, Color color)
         {
             var found = dictionaries.TryGetValue(name, out _);

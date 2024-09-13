@@ -71,7 +71,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
     private bool _previewMode = true;
     private List<FixDisplayItem> _oldFixes = new();
     private LanguageDisplayItem _oldSelectedLanguage = new(CultureInfo.InvariantCulture, "English");
-    private string _oldSelectedProfile = "Default";
+    private string? _oldSelectedProfile;
 
     private readonly IPopupService _popupService;
     private readonly INamesList _namesList;
@@ -120,7 +120,12 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
             return;
         }
 
-        var profile = Se.Settings.Tools.FixCommonErrors.Profiles.FirstOrDefault(p => p.ProfileName == SelectedProfile);
+        SaveRulesSelection(SelectedProfile);
+    }
+
+    private void SaveRulesSelection(string profileName)
+    {
+        var profile = Se.Settings.Tools.FixCommonErrors.Profiles.FirstOrDefault(p => p.ProfileName == profileName);
         if (profile == null)
         {
             return;
@@ -135,7 +140,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
             }
         }
 
-        Se.Settings.Tools.FixCommonErrors.LastProfileName = SelectedProfile;
+        Se.Settings.Tools.FixCommonErrors.LastProfileName = profileName;
         Se.SaveSettings();
     }
 
@@ -232,7 +237,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
                 Page.Content = Step1Grid;
                 _oldFixes = new List<FixDisplayItem>();
                 Fixes.Clear();
-                SelectedProfile = _oldSelectedProfile;
+                SelectedProfile = _oldSelectedProfile ?? Profiles.FirstOrDefault();
                 SelectedLanguage = _oldSelectedLanguage;
             });
             return;
@@ -623,7 +628,15 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
 
     public void PickerProfileSelectedIndexChanged(object? sender, EventArgs e)
     {
+        if (_oldSelectedProfile != null)
+        {
+            SaveRulesSelection(_oldSelectedProfile);
+        }
+
         UpdateRulesSelection();
+
+        _oldSelectedProfile = SelectedProfile;
+        Se.Settings.Tools.FixCommonErrors.LastProfileName = SelectedProfile ?? Profiles.First();
     }
 
     public void PickerLanguageSelectedIndexChanged(object? sender, EventArgs e)

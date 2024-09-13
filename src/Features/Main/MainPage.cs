@@ -12,6 +12,9 @@ public class MainPage : ContentPage
     {
         _viewModel = vm;
 
+        var themeName = Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme
+            ? "Dark"
+            : "Light";
         ICollection<ResourceDictionary>? mergedDictionaries = Application.Current?.Resources?.MergedDictionaries;
         if (mergedDictionaries != null)
         {
@@ -26,11 +29,9 @@ public class MainPage : ContentPage
             };
             mergedDictionaries.Add(theme);
 
-            var themeName = Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme
-                ? "Dark"
-                : "Light";
-            ThemeHelper.UpdateTheme(themeName);
         }
+        ThemeHelper.UpdateTheme(themeName);
+        Resources.Add(ThemeHelper.GetGridSelectionStyle());
 
         BindingContext = _viewModel;
         _viewModel.MainPage = this;

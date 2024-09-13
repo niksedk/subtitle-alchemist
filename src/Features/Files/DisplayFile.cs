@@ -17,11 +17,11 @@ public partial class DisplayFile : ObservableObject
     [ObservableProperty] 
     private string _size;
 
-    public string FullFileName { get; set; }
+    public string FullPath { get; set; }
 
     public DisplayFile(string fileName, string dateAndTime, string size)
     {
-        FullFileName = fileName;
+        FullPath = fileName;
 
         var displayName = Path.GetFileNameWithoutExtension(fileName);
         if (displayName.Length > 20)
