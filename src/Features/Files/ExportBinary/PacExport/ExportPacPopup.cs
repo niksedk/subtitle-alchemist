@@ -1,64 +1,76 @@
-using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Files.ExportBinary.PacExport;
 
-public class ExportPacPopup : Popup
+public sealed class ExportPacPopup : Popup
 {
     public ExportPacPopup(ExportPacPopupModel vm)
     {
         BindingContext = vm;
-
         CanBeDismissedByTappingOutsideOfPopup = false;
 
-        var stackLayout = new StackLayout
+        var grid = new Grid
         {
-            Margin = 1,
-            Padding = 10,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+            },
+            Margin = new Thickness(2),
+            Padding = new Thickness(30, 20, 30, 10),
+            RowSpacing = 20,
+            ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            HeightRequest = 200,
+        }.BindDynamicTheme();
+
+        var picker = new Picker
+        {
+            Title = "Choose PAC code page",
+            MinimumWidthRequest = 250,
+        }.BindDynamicTheme();
+        picker.SetBinding(Picker.ItemsSourceProperty, nameof(vm.PacCodePages));
+        picker.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedPacCodePage));
+        grid.Add(picker, 0);
+
+        var buttonOk = new Button
+        {
+            Text = "OK",
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.OkCommand,
+            Margin = new Thickness(0, 0, 10, 0),
+        }.BindDynamicTheme();
+
+        var buttonCancel = new Button
+        {
+            Text = "Cancel",
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.CancelCommand,
+        }.BindDynamicTheme();
+
+        var buttonBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 35, 0, 0),
             Children =
             {
-                new StackLayout
-                {
-                    Orientation = StackOrientation.Horizontal,
-                    HorizontalOptions = LayoutOptions.End,
-                    Children =
-                    {
-                        new ImageButton
-                        {
-                            //Command = vm.CloseCommand,
-                        }
-                        .Width(30)
-                        .Height(30)
-                        .Margin(10)
-                        .Source("btn_close.png"),
-                    }
-                },
-
-                new Label()
-                    .Text("About Subtitle Alchemist ALPHA 1")
-                    .BindDynamicTheme()
-                    .FontSize(30)
-                    .Bold()
-                    .Margin(20),
-
-                new Label()
-                    .Text("Subtitle Alchemist is Free Software under the GNU Public License." + Environment.NewLine + "You may distribute, modify and use it freely.")
-                    .BindDynamicTheme()
-                    .FontSize(20)
-                    .Margin(10),
-
-                new Label()
-                    .Text("C# source code is available on GitHub: ")
-                    .BindDynamicTheme()
-                    .FontSize(15)
-                    .Margin(10),
-
-                new ImageButton()
-                    .Margin(10),
-            }
+                buttonOk,
+                buttonCancel,
+            },
         }.BindDynamicTheme();
+
+        grid.Add(buttonBar, 0, 1);
 
 
         var windowBorder = new Border
@@ -72,15 +84,13 @@ public class ExportPacPopup : Popup
                 CornerRadius = new CornerRadius(5),
             },
             BackgroundColor = Colors.Transparent,
-            Content = stackLayout,
+            Content = grid,
         }.BindDynamicTheme();
 
         Content = windowBorder;
 
         this.BindDynamicTheme();
-  
+
         vm.Popup = this;
     }
 }
-
-

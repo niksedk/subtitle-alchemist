@@ -32,6 +32,7 @@ using SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export;
 using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
 using SubtitleAlchemist.Features.Files.ExportBinary.PacExport;
 using Path = System.IO.Path;
+using System;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -649,8 +650,37 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     public async Task ExportPac()
     {
-        //TODO: fix
-        await _popupService.ShowPopupAsync<ExportPacPopupModel>(CancellationToken.None);
+        var result = await _popupService.ShowPopupAsync<ExportPacPopupModel>(CancellationToken.None);
+        if (result is not int codePage || codePage < 0)
+        {
+            return;
+        }
+
+        var pac = new Pac { CodePage = codePage };
+        using var ms = new MemoryStream();
+        pac.Save("", ms, UpdatedSubtitle);
+
+        var fileHelper = new FileHelper();
+        var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {CurrentSubtitleFormat.Name} file as", _videoFileName, new Pac());
+        if (!string.IsNullOrEmpty(subtitleFileName))
+        {
+            ShowStatus($"File exported in format {pac.Name} to {subtitleFileName}");
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExportPacUnicode()
+    {
+        var pacUnicode = new PacUnicode();
+        using var ms = new MemoryStream();
+        pacUnicode.Save("", ms, UpdatedSubtitle);
+
+        var fileHelper = new FileHelper();
+        var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {CurrentSubtitleFormat.Name} file as", _videoFileName, new Pac());
+        if (!string.IsNullOrEmpty(subtitleFileName))
+        {
+            ShowStatus($"File exported in format {pacUnicode.Name} to {subtitleFileName}");
+        }
     }
 
     [RelayCommand]
@@ -709,7 +739,34 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         _timerAutoBackup.Stop();
 
-        _subtitle = Subtitle.Parse(subtitleFileName);
+        var subtitle = Subtitle.Parse(subtitleFileName);
+        if (subtitle == null)
+        {
+            foreach (var f in SubtitleFormat.GetBinaryFormats(false))
+            {
+                if (f.IsMine(null, subtitleFileName))
+                {
+                    subtitle = new Subtitle();
+                    f.LoadSubtitle(subtitle, null, subtitleFileName);
+                    break; // format found, exit the loop
+                }
+            }
+
+            if (subtitle == null)
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await MainPage!.DisplayAlert(
+                        "Open subtitle failed",
+                        "Unable to read subtitle file - unknown format?",
+                        "OK");
+                });
+
+                return;
+            }
+        }
+
+        _subtitle = subtitle;
         Paragraphs = _subtitle.Paragraphs.Select(p => new DisplayParagraph(p)).ToObservableCollection();
         _subtitleFileName = subtitleFileName;
         if (Window != null)

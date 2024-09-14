@@ -86,6 +86,11 @@ internal static class InitMenuBar
         });
         exportMenuItem.Add(new MenuFlyoutItem
         {
+            Text = new PacUnicode().Name,
+            Command = vm.ExportPacUnicodeCommand,
+        });
+        exportMenuItem.Add(new MenuFlyoutItem
+        {
             Text = Ebu.NameOfFormat,
             Command = vm.ExportEbuStlCommand,
         });
