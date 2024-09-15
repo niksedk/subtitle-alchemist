@@ -1,6 +1,7 @@
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
 
@@ -135,13 +136,13 @@ public class ExportEbuPage : ContentPage
 
         var labelErrors = new Label
         {
-            Text = "Errors",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             HorizontalTextAlignment = TextAlignment.Center,
             Padding = new Thickness(10),
         }.BindDynamicThemeTextColorOnly();
         labelErrors.SetBinding(Label.BackgroundColorProperty, nameof(vm.ErrorsBackgroundColor));
+        labelErrors.SetBinding(Label.TextProperty, nameof(vm.ErrorLogTitle));
         var tapGestureRecognizerErrors = new TapGestureRecognizer();
         tapGestureRecognizerErrors.Tapped += vm.ErrorsTapped;
         labelErrors.GestureRecognizers.Add(tapGestureRecognizerErrors);
@@ -191,7 +192,7 @@ public class ExportEbuPage : ContentPage
 
         var labelCodePageNumber = new Label
         {
-            Text = "Code Page Number",
+            Text = Se.Language.EbuSaveOptions.CodePageNumber,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -199,7 +200,7 @@ public class ExportEbuPage : ContentPage
 
         var entryCodePageNumber = new Entry
         {
-            Placeholder = "Code Page Number",
+            Placeholder = Se.Language.EbuSaveOptions.CodePageNumber,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -208,7 +209,7 @@ public class ExportEbuPage : ContentPage
 
         var labelDiskFormatCode = new Label
         {
-            Text = "Disk Format Code",
+            Text = Se.Language.EbuSaveOptions.DiskFormatCode,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -221,6 +222,7 @@ public class ExportEbuPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(pickerDiskFormatCode, 1, 1);
         pickerDiskFormatCode.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DiskFormatCodes));
+        pickerDiskFormatCode.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDiskFormatCode), BindingMode.TwoWay);
 
         var labelFrameRate = new Label
         {
@@ -237,10 +239,11 @@ public class ExportEbuPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(pickerFrameRate, 1, 2);
         pickerFrameRate.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FrameRates));
+        pickerFrameRate.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedFrameRate), BindingMode.TwoWay);
 
         var labelDisplayStandardCode = new Label
         {
-            Text = "Display Standard Code",
+            Text = Se.Language.EbuSaveOptions.DisplayStandardCode,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -253,10 +256,11 @@ public class ExportEbuPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(pickerDisplayStandardCode, 1, 3);
         pickerDisplayStandardCode.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DisplayStandardCodes));
+        pickerDisplayStandardCode.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDisplayStandardCode), BindingMode.TwoWay);
 
         var labelCharacterTable = new Label
         {
-            Text = "Character Table",
+            Text = Se.Language.EbuSaveOptions.CharacterCodeTable,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -269,10 +273,11 @@ public class ExportEbuPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(pickerCharacterTable, 1, 4);
         pickerCharacterTable.SetBinding(Picker.ItemsSourceProperty, nameof(vm.CharacterTables));
+        pickerCharacterTable.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedCharacterTable), BindingMode.TwoWay);
 
         var labelLanguageCode = new Label
         {
-            Text = "Language Code",
+            Text = Se.Language.EbuSaveOptions.LanguageCode,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -285,10 +290,11 @@ public class ExportEbuPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(pickerLanguageCode, 1, 5);
         pickerLanguageCode.SetBinding(Picker.ItemsSourceProperty, nameof(vm.LanguageCodes));
+        pickerLanguageCode.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedLanguageCode), BindingMode.TwoWay);
 
         var labelOriginalProgramTitle = new Label
         {
-            Text = "Original Program Title",
+            Text = Se.Language.EbuSaveOptions.OriginalProgramTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -296,7 +302,7 @@ public class ExportEbuPage : ContentPage
 
         var entryOriginalProgramTitle = new Entry
         {
-            Placeholder = "Original Program Title",
+            Placeholder = Se.Language.EbuSaveOptions.OriginalProgramTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -305,7 +311,7 @@ public class ExportEbuPage : ContentPage
 
         var labelOriginalEpisodeTitle = new Label
         {
-            Text = "Original Episode Title",
+            Text = Se.Language.EbuSaveOptions.OriginalEpisodeTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -313,7 +319,7 @@ public class ExportEbuPage : ContentPage
 
         var entryOriginalEpisodeTitle = new Entry
         {
-            Placeholder = "Original Episode Title",
+            Placeholder = Se.Language.EbuSaveOptions.OriginalEpisodeTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -322,7 +328,7 @@ public class ExportEbuPage : ContentPage
 
         var labelTranslatedProgramTitle = new Label
         {
-            Text = "Translated Program Title",
+            Text = Se.Language.EbuSaveOptions.TranslatedProgramTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -330,7 +336,7 @@ public class ExportEbuPage : ContentPage
 
         var entryTranslatedProgramTitle = new Entry
         {
-            Placeholder = "Translated Program Title",
+            Placeholder = Se.Language.EbuSaveOptions.TranslatedProgramTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -339,7 +345,7 @@ public class ExportEbuPage : ContentPage
 
         var labelTranslatedEpisodeTitle = new Label
         {
-            Text = "Translated Episode Title",
+            Text = Se.Language.EbuSaveOptions.TranslatedEpisodeTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -347,7 +353,7 @@ public class ExportEbuPage : ContentPage
 
         var entryTranslatedEpisodeTitle = new Entry
         {
-            Placeholder = "Translated Episode Title",
+            Placeholder = Se.Language.EbuSaveOptions.TranslatedEpisodeTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -356,7 +362,7 @@ public class ExportEbuPage : ContentPage
 
         var labelTranslatorName = new Label
         {
-            Text = "Translator Name",
+            Text = Se.Language.EbuSaveOptions.TranslatorsName,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -364,7 +370,7 @@ public class ExportEbuPage : ContentPage
 
         var entryTranslatorName = new Entry
         {
-            Placeholder = "Translator Name",
+            Placeholder = Se.Language.EbuSaveOptions.TranslatorsName,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -377,7 +383,7 @@ public class ExportEbuPage : ContentPage
 
         var labelSubtitleListReferenceCode = new Label
         {
-            Text = "Subtitle List Reference Code",
+            Text = Se.Language.EbuSaveOptions.SubtitleListReferenceCode,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Padding = new Thickness(30, 0, 0, 0),
@@ -386,7 +392,7 @@ public class ExportEbuPage : ContentPage
 
         var entrySubtitleListReferenceCode = new Entry
         {
-            Placeholder = "Subtitle List Reference Code",
+            Placeholder = Se.Language.EbuSaveOptions.SubtitleListReferenceCode,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -396,7 +402,7 @@ public class ExportEbuPage : ContentPage
         rowNo++;
         var labelCountryOfOrigin = new Label
         {
-            Text = "Country Of Origin",
+            Text = Se.Language.EbuSaveOptions.CountryOfOrigin,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Padding = new Thickness(30, 0, 0, 0),
@@ -405,7 +411,7 @@ public class ExportEbuPage : ContentPage
 
         var entryCountryOfOrigin = new Entry
         {
-            Placeholder = "Country Of Origin",
+            Placeholder = Se.Language.EbuSaveOptions.CountryOfOrigin,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -415,7 +421,7 @@ public class ExportEbuPage : ContentPage
         rowNo++;
         var labelTimeCodeStatus = new Label
         {
-            Text = "Time Code Status",
+            Text = Se.Language.EbuSaveOptions.TimeCodeStatus,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Padding = new Thickness(30, 0, 0, 0),
@@ -433,7 +439,7 @@ public class ExportEbuPage : ContentPage
         rowNo++;
         var labelStartOfProgramme = new Label
         {
-            Text = "Start Of Programme",
+            Text = Se.Language.EbuSaveOptions.TimeCodeStartOfProgramme,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Padding = new Thickness(30, 0, 0, 0),
@@ -452,21 +458,21 @@ public class ExportEbuPage : ContentPage
         rowNo++;
         var labelRevisionNumber = new Label
         {
-            Text = "Revision Number",
+            Text = Se.Language.EbuSaveOptions.RevisionNumber,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Padding = new Thickness(30, 0, 0, 0),
         }.BindDynamicTheme();
         grid.Add(labelRevisionNumber, 2, rowNo);
 
-        var entryRevisionNumber = new Entry
-        {
-            Placeholder = "Revision Number",
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme();
-        grid.Add(entryRevisionNumber, 3, rowNo);
-        entryRevisionNumber.SetBinding(Entry.TextProperty, nameof(vm.RevisionNumber));
+       var pickerRevisionNumber = new Picker
+       {
+           HorizontalOptions = LayoutOptions.Fill,
+           VerticalOptions = LayoutOptions.Center,
+       }.BindDynamicTheme();
+        grid.Add(pickerRevisionNumber, 3, rowNo);
+        pickerRevisionNumber.SetBinding(Picker.ItemsSourceProperty, nameof(vm.RevisionNumbers));
+        pickerRevisionNumber.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedRevisionNumber));
 
         rowNo++;
         var labelMaximumCharactersPerRow = new Label
@@ -478,14 +484,14 @@ public class ExportEbuPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(labelMaximumCharactersPerRow, 2, rowNo);
 
-        var entryMaximumCharactersPerRow = new Entry
+        var pickerMaximumCharactersPerRow = new Picker
         {
-            Placeholder = "Maximum Characters Per Row",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        grid.Add(entryMaximumCharactersPerRow, 3, rowNo);
-        entryMaximumCharactersPerRow.SetBinding(Entry.TextProperty, nameof(vm.MaximumCharactersPerRow));
+        grid.Add(pickerMaximumCharactersPerRow, 3, rowNo);
+        pickerMaximumCharactersPerRow.SetBinding(Picker.ItemsSourceProperty, nameof(vm.MaximumCharactersPerRowList));
+        pickerMaximumCharactersPerRow.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedMaximumCharactersPerRow));
 
         rowNo++;
         var labelMaximumRows = new Label
@@ -497,14 +503,14 @@ public class ExportEbuPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(labelMaximumRows, 2, rowNo);
 
-        var entryMaximumRows = new Entry
+        var pickerMaximumRows = new Picker
         {
-            Placeholder = "Maximum Rows",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        grid.Add(entryMaximumRows, 3, rowNo);
-        entryMaximumRows.SetBinding(Entry.TextProperty, nameof(vm.MaximumRows));
+        grid.Add(pickerMaximumRows, 3, rowNo);
+        pickerMaximumRows.SetBinding(Picker.ItemsSourceProperty, nameof(vm.MaximumRowsList));
+        pickerMaximumRows.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedMaximumRows));
 
         rowNo++;
         var labelDiscSequenceNumber = new Label
@@ -516,33 +522,33 @@ public class ExportEbuPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(labelDiscSequenceNumber, 2, rowNo);
 
-        var entryDiscSequenceNumber = new Entry
+        var pickerDiscSequenceNumber = new Picker
         {
-            Placeholder = "Disc Sequence Number",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        grid.Add(entryDiscSequenceNumber, 3, rowNo);
-        entryDiscSequenceNumber.SetBinding(Entry.TextProperty, nameof(vm.DiscSequenceNumber));
+        grid.Add(pickerDiscSequenceNumber, 3, rowNo);
+        pickerDiscSequenceNumber.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DiscSequenceNumberList));
+        pickerDiscSequenceNumber.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDiscSequenceNumber));
 
         rowNo++;
         var labelTotalNumberOfDiscs = new Label
         {
-            Text = "Total Number Of Discs",
+            Text = Se.Language.EbuSaveOptions.TotalNumberOfDisks,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Padding = new Thickness(30, 0, 0, 0),
         }.BindDynamicTheme();
         grid.Add(labelTotalNumberOfDiscs, 2, rowNo);
 
-        var entryTotalNumberOfDiscs = new Entry
+        var pickerTotalNumberOfDiscs = new Picker
         {
-            Placeholder = "Total Number Of Discs",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        grid.Add(entryTotalNumberOfDiscs, 3, rowNo);
-        entryTotalNumberOfDiscs.SetBinding(Entry.TextProperty, nameof(vm.TotalNumberOfDiscs));
+        grid.Add(pickerTotalNumberOfDiscs, 3, rowNo);
+        pickerTotalNumberOfDiscs.SetBinding(Picker.ItemsSourceProperty, nameof(vm.TotalNumberOfDiscsList));
+        pickerTotalNumberOfDiscs.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedTotalNumberOfDiscs));
 
 
         // import, column 3
@@ -631,7 +637,7 @@ public class ExportEbuPage : ContentPage
 
         var labelVerticalPosition = new Label
         {
-            Text = "Vertical Position",
+            Text = Se.Language.EbuSaveOptions.VerticalPosition,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Padding = new Thickness(0, 50, 0, 0),
@@ -641,58 +647,93 @@ public class ExportEbuPage : ContentPage
 
         var labelMarginTop = new Label
         {
-            Text = "Margin Top (for top aligned subtitles)",
+            Text = Se.Language.EbuSaveOptions.MarginTop,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
         grid.Add(labelMarginTop, 0, 2);
 
-        var entryMarginTop = new Entry
+        var pickerMarginTop = new Picker
         {
-            Placeholder = "Margin Top",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        grid.Add(entryMarginTop, 1, 2);
+        pickerMarginTop.SetBinding(Picker.ItemsSourceProperty, nameof(vm.MarginTopList));
+        pickerMarginTop.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedMarginTop));
+        grid.Add(pickerMarginTop, 1, 2);
+
+        var labelMarginBottom = new Label
+        {
+            Text = Se.Language.EbuSaveOptions.MarginBottom,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        grid.Add(labelMarginBottom, 0, 3);
+
+        var pickerMarginBottom = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        pickerMarginBottom.SetBinding(Picker.ItemsSourceProperty, nameof(vm.MarginBottomList));
+        pickerMarginBottom.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedMarginBottom));
+        grid.Add(pickerMarginBottom, 1, 3);
+
+        var labelNewLineRows = new Label
+        {
+            Text = Se.Language.EbuSaveOptions.NewLineRows,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        grid.Add(labelNewLineRows, 0, 4);
+
+        var pickerNewLineRows = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        pickerNewLineRows.SetBinding(Picker.ItemsSourceProperty, nameof(vm.NewLineRowsList));
+        pickerNewLineRows.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedNewLineRows));
+        grid.Add(pickerNewLineRows, 1, 4);
 
         var labelTeletext = new Label
         {
-            Text = "Teletext",
+            Text = Se.Language.EbuSaveOptions.Teletext,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Padding = new Thickness(0, 50, 0, 0),
         }.BindDynamicTheme();
-        grid.Add(labelTeletext, 0, 3);
+        grid.Add(labelTeletext, 0, 5);
 
         var labelUseBox = new Label
         {
-            Text = "Use Box",
+            Text = Se.Language.EbuSaveOptions.UseBox,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        grid.Add(labelUseBox, 0, 4);
+        grid.Add(labelUseBox, 0, 6);
 
         var switchUseBox = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        grid.Add(switchUseBox, 1, 4);
+        grid.Add(switchUseBox, 1, 6);
 
         var labelDoubleHeight = new Label
         {
-            Text = "Double Height",
+            Text = Se.Language.EbuSaveOptions.DoubleHeight,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        grid.Add(labelDoubleHeight, 0, 5);
+        grid.Add(labelDoubleHeight, 0, 7);
 
         var switchDoubleHeight = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        grid.Add(switchDoubleHeight, 1, 5);
+        grid.Add(switchDoubleHeight, 1, 7);
 
 
         var windowBorder = new Border
@@ -735,10 +776,10 @@ public class ExportEbuPage : ContentPage
 
         var labelErrors = new Label
         {
-            Text = "Errors",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
+        labelErrors.SetBinding(Label.TextProperty, nameof(vm.ErrorLogTitle));
         grid.Add(labelErrors, 0);
 
         var editorErrors = new Editor
@@ -749,6 +790,7 @@ public class ExportEbuPage : ContentPage
             FontFamily = "RobotoMono",
         }.BindDynamicTheme();
         grid.Add(editorErrors, 0, 1);
+        editorErrors.SetBinding(Editor.TextProperty, nameof(vm.ErrorLog));
 
         var scrollView = new ScrollView
         {

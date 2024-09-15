@@ -4,10 +4,14 @@ using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections.ObjectModel;
+using Nikse.SubtitleEdit.Core.Common;
+using System.Text;
+using SubtitleAlchemist.Logic.Config;
+using System.Globalization;
 
 namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
 {
-    public partial class ExportEbuModel : ObservableObject
+    public partial class ExportEbuModel : ObservableObject, IQueryAttributable
     {
         [ObservableProperty]
         private string _codePageNumber = string.Empty;
@@ -40,7 +44,7 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
         private ObservableCollection<LanguageItem> _languageCodes;
 
         [ObservableProperty]
-        private string _selectedLanguageCode = string.Empty;
+        private LanguageItem? _selectedLanguageCode;
 
         [ObservableProperty]
         private string _originalProgramTitle = string.Empty;
@@ -73,20 +77,34 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
         private TimeSpan _startOfProgramme;
 
         [ObservableProperty]
-        private int _revisionNumber;
+        private ObservableCollection<int> _revisionNumbers;
 
         [ObservableProperty]
-        private int _maximumCharactersPerRow;
+        private int _selectedRevisionNumber;
 
         [ObservableProperty]
-        private int _maximumRows;
+        private ObservableCollection<int> _maximumCharactersPerRowList;
 
         [ObservableProperty]
-        private int _discSequenceNumber;
+        private int _selectedMaximumCharactersPerRow;
 
         [ObservableProperty]
-        private int _totalNumberOfDiscs;
+        private ObservableCollection<int> _maximumRowsList;
 
+        [ObservableProperty]
+        private int _selectedMaximumRows;
+
+        [ObservableProperty]
+        private ObservableCollection<int> _discSequenceNumberList;
+
+        [ObservableProperty]
+        private int _selectedDiscSequenceNumber;
+
+        [ObservableProperty]
+        private ObservableCollection<int> _totalNumberOfDiscsList;
+
+        [ObservableProperty]
+        private int _selectedTotalNumberOfDiscs;
 
         [ObservableProperty]
         private ObservableCollection<string> _justificationCodes;
@@ -95,19 +113,34 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
         private string _selectedJustificationCode = string.Empty;
 
         [ObservableProperty]
-        private int _marginTop;
+        private ObservableCollection<int> _marginTopList;
 
         [ObservableProperty]
-        private int _marginBottom;
+        private int _selectedMarginTop;
 
         [ObservableProperty]
-        private int _newLineRows;
+        private ObservableCollection<int> _marginBottomList;
+
+        [ObservableProperty]
+        private int _selectedMarginBottom;
+
+        [ObservableProperty]
+        private ObservableCollection<int> _newLineRowsList;
+
+        [ObservableProperty]
+        private int _selectedNewLineRows;
 
         [ObservableProperty]
         private bool _teletextBox;
 
         [ObservableProperty]
         private bool _teletextDoubleHeight;
+
+        [ObservableProperty]
+        private string _errorLogTitle = "Errors";
+
+        [ObservableProperty]
+        private string _errorLog;
 
         [ObservableProperty]
         private Color _generalBackgroundColor;
@@ -122,6 +155,8 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
         public Border GeneralView { get; set; } = new Border();
         public Border TextAndTimingView { get; set; } = new Border();
         public Border ErrorsView { get; set; } = new Border();
+
+        private Subtitle _subtitle = new Subtitle();
 
         private readonly IFileHelper _fileHelper;
 
@@ -287,6 +322,22 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
                 "Centered text",
                 "Right-justified text",
             };
+
+            _revisionNumbers = new ObservableCollection<int>(Enumerable.Range(0, 100).ToList());
+
+            _maximumCharactersPerRowList = new ObservableCollection<int>(Enumerable.Range(0, 100).ToList());
+
+            _maximumRowsList = new ObservableCollection<int>(Enumerable.Range(0, 100).ToList());
+
+            _discSequenceNumberList = new ObservableCollection<int>(Enumerable.Range(0, 10).ToList());
+
+            _totalNumberOfDiscsList = new ObservableCollection<int>(Enumerable.Range(0, 10).ToList());
+
+            _marginTopList = new ObservableCollection<int>(Enumerable.Range(0, 51).ToList());
+
+            _marginBottomList = new ObservableCollection<int>(Enumerable.Range(0, 51).ToList());
+
+            _newLineRowsList = new ObservableCollection<int>(Enumerable.Range(0, 11).ToList());
         }
 
         [RelayCommand]
@@ -305,7 +356,7 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
                 return;
             }
 
-            //TODO: Implement import
+            FillHeaderFromFile(subtitleFileName);
         }
 
         [RelayCommand]
@@ -369,6 +420,206 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
             {
                 await ErrorsView.Content!.FadeTo(1, 200);
             });
+        }
+
+        public void ApplyQueryAttributes(IDictionary<string, object> query)
+        {
+            if (query["Subtitle"] is Subtitle subtitle)
+            {
+                Initialize(subtitle);
+            }
+        }
+
+        private void Initialize(Subtitle? subtitle)
+        {
+            _subtitle = subtitle ?? new Subtitle();
+
+            Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    SelectedDiskFormatCode = DiskFormatCodes[2];
+                    SelectedFrameRate = FrameRates[2];
+                    SelectedDisplayStandardCode = DisplayStandardCodes[0];
+                    SelectedCharacterTable = CharacterTables[0];
+                    SelectedLanguageCode = LanguageCodes.FirstOrDefault(p => p.Language == "English");
+                    SelectedTimeCodeStatus = TimeCodeStatusList[1];
+                    SelectedJustificationCode = JustificationCodes[1];
+                    SelectedRevisionNumber = 1;
+                    SelectedMaximumCharactersPerRow = 40;
+                    SelectedMaximumRows = 23;
+                    SelectedDiscSequenceNumber = 1;
+                    SelectedTotalNumberOfDiscs = 1;
+                    SelectedMarginTop = 0;
+                    SelectedMarginBottom = 2;
+                    SelectedNewLineRows = 2;
+
+                    CheckErrors(_subtitle);
+                });
+                return false;
+            });
+        }
+
+        private void FillHeaderFromFile(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                var ebu = new Ebu();
+                var temp = new Subtitle();
+                ebu.LoadSubtitle(temp, null, fileName);
+                FillFromHeader(ebu.Header);
+                if (ebu.JustificationCodes.Count > 2 && ebu.JustificationCodes[1] == ebu.JustificationCodes[2])
+                {
+                    if (ebu.JustificationCodes[1] >= 0 && ebu.JustificationCodes[1] < JustificationCodes.Count)
+                    {
+                        SelectedJustificationCode = JustificationCodes[ebu.JustificationCodes[1]];
+                    }
+                }
+            }
+        }
+
+        private void FillFromHeader(Ebu.EbuGeneralSubtitleInformation header)
+        {
+            CodePageNumber = header.CodePageNumber;
+
+            SelectedDiskFormatCode = DiskFormatCodes.First(p => p.Contains(header.DiskFormatCode, StringComparison.OrdinalIgnoreCase));
+
+            if (header.FrameRateFromSaveDialog is > 20 and < 200)
+            {
+                SelectedFrameRate = header.FrameRateFromSaveDialog.ToString(CultureInfo.CurrentCulture);
+            }
+
+            SelectedDisplayStandardCode = DisplayStandardCodes.First(p=>p.StartsWith(header.DisplayStandardCode, StringComparison.InvariantCulture));
+
+            if (int.TryParse(header.CharacterCodeTableNumber, out var tableNumber))
+            {
+                SelectedCharacterTable = CharacterTables[tableNumber];
+            }
+
+            SelectedLanguageCode  = LanguageCodes.FirstOrDefault(p=>p.Code == header.LanguageCode);
+            OriginalProgramTitle = header.OriginalProgrammeTitle.TrimEnd();
+            OriginalEpisodeTitle = header.OriginalEpisodeTitle.TrimEnd();
+            TranslatedProgramTitle = header.TranslatedProgrammeTitle.TrimEnd();
+            TranslatedEpisodeTitle = header.TranslatedEpisodeTitle.TrimEnd();
+            TranslatorName = header.TranslatorsName.TrimEnd();
+            SubtitleListReferenceCode = header.SubtitleListReferenceCode.TrimEnd();
+            CountryOfOrigin = header.CountryOfOrigin;
+
+            SelectedTimeCodeStatus = TimeCodeStatusList.Last();
+            if (header.TimeCodeStatus == "0")
+            {
+                SelectedTimeCodeStatus = TimeCodeStatusList.First();
+            }
+
+            try
+            {
+                // HHMMSSFF
+                var hh = int.Parse(header.TimeCodeStartOfProgramme.Substring(0, 2));
+                var mm = int.Parse(header.TimeCodeStartOfProgramme.Substring(2, 2));
+                var ss = int.Parse(header.TimeCodeStartOfProgramme.Substring(4, 2));
+                var ff = int.Parse(header.TimeCodeStartOfProgramme.Substring(6, 2));
+                StartOfProgramme = new TimeCode(hh, mm, ss, SubtitleFormat.FramesToMillisecondsMax999(ff)).TimeSpan;
+            }
+            catch (Exception)
+            {
+                StartOfProgramme = new TimeSpan(0);
+            }
+
+            if (int.TryParse(header.RevisionNumber, out var number))
+            {
+                SelectedRevisionNumber = number;
+            }
+            else
+            {
+                SelectedRevisionNumber = 1;
+            }
+
+            if (int.TryParse(header.MaximumNumberOfDisplayableCharactersInAnyTextRow, out number))
+            {
+                SelectedMaximumCharactersPerRow = number;
+            }
+
+            SelectedMaximumRows = 23;
+            if (int.TryParse(header.MaximumNumberOfDisplayableRows, out number))
+            {
+                SelectedMaximumRows = number;
+            }
+
+            if (int.TryParse(header.DiskSequenceNumber, out number))
+            {
+                SelectedDiscSequenceNumber = number;
+            }
+            else
+            {
+                SelectedDiscSequenceNumber = 1;
+            }
+
+            if (int.TryParse(header.TotalNumberOfDisks, out number))
+            {
+                SelectedTotalNumberOfDiscs = number;
+            }
+            else
+            {
+                SelectedTotalNumberOfDiscs = 1;
+            }
+        }
+
+        private void CheckErrors(Subtitle subtitle)
+        {
+            if (subtitle.Paragraphs.Count == 0)
+            {
+                return;
+            }
+
+            var sb = new StringBuilder();
+            var errorCount = 0;
+            var i = 1;
+            var isTeletext = SelectedDiskFormatCode.Contains("teletext", StringComparison.OrdinalIgnoreCase);
+            foreach (var p in subtitle.Paragraphs)
+            {
+                var arr = p.Text.SplitToLines();
+                for (var index = 0; index < arr.Count; index++)
+                {
+                    var line = arr[index];
+                    var s = HtmlUtil.RemoveHtmlTags(line, true);
+                    if (s.Length > SelectedMaximumCharactersPerRow)
+                    {
+                        sb.AppendLine(string.Format(Se.Language.EbuSaveOptions.MaxLengthError, i, SelectedMaximumCharactersPerRow, s.Length - SelectedMaximumCharactersPerRow, s));
+                        errorCount++;
+                    }
+
+                    if (isTeletext)
+                    {
+                        // See https://kb.fab-online.com/0040-fabsubtitler-editor/00010-linelengthineditor/
+
+                        // 36 characters for double height colored tex
+                        if (arr.Count == 2 && s.Length > 36 && arr[index].Contains("<font ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            sb.AppendLine($"Line {i}-{index + 1}: 36 (not {s.Length}) should be maximum characters for double height colored text");
+                            errorCount++;
+                        }
+
+                        // 37 characters for double height white text
+                        else if (arr.Count == 2 && s.Length > 37 && !p.Text.Contains("<font ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            sb.AppendLine($"Line {i}-{index + 1}: 37 (not {s.Length}) should be maximum characters for double height white text");
+                            errorCount++;
+                        }
+
+                        // 38 characters for single height white text
+                        else if (arr.Count == 1 && s.Length > 38)
+                        {
+                            sb.AppendLine($"Line {i}: 38 (not {s.Length}) should be maximum characters for single height white text");
+                            errorCount++;
+                        }
+                    }
+                }
+
+                i++;
+            }
+
+            ErrorLog = sb.ToString();
+            ErrorLogTitle = string.Format(Se.Language.EbuSaveOptions.ErrorsX, errorCount);
         }
     }
 }

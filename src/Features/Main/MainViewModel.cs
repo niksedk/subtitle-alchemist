@@ -720,7 +720,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     public async Task ExportEbuStl()
     {
         //TODO: fix
-        await Shell.Current.GoToAsync(nameof(ExportEbuPage));
+        await Shell.Current.GoToAsync(nameof(ExportEbuPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
+        });
     }
 
     [RelayCommand]
