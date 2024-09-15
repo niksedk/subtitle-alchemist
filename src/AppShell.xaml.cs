@@ -1,4 +1,5 @@
 ﻿using SubtitleAlchemist.Features.Files;
+using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
 using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
@@ -14,7 +15,7 @@ namespace SubtitleAlchemist
         {
             InitializeComponent();
 
-            //Routing.RegisterRoute(nameof(MainPage), typeof(MainPage));
+            //Routing.RegisterRoute(nameof(MainPage), typeof(MainPage)); -- defined in xml... not sure how to remove from xml...
             Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
             Routing.RegisterRoute(nameof(AudioToTextWhisperPage), typeof(AudioToTextWhisperPage));
             Routing.RegisterRoute(nameof(WhisperAdvancedPage), typeof(WhisperAdvancedPage));
@@ -23,6 +24,7 @@ namespace SubtitleAlchemist
             Routing.RegisterRoute(nameof(FixCommonErrorsPage), typeof(FixCommonErrorsPage));
             Routing.RegisterRoute(nameof(SpellCheckerPage), typeof(SpellCheckerPage));
             Routing.RegisterRoute(nameof(RestoreAutoBackupPage), typeof(RestoreAutoBackupPage));
+            Routing.RegisterRoute(nameof(ExportEbuPage), typeof(ExportEbuPage));
         }
     }
 }

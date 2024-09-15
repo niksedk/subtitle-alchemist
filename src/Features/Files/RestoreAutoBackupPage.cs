@@ -1,7 +1,5 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Constants;
-using static Microsoft.Maui.Controls.VisualStateManager;
 
 namespace SubtitleAlchemist.Features.Files;
 

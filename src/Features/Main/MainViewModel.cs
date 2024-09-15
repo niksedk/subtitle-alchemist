@@ -641,10 +641,43 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
+    public async Task ExportCapMakerPlus()
+    {
+        //TODO: wait for libse 4.0.9
+        //var format = new CapMakerPlus();
+        //using var ms = new MemoryStream();
+        //format.Save(_subtitleFileName, ms, UpdatedSubtitle, false);
+
+        //var fileHelper = new FileHelper();
+        //var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {CurrentSubtitleFormat.Name} file as", _videoFileName, format);
+        //if (!string.IsNullOrEmpty(subtitleFileName))
+        //{
+        //    ShowStatus($"File exported in format {format.Name} to {subtitleFileName}");
+        //}
+    }
+
+    [RelayCommand]
     public async Task ExportCavena890()
     {
-        //TODO: fix
-        await _popupService.ShowPopupAsync<ExportCavena890PopupModel>(CancellationToken.None);
+        var result = await _popupService
+            .ShowPopupAsync<ExportCavena890PopupModel>(onPresenting: viewModel
+                => viewModel.SetValues(UpdatedSubtitle), CancellationToken.None);
+
+        if (result is not (string and "OK"))
+        {
+            return;
+        }
+
+        var cavena = new Cavena890();
+        using var ms = new MemoryStream();
+        cavena.Save(_subtitleFileName, ms, UpdatedSubtitle, false);
+
+        var fileHelper = new FileHelper();
+        var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {CurrentSubtitleFormat.Name} file as", _videoFileName, cavena);
+        if (!string.IsNullOrEmpty(subtitleFileName))
+        {
+            ShowStatus($"File exported in format {cavena.Name} to {subtitleFileName}");
+        }
     }
 
     [RelayCommand]
@@ -658,10 +691,10 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         var pac = new Pac { CodePage = codePage };
         using var ms = new MemoryStream();
-        pac.Save("", ms, UpdatedSubtitle);
+        pac.Save(_subtitleFileName, ms, UpdatedSubtitle);
 
         var fileHelper = new FileHelper();
-        var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {CurrentSubtitleFormat.Name} file as", _videoFileName, new Pac());
+        var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {CurrentSubtitleFormat.Name} file as", _videoFileName, pac);
         if (!string.IsNullOrEmpty(subtitleFileName))
         {
             ShowStatus($"File exported in format {pac.Name} to {subtitleFileName}");
@@ -673,10 +706,10 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     {
         var pacUnicode = new PacUnicode();
         using var ms = new MemoryStream();
-        pacUnicode.Save("", ms, UpdatedSubtitle);
+        pacUnicode.Save(_subtitleFileName, ms, UpdatedSubtitle);
 
         var fileHelper = new FileHelper();
-        var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {CurrentSubtitleFormat.Name} file as", _videoFileName, new Pac());
+        var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {CurrentSubtitleFormat.Name} file as", _videoFileName, pacUnicode);
         if (!string.IsNullOrEmpty(subtitleFileName))
         {
             ShowStatus($"File exported in format {pacUnicode.Name} to {subtitleFileName}");
@@ -687,7 +720,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     public async Task ExportEbuStl()
     {
         //TODO: fix
-        await _popupService.ShowPopupAsync<ExportEbuPopupModel>(CancellationToken.None);
+        await Shell.Current.GoToAsync(nameof(ExportEbuPage));
     }
 
     [RelayCommand]
@@ -908,7 +941,10 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
-        if (string.IsNullOrEmpty(_subtitleFileName))
+        var format = CurrentSubtitleFormat;
+
+        if (string.IsNullOrEmpty(_subtitleFileName) ||
+            !_subtitleFileName.EndsWith(format.Extension, StringComparison.OrdinalIgnoreCase))
         {
             await SubtitleSaveAs();
             return;
@@ -928,6 +964,18 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private void ShowStatus(string statusText)
     {
         StatusText = statusText;
+
+        MainPage?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(6_000), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (StatusText == statusText)
+                {
+                    StatusText = string.Empty;
+                }
+            });
+            return false;
+        });
     }
 
     [RelayCommand]

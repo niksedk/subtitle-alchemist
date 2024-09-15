@@ -5,7 +5,7 @@ using Nikse.SubtitleEdit.Core.SubtitleFormats;
 
 namespace SubtitleAlchemist.Logic.Media
 {
-    public class FileHelper
+    public class FileHelper : IFileHelper
     {
         public async Task<string> PickAndShowSubtitleFile(string title)
         {
@@ -19,6 +19,37 @@ namespace SubtitleAlchemist.Logic.Media
                         { DevicePlatform.WinUI, new[] { ".srt", ".ass" } }, // file extension
                         { DevicePlatform.Tizen, new[] { "*/*" } },
                         { DevicePlatform.macOS, new[] { "srt", "ass" } }, // UTType values
+                    });
+
+                var pickOptions = new PickOptions
+                {
+                    FileTypes = customFileType,
+                    PickerTitle = title,
+                };
+
+                var result = await FilePicker.Default.PickAsync(pickOptions);
+                return result?.FullPath ?? string.Empty;
+            }
+            catch
+            {
+                // The user canceled or something went wrong
+            }
+
+            return string.Empty;
+        }
+
+        public async Task<string> PickAndShowSubtitleFile(string title, SubtitleFormat format)
+        {
+            try
+            {
+                var customFileType = new FilePickerFileType(
+                    new Dictionary<DevicePlatform, IEnumerable<string>>
+                    {
+                        { DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // UTType values
+                        { DevicePlatform.Android, new[] { "application/text" } }, // MIME type
+                        { DevicePlatform.WinUI, new[] { format.Extension } }, // file extension
+                        { DevicePlatform.Tizen, new[] { "*/*" } },
+                        { DevicePlatform.macOS, new[] { format.Extension.TrimStart('.') } }, // UTType values
                     });
 
                 var pickOptions = new PickOptions

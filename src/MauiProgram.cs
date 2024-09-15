@@ -24,6 +24,7 @@ using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Dictionaries;
+using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Services;
 
 namespace SubtitleAlchemist
@@ -64,9 +65,12 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<SpellCheckerPageModel>();
             builder.Services.AddTransient<RestoreAutoBackupPage>();
             builder.Services.AddTransient<RestoreAutoBackupModel>();
+            builder.Services.AddTransient<ExportEbuPage>();
+            builder.Services.AddTransient<ExportEbuModel>();
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<INamesList, SeNamesList>();
             builder.Services.AddTransient<IAutoBackup, AutoBackup>();
+            builder.Services.AddTransient<IFileHelper, FileHelper>();
 
             builder.Services.AddTransientPopup<AboutPopup, AboutPopupModel>();
             builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerModel>();
@@ -82,7 +86,6 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<FixCommonErrorsProfilePopup, FixCommonErrorsProfilePopupModel>();
             builder.Services.AddTransientPopup<GoToLineNumberPopup, GoToLineNumberPopupModel>();
             builder.Services.AddTransientPopup<ExportCavena890Popup, ExportCavena890PopupModel>();
-            builder.Services.AddTransientPopup<ExportEbuPopup, ExportEbuPopupModel>();
             builder.Services.AddTransientPopup<ExportPacPopup, ExportPacPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
