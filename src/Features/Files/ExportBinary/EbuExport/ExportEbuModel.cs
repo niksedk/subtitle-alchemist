@@ -13,8 +13,12 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
 {
     public partial class ExportEbuModel : ObservableObject, IQueryAttributable
     {
+
         [ObservableProperty]
-        private string _codePageNumber = string.Empty;
+        private ObservableCollection<CodePageNumberItem> _codePageNumbers;
+
+        [ObservableProperty]
+        private CodePageNumberItem? _selectedCodePageNumber;
 
         [ObservableProperty]
         private ObservableCollection<string> _diskFormatCodes;
@@ -157,15 +161,21 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
         public Border ErrorsView { get; set; } = new Border();
 
         private Subtitle _subtitle = new Subtitle();
+        private bool _useSubtitleFileName = false;
+        private Ebu.EbuGeneralSubtitleInformation _header = new Ebu.EbuGeneralSubtitleInformation();
 
         private readonly IFileHelper _fileHelper;
 
         public ExportEbuModel(IFileHelper fileHelper)
         {
+            _errorLog = string.Empty;
             _fileHelper = fileHelper;
             GeneralBackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
             TextAndTimingBackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
             ErrorsBackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+
+            _codePageNumbers = new ObservableCollection<CodePageNumberItem>(CodePageNumberItem.GetCodePageNumberItems());
+            _selectedCodePageNumber = _codePageNumbers[0];
 
             _diskFormatCodes = new ObservableCollection<string>
             {
@@ -362,7 +372,61 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
         [RelayCommand]
         private async Task Ok()
         {
+            _header.CodePageNumber = SelectedCodePageNumber == null ? "865" : SelectedCodePageNumber.CodePage;
 
+            _header.DiskFormatCode = RemoveAfterParenthesisAndTrim(SelectedDiskFormatCode);
+
+            if (double.TryParse(SelectedFrameRate.Replace(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, "."), out var d) && d is > 20 and < 200)
+            {
+                _header.FrameRateFromSaveDialog = d;
+            }
+
+            var firstLetter = SelectedDisplayStandardCode[0].ToString();
+            _header.DisplayStandardCode = int.TryParse(firstLetter, out _) ? firstLetter : " ";
+
+            _header.CharacterCodeTableNumber = "0" + CharacterTables.IndexOf(SelectedCharacterTable);
+            _header.LanguageCode = SelectedLanguageCode != null ? SelectedLanguageCode.Code : string.Empty;
+            if (_header.LanguageCode.Length != 2)
+            {
+                _header.LanguageCode = "0A";
+            }
+
+            _header.OriginalProgrammeTitle = OriginalProgramTitle.PadRight(32, ' ');
+            _header.OriginalEpisodeTitle = OriginalEpisodeTitle.PadRight(32, ' ');
+            _header.TranslatedProgrammeTitle = TranslatedProgramTitle.PadRight(32, ' ');
+            _header.TranslatedEpisodeTitle = TranslatedEpisodeTitle.PadRight(32, ' ');
+            _header.TranslatorsName = TranslatorName.PadRight(32, ' ');
+            _header.SubtitleListReferenceCode = SubtitleListReferenceCode.PadRight(16, ' ');
+            _header.CountryOfOrigin = CountryOfOrigin;
+            if (_header.CountryOfOrigin.Length != 3)
+            {
+                _header.CountryOfOrigin = "USA";
+            }
+
+            _header.TimeCodeStatus = TimeCodeStatusList.IndexOf(SelectedTimeCodeStatus).ToString(CultureInfo.InvariantCulture);
+            _header.TimeCodeStartOfProgramme = new TimeCode(StartOfProgramme).ToHHMMSSFF().RemoveChar(':');
+
+            _header.RevisionNumber = SelectedRevisionNumber.ToString("00");
+            _header.MaximumNumberOfDisplayableCharactersInAnyTextRow = SelectedMaximumCharactersPerRow.ToString("00");
+            _header.MaximumNumberOfDisplayableRows = SelectedMaximumRows.ToString("00");
+            _header.DiskSequenceNumber = SelectedDiscSequenceNumber.ToString(CultureInfo.InvariantCulture);
+            _header.TotalNumberOfDisks = SelectedTotalNumberOfDiscs.ToString(CultureInfo.InvariantCulture);
+
+            //TODO: JustificationCode = (byte)JustificationCodes.IndexOf(SelectedJustificationCode);
+            Configuration.Settings.SubtitleSettings.EbuStlMarginTop = SelectedMarginTop;
+            Configuration.Settings.SubtitleSettings.EbuStlMarginBottom = SelectedMarginBottom;
+            Configuration.Settings.SubtitleSettings.EbuStlNewLineRows = SelectedNewLineRows;
+            Configuration.Settings.SubtitleSettings.EbuStlTeletextUseBox = TeletextBox;
+            Configuration.Settings.SubtitleSettings.EbuStlTeletextUseDoubleHeight = TeletextDoubleHeight;
+
+            _subtitle.Header = _header.ToString();
+
+            await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+            {
+                { "Page", nameof(ExportEbuPage) },
+                { "Subtitle", _subtitle },
+                { "UseSubtitleFileName", _useSubtitleFileName },
+            });
         }
 
         [RelayCommand]
@@ -428,6 +492,11 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
             {
                 Initialize(subtitle);
             }
+
+            if (query["UseSubtitleFileName"] is bool useSubtitleFileName)
+            {
+                _useSubtitleFileName = useSubtitleFileName;
+            }
         }
 
         private void Initialize(Subtitle? subtitle)
@@ -480,7 +549,7 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
 
         private void FillFromHeader(Ebu.EbuGeneralSubtitleInformation header)
         {
-            CodePageNumber = header.CodePageNumber;
+            SelectedCodePageNumber = CodePageNumbers.FirstOrDefault(p=>p.CodePage == header.CodePageNumber);
 
             SelectedDiskFormatCode = DiskFormatCodes.First(p => p.Contains(header.DiskFormatCode, StringComparison.OrdinalIgnoreCase));
 
@@ -489,14 +558,14 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
                 SelectedFrameRate = header.FrameRateFromSaveDialog.ToString(CultureInfo.CurrentCulture);
             }
 
-            SelectedDisplayStandardCode = DisplayStandardCodes.First(p=>p.StartsWith(header.DisplayStandardCode, StringComparison.InvariantCulture));
+            SelectedDisplayStandardCode = DisplayStandardCodes.First(p => p.StartsWith(header.DisplayStandardCode, StringComparison.InvariantCulture));
 
             if (int.TryParse(header.CharacterCodeTableNumber, out var tableNumber))
             {
                 SelectedCharacterTable = CharacterTables[tableNumber];
             }
 
-            SelectedLanguageCode  = LanguageCodes.FirstOrDefault(p=>p.Code == header.LanguageCode);
+            SelectedLanguageCode = LanguageCodes.FirstOrDefault(p => p.Code == header.LanguageCode);
             OriginalProgramTitle = header.OriginalProgrammeTitle.TrimEnd();
             OriginalEpisodeTitle = header.OriginalEpisodeTitle.TrimEnd();
             TranslatedProgramTitle = header.TranslatedProgrammeTitle.TrimEnd();
@@ -562,6 +631,12 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
             {
                 SelectedTotalNumberOfDiscs = 1;
             }
+        }
+
+        private string RemoveAfterParenthesisAndTrim(string input)
+        {
+            var index = input.IndexOf("(");
+            return index >= 0 ? input.Substring(0, index).TrimEnd() : input;
         }
 
         private void CheckErrors(Subtitle subtitle)

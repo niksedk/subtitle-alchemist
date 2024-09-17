@@ -4,8 +4,6 @@ using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic;
 using System.Collections.ObjectModel;
 using SubtitleAlchemist.Logic.Constants;
-using SharpHook.Native;
-using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace SubtitleAlchemist.Features.Files;
 

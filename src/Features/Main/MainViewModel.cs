@@ -228,6 +228,41 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             }
         }
 
+        if (page == nameof(ExportEbuPage))
+        {
+            Ebu.EbuUiHelper = new EbuHelper();
+
+            var useCurrentSubtitleFileName = false;
+            if (query["UseSubtitleFileName"] is bool useSubtitleFileName)
+            {
+                useCurrentSubtitleFileName = useSubtitleFileName;
+            }
+
+            if (query["Subtitle"] is Subtitle subtitle)
+            {
+                var format = new Ebu();
+                using var ms = new MemoryStream();
+                _subtitle.Header = subtitle.Header;
+                format.Save(_subtitleFileName, ms, UpdatedSubtitle, false);
+
+                if (!useCurrentSubtitleFileName || string.IsNullOrEmpty(_subtitleFileName))
+                {
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        var fileHelper = new FileHelper();
+                        var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {format.Name} file as", _videoFileName, format);
+                        if (!string.IsNullOrEmpty(subtitleFileName))
+                        {
+                            ShowStatus($"File exported in format {format.Name} to {subtitleFileName}");
+                        }
+                    });
+
+                    return;
+                }
+
+                File.WriteAllBytes(_subtitleFileName, ms.ToArray());
+            }
+        }
     }
 
     private void AudioVisualizerOnPlayToggle(object? sender, EventArgs e)
@@ -641,7 +676,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
-    public async Task ExportCapMakerPlus()
+    public void ExportCapMakerPlus()
     {
         //TODO: wait for libse 4.0.9
         //var format = new CapMakerPlus();
@@ -719,11 +754,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     public async Task ExportEbuStl()
     {
-        //TODO: fix
         await Shell.Current.GoToAsync(nameof(ExportEbuPage), new Dictionary<string, object>
         {
             { "Page", nameof(MainPage) },
             { "Subtitle", UpdatedSubtitle },
+            { "UseSubtitleFileName", false },
         });
     }
 
@@ -791,11 +826,23 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
             if (subtitle == null)
             {
+                var fileSize = (long)0;
+                try
+                {
+                    var fi = new FileInfo(subtitleFileName);
+                    fileSize = fi.Length;
+                }
+                catch
+                {
+                    // ignore
+                }
+
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
+                    var message = fileSize == 0 ? "File size is zero!" : "Unknown format?";
                     await MainPage!.DisplayAlert(
                         "Open subtitle failed",
-                        "Unable to read subtitle file - unknown format?",
+                        $"Unable to read subtitle file \"{subtitleFileName}\". {message}",
                         "OK");
                 });
 
@@ -804,6 +851,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         }
 
         _subtitle = subtitle;
+        if (SubtitleFormatPicker != null)
+        {
+            SubtitleFormatPicker.SelectedItem = subtitle.OriginalFormat.Name;
+        }
+
         Paragraphs = _subtitle.Paragraphs.Select(p => new DisplayParagraph(p)).ToObservableCollection();
         _subtitleFileName = subtitleFileName;
         if (Window != null)
@@ -921,18 +973,16 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             CurrentSubtitleFormat,
             _subtitle);
 
-        if (!string.IsNullOrEmpty(subtitleFileName))
+        if (string.IsNullOrEmpty(subtitleFileName))
         {
-            var text = UpdatedSubtitle.ToText(CurrentSubtitleFormat);
-            await File.WriteAllTextAsync(subtitleFileName, text, CurrentEncoding); //TODO: BOM or not...
+            return;
+        }
 
-            _subtitleFileName = subtitleFileName;
-            if (Window != null)
-            {
-                Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
-            }
-
-            AddToRecentFiles();
+        _subtitleFileName = subtitleFileName;
+        await SubtitleSave();
+        if (Window != null)
+        {
+            Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
         }
     }
 
@@ -951,6 +1001,28 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             !_subtitleFileName.EndsWith(format.Extension, StringComparison.OrdinalIgnoreCase))
         {
             await SubtitleSaveAs();
+            return;
+        }
+
+        if (format.Name == Ebu.NameOfFormat)
+        {
+            Ebu.EbuUiHelper = new EbuHelper();
+            var ebu = new Ebu();
+            if (_subtitleFileName.EndsWith(ebu.Extension, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(_subtitle.Header) &&
+                _subtitle.Header.Length > 20 && _subtitle.Header.Substring(3, 3) == "STL")
+            {
+                ebu.Save(_subtitleFileName, UpdatedSubtitle);
+                ShowStatus("Saved: " + _subtitleFileName);
+                return;
+            }
+
+            await Shell.Current.GoToAsync(nameof(ExportEbuPage), new Dictionary<string, object>
+            {
+                { "Page", nameof(MainPage) },
+                { "Subtitle", UpdatedSubtitle },
+                { "UseSubtitleFileName", true },
+            });
+
             return;
         }
 

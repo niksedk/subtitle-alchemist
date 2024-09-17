@@ -198,14 +198,14 @@ public class ExportEbuPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(labelCodePageNumber, 0);
 
-        var entryCodePageNumber = new Entry
+        var pickerCodePageNumber = new Picker
         {
-            Placeholder = Se.Language.EbuSaveOptions.CodePageNumber,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        grid.Add(entryCodePageNumber, 1);
-        entryCodePageNumber.SetBinding(Entry.TextProperty, nameof(vm.CodePageNumber));
+        grid.Add(pickerCodePageNumber, 1);
+        pickerCodePageNumber.SetBinding(Picker.ItemsSourceProperty, nameof(vm.CodePageNumbers));
+        pickerCodePageNumber.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedCodePageNumber), BindingMode.TwoWay);
 
         var labelDiskFormatCode = new Label
         {
@@ -305,6 +305,7 @@ public class ExportEbuPage : ContentPage
             Placeholder = Se.Language.EbuSaveOptions.OriginalProgramTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
+            MaxLength = 32,
         }.BindDynamicTheme();
         grid.Add(entryOriginalProgramTitle, 1, 6);
         entryOriginalProgramTitle.SetBinding(Entry.TextProperty, nameof(vm.OriginalProgramTitle));
@@ -322,6 +323,7 @@ public class ExportEbuPage : ContentPage
             Placeholder = Se.Language.EbuSaveOptions.OriginalEpisodeTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
+            MaxLength = 32,
         }.BindDynamicTheme();
         grid.Add(entryOriginalEpisodeTitle, 1, 7);
         entryOriginalEpisodeTitle.SetBinding(Entry.TextProperty, nameof(vm.OriginalEpisodeTitle));
@@ -339,6 +341,7 @@ public class ExportEbuPage : ContentPage
             Placeholder = Se.Language.EbuSaveOptions.TranslatedProgramTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
+            MaxLength = 32,
         }.BindDynamicTheme();
         grid.Add(entryTranslatedProgramTitle, 1, 8);
         entryTranslatedProgramTitle.SetBinding(Entry.TextProperty, nameof(vm.TranslatedProgramTitle));
@@ -356,6 +359,7 @@ public class ExportEbuPage : ContentPage
             Placeholder = Se.Language.EbuSaveOptions.TranslatedEpisodeTitle,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
+            MaxLength = 32,
         }.BindDynamicTheme();
         grid.Add(entryTranslatedEpisodeTitle, 1, 9);
         entryTranslatedEpisodeTitle.SetBinding(Entry.TextProperty, nameof(vm.TranslatedEpisodeTitle));
@@ -373,6 +377,7 @@ public class ExportEbuPage : ContentPage
             Placeholder = Se.Language.EbuSaveOptions.TranslatorsName,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
+            MaxLength = 32,
         }.BindDynamicTheme();
         grid.Add(entryTranslatorName, 1, 10);
         entryTranslatorName.SetBinding(Entry.TextProperty, nameof(vm.TranslatorName));
@@ -395,6 +400,7 @@ public class ExportEbuPage : ContentPage
             Placeholder = Se.Language.EbuSaveOptions.SubtitleListReferenceCode,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
+            MaxLength = 16,
         }.BindDynamicTheme();
         grid.Add(entrySubtitleListReferenceCode, 3, rowNo);
         entrySubtitleListReferenceCode.SetBinding(Entry.TextProperty, nameof(vm.SubtitleListReferenceCode));
@@ -719,6 +725,7 @@ public class ExportEbuPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
         grid.Add(switchUseBox, 1, 6);
+        switchUseBox.SetBinding(Switch.IsToggledProperty, nameof(vm.TeletextBox), BindingMode.TwoWay);
 
         var labelDoubleHeight = new Label
         {
@@ -734,6 +741,7 @@ public class ExportEbuPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
         grid.Add(switchDoubleHeight, 1, 7);
+        switchDoubleHeight.SetBinding(Switch.IsToggledProperty, nameof(vm.TeletextDoubleHeight), BindingMode.TwoWay);
 
 
         var windowBorder = new Border
