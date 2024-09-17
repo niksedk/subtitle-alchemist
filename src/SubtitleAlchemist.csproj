@@ -122,8 +122,8 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 		<PackageReference Include="libse" Version="4.0.8" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.82" />
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.82" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.90" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.90" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 		<PackageReference Include="SharpCompress" Version="0.38.0" />
 		<PackageReference Include="SharpHook" Version="5.3.7" />
@@ -465,7 +465,7 @@
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
 		<PackageReference Include="Xamarin.Kotlin.StdLib">
-			<Version>2.0.10</Version>
+			<Version>2.0.10.1</Version>
 		</PackageReference>
 	</ItemGroup>
 
