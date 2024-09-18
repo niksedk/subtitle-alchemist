@@ -29,6 +29,13 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static CheckBox BindDynamicTheme(this CheckBox control)
+        {
+            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            control.SetDynamicResource(CheckBox.ColorProperty, ThemeNames.TextColor);
+            return control;
+        }
+
         public static SearchBar BindDynamicTheme(this SearchBar control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
