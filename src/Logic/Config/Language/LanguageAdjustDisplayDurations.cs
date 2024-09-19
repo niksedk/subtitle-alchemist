@@ -1,6 +1,6 @@
 ﻿namespace SubtitleAlchemist.Logic.Config.Language;
 
-public class LanguageAdjustDisplayDuration
+public class LanguageAdjustDisplayDurations
 {
     public string Title { get; set; }
     public string AdjustVia { get; set; }
@@ -17,7 +17,7 @@ public class LanguageAdjustDisplayDuration
     public string CheckShotChanges { get; set; }
     public string BatchCheckShotChanges { get; set; }
 
-    public LanguageAdjustDisplayDuration()
+    public LanguageAdjustDisplayDurations()
     {
         Title = "Adjust durations";
         AdjustVia = "Adjust via";

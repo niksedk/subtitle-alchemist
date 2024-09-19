@@ -214,7 +214,7 @@ public class AdjustDurationPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        upDownViewAddSeconds.SetBinding(UpDownView.ValueProperty, nameof(vm.AddSeconds));
+        upDownViewAddSeconds.SetBinding(UpDownView.ValueProperty, nameof(vm.AdjustSeconds));
         grid.Add(upDownViewAddSeconds, 1, 0);
 
         return grid;

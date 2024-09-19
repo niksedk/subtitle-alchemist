@@ -1,16 +1,20 @@
-using System.Collections.ObjectModel;
-using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Nikse.SubtitleEdit.Core.Common;
+using System.Collections.ObjectModel;
+using SubtitleAlchemist.Logic.Config;
+using SharpHook.Native;
 
 namespace SubtitleAlchemist.Features.Tools.AdjustDuration;
 
 public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
 {
+    internal const string ModeSeconds = "seconds";
+    internal const string ModePercent = "percent";
+    internal const string ModeFixed = "fixed";
+    internal const string ModeRecalculate = "recalc";
 
     [ObservableProperty]
-    private decimal _addSeconds;
+    private decimal _adjustSeconds;
 
     [ObservableProperty]
     private ObservableCollection<string> _adjustViaItems;
@@ -19,7 +23,7 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
     private string _selectedAdjustViaItem;
 
     [ObservableProperty]
-    private decimal _adjustPercentage;
+    private int _adjustPercentage;
 
     [ObservableProperty]
     private decimal _adjustFixedValue;
@@ -65,12 +69,66 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeSeconds)
+            {
+                SelectedAdjustViaItem = AdjustViaItems[0];
+            }
+            else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModePercent)
+            {
+                SelectedAdjustViaItem = AdjustViaItems[1];
+            }
+            else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeFixed)
+            {
+                SelectedAdjustViaItem = AdjustViaItems[2];
+            }
+            else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeRecalculate)
+            {
+                SelectedAdjustViaItem = AdjustViaItems[3];
+            }
+        });
     }
 
     [RelayCommand]
     private async Task Ok()
     {
+        Se.Settings.Tools.AdjustDurations.AdjustDurationSeconds = AdjustSeconds;
+        Se.Settings.Tools.AdjustDurations.AdjustDurationPercent = AdjustPercentage;
+        Se.Settings.Tools.AdjustDurations.AdjustDurationExtendOnly = AdjustRecalculateExtendOnly;
+        Se.Settings.Tools.AdjustDurations.AdjustDurationExtendEnforceDurationLimits = EnforceDurationLimits;
+        Se.Settings.Tools.AdjustDurations.AdjustDurationExtendCheckShotChanges = DoNotExtendPastShotChanges;
 
+        if (SelectedAdjustViaItem == AdjustViaItems[0])
+        {
+            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModeSeconds;
+        }
+        else if (SelectedAdjustViaItem == AdjustViaItems[1])
+        {
+            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModePercent;
+        }
+        else if (SelectedAdjustViaItem == AdjustViaItems[2])
+        {
+            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModeFixed;
+        }
+        else if (SelectedAdjustViaItem == AdjustViaItems[3])
+        {
+            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModeRecalculate;
+        }
+
+        Se.SaveSettings();
+
+        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+        {
+            { "addSeconds", AdjustSeconds },
+            { "adjustPercentage", AdjustPercentage },
+            { "adjustFixedValue", AdjustFixedValue },
+            { "adjustRecalculateMaximumCharacters", AdjustRecalculateMaximumCharacters },
+            { "adjustRecalculateOptimalCharacters", AdjustRecalculateOptimalCharacters },
+            { "adjustRecalculateExtendOnly", AdjustRecalculateExtendOnly },
+            { "enforceDurationLimits", EnforceDurationLimits },
+            { "doNotExtendPastShotChanges", DoNotExtendPastShotChanges }
+        });
     }
 
     [RelayCommand]
