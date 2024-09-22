@@ -10,6 +10,7 @@ namespace SubtitleAlchemist.Controls.UpDownControl
         public event EventHandler<ValueChangedEventArgs>? ValueChanged;
 
         public double StepValue { get; set; } = 100.0;
+        public double StepValueFast { get; set; } = 1_000.0;
         public new bool IsFocused => _focused;
 
         public float MinValue { set; get; } = float.MinValue;
@@ -45,7 +46,6 @@ namespace SubtitleAlchemist.Controls.UpDownControl
             pointerGestureRecognizer.PointerExited += PointerExited;
             GestureRecognizers.Add(pointerGestureRecognizer);
 
-
             _timer = new System.Timers.Timer(500);
             _timer.Elapsed += TimerElapsed;
         }
@@ -55,13 +55,13 @@ namespace SubtitleAlchemist.Controls.UpDownControl
             _timerCount++;
             if (_timerCount > 20) // increase speed after 20 ticks
             {
-                _timer.Interval = 10; // faster speed
-                ButtonsPressed();
+                _timer.Interval = 1; // faster speed
+                ButtonsPressed(StepValueFast);
             }
             else // start repeating after first tick
             {
                 _timer.Interval = 75; // start repeat speed
-                ButtonsPressed();
+                ButtonsPressed(StepValue);
             }
         }
 
@@ -105,21 +105,21 @@ namespace SubtitleAlchemist.Controls.UpDownControl
 
         private void PointerPressed(object? sender, PointerEventArgs e)
         {
-            ButtonsPressed();
+            ButtonsPressed(StepValue);
             _timer.Start();
         }
 
-        private void ButtonsPressed()
+        private void ButtonsPressed(double stepValue)
         {
             if (_focusedUpArrow)
             {
-                Value += (float)StepValue;
-                ValueChanged?.Invoke(this, new ValueChangedEventArgs(Value - StepValue, Value));
+                Value += (float)stepValue;
+                ValueChanged?.Invoke(this, new ValueChangedEventArgs(Value - stepValue, Value));
             }
             else if (_focusedDownArrow)
             {
-                Value -= (float)StepValue;
-                ValueChanged?.Invoke(this, new ValueChangedEventArgs(Value + StepValue, Value));
+                Value -= (float)stepValue;
+                ValueChanged?.Invoke(this, new ValueChangedEventArgs(Value + stepValue, Value));
             }
         }
 

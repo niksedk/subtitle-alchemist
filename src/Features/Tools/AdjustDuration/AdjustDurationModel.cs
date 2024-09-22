@@ -1,8 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
+using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic.Config;
-using SharpHook.Native;
+using System.Collections.ObjectModel;
 
 namespace SubtitleAlchemist.Features.Tools.AdjustDuration;
 
@@ -49,6 +49,10 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
     public View ViewAdjustViaFixed { get; set; }
     public View ViewAdjustRecalculate { get; set; }
 
+    private Subtitle _subtitle = new();
+    private List<int> _selectedIndices = new();
+    private List<double> _shotChanges = new();
+
     public AdjustDurationModel()
     {
         _adjustViaItems = new ObservableCollection<string>
@@ -69,24 +73,52 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        if (query["Subtitle"] is Subtitle subtitle)
         {
-            if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeSeconds)
+            _subtitle = subtitle;
+        }
+
+        if (query["SelectedIndexes"] is List<int> selectedIndices)
+        {
+            _selectedIndices = selectedIndices;
+        }
+
+        if (query["ShotChanges"] is List<double> shotChanges)
+        {
+            _shotChanges = shotChanges;
+        }
+
+        Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                SelectedAdjustViaItem = AdjustViaItems[0];
-            }
-            else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModePercent)
-            {
-                SelectedAdjustViaItem = AdjustViaItems[1];
-            }
-            else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeFixed)
-            {
-                SelectedAdjustViaItem = AdjustViaItems[2];
-            }
-            else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeRecalculate)
-            {
-                SelectedAdjustViaItem = AdjustViaItems[3];
-            }
+                if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeSeconds)
+                {
+                    SelectedAdjustViaItem = AdjustViaItems[0];
+                }
+                else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModePercent)
+                {
+                    SelectedAdjustViaItem = AdjustViaItems[1];
+                }
+                else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeFixed)
+                {
+                    SelectedAdjustViaItem = AdjustViaItems[2];
+                }
+                else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeRecalculate)
+                {
+                    SelectedAdjustViaItem = AdjustViaItems[3];
+                }
+
+                AdjustSeconds = Se.Settings.Tools.AdjustDurations.AdjustDurationSeconds;
+                AdjustPercentage = Se.Settings.Tools.AdjustDurations.AdjustDurationPercent;
+                AdjustRecalculateExtendOnly = Se.Settings.Tools.AdjustDurations.AdjustDurationExtendOnly;
+                AdjustFixedValue = Se.Settings.Tools.AdjustDurations.AdjustDurationFixed;
+                AdjustRecalculateMaximumCharacters = Se.Settings.Tools.AdjustDurations.AdjustDurationMaximumCps;
+                AdjustRecalculateOptimalCharacters = Se.Settings.Tools.AdjustDurations.AdjustDurationOptimalCps;
+                EnforceDurationLimits = Se.Settings.Tools.AdjustDurations.AdjustDurationExtendEnforceDurationLimits;
+                DoNotExtendPastShotChanges = Se.Settings.Tools.AdjustDurations.AdjustDurationExtendCheckShotChanges;
+            });
+            return false;
         });
     }
 
@@ -95,39 +127,52 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
     {
         Se.Settings.Tools.AdjustDurations.AdjustDurationSeconds = AdjustSeconds;
         Se.Settings.Tools.AdjustDurations.AdjustDurationPercent = AdjustPercentage;
+        Se.Settings.Tools.AdjustDurations.AdjustDurationFixed = AdjustFixedValue;
+        Se.Settings.Tools.AdjustDurations.AdjustDurationMaximumCps = AdjustRecalculateMaximumCharacters;
+        Se.Settings.Tools.AdjustDurations.AdjustDurationOptimalCps = AdjustRecalculateOptimalCharacters;
         Se.Settings.Tools.AdjustDurations.AdjustDurationExtendOnly = AdjustRecalculateExtendOnly;
         Se.Settings.Tools.AdjustDurations.AdjustDurationExtendEnforceDurationLimits = EnforceDurationLimits;
         Se.Settings.Tools.AdjustDurations.AdjustDurationExtendCheckShotChanges = DoNotExtendPastShotChanges;
 
+        var subtitle = new Subtitle(_subtitle, false);
+        var info = string.Empty;
+
         if (SelectedAdjustViaItem == AdjustViaItems[0])
         {
             Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModeSeconds;
+            subtitle.AdjustDisplayTimeUsingSeconds((double)AdjustSeconds, _selectedIndices, _shotChanges, EnforceDurationLimits);
+            info = "Subtitle durations adjusted by " + AdjustSeconds + " seconds.";
         }
         else if (SelectedAdjustViaItem == AdjustViaItems[1])
         {
             Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModePercent;
+            subtitle.AdjustDisplayTimeUsingPercent(AdjustPercentage, _selectedIndices, _shotChanges, EnforceDurationLimits);
+            info = "Subtitle durations adjusted by " + AdjustPercentage + "%.";
         }
         else if (SelectedAdjustViaItem == AdjustViaItems[2])
         {
             Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModeFixed;
+            subtitle.SetFixedDuration(_selectedIndices, (double)AdjustFixedValue, _shotChanges);
+            info = "Subtitle durations set to " + AdjustFixedValue + " seconds.";
         }
         else if (SelectedAdjustViaItem == AdjustViaItems[3])
         {
             Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModeRecalculate;
+            subtitle.RecalculateDisplayTimes(
+                (double)AdjustRecalculateMaximumCharacters,
+                _selectedIndices,
+                (double)AdjustRecalculateOptimalCharacters,
+                AdjustRecalculateExtendOnly, 
+                _shotChanges);
+            info = "Subtitle durations recalculated.";
         }
 
         Se.SaveSettings();
 
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
-            { "addSeconds", AdjustSeconds },
-            { "adjustPercentage", AdjustPercentage },
-            { "adjustFixedValue", AdjustFixedValue },
-            { "adjustRecalculateMaximumCharacters", AdjustRecalculateMaximumCharacters },
-            { "adjustRecalculateOptimalCharacters", AdjustRecalculateOptimalCharacters },
-            { "adjustRecalculateExtendOnly", AdjustRecalculateExtendOnly },
-            { "enforceDurationLimits", EnforceDurationLimits },
-            { "doNotExtendPastShotChanges", DoNotExtendPastShotChanges }
+            { "Subtitle", subtitle },
+            { "Status", info },
         });
     }
 

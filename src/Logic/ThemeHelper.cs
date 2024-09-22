@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Views;
 using SubtitleAlchemist.Controls.ColorPickerControl;
+using SubtitleAlchemist.Controls.NumberUpDownControl;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Controls.UpDownControl;
 using SubtitleAlchemist.Logic.Constants;
@@ -146,6 +147,13 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static NumberUpDownView BindDynamicTheme(this NumberUpDownView control)
+        {
+            control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
+            control.SetDynamicResource(NumberUpDownView.TextColorProperty, ThemeNames.TextColor);
+            return control;
+        }
+
         public static Editor BindDynamicTheme(this Editor control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
@@ -207,7 +215,7 @@ namespace SubtitleAlchemist.Logic
                     SetThemeDictionaryColor(dictionaries, ThemeNames.TextColor, Colors.WhiteSmoke);
                     SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(20, 20, 20));
                     SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
-                    SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Color.FromRgb(24,52,75));
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Color.FromRgb(24, 52, 75));
                     SetThemeDictionaryColor(dictionaries, ThemeNames.LinkColor, Colors.LightSkyBlue);
                 }
             }

@@ -1,5 +1,5 @@
+using SubtitleAlchemist.Controls.NumberUpDownControl;
 using SubtitleAlchemist.Controls.SubTimeControl;
-using SubtitleAlchemist.Controls.UpDownControl;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 
@@ -91,12 +91,22 @@ public class AdjustDurationPage : ContentPage
         pageGrid.Add(switchDoNotExtendPastShotChanges, 1, 3);
 
 
+        var labelOverlapInfo = new Label
+        {
+            Text = Se.Language.AdjustDurations.Note,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 15, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        pageGrid.Add(labelOverlapInfo, 0, 4);
+
+
         var buttonOk = new Button
         {
             Text = "Ok",
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 10, 15, 10),
+            Margin = new Thickness(0, 0, 15, 10),
             Command = vm.OkCommand,
         }.BindDynamicTheme();
 
@@ -105,12 +115,13 @@ public class AdjustDurationPage : ContentPage
             Text = "Cancel",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 15, 0, 10),
+            Margin = new Thickness(0, 0, 0, 10),
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
 
         var okCancelBar = new StackLayout
         {
+            Margin = new Thickness(0, 25, 0, 0),
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Fill,
@@ -121,7 +132,7 @@ public class AdjustDurationPage : ContentPage
             },
         }.BindDynamicTheme();
 
-        pageGrid.Add(okCancelBar, 0, 4);
+        pageGrid.Add(okCancelBar, 0, 5);
 
         Content = pageGrid;
 
@@ -209,12 +220,12 @@ public class AdjustDurationPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(labelAddSeconds, 0);
 
-        var upDownViewAddSeconds = new UpDownView
+        var upDownViewAddSeconds = new SubTimeUpDown
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        upDownViewAddSeconds.SetBinding(UpDownView.ValueProperty, nameof(vm.AdjustSeconds));
+        upDownViewAddSeconds.SetBinding(NumberUpDownView.ValueProperty, nameof(vm.AdjustSeconds), BindingMode.TwoWay);
         grid.Add(upDownViewAddSeconds, 1, 0);
 
         return grid;
@@ -247,12 +258,17 @@ public class AdjustDurationPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(labelAdjustViaPercent, 0);
 
-        var upDownViewPercent = new SubTimeUpDown
+        var upDownViewPercent = new NumberUpDownView
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            MinimumWidthRequest = 100,
+            StepValue = 1,
+            StepValueFast = 10,
+            Postfix = "%",
+            Value = 100,
         }.BindDynamicTheme();
-        upDownViewPercent.SetBinding(UpDownView.ValueProperty, nameof(vm.AdjustPercentage));
+        upDownViewPercent.SetBinding(NumberUpDownView.ValueProperty, nameof(vm.AdjustPercentage), BindingMode.TwoWay);
         grid.Add(upDownViewPercent, 1, 0);
 
         return grid;
@@ -264,11 +280,11 @@ public class AdjustDurationPage : ContentPage
         {
             RowDefinitions =
             {
-                new RowDefinition { Height = GridLength.Star },
+                new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Auto },
             },
             RowSpacing = 5,
             ColumnSpacing = 5,
@@ -284,12 +300,15 @@ public class AdjustDurationPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(labelAdjustViaFixed, 0);
 
-        var upDownViewFixedValue = new UpDownView
+        var upDownViewFixedValue = new NumberUpDownView
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            MinimumWidthRequest = 100,
+            StepValue = 1,
+            StepValueFast = 100,
         }.BindDynamicTheme();
-        upDownViewFixedValue.SetBinding(UpDownView.ValueProperty, nameof(vm.AdjustFixedValue));
+        upDownViewFixedValue.SetBinding(NumberUpDownView.ValueProperty, nameof(vm.AdjustFixedValue), BindingMode.TwoWay);
         grid.Add(upDownViewFixedValue, 1, 0);
 
         return grid;
@@ -307,7 +326,7 @@ public class AdjustDurationPage : ContentPage
             },
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Star },
+                new ColumnDefinition { Width = GridLength.Auto },
             },
             RowSpacing = 10,
             ColumnSpacing = 5,
@@ -323,12 +342,15 @@ public class AdjustDurationPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(labelRecalculate, 0);
 
-        var upDownViewMaxChars = new UpDownView
+        var upDownViewMaxChars = new NumberUpDownView
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            MinimumWidthRequest = 100,
+            StepValue = 1,
+            StepValueFast = 10,
         }.BindDynamicTheme();
-        upDownViewMaxChars.SetBinding(UpDownView.ValueProperty, nameof(vm.AdjustRecalculateMaximumCharacters));
+        upDownViewMaxChars.SetBinding(NumberUpDownView.ValueProperty, nameof(vm.AdjustRecalculateMaximumCharacters), BindingMode.TwoWay);
         grid.Add(upDownViewMaxChars, 1, 0);
 
         var labelRecalculateOptimalCharacters = new Label
@@ -339,12 +361,15 @@ public class AdjustDurationPage : ContentPage
         }.BindDynamicTheme();
         grid.Add(labelRecalculateOptimalCharacters, 0, 1);
 
-        var upDownViewOptimalChars = new UpDownView
+        var upDownViewOptimalChars = new NumberUpDownView
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            MinimumWidthRequest = 100,
+            StepValue = 1,
+            StepValueFast = 10,
         }.BindDynamicTheme();
-        upDownViewOptimalChars.SetBinding(UpDownView.ValueProperty, nameof(vm.AdjustRecalculateOptimalCharacters));
+        upDownViewOptimalChars.SetBinding(NumberUpDownView.ValueProperty, nameof(vm.AdjustRecalculateOptimalCharacters), BindingMode.TwoWay);
         grid.Add(upDownViewOptimalChars, 1, 1);
 
         var labelExtendOnly = new Label

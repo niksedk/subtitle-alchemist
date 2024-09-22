@@ -262,6 +262,20 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
                 File.WriteAllBytes(_subtitleFileName, ms.ToArray());
             }
+
+            if (page == nameof(AdjustDurationPage))
+            {
+                if (query["Subtitle"] is Subtitle adjustedSubtitle)
+                {
+                    Paragraphs = new ObservableCollection<DisplayParagraph>(adjustedSubtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+                    SelectParagraph(0);
+                }
+
+                if (query["Status"] is string statusInfo)
+                {
+                    ShowStatus(statusInfo);
+                }
+            }
         }
     }
 
@@ -1301,7 +1315,13 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task AdjustDurationsShow()
     {
-        await Shell.Current.GoToAsync(nameof(AdjustDurationPage));
+        await Shell.Current.GoToAsync(nameof(AdjustDurationPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
+            { "SelectedIndexes", GetSelectedIndexes().ToList() },
+            { "ShotChanges", new List<double>() },
+        });
     }
 
     [RelayCommand]
