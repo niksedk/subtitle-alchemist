@@ -22,6 +22,7 @@ public sealed class GetDictionaryPopup : Popup
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
             {
@@ -34,7 +35,7 @@ public sealed class GetDictionaryPopup : Popup
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             WidthRequest = 400,
-            HeightRequest = 300,
+            HeightRequest = 340,
         }.BindDynamicTheme();
 
         var titleLabel = new Label
@@ -55,6 +56,7 @@ public sealed class GetDictionaryPopup : Popup
         }.BindDynamicTheme();
         pickerDictionaries.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Dictionaries), BindingMode.TwoWay);
         pickerDictionaries.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDictionary));
+        pickerDictionaries.SelectedIndexChanged += vm.SelectedIndexChanged;
 
         var buttonStartDownload = new ImageButton
         {
@@ -90,6 +92,17 @@ public sealed class GetDictionaryPopup : Popup
 
         grid.Add(buttonBar, 0, 1);
 
+        var labelDescription = new Label
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            LineBreakMode = LineBreakMode.WordWrap,
+            Margin = new Thickness(0, 10, 0, 25),
+            WidthRequest = 350,
+        }.BindDynamicTheme();
+        labelDescription.SetBinding(Label.TextProperty, nameof(vm.Description), BindingMode.TwoWay);
+        grid.Add(labelDescription, 0, 2);
+
         var progressLabel = new Label
         {
             Text = "...",
@@ -97,7 +110,7 @@ public sealed class GetDictionaryPopup : Popup
         }.BindDynamicTheme(); 
         progressLabel.SetBinding(Label.TextProperty, nameof(vm.Progress));
         progressLabel.SetBinding(VisualElement.IsVisibleProperty, nameof(vm.IsDownloading));
-        grid.Add(progressLabel, 0, 2);
+        grid.Add(progressLabel, 0, 3);
 
         var progressBar = new ProgressBar
         {
@@ -107,7 +120,7 @@ public sealed class GetDictionaryPopup : Popup
         };
         progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));
         progressBar.SetBinding(VisualElement.IsVisibleProperty, nameof(vm.IsDownloading));
-        grid.Add(progressBar, 0, 3);
+        grid.Add(progressBar, 0, 4);
 
         var cancelButton = new Button
         {
@@ -115,7 +128,7 @@ public sealed class GetDictionaryPopup : Popup
             HorizontalOptions = LayoutOptions.Center,
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
-        grid.Add(cancelButton, 0, 4);
+        grid.Add(cancelButton, 0, 5);
 
         var border = new Border
         {

@@ -33,6 +33,9 @@ namespace SubtitleAlchemist.Features.SpellCheck
         private SpellCheckDictionary? _selectedDictionary;
 
         [ObservableProperty]
+        private string _description = string.Empty;
+
+        [ObservableProperty]
         private bool _isDownloading;
 
         private Task? _downloadTask;
@@ -135,6 +138,7 @@ namespace SubtitleAlchemist.Features.SpellCheck
                 return;
             }
 
+            Description = string.Empty;
             IsDownloading = true;
             StartDownload(SelectedDictionary.DownloadLink);
         }
@@ -157,6 +161,16 @@ namespace SubtitleAlchemist.Features.SpellCheck
             });
 
             _downloadTask = _spellCheckDictionaryDownloadService.DownloadDictionary(_downloadStream, downloadLink, downloadProgress, _cancellationTokenSource.Token);
+        }
+
+        public void SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            if (SelectedDictionary == null)
+            {
+                return;
+            }
+
+            Description = SelectedDictionary.Description;
         }
 
         public void Initialize()
