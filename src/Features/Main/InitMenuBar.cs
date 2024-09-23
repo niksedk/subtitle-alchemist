@@ -194,7 +194,8 @@ internal static class InitMenuBar
         menu.Add(new MenuFlyoutSeparator());
         menu.Add(new MenuFlyoutItem
         {
-            Text = "Get dictionaries",
+            Text = "Get dictionaries...",
+            Command = vm.SpellCheckGetDictionariesShowCommand,
         });
 
         return menu;

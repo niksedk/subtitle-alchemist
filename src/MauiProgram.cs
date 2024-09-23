@@ -87,9 +87,11 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<GoToLineNumberPopup, GoToLineNumberPopupModel>();
             builder.Services.AddTransientPopup<ExportCavena890Popup, ExportCavena890PopupModel>();
             builder.Services.AddTransientPopup<ExportPacPopup, ExportPacPopupModel>();
+            builder.Services.AddTransientPopup<GetDictionaryPopup, GetDictionaryPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();
+            builder.Services.AddHttpClient<ISpellCheckDictionaryDownloadService, SpellCheckDictionaryDownloadService>();
 
 #if DEBUG
             builder.Logging.AddDebug();

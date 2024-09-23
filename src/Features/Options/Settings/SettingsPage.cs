@@ -559,6 +559,7 @@ public class SettingsPage : ContentPage
             WidthRequest = 500,
             BindingContext = vm,
         }.Bind(nameof(vm.FfmpegPath)).BindDynamicTheme(), 1, 1);
+
         var ffmpegBrowse = new ImageButton
         {
             Source = "open.png",
@@ -567,10 +568,10 @@ public class SettingsPage : ContentPage
             HeightRequest = 30,
             Padding = new Thickness(10, 5, 5, 5),
         }.BindDynamicTheme();
-
         ffmpegBrowse.Clicked += async (sender, e) => await vm.BrowseForFfmpeg(sender, e);
         ToolTipProperties.SetText(ffmpegBrowse, "Browse for ffmpeg executable");
         grid.Add(ffmpegBrowse, 2, 1);
+
         var ffmpegDownloadButton = new ImageButton
         {
             Source = "download.png",

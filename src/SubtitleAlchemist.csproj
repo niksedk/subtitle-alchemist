@@ -96,6 +96,7 @@
 	<ItemGroup>
 		<None Remove="Resources\Images\theme_dark_open.png" />
 		<None Remove="Resources\Raw\Dictionaries.zip" />
+		<None Remove="Resources\Raw\HunspellDictionaries.xml" />
 		<None Remove="Resources\Raw\layout_01.png" />
 		<None Remove="Resources\Raw\layout_02.png" />
 		<None Remove="Resources\Raw\layout_03.png" />

@@ -1347,6 +1347,19 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         });
     }
 
+    [RelayCommand]
+    private async Task SpellCheckGetDictionariesShow()
+    {
+        var result = await _popupService.ShowPopupAsync<GetDictionaryPopupModel>(onPresenting: viewModel => viewModel.Initialize(), CancellationToken.None);
+
+        if (result is LayoutPickerPopupResult popupResult && MainPage != null)
+        {
+            SelectedLayout = popupResult.SelectedLayout;
+            ShowStatus($"Selected layout: {SelectedLayout + 1}");
+            MainPage.MakeLayout(SelectedLayout);
+        }
+    }
+
     private async Task<bool> RequireFfmpegOk()
     {
         if (MainPage == null)

@@ -35,7 +35,7 @@ public class TranslateAdvancedSettingsPopup : Popup
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            WidthRequest = 400,
+            WidthRequest = 500,
         }.BindDynamicTheme();
 
 
