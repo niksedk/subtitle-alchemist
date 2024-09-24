@@ -615,6 +615,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         CurrentStart = paragraph.Start;
         CurrentEnd = paragraph.End;
         CurrentDuration = paragraph.End - paragraph.Start;
+
+        SubtitleList.SelectedItem = paragraph;
+        SubtitleList.ScrollTo(paragraph, -1, ScrollToPosition.MakeVisible, false);
     }
 
     private void AudioVisualizerOnDoubleTapped(object sender, AudioVisualizer.PositionEventArgs e)
@@ -785,7 +788,13 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     public async Task ShowGoToLineNumber()
     {
-        await _popupService.ShowPopupAsync<GoToLineNumberPopupModel>(CancellationToken.None);
+        var lineNumber = await _popupService
+            .ShowPopupAsync<GoToLineNumberPopupModel>(onPresenting: viewModel => viewModel.Initialize(UpdatedSubtitle), CancellationToken.None);
+
+        if (lineNumber is int lineNumberInt)
+        {
+            SelectParagraph(lineNumberInt - 1);
+        }
     }
 
     [RelayCommand]

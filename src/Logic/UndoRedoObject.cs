@@ -4,9 +4,16 @@ namespace SubtitleAlchemist.Logic;
 
 public class UndoRedoObject
 {
-    public string Text { get; set; }
+    public Subtitle Subtitle { get; set; }
     public List<int> SelectedIndices { get; set; }
     public int CaretIndex { get; set; }
     public int SelectionLength { get; set; }
-    public Subtitle Subtitle { get; set; }
+
+    public UndoRedoObject(Subtitle subtitle, List<int> selectedIndices, int caretIndex, int selectionLength)
+    {
+        Subtitle = subtitle;
+        SelectedIndices = selectedIndices;
+        CaretIndex = caretIndex;
+        SelectionLength = selectionLength;
+    }
 }

@@ -1,64 +1,88 @@
-using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Edit;
 
-public class GoToLineNumberPopup : Popup
+public sealed class GoToLineNumberPopup : Popup
 {
     public GoToLineNumberPopup(GoToLineNumberPopupModel vm)
     {
         BindingContext = vm;
 
-        CanBeDismissedByTappingOutsideOfPopup = false;
+        CanBeDismissedByTappingOutsideOfPopup = true;
 
-        var stackLayout = new StackLayout
+        var grid = new Grid
         {
-            Margin = 1,
-            Padding = 10,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+            },
+            Margin = new Thickness(2),
+            Padding = new Thickness(30, 20, 30, 10),
+            RowSpacing = 20,
+            ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        }.BindDynamicTheme();
+
+        var labelGoToLineNumber = new Label
+        {
+            Text = "Go to line number",
+            FontSize = 20,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        }.BindDynamicTheme();
+        grid.Add(labelGoToLineNumber, 0);
+
+
+        vm.EntryLineNumber = new Entry
+        {
+            Placeholder = "Line number",
+            Keyboard = Keyboard.Numeric,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        };
+        vm.EntryLineNumber.SetBinding(Entry.TextProperty, nameof(vm.LineNumber));
+        grid.Add(vm.EntryLineNumber, 0, 1);
+
+
+        var buttonOk = new Button
+        {
+            Text = "OK",
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Command = vm.OkCommand,
+            Margin = new Thickness(0, 0, 10, 0),
+        }.BindDynamicTheme();
+
+        var buttonCancel = new Button
+        {
+            Text = "Cancel",
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Command = vm.CancelCommand,
+        }.BindDynamicTheme();
+
+        var buttonBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Fill,
             Children =
             {
-                new StackLayout
-                {
-                    Orientation = StackOrientation.Horizontal,
-                    HorizontalOptions = LayoutOptions.End,
-                    Children =
-                    {
-                        new ImageButton
-                        {
-                            //Command = vm.CloseCommand,
-                        }
-                        .Width(30)
-                        .Height(30)
-                        .Margin(10)
-                        .Source("btn_close.png"),
-                    }
-                },
-
-                new Label()
-                    .Text("About Subtitle Alchemist ALPHA 1")
-                    .BindDynamicTheme()
-                    .FontSize(30)
-                    .Bold()
-                    .Margin(20),
-
-                new Label()
-                    .Text("Subtitle Alchemist is Free Software under the GNU Public License." + Environment.NewLine + "You may distribute, modify and use it freely.")
-                    .BindDynamicTheme()
-                    .FontSize(20)
-                    .Margin(10),
-
-                new Label()
-                    .Text("C# source code is available on GitHub: ")
-                    .BindDynamicTheme()
-                    .FontSize(15)
-                    .Margin(10),
-
-                new ImageButton()
-                    .Margin(10),
-            }
-        }.BindDynamicTheme();
+                buttonOk,
+                buttonCancel,
+            },
+        };
+        grid.Add(buttonBar, 0, 3);
 
 
         var windowBorder = new Border
@@ -72,7 +96,7 @@ public class GoToLineNumberPopup : Popup
                 CornerRadius = new CornerRadius(5),
             },
             BackgroundColor = Colors.Transparent,
-            Content = stackLayout,
+            Content = grid,
         }.BindDynamicTheme();
 
         Content = windowBorder;

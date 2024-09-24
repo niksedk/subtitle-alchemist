@@ -185,32 +185,37 @@ namespace SubtitleAlchemist.Features.SpellCheck
             {
                 Dictionaries = new ObservableCollection<SpellCheckDictionary>(await SpellCheckDictionaries.GetDictionaryListAsync());
 
-                var language = CultureInfo.CurrentCulture.EnglishName;
-                var countryName = Regex.Match(language, @"\(([^)]*)\)").Groups[1].Value;
-                var languageTags = language.Split(' ', ',', '(', ')', '_', '-').ToList();
-                languageTags.Insert(0, countryName);
+                TryToSelectUsersLanguage();
+            });
+        }
 
-                if (CountryLanguageMap.TryGetValue(countryName, out string languageName))
-                {
-                    languageTags.Insert(0, languageName);
-                }
+        private void TryToSelectUsersLanguage()
+        {
+            var language = CultureInfo.CurrentCulture.EnglishName;
+            var countryName = Regex.Match(language, @"\(([^)]*)\)").Groups[1].Value;
+            var languageTags = language.Split(' ', ',', '(', ')', '_', '-').ToList();
+            languageTags.Insert(0, countryName);
 
-                foreach (var tag in languageTags.Where(p=>p.Length > 2))
+            if (CountryLanguageMap.TryGetValue(countryName, out var languageName) && !string.IsNullOrEmpty(languageName))
+            {
+                languageTags.Insert(0, languageName);
+            }
+
+            foreach (var tag in languageTags.Where(p => p.Length > 2))
+            {
+                foreach (var dictionary in Dictionaries)
                 {
-                    foreach (var dictionary in Dictionaries)
+                    if (dictionary.EnglishName.Contains(tag, StringComparison.OrdinalIgnoreCase) ||
+                        dictionary.NativeName.Contains(tag, StringComparison.OrdinalIgnoreCase) ||
+                        dictionary.Description.Contains(tag, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (dictionary.EnglishName.Contains(tag, StringComparison.OrdinalIgnoreCase) ||
-                            dictionary.NativeName.Contains(tag, StringComparison.OrdinalIgnoreCase) ||
-                            dictionary.Description.Contains(tag, StringComparison.OrdinalIgnoreCase))
-                        {
-                            SelectedDictionary = dictionary;
-                            return;
-                        }
+                        SelectedDictionary = dictionary;
+                        return;
                     }
                 }
+            }
 
-                SelectedDictionary = Dictionaries[0];
-            });
+            SelectedDictionary = Dictionaries[0];
         }
 
         private static readonly Dictionary<string, string> CountryLanguageMap = new()
