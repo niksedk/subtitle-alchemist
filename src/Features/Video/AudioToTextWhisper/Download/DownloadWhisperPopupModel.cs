@@ -16,7 +16,8 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
     {
         public DownloadWhisperPopup? Popup { get; set; }
 
-        private readonly IWhisperDownloadService _whisperCppDownloadService;
+        public IWhisperEngine Engine { get; set; } = new WhisperEngineCpp();
+        public Label LabelTitle { get; set; } = new();
 
         [ObservableProperty]
         private float _progressValue;
@@ -33,12 +34,13 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly MemoryStream _downloadStream;
 
-        public IWhisperEngine Engine { get; set; } = new WhisperEngineCpp();
-        public Label LabelTitle { get; set; } = new();
+        private readonly IWhisperDownloadService _whisperCppDownloadService;
+        private readonly IZipUnpacker _zipUnpacker;
 
-        public DownloadWhisperPopupModel(IWhisperDownloadService whisperCppDownloadService)
+        public DownloadWhisperPopupModel(IWhisperDownloadService whisperCppDownloadService, IZipUnpacker zipUnpacker)
         {
             _whisperCppDownloadService = whisperCppDownloadService;
+            _zipUnpacker = zipUnpacker;
 
             _cancellationTokenSource = new CancellationTokenSource();
 
@@ -198,7 +200,7 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
         private void Unpack(string folder, string skipFolderLevel)
         {
             _downloadStream.Position = 0;
-            ZipUnpacker.UnpackZipStream(_downloadStream, folder, skipFolderLevel);
+            _zipUnpacker.UnpackZipStream(_downloadStream, folder, skipFolderLevel, false, new List<string>());
             _downloadStream.Dispose();
         }
 

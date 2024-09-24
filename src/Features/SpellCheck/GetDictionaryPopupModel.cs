@@ -15,8 +15,6 @@ namespace SubtitleAlchemist.Features.SpellCheck
     {
         public GetDictionaryPopup? Popup { get; set; }
 
-        private readonly ISpellCheckDictionaryDownloadService _spellCheckDictionaryDownloadService;
-
         [ObservableProperty]
         private float _progressValue;
 
@@ -43,10 +41,13 @@ namespace SubtitleAlchemist.Features.SpellCheck
 
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly MemoryStream _downloadStream;
+        private readonly ISpellCheckDictionaryDownloadService _spellCheckDictionaryDownloadService;
+        private readonly IZipUnpacker _zipUnpacker;
 
-        public GetDictionaryPopupModel(ISpellCheckDictionaryDownloadService spellCheckDictionaryDownloadService)
+        public GetDictionaryPopupModel(ISpellCheckDictionaryDownloadService spellCheckDictionaryDownloadService, IZipUnpacker zipUnpacker)
         {
             _spellCheckDictionaryDownloadService = spellCheckDictionaryDownloadService;
+            _zipUnpacker = zipUnpacker;
 
             _cancellationTokenSource = new CancellationTokenSource();
 
@@ -110,7 +111,12 @@ namespace SubtitleAlchemist.Features.SpellCheck
             }
 
             _downloadStream.Position = 0;
-            ZipUnpacker.UnpackZipStream(_downloadStream, folder, string.Empty);
+            _zipUnpacker.UnpackZipStream(
+                _downloadStream, 
+                folder, 
+                string.Empty, 
+                true, 
+                new List<string> { ".dic", ".aff"});
 
             _downloadStream.Dispose();
         }
@@ -147,7 +153,7 @@ namespace SubtitleAlchemist.Features.SpellCheck
         public void OpenFolder()
         {
             var folder = Se.DictionariesFolder;
-            UiUtil.OpenFolderFromFileName(folder);
+            UiUtil.OpenFolder(folder);
         }
 
         private void StartDownload(string downloadLink)

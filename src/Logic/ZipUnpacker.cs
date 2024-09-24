@@ -1,35 +1,61 @@
 ﻿using System.IO.Compression;
 
-namespace SubtitleAlchemist.Logic
+namespace SubtitleAlchemist.Logic;
+
+public class ZipUnpacker : IZipUnpacker
 {
-    public static class ZipUnpacker
+    public void UnpackZipStream(Stream zipStream, string outputPath)
     {
-        public static void UnpackZipStream(Stream zipStream, string outputPath, string skipFolderLevel)
+        UnpackZipStream(zipStream, outputPath, string.Empty, false, new List<string>());
+    }
+
+    public void UnpackZipStream(
+    Stream zipStream,
+    string outputPath,
+    string skipFolderLevel,
+    bool allToOutputPath,
+    List<string> allowedExtensions)
+    {
+        allowedExtensions = allowedExtensions.Select(x => x.ToLowerInvariant()).ToList();
+
+        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
+
+        foreach (var entry in archive.Entries)
         {
-            using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
-
-            foreach (var entry in archive.Entries)
+            var entryFullName = entry.FullName;
+            if (!string.IsNullOrEmpty(skipFolderLevel) && entryFullName.StartsWith(skipFolderLevel))
             {
-                var entryFullName = entry.FullName;
-                if (!string.IsNullOrEmpty(skipFolderLevel) && entryFullName.StartsWith(skipFolderLevel))
+                entryFullName = entryFullName[skipFolderLevel.Length..];
+            }
+
+            if (allToOutputPath)
+            {
+                entryFullName = Path.GetFileName(entryFullName);
+            }
+
+            var filePath = Path.Combine(outputPath, entryFullName);
+            var directoryPath = Path.GetDirectoryName(filePath);
+
+            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+
+            if (!string.IsNullOrEmpty(entry.Name))
+            {
+
+                if (allowedExtensions.Count > 0)
                 {
-                    entryFullName = entryFullName[skipFolderLevel.Length..];
+                    var extension = Path.GetExtension(entry.Name).ToLowerInvariant();
+                    if (!allowedExtensions.Contains(extension))
+                    {
+                        continue;
+                    }
                 }
 
-                var filePath = Path.Combine(outputPath, entryFullName);
-                var directoryPath = Path.GetDirectoryName(filePath);
-
-                if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
-                {
-                    Directory.CreateDirectory(directoryPath);
-                }
-
-                if (!string.IsNullOrEmpty(entry.Name))
-                {
-                    using var entryStream = entry.Open();
-                    using var fileStream = File.Create(filePath);
-                    entryStream.CopyTo(fileStream);
-                }
+                using var entryStream = entry.Open();
+                using var fileStream = File.Create(filePath);
+                entryStream.CopyTo(fileStream);
             }
         }
     }

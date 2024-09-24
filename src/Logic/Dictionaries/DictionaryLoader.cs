@@ -17,7 +17,8 @@ public static class DictionaryLoader
     {
         await using var stream = await FileSystem.OpenAppPackageFileAsync("Dictionaries.zip");
         using var reader = new StreamReader(stream);
-        ZipUnpacker.UnpackZipStream(stream, Se.DictionariesFolder, string.Empty);
+        var zipUnpacker = new ZipUnpacker();
+        zipUnpacker.UnpackZipStream(stream, Se.DictionariesFolder);
     }
 }
 

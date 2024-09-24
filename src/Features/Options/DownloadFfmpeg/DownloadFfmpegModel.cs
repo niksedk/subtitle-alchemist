@@ -29,11 +29,12 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
 
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly MemoryStream _downloadStream;
+        private readonly IZipUnpacker _zipUnpacker;
 
-
-        public DownloadFfmpegModel(IFfmpegDownloadService ffmpegDownloadService)
+        public DownloadFfmpegModel(IFfmpegDownloadService ffmpegDownloadService, IZipUnpacker zipUnpacker)
         {
             _ffmpegDownloadService = ffmpegDownloadService;
+            _zipUnpacker = zipUnpacker;
 
             _cancellationTokenSource = new CancellationTokenSource();
 
@@ -62,9 +63,9 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
 
                 var ffmpegFileName = GetFfmpegFileName();
 
-                if (System.IO.File.Exists(ffmpegFileName))
+                if (File.Exists(ffmpegFileName))
                 {
-                    System.IO.File.Delete(ffmpegFileName);
+                    File.Delete(ffmpegFileName);
                 }
 
                 UnpackFfmpeg(ffmpegFileName);
@@ -102,7 +103,7 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
             if (folder != null)
             {
                 _downloadStream.Position = 0;
-                ZipUnpacker.UnpackZipStream(_downloadStream, folder, string.Empty);
+                _zipUnpacker.UnpackZipStream(_downloadStream, folder, string.Empty, false, new List<string>());
             }
 
             _downloadStream.Dispose();

@@ -8,7 +8,11 @@ using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SharpHook;
 using SubtitleAlchemist.Controls.AudioVisualizerControl;
+using SubtitleAlchemist.Features.Edit;
 using SubtitleAlchemist.Features.Files;
+using SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export;
+using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
+using SubtitleAlchemist.Features.Files.ExportBinary.PacExport;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
@@ -27,12 +31,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Timers;
-using SubtitleAlchemist.Features.Edit;
-using SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export;
-using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
-using SubtitleAlchemist.Features.Files.ExportBinary.PacExport;
 using Path = System.IO.Path;
-using System;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -60,7 +59,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     public static IList EncodingNames => EncodingHelper.GetEncodings().Select(p => p.DisplayName).ToList();
     public MenuFlyoutSubItem MenuFlyoutItemReopen { get; set; } = new();
 
-
     [ObservableProperty]
     private string _selectedLineInfo;
 
@@ -86,26 +84,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     private bool _loading = true;
 
-    private Subtitle UpdatedSubtitle
-    {
-        get
-        {
-            var subtitle = new Subtitle(_subtitle);
-            subtitle.Paragraphs.Clear();
-
-            foreach (var displayParagraph in Paragraphs)
-            {
-                var p = new Paragraph(displayParagraph.P, false);
-                p.Text = displayParagraph.Text;
-                p.StartTime.TotalMilliseconds = displayParagraph.Start.TotalMilliseconds;
-                p.EndTime.TotalMilliseconds = displayParagraph.End.TotalMilliseconds;
-                subtitle.Paragraphs.Add(displayParagraph.P);
-            }
-
-            return subtitle;
-        }
-    }
-
     private Subtitle _subtitle;
 
     private string _subtitleFileName;
@@ -113,18 +91,20 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private readonly System.Timers.Timer _timer;
     private readonly System.Timers.Timer _timerAutoBackup;
     private bool _updating;
-    private bool _stopping = false;
+    private bool _stopping;
     private bool _firstPlay = true;
     private int _changeSubtitleHash = -1;
     private int _autoBackupSubtitleHash = -1;
 
     private readonly IPopupService _popupService;
     private readonly IAutoBackup _autoBackup;
+    private readonly IUndoRedoManager _undoRedoManager;
 
-    public MainViewModel(IPopupService popupService, IAutoBackup autoBackup)
+    public MainViewModel(IPopupService popupService, IAutoBackup autoBackup, IUndoRedoManager undoRedoManager)
     {
         _popupService = popupService;
         _autoBackup = autoBackup;
+        _undoRedoManager = undoRedoManager;
         VideoPlayer = new MediaElement { BackgroundColor = Colors.Orange, ZIndex = -10000 };
         SubtitleList = new CollectionView();
         _timer = new System.Timers.Timer(19);
@@ -156,6 +136,26 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         SetTimer();
         _timerAutoBackup.Elapsed += AutoBackupTimerOnElapsed;
+    }
+
+    private Subtitle UpdatedSubtitle
+    {
+        get
+        {
+            var subtitle = new Subtitle(_subtitle);
+            subtitle.Paragraphs.Clear();
+
+            foreach (var displayParagraph in Paragraphs)
+            {
+                var p = new Paragraph(displayParagraph.P, false);
+                p.Text = displayParagraph.Text;
+                p.StartTime.TotalMilliseconds = displayParagraph.Start.TotalMilliseconds;
+                p.EndTime.TotalMilliseconds = displayParagraph.End.TotalMilliseconds;
+                subtitle.Paragraphs.Add(displayParagraph.P);
+            }
+
+            return subtitle;
+        }
     }
 
     private readonly object _autoBackupLock = new();
@@ -1396,6 +1396,12 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             }
 
             var result = await _popupService.ShowPopupAsync<DownloadFfmpegModel>(CancellationToken.None);
+            if (result is string ffmpegFileNameResult)
+            {
+                Se.Settings.FfmpegPath = ffmpegFileNameResult;
+                ShowStatus($"ffmpeg downloaded and installed to {ffmpegFileNameResult}");
+                return true;
+            }
         }
 
         return false;
