@@ -907,9 +907,9 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         SeLogger.WhisperInfo($"{w} {parameters}");
 
         var process = new Process { StartInfo = new ProcessStartInfo(w, parameters) { WindowStyle = ProcessWindowStyle.Hidden, CreateNoWindow = true } };
-        if (!string.IsNullOrEmpty(Se.Settings.FfmpegPath) && process.StartInfo.EnvironmentVariables["Path"] != null)
+        if (!string.IsNullOrEmpty(Se.Settings.General.FfmpegPath) && process.StartInfo.EnvironmentVariables["Path"] != null)
         {
-            process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"]?.TrimEnd(';') + ";" + Path.GetDirectoryName(Se.Settings.FfmpegPath);
+            process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"]?.TrimEnd(';') + ";" + Path.GetDirectoryName(Se.Settings.General.FfmpegPath);
         }
 
         var whisperFolder = engine.GetAndCreateWhisperFolder();
@@ -1228,7 +1228,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     private Process? GetFfmpegProcess(string videoFileName, int audioTrackNumber, string outWaveFile)
     {
-        if (!File.Exists(Se.Settings.FfmpegPath) && Configuration.IsRunningOnWindows)
+        if (!File.Exists(Se.Settings.General.FfmpegPath) && Configuration.IsRunningOnWindows)
         {
             return null;
         }
@@ -1253,7 +1253,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         //-ac 2 means 2 channels
         // "-map 0:a:0" is the first audio stream, "-map 0:a:1" is the second audio stream
 
-        var exeFilePath = Se.Settings.FfmpegPath;
+        var exeFilePath = Se.Settings.General.FfmpegPath;
         if (!Configuration.IsRunningOnWindows)
         {
             exeFilePath = "ffmpeg";

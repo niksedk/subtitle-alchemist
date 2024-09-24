@@ -9,8 +9,8 @@ namespace SubtitleAlchemist.Logic.Media
         public static bool IsFfmpegInstalled()
         {
             Configuration.Settings.General.UseFFmpegForWaveExtraction = true;
-            Se.Settings.FfmpegPath = DownloadFfmpegModel.GetFfmpegFileName();
-            return File.Exists(Se.Settings.FfmpegPath);
+            Se.Settings.General.FfmpegPath = DownloadFfmpegModel.GetFfmpegFileName();
+            return File.Exists(Se.Settings.General.FfmpegPath);
         }
     }
 }

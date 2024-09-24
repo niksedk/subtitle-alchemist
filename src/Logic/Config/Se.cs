@@ -8,8 +8,7 @@ namespace SubtitleAlchemist.Logic.Config;
 
 public class Se
 {
-    public string FfmpegPath { get; set; }
-    public string Theme { get; set; }
+    public SeGeneral General { get; set; }
     public SeFile File { get; set; }
     public SeTools Tools { get; set; }
     public static SeLanguage Language { get; set; } = new();
@@ -19,10 +18,10 @@ public class Se
 
     public Se()
     {
-        FfmpegPath = string.Empty;
-        Theme = "Dark";
+        
         File = new SeFile();
         Tools = new SeTools();
+        General = new SeGeneral();
     }
 
     public static void SaveSettings()
@@ -121,8 +120,8 @@ public class Se
 
     private static void UpdateLibSeSettings()
     {
-        Configuration.Settings.General.FFmpegLocation = Settings.FfmpegPath;
-        Configuration.Settings.General.UseDarkTheme = Settings.Theme == "Dark";
+        Configuration.Settings.General.FFmpegLocation = Settings.General.FfmpegPath;
+        Configuration.Settings.General.UseDarkTheme = Settings.General.Theme == "Dark";
 
         var tts = Settings.Tools.AudioToText;
         Configuration.Settings.Tools.WhisperChoice = tts.WhisperChoice;

@@ -119,14 +119,17 @@ internal static class InitMenuBar
         menu.Add(new MenuFlyoutItem
         {
             Text = "Undo",
+            Command = vm.UndoCommand,
         });
         menu.Add(new MenuFlyoutItem
         {
             Text = "Redo",
+            Command = vm.RedoCommand,
         });
         menu.Add(new MenuFlyoutItem
         {
             Text = "Show history",
+            Command = vm.HistoryShowCommand,
         });
         menu.Add(new MenuFlyoutSeparator());
         menu.Add(new MenuFlyoutItem

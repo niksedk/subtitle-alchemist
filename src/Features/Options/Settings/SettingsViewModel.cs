@@ -88,15 +88,15 @@ public partial class SettingsViewModel : ObservableObject
 
     public void LoadSettings()
     {
-        Theme = Se.Settings.Theme;
-        FfmpegPath = Se.Settings.FfmpegPath;
+        Theme = Se.Settings.General.Theme;
+        FfmpegPath = Se.Settings.General.FfmpegPath;
         ShowRecentFiles = Se.Settings.File.ShowRecentFiles;
     }
 
     public void SaveSettings()
     {
-        Se.Settings.FfmpegPath = FfmpegPath;
-        Se.Settings.Theme = Theme;
+        Se.Settings.General.FfmpegPath = FfmpegPath;
+        Se.Settings.General.Theme = Theme;
         Se.Settings.File.ShowRecentFiles = ShowRecentFiles;
 
         Se.SaveSettings();

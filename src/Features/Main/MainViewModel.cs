@@ -185,6 +185,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             if (query["SubtitleFileName"] is string subtitleFileName && !string.IsNullOrWhiteSpace(subtitleFileName))
             {
+                MakeHistoryForUndo($"Before restore auto-backup");
                 _subtitleFileName = subtitleFileName;
                 SubtitleOpen(subtitleFileName, null);
             }
@@ -194,6 +195,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             if (query["TranslatedRows"] is List<TranslateRow> lines)
             {
+                MakeHistoryForUndo($"Before translate");
                 for (var i = 0; i < lines.Count && i < Paragraphs.Count; i++)
                 {
                     var displayParagraph = Paragraphs[i];
@@ -204,6 +206,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         if (page == nameof(AudioToTextWhisperPage))
         {
+            MakeHistoryForUndo($"Before Whisper speech recognization");
             if (query["TranscribedSubtitle"] is Subtitle subtitle)
             {
                 Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
@@ -214,6 +217,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         if (page == nameof(FixCommonErrorsPage))
         {
+            MakeHistoryForUndo($"Before Fix common errors");
+
             var totalFixes = 0;
             if (query["TotalFixes"] is int totalFixesNumber)
             {
@@ -265,6 +270,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
             if (page == nameof(AdjustDurationPage))
             {
+                MakeHistoryForUndo($"Before adjust durations");
+
                 if (query["Subtitle"] is Subtitle adjustedSubtitle)
                 {
                     Paragraphs = new ObservableCollection<DisplayParagraph>(adjustedSubtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
@@ -277,6 +284,75 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 }
             }
         }
+    }
+
+    private void MakeHistoryForUndo(string description)
+    {
+        if (Paragraphs.Count == 0 || Paragraphs.Count == 1 && string.IsNullOrWhiteSpace(CurrentText))
+        { 
+            return;
+        }
+
+        var hash = GetFastSubtitleHash();
+        if (hash == _changeSubtitleHash)
+        {
+            return; // no changes
+        }
+
+        var undoRedoObject = MakeUndoRedoObject(description);
+        _undoRedoManager.Do(undoRedoObject);
+        _changeSubtitleHash = GetFastSubtitleHash();
+    }
+
+    private UndoRedoObject? MakeUndoRedoObject(string description)
+    {
+        return new UndoRedoObject(
+            description, 
+            UpdatedSubtitle, 
+            _subtitleFileName, 
+            GetSelectedIndexes(), 
+            TextBox.CursorPosition, 
+            TextBox.SelectionLength);
+    }
+
+    [RelayCommand]
+    public void Undo()
+    {
+        if (!_undoRedoManager.CanUndo)
+        {
+            return;
+        }
+
+        var undoRedoObject = _undoRedoManager.Undo()!;
+        RestoreUndoRedoState(undoRedoObject);
+        ShowStatus("Undo performed");
+    }
+
+    [RelayCommand]
+    public void Redo()
+    {
+        if (!_undoRedoManager.CanRedo)
+        {
+            return;
+        }
+
+        var undoRedoObject = _undoRedoManager.Redo()!;
+        RestoreUndoRedoState(undoRedoObject);
+        ShowStatus("Redo performed");
+    }
+
+    [RelayCommand]
+    public async Task HistoryShow()
+    {
+        //TODO: fix
+    }
+
+    private void RestoreUndoRedoState(UndoRedoObject undoRedoObject)
+    {
+        Paragraphs = new ObservableCollection<DisplayParagraph>(undoRedoObject.Subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+        _subtitleFileName = undoRedoObject.SubtitleFileName;
+        SetTitle(_subtitleFileName);
+        SelectParagraph(undoRedoObject.SelectedIndices.First());
     }
 
     private void AudioVisualizerOnPlayToggle(object? sender, EventArgs e)
@@ -687,8 +763,10 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         if (result is LayoutPickerPopupResult popupResult && MainPage != null)
         {
             SelectedLayout = popupResult.SelectedLayout;
+            Se.Settings.General.LayoutNumber = SelectedLayout;
             ShowStatus($"Selected layout: {SelectedLayout + 1}");
             MainPage.MakeLayout(SelectedLayout);
+            Se.SaveSettings();
         }
     }
 
@@ -881,10 +959,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         Paragraphs = _subtitle.Paragraphs.Select(p => new DisplayParagraph(p)).ToObservableCollection();
         _subtitleFileName = subtitleFileName;
-        if (Window != null)
-        {
-            Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
-        }
+        SetTitle(subtitleFileName);
 
         if (!string.IsNullOrEmpty(videoFileName) && File.Exists(videoFileName))
         {
@@ -905,6 +980,14 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         }
     }
 
+    private static void SetTitle(string subtitleFileName)
+    {
+        if (Window != null)
+        {
+            Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
+        }
+    }
+
     private void AddToRecentFiles()
     {
         Se.Settings.File.AddToRecentFiles(_subtitleFileName, _videoFileName, GetFirstSelectedIndex(), CurrentTextEncoding.DisplayName);
@@ -917,6 +1000,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             MenuFlyoutItemReopen.Add(new MenuFlyoutItem() { Text = recentFile.SubtitleFileName });
         }
+
         // Hack to update menu
         InitMenuBar.CreateMenuBar(MainPage!, this);
     }
@@ -947,6 +1031,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     public void SubtitleNew()
     {
+        MakeHistoryForUndo("Before \"New\"");
+
         Se.Settings.File.AddToRecentFiles(_subtitleFileName, _videoFileName, GetFirstSelectedIndex(), CurrentTextEncoding.DisplayName);
 
         _timerAutoBackup.Stop();
@@ -1003,10 +1089,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         _subtitleFileName = subtitleFileName;
         await SubtitleSave();
-        if (Window != null)
-        {
-            Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
-        }
+        SetTitle(_subtitleFileName);
     }
 
     [RelayCommand]
@@ -1381,13 +1464,13 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         if (File.Exists(DownloadFfmpegModel.GetFfmpegFileName()))
         {
-            Se.Settings.FfmpegPath = DownloadFfmpegModel.GetFfmpegFileName();
+            Se.Settings.General.FfmpegPath = DownloadFfmpegModel.GetFfmpegFileName();
             return true;
         }
 
         if (Configuration.IsRunningOnMac && File.Exists("/usr/local/bin/ffmpeg"))
         {
-            Se.Settings.FfmpegPath = "/usr/local/bin/ffmpeg";
+            Se.Settings.General.FfmpegPath = "/usr/local/bin/ffmpeg";
             return true;
         }
 
@@ -1407,7 +1490,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             var result = await _popupService.ShowPopupAsync<DownloadFfmpegModel>(CancellationToken.None);
             if (result is string ffmpegFileNameResult)
             {
-                Se.Settings.FfmpegPath = ffmpegFileNameResult;
+                Se.Settings.General.FfmpegPath = ffmpegFileNameResult;
                 ShowStatus($"ffmpeg downloaded and installed to {ffmpegFileNameResult}");
                 return true;
             }
@@ -1493,6 +1576,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        MakeHistoryForUndo($"Before delete selected lines");
+
         SubtitleList.BatchBegin();
         var firstIdx = -1;
         foreach (var displayParagraph in selectedParagraphs)
@@ -1555,6 +1640,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        MakeHistoryForUndo($"Before \"Insert before\"");
+
         var idx = Paragraphs.IndexOf(p);
 
         SubtitleList.BatchBegin();
@@ -1590,6 +1677,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        MakeHistoryForUndo($"Before \"Insert after\"");
+
         var idx = Paragraphs.IndexOf(p);
 
         SubtitleList.BatchBegin();
@@ -1621,6 +1710,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     private void ToggleTag(string tag, bool isAssa)
     {
+        MakeHistoryForUndo($"Before toggle tag \"{tag}\"");
+
         var first = true;
         var toggleOn = true;
 

@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Views;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -48,7 +49,7 @@ public class MainPage : ContentPage
         _viewModel.SubtitleList = InitSubtitleListView.MakeSubtitleListView(_viewModel);
         _viewModel.ListViewAndEditBox = new Grid();
 
-        MakeLayout(0); // TODO: use settings to determine layout
+        MakeLayout(Se.Settings.General.LayoutNumber); 
 
         Loaded += OnLoaded!;
     }
