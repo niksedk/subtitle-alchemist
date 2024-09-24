@@ -8,7 +8,7 @@ using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SharpHook;
 using SubtitleAlchemist.Controls.AudioVisualizerControl;
-using SubtitleAlchemist.Features.Edit;
+using SubtitleAlchemist.Features.Edit.RedoUndoHistory;
 using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export;
 using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
@@ -31,6 +31,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Timers;
+using GoToLineNumberPopupModel = SubtitleAlchemist.Features.Edit.GoToLineNumber.GoToLineNumberPopupModel;
 using Path = System.IO.Path;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -294,7 +295,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         }
 
         var hash = GetFastSubtitleHash();
-        if (hash == _changeSubtitleHash)
+        if (hash == _changeSubtitleHash && _undoRedoManager.CanUndo)
         {
             return; // no changes
         }
@@ -304,9 +305,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _changeSubtitleHash = GetFastSubtitleHash();
     }
 
-    private UndoRedoObject? MakeUndoRedoObject(string description)
+    private UndoRedoItem? MakeUndoRedoObject(string description)
     {
-        return new UndoRedoObject(
+        return new UndoRedoItem(
             description, 
             UpdatedSubtitle, 
             _subtitleFileName, 
@@ -344,15 +345,19 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     public async Task HistoryShow()
     {
-        //TODO: fix
+        await Shell.Current.GoToAsync(nameof(UndoRedoHistoryPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
+            { "UndoRedoManager", _undoRedoManager },
+        });
     }
 
-    private void RestoreUndoRedoState(UndoRedoObject undoRedoObject)
+    private void RestoreUndoRedoState(UndoRedoItem undoRedoObject)
     {
         Paragraphs = new ObservableCollection<DisplayParagraph>(undoRedoObject.Subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
         _subtitleFileName = undoRedoObject.SubtitleFileName;
         SetTitle(_subtitleFileName);
-        SelectParagraph(undoRedoObject.SelectedIndices.First());
+        SelectParagraph(undoRedoObject.SelectedLines.First());
     }
 
     private void AudioVisualizerOnPlayToggle(object? sender, EventArgs e)

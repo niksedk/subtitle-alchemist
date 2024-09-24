@@ -2,47 +2,47 @@
 
 public class UndoRedoManager : IUndoRedoManager
 {
-    private readonly List<UndoRedoObject?> _undoList = new();
-    private readonly List<UndoRedoObject?> _redoList = new();
+    public List<UndoRedoItem> UndoList { get; set; } = new();
+    public List<UndoRedoItem> RedoList { get; set; } = new();
     private const int MaxUndoItems = 100;
 
-    public void Do(UndoRedoObject? action)
+    public void Do(UndoRedoItem action)
     {
-        _undoList.Add(action);
-        if (_undoList.Count > MaxUndoItems)
+        UndoList.Add(action);
+        if (UndoList.Count > MaxUndoItems)
         {
-            _undoList.RemoveAt(0);
+            UndoList.RemoveAt(0);
         }
 
-        _redoList.Clear();
+        RedoList.Clear();
     }
 
-    public UndoRedoObject? Undo()
+    public UndoRedoItem? Undo()
     {
-        if (_undoList.Count > 0)
+        if (UndoList.Count > 0)
         {
-            var action = _undoList[^1];
-            _undoList.RemoveAt(_undoList.Count - 1);
-            _redoList.Add(action);
+            var action = UndoList[^1];
+            UndoList.RemoveAt(UndoList.Count - 1);
+            RedoList.Add(action);
             return action;
         }
 
         return null;
     }
 
-    public UndoRedoObject? Redo()
+    public UndoRedoItem? Redo()
     {
-        if (_redoList.Count > 0)
+        if (RedoList.Count > 0)
         {
-            var action = _redoList[^1];
-            _redoList.RemoveAt(_redoList.Count - 1);
-            _undoList.Add(action);
+            var action = RedoList[^1];
+            RedoList.RemoveAt(RedoList.Count - 1);
+            UndoList.Add(action);
             return action;
         }
 
         return null;
     }
 
-    public bool CanUndo => _undoList.Count > 0;
-    public bool CanRedo => _redoList.Count > 0;
+    public bool CanUndo => UndoList.Count > 0;
+    public bool CanRedo => RedoList.Count > 0;
 }

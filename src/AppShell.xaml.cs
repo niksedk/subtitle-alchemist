@@ -1,4 +1,5 @@
-﻿using SubtitleAlchemist.Features.Files;
+﻿using SubtitleAlchemist.Features.Edit.RedoUndoHistory;
+using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
 using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Features.SpellCheck;
@@ -25,6 +26,7 @@ namespace SubtitleAlchemist
             Routing.RegisterRoute(nameof(SpellCheckerPage), typeof(SpellCheckerPage));
             Routing.RegisterRoute(nameof(RestoreAutoBackupPage), typeof(RestoreAutoBackupPage));
             Routing.RegisterRoute(nameof(ExportEbuPage), typeof(ExportEbuPage));
+            Routing.RegisterRoute(nameof(UndoRedoHistoryPage), typeof(UndoRedoHistoryPage));
         }
     }
 }

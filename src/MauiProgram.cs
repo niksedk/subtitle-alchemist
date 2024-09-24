@@ -6,7 +6,8 @@ using SkiaSharp.Views.Maui.Controls.Hosting;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Controls.PickerControl;
 using SubtitleAlchemist.Controls.RadialControl;
-using SubtitleAlchemist.Features.Edit;
+using SubtitleAlchemist.Features.Edit.GoToLineNumber;
+using SubtitleAlchemist.Features.Edit.RedoUndoHistory;
 using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export;
 using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
@@ -26,6 +27,7 @@ using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Dictionaries;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Services;
+using GoToLineNumberPopupModel = SubtitleAlchemist.Features.Edit.GoToLineNumber.GoToLineNumberPopupModel;
 
 namespace SubtitleAlchemist
 {
@@ -67,6 +69,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<RestoreAutoBackupModel>();
             builder.Services.AddTransient<ExportEbuPage>();
             builder.Services.AddTransient<ExportEbuModel>();
+            builder.Services.AddTransient<UndoRedoHistoryPage>();
+            builder.Services.AddTransient<UndoRedoHistoryPageModel>();
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<INamesList, SeNamesList>();
             builder.Services.AddTransient<IAutoBackup, AutoBackup>();

@@ -1,11 +1,12 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Converters;
 
-namespace SubtitleAlchemist.Features.Files;
+namespace SubtitleAlchemist.Features.Edit.RedoUndoHistory;
 
-public partial class RestoreAutoBackupPage : ContentPage
+public class UndoRedoHistoryPage : ContentPage
 {
-    public RestoreAutoBackupPage(Files.RestoreAutoBackupModel vm)
+    public UndoRedoHistoryPage(UndoRedoHistoryPageModel vm)
     {
         this.BindDynamicTheme();
         Padding = new Thickness(10);
@@ -34,11 +35,11 @@ public partial class RestoreAutoBackupPage : ContentPage
 
         var titleLabel = new Label
         {
-            Text = "Restore auto-back",
+            Text = "Undo/redo History",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
         }.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
+        grid.Add(titleLabel, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
 
@@ -63,35 +64,32 @@ public partial class RestoreAutoBackupPage : ContentPage
         grid.Add(border, 0, 1);
         Grid.SetColumnSpan(border, 2);
 
-        vm.LabelOpenFolder = new Label
+        var buttonCompareHistoryItems = new Button
         {
-            TextDecorations = TextDecorations.Underline,
-            Text = "Open containing folder",
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme();
-        grid.Add(vm.LabelOpenFolder, 0, 2);
-        var tapGestureRecognizer = new TapGestureRecognizer();
-        tapGestureRecognizer.Tapped += (s, e) => vm.OpenContainingFolderTapped();
-        vm.LabelOpenFolder.GestureRecognizers.Add(tapGestureRecognizer);
-        var pointerGestureRecognizers = new PointerGestureRecognizer();
-        pointerGestureRecognizers.PointerEntered += vm.OpenContainingFolderPointerEntered;
-        pointerGestureRecognizers.PointerExited += vm.OpenContainingFolderPointerExited;
-        vm.LabelOpenFolder.GestureRecognizers.Add(pointerGestureRecognizers);
-
-
-        var buttonOk = new Button
-        {
-            Text = "Restore selected file",
-            Command = vm.OkCommand,
+            Text = "Compare history items",
+            Command = vm.CompareHistoryItemsCommand,
             Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
-        buttonOk.SetBinding(IsEnabledProperty, nameof(RestoreAutoBackupModel.IsOkButtonEnabled));
+
+        var buttonCompareWithCurrent = new Button
+        {
+            Text = "Compare with current",
+            Command = vm.CompareWithCurrentCommand,
+            Margin = new Thickness(0, 0, 10, 0),
+        }.BindDynamicTheme();
+
+        var buttonRollback = new Button
+        {
+            Text = "Rollback to selected item",
+            Command = vm.RollbackToCommand,
+            Margin = new Thickness(0, 0, 10, 0),
+        }.BindDynamicTheme();
 
         var buttonCancel = new Button
         {
             Text = "Cancel",
             Command = vm.CancelCommand,
+            Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
 
         var buttonBar = new StackLayout
@@ -100,7 +98,9 @@ public partial class RestoreAutoBackupPage : ContentPage
             HorizontalOptions = LayoutOptions.End,
             Children =
             {
-                buttonOk,
+                buttonCompareHistoryItems,
+                buttonCompareWithCurrent,
+                buttonRollback,
                 buttonCancel,
             }
         }.BindDynamicTheme();
@@ -110,7 +110,7 @@ public partial class RestoreAutoBackupPage : ContentPage
         Content = grid;
     }
 
-    private CollectionView MakeCollectionView(RestoreAutoBackupModel vm)
+    private CollectionView MakeCollectionView(UndoRedoHistoryPageModel vm)
     {
         var collectionView = new CollectionView
         {
@@ -124,53 +124,55 @@ public partial class RestoreAutoBackupPage : ContentPage
                     ColumnDefinitions =
                     {
                         new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) }, // Date and time
-                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // File name
-                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Extension
-                        new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) }, // Size
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Number of lines
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Selected line number
+                        new ColumnDefinition { Width = new GridLength(5, GridUnitType.Star) }, // Description
                     },
                 };
+
+                IValueConverter converterShort = new DataTimeToTimeConverter();
 
                 var labelDateAndTime = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
                 }.BindDynamicThemeTextColorOnly();
-                labelDateAndTime.SetBinding(Label.TextProperty, nameof(DisplayFile.DateAndTime));
-                rulesItemsGrid.Add(labelDateAndTime, 0, 0);
+                labelDateAndTime.SetBinding(Label.TextProperty, nameof(UndoRedoItemDisplay.Created), BindingMode.Default, converterShort);
+                rulesItemsGrid.Add(labelDateAndTime, 0);
 
                 var labelFileName = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
                 }.BindDynamicThemeTextColorOnly();
-                labelFileName.SetBinding(Label.TextProperty, nameof(DisplayFile.FileName));
-                rulesItemsGrid.Add(labelFileName, 1, 0);
+                labelFileName.SetBinding(Label.TextProperty, nameof(UndoRedoItemDisplay.NumberOfLines));
+                rulesItemsGrid.Add(labelFileName, 1);
 
                 var labelExtension = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
                 }.BindDynamicThemeTextColorOnly();
-                labelExtension.SetBinding(Label.TextProperty, nameof(DisplayFile.Extension));
-                rulesItemsGrid.Add(labelExtension, 2, 0);
+                labelExtension.SetBinding(Label.TextProperty, nameof(UndoRedoItemDisplay.SelectedLineNumber));
+                rulesItemsGrid.Add(labelExtension, 2);
 
                 var labelSize = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
                 }.BindDynamicThemeTextColorOnly();
-                labelSize.SetBinding(Label.TextProperty, nameof(DisplayFile.Size));
-                rulesItemsGrid.Add(labelSize, 3, 0);
+                labelSize.SetBinding(Label.TextProperty, nameof(UndoRedoItemDisplay.Description));
+                rulesItemsGrid.Add(labelSize, 3);
 
                 return rulesItemsGrid;
             }),
-        }; 
-        
-        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(RestoreAutoBackupModel.Files));
-        collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(RestoreAutoBackupModel.SelectedFile));
+        };
+
+        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.UndoRedoItems));
+        collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedUndoRedoItem));
 
         collectionView.SelectionChanged += vm.SelectionChanged;
 
         return collectionView;
     }
 
-    private Grid MakeHeader(RestoreAutoBackupModel vm)
+    private Grid MakeHeader(UndoRedoHistoryPageModel vm)
     {
         // Create the header grid
         var gridHeader = new Grid
@@ -180,9 +182,9 @@ public partial class RestoreAutoBackupPage : ContentPage
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) }, // Date and time
-                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // File name
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Extension
-                new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) }, // Size
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Number of lines
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Selected line number
+                new ColumnDefinition { Width = new GridLength(5, GridUnitType.Star) }, // Description
             },
         };
 
@@ -190,31 +192,32 @@ public partial class RestoreAutoBackupPage : ContentPage
         gridHeader.Add(
             new Label
             {
-                Text = "Date and time",
+                Text = "Time",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
-            }, 0, 0);
+            }, 0);
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Number of lines",
+                FontAttributes = FontAttributes.Bold,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 1);
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Selected line#",
+                FontAttributes = FontAttributes.Bold,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 2);
         gridHeader.Add(
             new Label
             {
                 Text = "Description",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
-            }, 1, 0);
-        gridHeader.Add(
-            new Label
-            {
-                Text = "Subtitle lines",
-                FontAttributes = FontAttributes.Bold,
-                VerticalTextAlignment = TextAlignment.Center
-            }, 2, 0);
+            }, 3);
 
         return gridHeader;
-    }
-
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        (BindingContext as RestoreAutoBackupModel)?.Initialize();
     }
 }

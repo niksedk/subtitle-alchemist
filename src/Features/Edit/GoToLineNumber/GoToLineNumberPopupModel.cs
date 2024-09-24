@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 
-namespace SubtitleAlchemist.Features.Edit
+namespace SubtitleAlchemist.Features.Edit.GoToLineNumber
 {
     public partial class GoToLineNumberPopupModel : ObservableObject
     {

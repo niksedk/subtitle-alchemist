@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 
-namespace SubtitleAlchemist.Features.Edit;
+namespace SubtitleAlchemist.Features.Edit.GoToLineNumber;
 
 public sealed class GoToLineNumberPopup : Popup
 {

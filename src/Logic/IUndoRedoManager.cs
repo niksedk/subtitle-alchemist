@@ -2,9 +2,9 @@
 
 public interface IUndoRedoManager
 {
-    void Do(UndoRedoObject? action);
-    UndoRedoObject? Undo();
-    UndoRedoObject? Redo();
+    void Do(UndoRedoItem? action);
+    UndoRedoItem? Undo();
+    UndoRedoItem? Redo();
     bool CanUndo { get; }
     bool CanRedo { get; }
 }
