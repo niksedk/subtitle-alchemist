@@ -20,16 +20,17 @@ using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Features.SpellCheck;
+using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
+using SubtitleAlchemist.Features.Video.OpenFromUrl;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Dictionaries;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Services;
-using GoToLineNumberPopupModel = SubtitleAlchemist.Features.Edit.GoToLineNumber.GoToLineNumberPopupModel;
 
 namespace SubtitleAlchemist
 {
@@ -73,6 +74,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<ExportEbuModel>();
             builder.Services.AddTransient<UndoRedoHistoryPage>();
             builder.Services.AddTransient<UndoRedoHistoryPageModel>();
+            builder.Services.AddTransient<AdjustAllTimesPage>();
+            builder.Services.AddTransient<AdjustAllTimesPageModel>();
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<INamesList, SeNamesList>();
             builder.Services.AddTransient<IAutoBackup, AutoBackup>();
@@ -99,6 +102,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<GetDictionaryPopup, GetDictionaryPopupModel>();
             builder.Services.AddTransientPopup<FindPopup, FindPopupModel>();
             builder.Services.AddTransientPopup<ReplacePopup, ReplacePopupModel>();
+            builder.Services.AddTransientPopup<OpenFromUrlPopup, OpenFromUrlPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

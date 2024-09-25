@@ -3,6 +3,7 @@ using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
 using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Features.SpellCheck;
+using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Features.Translate;
@@ -27,6 +28,7 @@ namespace SubtitleAlchemist
             Routing.RegisterRoute(nameof(RestoreAutoBackupPage), typeof(RestoreAutoBackupPage));
             Routing.RegisterRoute(nameof(ExportEbuPage), typeof(ExportEbuPage));
             Routing.RegisterRoute(nameof(UndoRedoHistoryPage), typeof(UndoRedoHistoryPage));
+            Routing.RegisterRoute(nameof(AdjustAllTimesPage), typeof(AdjustAllTimesPage));
         }
     }
 }

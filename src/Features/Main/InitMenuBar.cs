@@ -239,6 +239,7 @@ internal static class InitMenuBar
         menu.Add(new MenuFlyoutItem
         {
             Text = "Open video from URL...",
+            Command = vm.OpenVideoFromUrlShowCommand,
         });
         menu.Add(new MenuFlyoutItem
         {
@@ -266,6 +267,7 @@ internal static class InitMenuBar
         menu.Add(new MenuFlyoutItem
         {
             Text = "Adjust all times (show earlier/later)",
+            Command = vm.AdjustAllTimesShowCommand,
         });
 
         return menu;
