@@ -9,12 +9,10 @@ public partial class FindService : IFindService
     public bool WholeWord { get; set; }
     public FindMode CurrentFindMode { get; set; } = FindMode.Normal;
 
-    private List<string> _items;
+    private List<string> _items = new List<string>();
 
-
-    public FindService(List<string> items)
+    public FindService()
     {
-        _items = items;
     }
 
     public FindService(List<string> items, int currentIndex, bool wholeWord, FindMode findMode)

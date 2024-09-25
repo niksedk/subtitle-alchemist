@@ -78,6 +78,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<IFileHelper, FileHelper>();
             builder.Services.AddTransient<IZipUnpacker, ZipUnpacker>();
             builder.Services.AddTransient<IUndoRedoManager, UndoRedoManager>();
+            builder.Services.AddTransient<IFindService, FindService>();
 
             builder.Services.AddTransientPopup<AboutPopup, AboutPopupModel>();
             builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerModel>();

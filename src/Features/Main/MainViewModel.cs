@@ -1461,7 +1461,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task FindShow()
     {
-        IFindService findService = new FindService(Paragraphs.Select(p=>p.Text).ToList());
+        IFindService findService = new FindService(Paragraphs.Select(p => p.Text).ToList(), GetFirstSelectedIndex(), false, FindService.FindMode.Normal);
         var result = await _popupService.ShowPopupAsync<FindPopupModel>(onPresenting: viewModel => viewModel.Initialize(findService), CancellationToken.None);
 
         if (result is IFindService fs && !string.IsNullOrEmpty(fs.SearchText))

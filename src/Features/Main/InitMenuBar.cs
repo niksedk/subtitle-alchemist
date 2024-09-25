@@ -132,15 +132,29 @@ internal static class InitMenuBar
             Command = vm.HistoryShowCommand,
         });
         menu.Add(new MenuFlyoutSeparator());
-        menu.Add(new MenuFlyoutItem
+
+        var find = new MenuFlyoutItem
         {
             Text = "Find",
             Command = vm.FindShowCommand,
+        };
+        find.KeyboardAccelerators.Add(new KeyboardAccelerator
+        {
+            Modifiers = KeyboardAcceleratorModifiers.Ctrl,
+            Key = "F"
         });
-        menu.Add(new MenuFlyoutItem
+        menu.Add(find);
+
+        var findNext = new MenuFlyoutItem
         {
             Text = "Find next",
+        };
+        findNext.KeyboardAccelerators.Add(new KeyboardAccelerator
+        {
+            Key = "F3"
         });
+        menu.Add(findNext);
+
         menu.Add(new MenuFlyoutItem
         {
             Text = "Replace",
