@@ -155,10 +155,18 @@ internal static class InitMenuBar
         });
         menu.Add(findNext);
 
-        menu.Add(new MenuFlyoutItem
+        var replace = new MenuFlyoutItem
         {
             Text = "Replace",
+            Command= vm.ReplaceShowCommand,
+        };
+        find.KeyboardAccelerators.Add(new KeyboardAccelerator
+        {
+            Modifiers = KeyboardAcceleratorModifiers.Ctrl,
+            Key = "H"
         });
+        menu.Add(replace);
+
         menu.Add(new MenuFlyoutItem
         {
             Text = "Multiple replace",

@@ -2,11 +2,11 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 
-namespace SubtitleAlchemist.Features.Edit.Find;
+namespace SubtitleAlchemist.Features.Edit.Replace;
 
-public sealed class FindPopup : Popup
+public sealed class ReplacePopup : Popup
 {
-    public FindPopup(FindPopupModel vm)
+    public ReplacePopup(ReplacePopupModel vm)
     {
         BindingContext = vm;
 
@@ -57,7 +57,7 @@ public sealed class FindPopup : Popup
         vm.SearchBar.SetBinding(Entry.TextProperty, nameof(vm.SearchText));
         vm.SearchBar.SearchButtonPressed += vm.SearchButtonPressed;
         grid.Add(vm.SearchBar, 0, 1);
-        
+
         var labelWholeWord = new Label
         {
             Text = "Whole word",
@@ -115,7 +115,7 @@ public sealed class FindPopup : Popup
             Content = "Regular expression",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0,0,0,25),
+            Margin = new Thickness(0, 0, 0, 25),
             Padding = new Thickness(0),
         };
         radioRegularExpression.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.RegularExpression));
@@ -187,7 +187,7 @@ public sealed class FindPopup : Popup
         Content = windowBorder;
 
         this.BindDynamicTheme();
-  
+
         vm.Popup = this;
     }
 }

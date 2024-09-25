@@ -34,6 +34,7 @@ using System.Timers;
 using SubtitleAlchemist.Features.Edit.Find;
 using GoToLineNumberPopupModel = SubtitleAlchemist.Features.Edit.GoToLineNumber.GoToLineNumberPopupModel;
 using Path = System.IO.Path;
+using SubtitleAlchemist.Features.Edit.Replace;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -308,7 +309,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _changeSubtitleHash = GetFastSubtitleHash();
     }
 
-    private UndoRedoItem? MakeUndoRedoObject(string description)
+    private UndoRedoItem MakeUndoRedoObject(string description)
     {
         return new UndoRedoItem(
             description, 
@@ -1463,6 +1464,20 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     {
         IFindService findService = new FindService(Paragraphs.Select(p => p.Text).ToList(), GetFirstSelectedIndex(), false, FindService.FindMode.Normal);
         var result = await _popupService.ShowPopupAsync<FindPopupModel>(onPresenting: viewModel => viewModel.Initialize(findService), CancellationToken.None);
+
+        if (result is IFindService fs && !string.IsNullOrEmpty(fs.SearchText))
+        {
+            var idx = fs.Find(fs.SearchText);
+            SelectParagraph(idx);
+            ShowStatus($"'{fs.SearchText}' found in line '{idx + 1}'");
+        }
+    }
+
+    [RelayCommand]
+    private async Task ReplaceShow()
+    {
+        IFindService findService = new FindService(Paragraphs.Select(p => p.Text).ToList(), GetFirstSelectedIndex(), false, FindService.FindMode.Normal);
+        var result = await _popupService.ShowPopupAsync<ReplacePopupModel>(onPresenting: viewModel => viewModel.Initialize(findService), CancellationToken.None);
 
         if (result is IFindService fs && !string.IsNullOrEmpty(fs.SearchText))
         {

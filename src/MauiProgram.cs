@@ -9,6 +9,7 @@ using SubtitleAlchemist.Controls.RadialControl;
 using SubtitleAlchemist.Features.Edit.Find;
 using SubtitleAlchemist.Features.Edit.GoToLineNumber;
 using SubtitleAlchemist.Features.Edit.RedoUndoHistory;
+using SubtitleAlchemist.Features.Edit.Replace;
 using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export;
 using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
@@ -97,6 +98,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<ExportPacPopup, ExportPacPopupModel>();
             builder.Services.AddTransientPopup<GetDictionaryPopup, GetDictionaryPopupModel>();
             builder.Services.AddTransientPopup<FindPopup, FindPopupModel>();
+            builder.Services.AddTransientPopup<ReplacePopup, ReplacePopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

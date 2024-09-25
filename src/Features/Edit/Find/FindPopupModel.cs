@@ -30,6 +30,11 @@ namespace SubtitleAlchemist.Features.Edit.Find
         [RelayCommand]
         private void Find()
         {
+            if (string.IsNullOrEmpty(SearchText))
+            {
+                return;
+            }
+
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 if (_findService != null)
@@ -55,7 +60,7 @@ namespace SubtitleAlchemist.Features.Edit.Find
 
             Popup?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
             {
-                MainThread.BeginInvokeOnMainThread(async() =>
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
                     WholeWord = findService.WholeWord;
 
@@ -77,6 +82,11 @@ namespace SubtitleAlchemist.Features.Edit.Find
 
                 return false;
             });
+        }
+
+        internal void SearchButtonPressed(object? sender, EventArgs e)
+        {
+            Find();
         }
     }
 }
