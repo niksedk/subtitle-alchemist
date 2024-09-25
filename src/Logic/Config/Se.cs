@@ -4,6 +4,7 @@ using System.Text.Json;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Forms.FixCommonErrors;
 using SubtitleAlchemist.Logic.Config.Language;
+
 namespace SubtitleAlchemist.Logic.Config;
 
 public class Se

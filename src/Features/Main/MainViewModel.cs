@@ -101,12 +101,14 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private readonly IPopupService _popupService;
     private readonly IAutoBackup _autoBackup;
     private readonly IUndoRedoManager _undoRedoManager;
+    private readonly IFindService _findService;
 
-    public MainViewModel(IPopupService popupService, IAutoBackup autoBackup, IUndoRedoManager undoRedoManager)
+    public MainViewModel(IPopupService popupService, IAutoBackup autoBackup, IUndoRedoManager undoRedoManager, IFindService findService)
     {
         _popupService = popupService;
         _autoBackup = autoBackup;
         _undoRedoManager = undoRedoManager;
+        _findService = findService;
         VideoPlayer = new MediaElement { BackgroundColor = Colors.Orange, ZIndex = -10000 };
         SubtitleList = new CollectionView();
         _timer = new System.Timers.Timer(19);
@@ -1464,7 +1466,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         if (result is IFindService fs && !string.IsNullOrEmpty(fs.SearchText))
         {
-            fs.Find(fs.SearchText);
+            var idx = fs.Find(fs.SearchText);
+            SelectParagraph(idx);
+            ShowStatus($"'{fs.SearchText}' found in line '{idx + 1}'");
         }
     }
 
@@ -1817,7 +1821,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 {
                     hash = hash * 23 + line.GetHashCode();
                 }
-                //                hash = hash * 23 + p.Text.GetHashCode();
 
                 if (p.P.Style != null)
                 {
