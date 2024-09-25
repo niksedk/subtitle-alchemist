@@ -6,6 +6,7 @@ using SkiaSharp.Views.Maui.Controls.Hosting;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Controls.PickerControl;
 using SubtitleAlchemist.Controls.RadialControl;
+using SubtitleAlchemist.Features.Edit.Find;
 using SubtitleAlchemist.Features.Edit.GoToLineNumber;
 using SubtitleAlchemist.Features.Edit.RedoUndoHistory;
 using SubtitleAlchemist.Features.Files;
@@ -94,6 +95,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<ExportCavena890Popup, ExportCavena890PopupModel>();
             builder.Services.AddTransientPopup<ExportPacPopup, ExportPacPopupModel>();
             builder.Services.AddTransientPopup<GetDictionaryPopup, GetDictionaryPopupModel>();
+            builder.Services.AddTransientPopup<FindPopup, FindPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

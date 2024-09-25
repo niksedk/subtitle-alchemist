@@ -31,6 +31,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Timers;
+using SubtitleAlchemist.Features.Edit.Find;
 using GoToLineNumberPopupModel = SubtitleAlchemist.Features.Edit.GoToLineNumber.GoToLineNumberPopupModel;
 using Path = System.IO.Path;
 
@@ -1452,6 +1453,18 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         if (result is SpellCheckDictionary dictionary && MainPage != null)
         {
             ShowStatus($"Dictionary downloaded: {dictionary.NativeName}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task FindShow()
+    {
+        IFindService findService = new FindService(Paragraphs.Select(p=>p.Text).ToList());
+        var result = await _popupService.ShowPopupAsync<FindPopupModel>(onPresenting: viewModel => viewModel.Initialize(findService), CancellationToken.None);
+
+        if (result is IFindService fs && !string.IsNullOrEmpty(fs.SearchText))
+        {
+            fs.Find(fs.SearchText);
         }
     }
 

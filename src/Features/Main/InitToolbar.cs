@@ -80,6 +80,7 @@ internal static class InitToolbar
                     HeightRequest = 16,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
+                    Command = vm.FindShowCommand,
                 }.BindDynamicTheme(),
                 new ImageButton
                 {

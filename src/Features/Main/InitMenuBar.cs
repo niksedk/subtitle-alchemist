@@ -135,6 +135,7 @@ internal static class InitMenuBar
         menu.Add(new MenuFlyoutItem
         {
             Text = "Find",
+            Command = vm.FindShowCommand,
         });
         menu.Add(new MenuFlyoutItem
         {
