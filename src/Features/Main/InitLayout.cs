@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Constants;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace SubtitleAlchemist.Features.Main;

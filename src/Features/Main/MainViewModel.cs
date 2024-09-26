@@ -103,13 +103,21 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private readonly IAutoBackup _autoBackup;
     private readonly IUndoRedoManager _undoRedoManager;
     private readonly IFindService _findService;
+    private readonly IInsertManager _insertManager;
 
-    public MainViewModel(IPopupService popupService, IAutoBackup autoBackup, IUndoRedoManager undoRedoManager, IFindService findService)
+    public MainViewModel(
+        IPopupService popupService,
+        IAutoBackup autoBackup,
+        IUndoRedoManager undoRedoManager,
+        IFindService findService,
+        IInsertManager insertManager)
     {
         _popupService = popupService;
         _autoBackup = autoBackup;
         _undoRedoManager = undoRedoManager;
         _findService = findService;
+        _insertManager = insertManager;
+
         VideoPlayer = new MediaElement { BackgroundColor = Colors.Orange, ZIndex = -10000 };
         SubtitleList = new CollectionView();
         _timer = new System.Timers.Timer(19);
@@ -1358,9 +1366,14 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task VideoAudioToTextWhisper()
     {
-        if (await CheckIfSubtitleIsEmpty())
+        if (string.IsNullOrEmpty(_videoFileName))
         {
-            return;
+            await VideoOpen();
+
+            if (string.IsNullOrEmpty(_videoFileName))
+            {
+                return;
+            }
         }
 
         var ffmpegOk = await RequireFfmpegOk();
@@ -1682,10 +1695,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         var idx = Paragraphs.IndexOf(p);
 
         SubtitleList.BatchBegin();
-        var newParagraph = new DisplayParagraph(new Paragraph());
-        Paragraphs.Insert(idx, newParagraph);
-        SelectParagraph(newParagraph);
-
+        var list = Paragraphs.ToList();
+        var newParagraph = _insertManager.InsertBefore(list, GetSelectedIndexes(), string.Empty, Configuration.Settings.General.MinimumMillisecondsBetweenLines);
+        Paragraphs = new ObservableCollection<DisplayParagraph>(list);
         Renumber();
 
         _currentParagraph = newParagraph;
@@ -1719,11 +1731,10 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         var idx = Paragraphs.IndexOf(p);
 
         SubtitleList.BatchBegin();
-        var newParagraph = new DisplayParagraph(new Paragraph());
-        Paragraphs.Insert(idx + 1, newParagraph);
-        SelectParagraph(newParagraph);
+        var list = Paragraphs.ToList();
+        var newParagraph = _insertManager.InsertAfter(list, GetSelectedIndexes(), string.Empty, Configuration.Settings.General.MinimumMillisecondsBetweenLines );
+        Paragraphs = new ObservableCollection<DisplayParagraph>(list);
         Renumber();
-
         SubtitleList.BatchCommit();
 
         _currentParagraph = newParagraph;

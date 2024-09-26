@@ -23,10 +23,10 @@ public partial class ReplacePopupModel : ObservableObject
     private bool _regularExpression;
 
     public ReplacePopup? Popup { get; set; }
+
     public SearchBar SearchBar { get; set; } = new SearchBar();
 
     private IFindService? _findService;
-
 
     [RelayCommand]
     private void Find()

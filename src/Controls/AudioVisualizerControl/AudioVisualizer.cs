@@ -1646,7 +1646,7 @@ public class AudioVisualizer : SKCanvasView
         var currentRegionRight = SecondsToXPosition(paragraph.EndTime.TotalSeconds - _startPositionSeconds);
         var currentRegionWidth = currentRegionRight - currentRegionLeft;
 
-        if (currentRegionWidth <= 1 || _canvas == null)
+        if (currentRegionWidth <= 5 || _canvas == null)
         {
             return;
         }
@@ -1660,15 +1660,36 @@ public class AudioVisualizer : SKCanvasView
         _canvas.DrawLine(currentRegionLeft, 0, currentRegionLeft, (float)_info.Height, _paintLeft);
         _canvas.DrawLine(currentRegionRight - 1, 0, currentRegionRight - 1, (float)_info.Height, _paintRight);
 
+
+        // draw clipped text
         var text = HtmlUtil.RemoveHtmlTags(paragraph.Text, true);
-        if (Configuration.Settings.VideoControls.WaveformUnwrapText)
+        if (text.Length > 200)
         {
-            text = text.Replace(Environment.NewLine, "  ");
+            text = text.Substring(0, 100).TrimEnd() + "...";
         }
 
-        //var bounds = new SKRect();
-        //TODO: cut off text -- var x = _paintText.MeasureText(text, ref bounds);
-        _canvas.DrawText(text, currentRegionLeft + 3, 14, _paintText);
+        var textBounds = new SKRect(currentRegionLeft + 1, 0, currentRegionRight - 2, _info.Height);
+        _canvas.Save();
+        _canvas.ClipRect(textBounds);
+        var arr = text.SplitToLines();
+        if (Configuration.Settings.VideoControls.WaveformUnwrapText)
+        {
+            text = string.Join("  ", arr);
+            _canvas.DrawText(text, currentRegionLeft + 3, 14, _paintText);
+        }
+        else
+        {
+            float addY = 0f;
+            foreach (var line in arr)
+            {
+                _canvas.DrawText(line, currentRegionLeft + 3, 14 + addY, _paintText);
+                var fontMetrics = _paintText.FontMetrics;
+                float height = fontMetrics.Descent - fontMetrics.Ascent;
+                addY += height;
+            }
+        }
+
+        _canvas.Restore();
     }
 
     private void DrawCurrentVideoPosition()
