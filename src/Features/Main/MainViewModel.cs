@@ -35,6 +35,8 @@ using SubtitleAlchemist.Features.Edit.Find;
 using GoToLineNumberPopupModel = SubtitleAlchemist.Features.Edit.GoToLineNumber.GoToLineNumberPopupModel;
 using Path = System.IO.Path;
 using SubtitleAlchemist.Features.Edit.Replace;
+using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
+using SubtitleAlchemist.Features.Video.OpenFromUrl;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -1364,6 +1366,25 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
+    private async Task OpenVideoFromUrlShow()
+    {
+        var result = await _popupService.ShowPopupAsync<OpenFromUrlPopupModel>(CancellationToken.None);
+
+        if (result is string url && !string.IsNullOrWhiteSpace(url) && VideoPlayer != null)
+        {
+            _timer.Stop();
+            _audioVisualizer.WavePeaks = null;
+            VideoPlayer.Source = MediaSource.FromUri(url);
+            _videoFileName = url;
+
+            if (!_stopping)
+            {
+                _timer.Start();
+            }
+        }
+    }
+
+    [RelayCommand]
     private async Task VideoAudioToTextWhisper()
     {
         if (string.IsNullOrEmpty(_videoFileName))
@@ -1499,6 +1520,40 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             ShowStatus($"'{fs.SearchText}' found in line '{idx + 1}'");
         }
     }
+
+    [RelayCommand]
+    private async Task AdjustAllTimesShow()
+    {
+        //var secondWindow = new Window(new AdjustAllTimesPage(new AdjustAllTimesPageModel()));
+        //Application.Current?.OpenWindow(secondWindow);
+
+        await Shell.Current.GoToAsync(nameof(AdjustAllTimesPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
+        });
+    }
+
+    [RelayCommand]
+    private async Task ChangeFrameRateShow()
+    {
+        //await Shell.Current.GoToAsync(nameof(AdjustAllTimesPage), new Dictionary<string, object>
+        //{
+        //    { "Page", nameof(MainPage) },
+        //    { "Subtitle", UpdatedSubtitle },
+        //});
+    }
+
+    [RelayCommand]
+    private async Task ChangeSpeedShow()
+    {
+        //await Shell.Current.GoToAsync(nameof(AdjustAllTimesPage), new Dictionary<string, object>
+        //{
+        //    { "Page", nameof(MainPage) },
+        //    { "Subtitle", UpdatedSubtitle },
+        //});
+    }
+
 
     private async Task<bool> RequireFfmpegOk()
     {

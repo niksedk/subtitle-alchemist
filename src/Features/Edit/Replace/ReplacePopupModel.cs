@@ -11,6 +11,9 @@ public partial class ReplacePopupModel : ObservableObject
     private string _searchText = string.Empty;
 
     [ObservableProperty]
+    private string _replaceText = string.Empty;
+
+    [ObservableProperty]
     private bool _wholeWord;
 
     [ObservableProperty]

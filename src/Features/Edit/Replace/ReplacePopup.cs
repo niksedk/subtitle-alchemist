@@ -22,6 +22,8 @@ public sealed class ReplacePopup : Popup
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
             {
@@ -38,7 +40,7 @@ public sealed class ReplacePopup : Popup
 
         var labelGoToLineNumber = new Label
         {
-            Text = "Find",
+            Text = "Replace",
             FontSize = 20,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Fill,
@@ -88,6 +90,25 @@ public sealed class ReplacePopup : Popup
         grid.Add(wholeWordBar, 0, 2);
 
 
+        var labelReplaceWith = new Label
+        {
+            Text = "Replace with",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 5),
+        }.BindDynamicTheme();
+        grid.Add(labelReplaceWith, 0, 3);
+
+        var entryReplaceWith = new Entry
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 25),
+        };
+        entryReplaceWith.SetBinding(Entry.TextProperty, nameof(vm.ReplaceText));
+        grid.Add(entryReplaceWith, 0, 4);
+
+
         var radioNormal = new RadioButton
         {
             Content = "Normal",
@@ -97,7 +118,7 @@ public sealed class ReplacePopup : Popup
             Padding = new Thickness(0),
         };
         radioNormal.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.Normal));
-        grid.Add(radioNormal, 0, 3);
+        grid.Add(radioNormal, 0, 5);
 
         var radioCaseInsensitive = new RadioButton
         {
@@ -108,7 +129,7 @@ public sealed class ReplacePopup : Popup
             Padding = new Thickness(0),
         };
         radioCaseInsensitive.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.CaseInsensitive));
-        grid.Add(radioCaseInsensitive, 0, 4);
+        grid.Add(radioCaseInsensitive, 0, 6);
 
         var radioRegularExpression = new RadioButton
         {
@@ -119,7 +140,7 @@ public sealed class ReplacePopup : Popup
             Padding = new Thickness(0),
         };
         radioRegularExpression.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.RegularExpression));
-        grid.Add(radioRegularExpression, 0, 5);
+        grid.Add(radioRegularExpression, 0, 7);
 
 
         var buttonFind = new Button
@@ -134,7 +155,7 @@ public sealed class ReplacePopup : Popup
 
         var buttonFindPrevious = new Button
         {
-            Text = "Find previous",
+            Text = "Replace",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             Command = vm.CancelCommand,
@@ -144,7 +165,7 @@ public sealed class ReplacePopup : Popup
 
         var buttonCount = new Button
         {
-            Text = "Count",
+            Text = "Replace",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             Command = vm.CancelCommand,
