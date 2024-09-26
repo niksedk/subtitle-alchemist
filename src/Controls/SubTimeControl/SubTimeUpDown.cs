@@ -114,7 +114,6 @@ public class SubTimeUpDown : ContentView
         if (newValue is TimeSpan timeSpan && bindable is SubTimeUpDown control)
         {
             control._upDown.Value = (float)timeSpan.TotalMilliseconds;
-            control.Time = timeSpan;
             control.UpdateDisplayText();
         }
     }

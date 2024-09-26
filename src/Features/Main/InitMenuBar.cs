@@ -270,6 +270,18 @@ internal static class InitMenuBar
             Command = vm.AdjustAllTimesShowCommand,
         });
 
+        menu.Add(new MenuFlyoutItem
+        {
+            Text = "Change frame rate",
+            Command = vm.ChangeFrameRateShowCommand,
+        });
+
+        menu.Add(new MenuFlyoutItem
+        {
+            Text = "Change speed (percent)",
+            Command = vm.ChangeSpeedShowCommand,
+        });
+
         return menu;
     }
 

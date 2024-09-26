@@ -1521,6 +1521,27 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         });
     }
 
+    [RelayCommand]
+    private async Task ChangeFrameRateShow()
+    {
+        //await Shell.Current.GoToAsync(nameof(AdjustAllTimesPage), new Dictionary<string, object>
+        //{
+        //    { "Page", nameof(MainPage) },
+        //    { "Subtitle", UpdatedSubtitle },
+        //});
+    }
+
+    [RelayCommand]
+    private async Task ChangeSpeedShow()
+    {
+        //await Shell.Current.GoToAsync(nameof(AdjustAllTimesPage), new Dictionary<string, object>
+        //{
+        //    { "Page", nameof(MainPage) },
+        //    { "Subtitle", UpdatedSubtitle },
+        //});
+    }
+
+
     private async Task<bool> RequireFfmpegOk()
     {
         if (MainPage == null)
