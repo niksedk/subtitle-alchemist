@@ -1,15 +1,17 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
-using Nikse.SubtitleEdit.Core.Settings;
+using SubtitleAlchemist.Controls.AudioVisualizerControl;
 using SubtitleAlchemist.Features.Main;
+using System.Collections.ObjectModel;
 
 namespace SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 
 public partial class AdjustAllTimesPageModel : ObservableObject, IQueryAttributable
 {
     public AdjustAllTimesPage? Page { get; set; }
+    public CollectionView SubtitleList { get; internal set; } = new();
+    public AudioVisualizer AudioVisualizer { get; internal set; } = new();
 
     [ObservableProperty]
     private bool _allLines;
@@ -33,15 +35,21 @@ public partial class AdjustAllTimesPageModel : ObservableObject, IQueryAttributa
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (query["Subtitle"] is Subtitle subtitle)
+        if (query["Subtitle"] is Subtitle subtitle &&
+            query["VideoFileName"] is string videoFileName &&
+            query["WavePeaks"] is WavePeakData wavePeakData)
         {
-            Initialize(subtitle);
+            Initialize(subtitle, videoFileName, wavePeakData);
         }
     }
 
-    private void Initialize(Subtitle subtitle)
+    private void Initialize(Subtitle subtitle, string videoFileName, WavePeakData wavePeakData)
     {
+        AudioVisualizer.WavePeaks = wavePeakData;
+
+        SubtitleList.BatchBegin();
         Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+        SubtitleList.BatchCommit();
     }
 
     [RelayCommand]

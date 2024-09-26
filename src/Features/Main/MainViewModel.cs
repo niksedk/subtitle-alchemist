@@ -1531,6 +1531,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             { "Page", nameof(MainPage) },
             { "Subtitle", UpdatedSubtitle },
+            { "WavePeaks", _audioVisualizer.WavePeaks ?? new WavePeakData(1, new List<WavePeak>()) },
+            { "VideoFileName", _videoFileName },
         });
     }
 

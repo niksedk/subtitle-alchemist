@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
+using SubtitleAlchemist.Controls.AudioVisualizerControl;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic;
@@ -22,6 +23,7 @@ public class AdjustAllTimesPage : ContentPage
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star }, // audio visualizer
                 new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
@@ -151,6 +153,10 @@ public class AdjustAllTimesPage : ContentPage
 
         //TODo: add waveform
 
+        vm.AudioVisualizer = new AudioVisualizer();
+        grid.Add(vm.AudioVisualizer, 0, 6);
+        grid.SetColumnSpan(vm.AudioVisualizer, 3);
+
         Content = grid;
 
         this.BindingContext = vm;
@@ -181,7 +187,8 @@ public class AdjustAllTimesPage : ContentPage
         headerGrid.Add(new Label { Text = "Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
 
 
-        var collectionView = new CollectionView
+        
+        vm.SubtitleList = new CollectionView
         {
             ItemTemplate = new DataTemplate(() =>
             {
@@ -244,11 +251,11 @@ public class AdjustAllTimesPage : ContentPage
         }.BindDynamicTheme();
 
         gridLayout.Add(headerGrid, 0, 0);
-        gridLayout.Add(collectionView, 0, 1);
+        gridLayout.Add(vm.SubtitleList, 0, 1);
 
-        collectionView.SelectionMode = SelectionMode.Single;
-        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Paragraphs));
-        collectionView.SelectionChanged += vm.SubtitlesViewSelectionChanged;
+        vm.SubtitleList.SelectionMode = SelectionMode.Single;
+        vm.SubtitleList.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Paragraphs));
+        vm.SubtitleList.SelectionChanged += vm.SubtitlesViewSelectionChanged;
 
         var border = new Border
         {
