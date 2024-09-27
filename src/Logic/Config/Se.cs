@@ -9,9 +9,10 @@ namespace SubtitleAlchemist.Logic.Config;
 
 public class Se
 {
-    public SeGeneral General { get; set; }
-    public SeFile File { get; set; }
-    public SeTools Tools { get; set; }
+    public SeGeneral General { get; set; } = new();
+    public SeFile File { get; set; } = new();
+    public SeTools Tools { get; set; } = new();
+    public SeSync Synchronization { get; set; } = new();
     public static SeLanguage Language { get; set; } = new();
     public static Se Settings { get; set; } = new();
     public static string DictionariesFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "Dictionaries");
@@ -19,10 +20,6 @@ public class Se
 
     public Se()
     {
-        
-        File = new SeFile();
-        Tools = new SeTools();
-        General = new SeGeneral();
     }
 
     public static void SaveSettings()
@@ -61,6 +58,26 @@ public class Se
 
     private static void SetDefaultValues()
     {
+        if (Settings.Tools == null)
+        {
+            Settings.Tools = new();
+        }
+
+        if (Settings.File == null)
+        { 
+            Settings.File = new();   
+        }
+
+        if (Settings.General == null)
+        {
+            Settings.General = new();
+        }
+
+        if (Settings.Synchronization == null)
+        {
+            Settings.Synchronization = new();
+        }
+
         if (Settings.Tools.FixCommonErrors.Profiles.Count == 0)
         {
             Settings.Tools.FixCommonErrors.Profiles.Add(new SeFixCommonErrorsProfile

@@ -37,6 +37,7 @@ public class AudioVisualizer : SKCanvasView
     public Paragraph? SelectedParagraph { get; private set; }
     public Paragraph? NewSelectionParagraph { get; set; }
     public Paragraph? RightClickedParagraph { get; private set; }
+    public bool AllowMove { get; set; } = true;
     public bool AllowNewSelection { get; set; } = true;
 
     public KeyboardModifierKeys ModifierKeys { get; set; } = new();
@@ -1215,7 +1216,7 @@ public class AudioVisualizer : SKCanvasView
     CursorIcon _lastCursor = CursorIcon.Arrow;
     private void SetCursor(CursorIcon cursor)
     {
-        if (cursor == _lastCursor)
+        if (cursor == _lastCursor || !AllowMove)
         {
             return;
         }

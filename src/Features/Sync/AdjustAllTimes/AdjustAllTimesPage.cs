@@ -13,11 +13,13 @@ namespace SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 public class AdjustAllTimesPage : ContentPage
 {
     private readonly Grid _mainGrid;
+    private readonly AdjustAllTimesPageModel _vm;
 
     public AdjustAllTimesPage(AdjustAllTimesPageModel vm)
     {
         this.BindDynamicTheme();
         vm.Page = this;
+        _vm = vm;
         _mainGrid = new Grid
         {
             RowDefinitions =
@@ -157,18 +159,24 @@ public class AdjustAllTimesPage : ContentPage
         BindingContext = vm;
     }
 
+    protected override void OnDisappearing()
+    {
+        _vm.OnDisappearing();
+        base.OnDisappearing();
+    }
+
     public void Initialize(Subtitle subtitle, string videoFileName, WavePeakData wavePeakData, AdjustAllTimesPageModel vm)
     {
+        vm.SubtitleList.BatchBegin();
+        vm.Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+        vm.SubtitleList.BatchCommit();
+
         if (string.IsNullOrEmpty(videoFileName))
         {
             // no video player or waveform
             var subtitleGrid = MakeSubtitleGrid(vm); 
             _mainGrid.Add(subtitleGrid, 2, 0);
             _mainGrid.SetRowSpan(subtitleGrid, 8);
-
-            vm.SubtitleList.BatchBegin();
-            vm.Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
-            vm.SubtitleList.BatchCommit();
 
             return;
         }
@@ -300,7 +308,7 @@ public class AdjustAllTimesPage : ContentPage
         gridLayout.Add(vm.SubtitleList, 0, 1);
 
         vm.SubtitleList.SelectionMode = SelectionMode.Single;
-        vm.SubtitleList.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Paragraphs));
+        vm.SubtitleList.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Paragraphs), BindingMode.TwoWay);
         vm.SubtitleList.SelectionChanged += vm.SubtitlesViewSelectionChanged;
 
         var border = new Border
