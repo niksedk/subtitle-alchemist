@@ -29,6 +29,7 @@ using SubtitleAlchemist.Logic.Media;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Timers;
 using SubtitleAlchemist.Features.Edit.Find;
@@ -1366,7 +1367,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         }
     }
 
-    
+
     public void OnCollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         _updating = true;
@@ -1590,9 +1591,29 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         var result = await _popupService
             .ShowPopupAsync<ChangeFrameRatePopupModel>(onPresenting: viewModel => viewModel.Initialize(UpdatedSubtitle), CancellationToken.None);
 
-        if (result is Subtitle subtitle)
+        if (result is ChangeFrameRateResult changeFrameRateResult)
         {
-            ShowStatus($"Frame rate changed");
+            var statusText = $"Frame rate changed from {changeFrameRateResult.FromFrameRate.ToString(CultureInfo.InvariantCulture)} to {changeFrameRateResult.ToFrameRate.ToString(CultureInfo.InvariantCulture)}";
+            SubtitleList.BatchBegin();
+
+            foreach (var dp in Paragraphs)
+            {
+                var p = changeFrameRateResult.Subtitle.Paragraphs.FirstOrDefault(x => x.Id == dp.P.Id);
+                if (p == null)
+                {
+                    continue;
+                }
+
+                dp.P.StartTime.TotalMilliseconds = p.StartTime.TotalMilliseconds;
+                dp.P.EndTime.TotalMilliseconds = p.EndTime.TotalMilliseconds;
+
+                dp.Start = p.StartTime.TimeSpan;
+                dp.End = p.EndTime.TimeSpan;
+                dp.Duration = p.Duration.TimeSpan;
+            }
+
+            SubtitleList.BatchCommit();
+            ShowStatus(statusText);
         }
     }
 

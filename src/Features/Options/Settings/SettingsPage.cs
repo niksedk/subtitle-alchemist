@@ -224,7 +224,7 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme().Bind(Switch.IsToggledProperty, nameof(vm.ShowRecentFiles));
-       // switchRecentFiles.SetBinding(Switch.IsToggledProperty, nameof(vm.ShowRecentFiles));
+        // switchRecentFiles.SetBinding(Switch.IsToggledProperty, nameof(vm.ShowRecentFiles));
         grid.Add(switchRecentFiles, 1, 1);
 
 
@@ -699,7 +699,7 @@ public class SettingsPage : ContentPage
         picker.SetBinding(Picker.SelectedItemProperty, nameof(vm.Theme));
         picker.SelectedItem = vm.Theme;
 
-        picker.SelectedIndexChanged += async(o, args) => await vm.ThemeChanged(o, args);
+        picker.SelectedIndexChanged += async (o, args) => await vm.ThemeChanged(o, args);
         grid.Add(picker, 1, 1);
 
         return grid;
