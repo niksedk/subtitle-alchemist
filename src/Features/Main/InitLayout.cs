@@ -520,10 +520,10 @@ internal static class InitLayout
     private static Grid MakeDefaultListViewAndEditBox(MainViewModel vm)
     {
         var startTimeUpDown = new SubTimeUpDown
-            {
-                DisplayText = "00:00:00,000",
-                HorizontalOptions = LayoutOptions.Start,
-            }
+        {
+            DisplayText = "00:00:00,000",
+            HorizontalOptions = LayoutOptions.Start,
+        }
             .BindDynamicTheme()
             .Column(0)
             .Row(1);
@@ -532,11 +532,11 @@ internal static class InitLayout
         startTimeUpDown.Bind(SubTimeUpDown.TimeProperty, nameof(vm.CurrentStart), BindingMode.TwoWay);
 
         var durationUpDown = new SubTimeUpDown
-            {
-                DisplayText = "00,000",
-                UseShortFormat = true,
-                HorizontalOptions = LayoutOptions.Start,
-            }
+        {
+            DisplayText = "00,000",
+            UseShortFormat = true,
+            HorizontalOptions = LayoutOptions.Start,
+        }
             .BindDynamicTheme()
             .Column(0)
             .Row(1);
@@ -545,9 +545,9 @@ internal static class InitLayout
         durationUpDown.Bind(SubTimeUpDown.TimeProperty, nameof(vm.CurrentDuration), BindingMode.TwoWay);
 
         vm.TextBox = new Editor
-            {
-                Margin = new Thickness(10),
-            }.BindDynamicTheme()
+        {
+            Margin = new Thickness(10),
+        }.BindDynamicTheme()
             .Column(1).Bind("CurrentText")
             .Row(1);
         vm.TextBox.TextChanged += vm.CurrentTextChanged;
@@ -605,8 +605,13 @@ internal static class InitLayout
         return grid;
     }
 
-    private static StackLayout MakeStatusBar(MainViewModel mainViewModel)
+    private static StackLayout MakeStatusBar(MainViewModel vm)
     {
+        vm.LabelStatusText = new Label
+        {
+            Padding = new Thickness(10, 2, 2, 2),
+        }.BindDynamicTheme();
+
         return new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -614,11 +619,7 @@ internal static class InitLayout
             VerticalOptions = LayoutOptions.Fill,
             Children =
             {
-                new Label
-                {
-                    Padding = new Thickness(10,2,2,2),
-                }
-                    .BindDynamicTheme()
+                vm.LabelStatusText
                     .Bind(Label.TextProperty, static vm => vm.StatusText,
                     static (MainViewModel vm, string text) => vm.StatusText = text),
                 new Label()

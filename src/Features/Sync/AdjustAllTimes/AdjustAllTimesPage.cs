@@ -30,18 +30,18 @@ public class AdjustAllTimesPage : ContentPage
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Star }, // audio visualizer
-                new RowDefinition { Height = GridLength.Star },
             },
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Auto }, // input
-                new ColumnDefinition { Width = GridLength.Auto }, // buttons
-                new ColumnDefinition { Width = GridLength.Star }, // subtitles
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // input
+                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // subtitles/video player
             },
             Margin = new Thickness(25),
             RowSpacing = 0,
-            ColumnSpacing = 0,
+            ColumnSpacing = 20,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
@@ -59,7 +59,7 @@ public class AdjustAllTimesPage : ContentPage
 
         var labelTime = new Label
         {
-            Text = "Hour:minutes:seconds:milliseconds",
+            Text = "Hour:min:secs:ms",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
@@ -75,17 +75,59 @@ public class AdjustAllTimesPage : ContentPage
         timeUpDown.SetBinding(SubTimeUpDown.TimeProperty, nameof(vm.AdjustTime), BindingMode.TwoWay);
         _mainGrid.Add(timeUpDown, 0, 2);
 
+        var labelTotalAdjustmentInfo = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 15),
+        }.BindDynamicTheme();
+        labelTotalAdjustmentInfo.SetBinding(Label.TextProperty, nameof(vm.TotalAdjustmentInfo), BindingMode.TwoWay);
+        _mainGrid.Add(labelTotalAdjustmentInfo, 0, 3);
+
+
+        var buttonShowEarlier = new Button
+        {
+            Text = "Show earlier",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Command = vm.ShowEarlierCommand,
+            Margin = new Thickness(0, 0, 10, 10),
+        }.BindDynamicTheme();
+
+        var buttonShowLater = new Button
+        {
+            Text = "Show later",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Command = vm.ShowLaterCommand,
+            Margin = new Thickness(0, 0, 5, 10),
+        }.BindDynamicTheme();
+
+        var buttonBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
+            Children =
+            {
+                buttonShowEarlier,
+                buttonShowLater,
+            },
+        };
+        _mainGrid.Add(buttonBar, 0, 4);
+
 
         var radioNormal = new RadioButton
         {
             Content = "All lines",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0,15,0,0),
+            Margin = new Thickness(0, 15, 0, 0),
             Padding = new Thickness(0),
         };
         radioNormal.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.AllLines));
-        _mainGrid.Add(radioNormal, 0, 3);
+        _mainGrid.Add(radioNormal, 0, 5);
 
         var radioCaseInsensitive = new RadioButton
         {
@@ -96,7 +138,7 @@ public class AdjustAllTimesPage : ContentPage
             Padding = new Thickness(0),
         };
         radioCaseInsensitive.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.SelectedLinesOnly));
-        _mainGrid.Add(radioCaseInsensitive, 0, 4);
+        _mainGrid.Add(radioCaseInsensitive, 0, 6);
 
         var radioRegularExpression = new RadioButton
         {
@@ -107,52 +149,42 @@ public class AdjustAllTimesPage : ContentPage
             Padding = new Thickness(0),
         };
         radioRegularExpression.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.SelectedAndSubsequentLines));
-        _mainGrid.Add(radioRegularExpression, 0, 5);
+        _mainGrid.Add(radioRegularExpression, 0, 7);
+
 
 
         var buttonOk = new Button
         {
-            Text = "Show earlier",
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Command = vm.ShowEarlierCommand,
+            Text = "Ok",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Command = vm.OkCommand,
             Margin = new Thickness(0, 0, 10, 10),
-            WidthRequest = 175,
         }.BindDynamicTheme();
 
         var buttonCancel = new Button
         {
-            Text = "Show later",
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Command = vm.ShowLaterCommand,
+            Text = "Cancel",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Command = vm.CancelCommand,
             Margin = new Thickness(0, 0, 10, 10),
-            WidthRequest = 175,
         }.BindDynamicTheme();
 
-        var buttonBar = new StackLayout
+        var okCancelBar = new StackLayout
         {
-            Orientation = StackOrientation.Vertical,
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Fill,
-            Margin = new Thickness(15, 0, 0, 0),
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
             Children =
             {
                 buttonOk,
                 buttonCancel,
             },
         };
-        _mainGrid.Add(buttonBar, 1, 3);
-        _mainGrid.SetRowSpan(buttonBar, 5);
+        _mainGrid.Add(okCancelBar, 0, 8);
 
-        var labelTotalAdjustmentInfo = new Label
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Fill,
-            Margin = new Thickness(0, 0, 0, 15),
-        }.BindDynamicTheme();
-        labelTotalAdjustmentInfo.SetBinding(Label.TextProperty, nameof(vm.TotalAdjustmentInfo), BindingMode.TwoWay);
-        _mainGrid.Add(labelTotalAdjustmentInfo, 0, 6);
 
         Content = _mainGrid;
 
@@ -175,7 +207,7 @@ public class AdjustAllTimesPage : ContentPage
         {
             // no video player or waveform
             var subtitleGrid = MakeSubtitleGrid(vm); 
-            _mainGrid.Add(subtitleGrid, 2, 0);
+            _mainGrid.Add(subtitleGrid, 1);
             _mainGrid.SetRowSpan(subtitleGrid, 8);
 
             return;
@@ -185,7 +217,7 @@ public class AdjustAllTimesPage : ContentPage
         {
             // no waveform
             var mediaElementGridNoWaveform = MakeMediaElementGrid(vm);
-            _mainGrid.Add(mediaElementGridNoWaveform, 2, 0);
+            _mainGrid.Add(mediaElementGridNoWaveform, 1);
             _mainGrid.SetRowSpan(mediaElementGridNoWaveform, 8);
 
             vm.VideoPlayer.Source = MediaSource.FromFile(videoFileName);
@@ -196,11 +228,11 @@ public class AdjustAllTimesPage : ContentPage
         // video player and waveform
         var mediaElementGrid = MakeMediaElementGrid(vm);
         mediaElementGrid.Margin = new Thickness(0, 0, 0, 10);   
-        _mainGrid.Add(mediaElementGrid, 2, 0);
-        _mainGrid.SetRowSpan(mediaElementGrid, 7);
+        _mainGrid.Add(mediaElementGrid, 1);
+        _mainGrid.SetRowSpan(mediaElementGrid, 9);
 
         vm.AudioVisualizer = new AudioVisualizer();
-        _mainGrid.Add(vm.AudioVisualizer, 0, 7);
+        _mainGrid.Add(vm.AudioVisualizer, 0, 9);
         _mainGrid.SetColumnSpan(vm.AudioVisualizer, 3);
 
         vm.AudioVisualizer.WavePeaks = wavePeakData;

@@ -276,6 +276,17 @@ public partial class AdjustAllTimesPageModel : ObservableObject, IQueryAttributa
     }
 
     [RelayCommand]
+    public async Task Ok()
+    {
+        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+        {
+            { "Page", nameof(AdjustAllTimesPage) },
+            { "Paragraphs", Paragraphs.ToList() },
+            { "TotalAdjustmentMs", _totalAdjustmentMs },
+        });
+    }
+
+    [RelayCommand]
     public async Task Cancel()
     {
         await Shell.Current.GoToAsync("..");
@@ -290,10 +301,7 @@ public partial class AdjustAllTimesPageModel : ObservableObject, IQueryAttributa
         _timer.Stop();
         _stopping = true;
         Se.SaveSettings();
-        Task.Delay(100).ContinueWith(t =>
-        {
-            VideoPlayer.Handler?.DisconnectHandler();
-            VideoPlayer.Dispose();
-        });
+        VideoPlayer.Handler?.DisconnectHandler();
+        VideoPlayer.Dispose();
     }
 }

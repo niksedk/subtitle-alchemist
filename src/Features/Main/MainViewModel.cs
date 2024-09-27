@@ -52,6 +52,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     public static Window? Window { get; set; }
 
     public MainPage? MainPage { get; set; }
+    public Label LabelStatusText { get; set; } = new();
+
     public MediaElement? VideoPlayer { get; set; }
 
     public AudioVisualizer AudioVisualizer => _audioVisualizer;
@@ -210,9 +212,10 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         if (page == nameof(TranslatePage))
         {
+
             if (query["TranslatedRows"] is List<TranslateRow> lines)
             {
-                MakeHistoryForUndo($"Before translate");
+                MakeHistoryForUndo("Before auto-translate");
                 for (var i = 0; i < lines.Count && i < Paragraphs.Count; i++)
                 {
                     var displayParagraph = Paragraphs[i];
@@ -223,7 +226,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         if (page == nameof(AudioToTextWhisperPage))
         {
-            MakeHistoryForUndo($"Before Whisper speech recognization");
+            MakeHistoryForUndo("Before Whisper speech recognition");
+
             if (query["TranscribedSubtitle"] is Subtitle subtitle)
             {
                 Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
@@ -272,7 +276,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
                         var fileHelper = new FileHelper();
-                        var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {format.Name} file as", _videoFileName, format);
+                        var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {format.Name} file as",
+                            _videoFileName, format);
                         if (!string.IsNullOrEmpty(subtitleFileName))
                         {
                             ShowStatus($"File exported in format {format.Name} to {subtitleFileName}");
@@ -284,21 +289,50 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
                 File.WriteAllBytes(_subtitleFileName, ms.ToArray());
             }
+        }
 
-            if (page == nameof(AdjustDurationPage))
+        if (page == nameof(AdjustDurationPage))
+        {
+            MakeHistoryForUndo("Before adjust durations");
+
+            if (query["Subtitle"] is Subtitle adjustedSubtitle)
             {
-                MakeHistoryForUndo($"Before adjust durations");
+                Paragraphs = new ObservableCollection<DisplayParagraph>(adjustedSubtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+                SelectParagraph(0);
+            }
 
-                if (query["Subtitle"] is Subtitle adjustedSubtitle)
-                {
-                    Paragraphs = new ObservableCollection<DisplayParagraph>(adjustedSubtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
-                    SelectParagraph(0);
-                }
+            if (query["Status"] is string statusInfo)
+            {
+                ShowStatus(statusInfo);
+            }
+        }
 
-                if (query["Status"] is string statusInfo)
+        if (page == nameof(AdjustAllTimesPage))
+        {
+            MakeHistoryForUndo("Before adjust all times");
+
+            if (query["Paragraphs"] is List<DisplayParagraph> paragraphs)
+            {
+                SubtitleList.BatchBegin();
+                foreach (var dp in paragraphs)
                 {
-                    ShowStatus(statusInfo);
+                    var displayParagraph = Paragraphs.FirstOrDefault(p => p.P.Id == dp.P.Id);
+                    if (displayParagraph != null)
+                    {
+                        displayParagraph.Start = dp.Start;
+                        displayParagraph.End = dp.End;
+                        displayParagraph.Duration = dp.Duration;
+                    }
                 }
+                SubtitleList.BatchCommit();
+
+                SelectParagraph(0);
+            }
+
+            if (query["TotalAdjustmentMs"] is long totalAdjustmentMs)
+            {
+                var tc = new TimeCode(totalAdjustmentMs);
+                ShowStatus($"Total adjustment: {tc.ToShortDisplayString()}");
             }
         }
     }
@@ -306,7 +340,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private void MakeHistoryForUndo(string description)
     {
         if (Paragraphs.Count == 0 || Paragraphs.Count == 1 && string.IsNullOrWhiteSpace(CurrentText))
-        { 
+        {
             return;
         }
 
@@ -324,11 +358,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private UndoRedoItem MakeUndoRedoObject(string description)
     {
         return new UndoRedoItem(
-            description, 
-            UpdatedSubtitle, 
-            _subtitleFileName, 
-            GetSelectedIndexes(), 
-            TextBox.CursorPosition, 
+            description,
+            UpdatedSubtitle,
+            _subtitleFileName,
+            GetSelectedIndexes(),
+            TextBox.CursorPosition,
             TextBox.SelectionLength);
     }
 
@@ -1166,7 +1200,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     private void ShowStatus(string statusText)
     {
+        LabelStatusText.Opacity = 0;
         StatusText = statusText;
+        LabelStatusText.FadeTo(1, 200);
 
         MainPage?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(6_000), () =>
         {
@@ -1174,7 +1210,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             {
                 if (StatusText == statusText)
                 {
-                    StatusText = string.Empty;
+                    LabelStatusText.FadeTo(0, 200);
                 }
             });
             return false;
@@ -1318,6 +1354,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         }
     }
 
+    
     public void OnCollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         _updating = true;
@@ -1716,6 +1753,13 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         SubtitleList.BatchCommit();
 
+        var statusText = "One line deleted.";
+        if (selectedParagraphs.Count > 1)
+        {
+            statusText = $"{selectedParagraphs.Count} lines deleted.";
+        }
+        ShowStatus(statusText);
+
         if (firstIdx >= 0)
         {
             SubtitleList.ScrollTo(firstIdx, 1, ScrollToPosition.Center, false);
@@ -1792,7 +1836,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         SubtitleList.BatchBegin();
         var list = Paragraphs.ToList();
-        var newParagraph = _insertManager.InsertAfter(list, GetSelectedIndexes(), string.Empty, Configuration.Settings.General.MinimumMillisecondsBetweenLines );
+        var newParagraph = _insertManager.InsertAfter(list, GetSelectedIndexes(), string.Empty, Configuration.Settings.General.MinimumMillisecondsBetweenLines);
         Paragraphs = new ObservableCollection<DisplayParagraph>(list);
         Renumber();
         SubtitleList.BatchCommit();
