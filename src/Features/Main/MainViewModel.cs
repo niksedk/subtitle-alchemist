@@ -120,7 +120,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _findService = findService;
         _insertManager = insertManager;
 
-        VideoPlayer = new MediaElement { BackgroundColor = Colors.Orange, ZIndex = -10000 };
+        VideoPlayer = new MediaElement { ZIndex = -10000 };
         SubtitleList = new CollectionView();
         _timer = new System.Timers.Timer(19);
         _timerAutoBackup = new System.Timers.Timer(60_0 * 5); //TODO: use settings

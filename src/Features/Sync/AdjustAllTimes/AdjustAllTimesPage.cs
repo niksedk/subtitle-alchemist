@@ -1,4 +1,7 @@
-﻿using Microsoft.Maui.Controls.Shapes;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Shapes;
+using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Controls.AudioVisualizerControl;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Features.Main;
@@ -9,11 +12,13 @@ namespace SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 
 public class AdjustAllTimesPage : ContentPage
 {
+    private readonly Grid _mainGrid;
+
     public AdjustAllTimesPage(AdjustAllTimesPageModel vm)
     {
         this.BindDynamicTheme();
         vm.Page = this;
-        var grid = new Grid
+        _mainGrid = new Grid
         {
             RowDefinitions =
             {
@@ -24,7 +29,7 @@ public class AdjustAllTimesPage : ContentPage
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Star }, // audio visualizer
-                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star },
             },
             ColumnDefinitions =
             {
@@ -47,7 +52,7 @@ public class AdjustAllTimesPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
             Margin = new Thickness(5, 0, 0, 15),
         }.BindDynamicTheme();
-        grid.Add(labelGoToLineNumber, 0);
+        _mainGrid.Add(labelGoToLineNumber, 0);
 
 
         var labelTime = new Label
@@ -56,7 +61,7 @@ public class AdjustAllTimesPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
-        grid.Add(labelTime, 0, 1);
+        _mainGrid.Add(labelTime, 0, 1);
 
 
 
@@ -66,7 +71,7 @@ public class AdjustAllTimesPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
         timeUpDown.SetBinding(SubTimeUpDown.TimeProperty, nameof(vm.AdjustTime), BindingMode.TwoWay);
-        grid.Add(timeUpDown, 0, 2);
+        _mainGrid.Add(timeUpDown, 0, 2);
 
 
         var radioNormal = new RadioButton
@@ -78,7 +83,7 @@ public class AdjustAllTimesPage : ContentPage
             Padding = new Thickness(0),
         };
         radioNormal.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.AllLines));
-        grid.Add(radioNormal, 0, 3);
+        _mainGrid.Add(radioNormal, 0, 3);
 
         var radioCaseInsensitive = new RadioButton
         {
@@ -89,7 +94,7 @@ public class AdjustAllTimesPage : ContentPage
             Padding = new Thickness(0),
         };
         radioCaseInsensitive.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.SelectedLinesOnly));
-        grid.Add(radioCaseInsensitive, 0, 4);
+        _mainGrid.Add(radioCaseInsensitive, 0, 4);
 
         var radioRegularExpression = new RadioButton
         {
@@ -100,7 +105,7 @@ public class AdjustAllTimesPage : ContentPage
             Padding = new Thickness(0),
         };
         radioRegularExpression.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.SelectedAndSubsequentLines));
-        grid.Add(radioRegularExpression, 0, 5);
+        _mainGrid.Add(radioRegularExpression, 0, 5);
 
 
         var buttonOk = new Button
@@ -135,8 +140,8 @@ public class AdjustAllTimesPage : ContentPage
                 buttonCancel,
             },
         };
-        grid.Add(buttonBar, 1, 3);
-        grid.SetRowSpan(buttonBar, 5);
+        _mainGrid.Add(buttonBar, 1, 3);
+        _mainGrid.SetRowSpan(buttonBar, 5);
 
         var labelTotalAdjustmentInfo = new Label
         {
@@ -145,23 +150,60 @@ public class AdjustAllTimesPage : ContentPage
             Margin = new Thickness(0, 0, 0, 15),
         }.BindDynamicTheme();
         labelTotalAdjustmentInfo.SetBinding(Label.TextProperty, nameof(vm.TotalAdjustmentInfo), BindingMode.TwoWay);
-        grid.Add(labelTotalAdjustmentInfo, 0, 6);
+        _mainGrid.Add(labelTotalAdjustmentInfo, 0, 6);
 
-        var subtitleGrid = MakeSubtitleGrid(vm); // no, use video player instead
-        grid.Add(subtitleGrid, 2, 0);
-        grid.SetRowSpan(subtitleGrid, 7);
+        Content = _mainGrid;
 
-        //TODo: add waveform
+        BindingContext = vm;
+    }
+
+    public void Initialize(Subtitle subtitle, string videoFileName, WavePeakData wavePeakData, AdjustAllTimesPageModel vm)
+    {
+        if (string.IsNullOrEmpty(videoFileName))
+        {
+            // no video player or waveform
+            var subtitleGrid = MakeSubtitleGrid(vm); 
+            _mainGrid.Add(subtitleGrid, 2, 0);
+            _mainGrid.SetRowSpan(subtitleGrid, 8);
+
+            vm.SubtitleList.BatchBegin();
+            vm.Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+            vm.SubtitleList.BatchCommit();
+
+            return;
+        }
+
+        if (wavePeakData.Peaks == null || wavePeakData.Peaks.Count == 0)
+        {
+            // no waveform
+            var mediaElementGridNoWaveform = MakeMediaElementGrid(vm);
+            _mainGrid.Add(mediaElementGridNoWaveform, 2, 0);
+            _mainGrid.SetRowSpan(mediaElementGridNoWaveform, 8);
+
+            vm.VideoPlayer.Source = MediaSource.FromFile(videoFileName);
+
+            return;
+        }
+
+        // video player and waveform
+        var mediaElementGrid = MakeMediaElementGrid(vm);
+        mediaElementGrid.Margin = new Thickness(0, 0, 0, 10);   
+        _mainGrid.Add(mediaElementGrid, 2, 0);
+        _mainGrid.SetRowSpan(mediaElementGrid, 7);
 
         vm.AudioVisualizer = new AudioVisualizer();
-        grid.Add(vm.AudioVisualizer, 0, 6);
-        grid.SetColumnSpan(vm.AudioVisualizer, 3);
+        _mainGrid.Add(vm.AudioVisualizer, 0, 7);
+        _mainGrid.SetColumnSpan(vm.AudioVisualizer, 3);
 
-        Content = grid;
+        vm.AudioVisualizer.WavePeaks = wavePeakData;
 
-        this.BindingContext = vm;
+        vm.VideoPlayer.Source = MediaSource.FromFile(videoFileName);
+    }
 
-        this.BindDynamicTheme();
+    private MediaElement MakeMediaElementGrid(AdjustAllTimesPageModel vm)
+    {
+        vm.VideoPlayer = new MediaElement { ZIndex = -10000 };
+        return vm.VideoPlayer;
     }
 
     private Border MakeSubtitleGrid(AdjustAllTimesPageModel vm)
@@ -169,6 +211,8 @@ public class AdjustAllTimesPage : ContentPage
         // Create the header grid
         var headerGrid = new Grid
         {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
             BackgroundColor = Color.FromRgb(22, 22, 22), //TODO: Add to resources, header background color
             Padding = new Thickness(5),
             ColumnDefinitions =
@@ -195,6 +239,8 @@ public class AdjustAllTimesPage : ContentPage
                 // Each row will be a Grid
                 var gridTexts = new Grid
                 {
+                    HorizontalOptions = LayoutOptions.Fill,
+                    VerticalOptions = LayoutOptions.Fill,
                     Padding = new Thickness(5),
                     ColumnDefinitions =
                     {
