@@ -21,6 +21,8 @@ using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
+using SubtitleAlchemist.Features.Sync.ChangeFrameRate;
+using SubtitleAlchemist.Features.Sync.ChangeSpeed;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Features.Translate;
@@ -104,6 +106,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<FindPopup, FindPopupModel>();
             builder.Services.AddTransientPopup<ReplacePopup, ReplacePopupModel>();
             builder.Services.AddTransientPopup<OpenFromUrlPopup, OpenFromUrlPopupModel>();
+            builder.Services.AddTransientPopup<ChangeFrameRatePopup, ChangeFrameRatePopupModel>();
+            builder.Services.AddTransientPopup<ChangeSpeedPopup, ChangeSpeedPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

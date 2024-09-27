@@ -37,6 +37,8 @@ using Path = System.IO.Path;
 using SubtitleAlchemist.Features.Edit.Replace;
 using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 using SubtitleAlchemist.Features.Video.OpenFromUrl;
+using SubtitleAlchemist.Features.Sync.ChangeFrameRate;
+using SubtitleAlchemist.Features.Sync.ChangeSpeed;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -1524,9 +1526,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task AdjustAllTimesShow()
     {
-        //var secondWindow = new Window(new AdjustAllTimesPage(new AdjustAllTimesPageModel()));
-        //Application.Current?.OpenWindow(secondWindow);
-
         await Shell.Current.GoToAsync(nameof(AdjustAllTimesPage), new Dictionary<string, object>
         {
             { "Page", nameof(MainPage) },
@@ -1539,21 +1538,25 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task ChangeFrameRateShow()
     {
-        //await Shell.Current.GoToAsync(nameof(AdjustAllTimesPage), new Dictionary<string, object>
-        //{
-        //    { "Page", nameof(MainPage) },
-        //    { "Subtitle", UpdatedSubtitle },
-        //});
+        var result = await _popupService
+            .ShowPopupAsync<ChangeFrameRatePopupModel>(onPresenting: viewModel => viewModel.Initialize(UpdatedSubtitle), CancellationToken.None);
+
+        if (result is Subtitle subtitle)
+        {
+            ShowStatus($"Frame rate changed");
+        }
     }
 
     [RelayCommand]
     private async Task ChangeSpeedShow()
     {
-        //await Shell.Current.GoToAsync(nameof(AdjustAllTimesPage), new Dictionary<string, object>
-        //{
-        //    { "Page", nameof(MainPage) },
-        //    { "Subtitle", UpdatedSubtitle },
-        //});
+        var result = await _popupService
+            .ShowPopupAsync<ChangeSpeedPopupModel>(onPresenting: viewModel => viewModel.Initialize(UpdatedSubtitle), CancellationToken.None);
+
+        if (result is Subtitle subtitle)
+        {
+            ShowStatus($"Frame rate changed");
+        }
     }
 
 

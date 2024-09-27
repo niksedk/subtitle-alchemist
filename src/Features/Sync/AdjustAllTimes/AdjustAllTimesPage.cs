@@ -266,19 +266,15 @@ public class AdjustAllTimesPage : ContentPage
                 // Bind each cell to the appropriate property
                 var numberLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
                 numberLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Number));
-                //numberLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
 
                 var startTimeLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
                 startTimeLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Start), BindingMode.Default, new TimeSpanToStringConverter());
-                //startTimeLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
 
                 var originalTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
-                originalTextLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.End));
-                //originalTextLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
+                originalTextLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.End), BindingMode.Default, new TimeSpanToStringConverter());
 
                 var translatedTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
                 translatedTextLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Text));
-                //translatedTextLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
 
                 // Add labels to grid
                 gridTexts.Add(numberLabel, 0, 0);
