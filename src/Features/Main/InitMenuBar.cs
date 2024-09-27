@@ -27,6 +27,8 @@ internal static class InitMenuBar
         {
             Text = "Reopen",
         };
+
+        var recentFilesCount = 0;
         foreach (var recentFile in Se.Settings.File.RecentFiles)
         {
             if (string.IsNullOrEmpty(recentFile.SubtitleFileName))
@@ -34,6 +36,7 @@ internal static class InitMenuBar
                 continue;
             }
 
+            recentFilesCount++;
             var reopenItem = new MenuFlyoutItem
             {
                 Text = recentFile.SubtitleFileName,
@@ -41,6 +44,7 @@ internal static class InitMenuBar
             };
             vm.MenuFlyoutItemReopen.Add(reopenItem);
         }
+        
 
         menu.Add(new MenuFlyoutItem
         {
@@ -52,7 +56,19 @@ internal static class InitMenuBar
             Text = "Open",
             Command = vm.SubtitleOpenCommand,
         });
-        menu.Add(vm.MenuFlyoutItemReopen);
+
+        if (recentFilesCount > 0)
+        {
+            menu.Add(vm.MenuFlyoutItemReopen);
+
+            vm.MenuFlyoutItemReopen.Add(new MenuFlyoutSeparator());
+            vm.MenuFlyoutItemReopen.Add(new MenuFlyoutItem
+            {
+                Text = "Clear",
+                Command = vm.RecentFilesClearCommand,
+            });
+        }
+
         menu.Add(new MenuFlyoutItem
         {
             Text = "Save",

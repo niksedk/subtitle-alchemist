@@ -957,6 +957,14 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         SubtitleOpen(subtitleFileName, null);
     }
 
+    [RelayCommand]
+    public void RecentFilesClear()
+    {
+        Se.Settings.File.RecentFiles.Clear();
+        UpdateRecentFilesUI();
+        Se.SaveSettings();
+    }
+
     private void SubtitleOpen(string subtitleFileName, string? videoFileName)
     {
         if (string.IsNullOrEmpty(subtitleFileName))
@@ -1048,7 +1056,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         Se.Settings.File.AddToRecentFiles(_subtitleFileName, _videoFileName, GetFirstSelectedIndex(), CurrentTextEncoding.DisplayName);
         Se.SaveSettings();
 
+        UpdateRecentFilesUI();
+    }
 
+    private void UpdateRecentFilesUI()
+    {
         //TODO: cannot update - very annoying bug, see https://github.com/microsoft/microsoft-ui-xaml/issues/7797
         MenuFlyoutItemReopen.Clear();
         foreach (var recentFile in Se.Settings.File.RecentFiles)
