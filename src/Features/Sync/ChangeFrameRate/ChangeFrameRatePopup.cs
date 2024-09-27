@@ -19,7 +19,6 @@ public sealed class ChangeFrameRatePopup : Popup
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
             {
@@ -31,27 +30,86 @@ public sealed class ChangeFrameRatePopup : Popup
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
+            WidthRequest = 500,
+            HeightRequest = 275,
         }.BindDynamicTheme();
 
-        var labelGoToLineNumber = new Label
+        var labelTitle = new Label
         {
-            Text = "Go to line number",
+            Text = "Change frame rate",
             FontSize = 20,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
-        grid.Add(labelGoToLineNumber, 0);
+        grid.Add(labelTitle, 0);
 
 
-        vm.EntryLineNumber = new Entry
+        var pickerFromFrameRate = new Picker
         {
-            Placeholder = "Line number",
-            Keyboard = Keyboard.Numeric,
+            Title = "From frame rate",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(5, 0),
+        }.BindDynamicTheme();
+        pickerFromFrameRate.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FrameRates));
+        pickerFromFrameRate.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedFromFrameRate));
+
+        var buttonFromFrameRateBrowse = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(5, 0),
+            Command = vm.BrowseFromFrameRateCommand,
+        }.BindDynamicTheme();
+
+
+        var buttonSwap = new ImageButton
+        {
+            Source = "swap.png",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0),
+            Command = vm.SwapCommand,
+            WidthRequest = 16,
+            HeightRequest = 16,
+        }.BindDynamicTheme();
+        ToolTipProperties.SetText(buttonSwap, "Swap");
+
+        var pickerToFrameRate = new Picker
+        {
+            Title = "To frame rate",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(5, 0),
+        }.BindDynamicTheme();
+        pickerToFrameRate.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FrameRates));
+        pickerToFrameRate.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedToFrameRate), BindingMode.TwoWay);
+
+        var buttonToFrameRateBrowse = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(5, 0),
+            Command = vm.BrowseToFrameRateCommand,
+        }.BindDynamicTheme();
+
+        var controlBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                pickerFromFrameRate,
+                buttonFromFrameRateBrowse,
+                buttonSwap,
+                pickerToFrameRate,
+                buttonToFrameRateBrowse,
+            },
         };
-        vm.EntryLineNumber.SetBinding(Entry.TextProperty, nameof(vm.LineNumber));
-        grid.Add(vm.EntryLineNumber, 0, 1);
+        grid.Add(controlBar, 0, 1);
 
 
         var buttonOk = new Button
@@ -71,26 +129,27 @@ public sealed class ChangeFrameRatePopup : Popup
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
 
-        var buttonBar = new StackLayout
+        var okCancelBar = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 35, 0, 20),
             Children =
             {
                 buttonOk,
                 buttonCancel,
             },
         };
-        grid.Add(buttonBar, 0, 3);
+        grid.Add(okCancelBar, 0, 2);
 
 
         var windowBorder = new Border
         {
             StrokeThickness = 1,
             Padding = new Thickness(1),
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
             StrokeShape = new RoundRectangle
             {
                 CornerRadius = new CornerRadius(5),
@@ -106,5 +165,3 @@ public sealed class ChangeFrameRatePopup : Popup
         vm.Popup = this;
     }
 }
-
-

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 
@@ -7,13 +8,52 @@ namespace SubtitleAlchemist.Features.Sync.ChangeFrameRate
     public partial class ChangeFrameRatePopupModel : ObservableObject
     {
         public ChangeFrameRatePopup? Popup { get; set; }
-        public Entry EntryLineNumber { get; set; } = new Entry();
 
         [ObservableProperty]
         private int _lineNumber;
 
+        [ObservableProperty]
+        private ObservableCollection<double> _frameRates;
+
+        [ObservableProperty]
+        private double _selectedFromFrameRate;
+
+        [ObservableProperty]
+        private double _selectedToFrameRate;
+
         public ChangeFrameRatePopupModel()
         {
+            // add list of common frame rates
+            _frameRates = new ObservableCollection<double>()
+            {
+                23.976,
+                24,
+                25,
+                29.97,
+                30,
+                48,
+                59.94,
+                60,
+                120,
+            };
+        }
+
+        [RelayCommand]
+        private void Swap()
+        {
+            (SelectedFromFrameRate, SelectedToFrameRate) = (SelectedToFrameRate, SelectedFromFrameRate);
+        }
+
+        [RelayCommand]
+        private void BrowseFromFrameRate()
+        {
+
+        }
+
+        [RelayCommand]
+        private void BrowseToFrameRate()
+        {
+
         }
 
         [RelayCommand]
@@ -38,23 +78,10 @@ namespace SubtitleAlchemist.Features.Sync.ChangeFrameRate
         {
             Popup?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
             {
-                MainThread.BeginInvokeOnMainThread(async () =>
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    if (Clipboard.HasText)
-                    {
-                        var clipboardText = await Clipboard.GetTextAsync();
-                        if (int.TryParse(clipboardText, out var lineNumber))
-                        {
-                            LineNumber = lineNumber;
-                            return;
-                        }
-                    }
-
-                    LineNumber = updatedSubtitle.Paragraphs.Count;
-
-                    EntryLineNumber.Focus();
-                    EntryLineNumber.CursorPosition = 0;
-                    EntryLineNumber.SelectionLength = EntryLineNumber.Text.Length;
+                    SelectedFromFrameRate = FrameRates[0];
+                    SelectedToFrameRate = FrameRates[2];
                 });
 
                 return false;
