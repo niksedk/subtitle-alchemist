@@ -245,11 +245,10 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
-        _spellCheckManager.Initialize(SelectedLanguage.DictionaryFileName);
-        Se.Settings.SpellCheck.LastLanguageDictionaryFile = SelectedLanguage.DictionaryFileName;
-
         if (!_loading)
         {
+            _spellCheckManager.Initialize(SelectedLanguage.DictionaryFileName);
+            Se.Settings.SpellCheck.LastLanguageDictionaryFile = SelectedLanguage.DictionaryFileName;
             DoSpellCheck();
         }
     }

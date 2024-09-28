@@ -79,7 +79,7 @@ public class SpellCheckManager : ISpellCheckManager
         {
             _hunspell = new Hunspell(Path.ChangeExtension(dictionaryFile, ".aff"), dictionaryFile);
 
-            _hunspellDictionary = WordList.CreateFromFiles(dictionaryFile);
+            _hunspellDictionary = WordList.CreateFromFiles(dictionaryFile, Path.ChangeExtension(dictionaryFile, ".aff"));
             return true;
         }
 
