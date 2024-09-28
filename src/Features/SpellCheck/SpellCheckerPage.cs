@@ -48,14 +48,22 @@ public class SpellCheckerPage : ContentPage
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
         };
-        labelCurrentText.SetBinding(Label.FormattedTextProperty, nameof(vm.CurrentFormattedText));
-        var borderCurrentText = new Border
+
+        var scrollViewCurrentText = new ScrollView
         {
             Content = labelCurrentText,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            StrokeThickness = 1,
             HeightRequest = 130,
+        }.BindDynamicTheme();
+
+        labelCurrentText.SetBinding(Label.FormattedTextProperty, nameof(vm.CurrentFormattedText));
+        var borderCurrentText = new Border
+        {
+            Content = scrollViewCurrentText,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeThickness = 1,
             StrokeShape = new RoundRectangle
             {
                 CornerRadius = new CornerRadius(5)
@@ -204,7 +212,7 @@ public class SpellCheckerPage : ContentPage
             {
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Star) }, // suggestions
+                new() { Height = new GridLength(1, GridUnitType.Auto) }, // suggestions
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
@@ -285,9 +293,10 @@ public class SpellCheckerPage : ContentPage
                 return labelSuggestion;
             }),
             SelectionMode = SelectionMode.Single,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(0, 0, 0, 10),
+            HeightRequest = 395,
         };
         collectionViewSuggestions.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Suggestions));
 
@@ -295,8 +304,8 @@ public class SpellCheckerPage : ContentPage
         {
             Content = collectionViewSuggestions,
             StrokeThickness = 1,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
             Padding = new Thickness(5),
             StrokeShape = new RoundRectangle
             {
