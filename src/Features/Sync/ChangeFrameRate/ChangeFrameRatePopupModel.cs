@@ -99,7 +99,7 @@ namespace SubtitleAlchemist.Features.Sync.ChangeFrameRate
         [RelayCommand]
         private void Ok()
         {
-            if (SelectedFromFrameRate < 1 || SelectedToFrameRate < 1)
+            if (SelectedFromFrameRate < 0.1 || SelectedToFrameRate < 0.1)
             {
                 return;
             }

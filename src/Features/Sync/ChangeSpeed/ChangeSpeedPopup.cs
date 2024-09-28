@@ -21,6 +21,8 @@ public sealed class ChangeSpeedPopup : Popup
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
             {
@@ -28,31 +30,114 @@ public sealed class ChangeSpeedPopup : Popup
             },
             Margin = new Thickness(2),
             Padding = new Thickness(30, 20, 30, 10),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
+            RowSpacing = 0,
+            ColumnSpacing = 20,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
+            WidthRequest = 550,
+            HeightRequest = 375,
         }.BindDynamicTheme();
 
-        var labelGoToLineNumber = new Label
+        var labelTitle = new Label
         {
-            Text = "Go to line number",
+            Text = "Adjust speed in percent",
             FontSize = 20,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 15),
         }.BindDynamicTheme();
-        grid.Add(labelGoToLineNumber, 0);
+        grid.Add(labelTitle, 0);
+        grid.SetColumnSpan(labelTitle, 2);
 
 
-        vm.EntryLineNumber = new Entry
+        vm.EntrySpeedInPercent = new Entry
         {
-            Placeholder = "Line number",
+            Placeholder = "Enter speed in percent",
             Keyboard = Keyboard.Numeric,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+        };
+        vm.EntrySpeedInPercent.SetBinding(Entry.TextProperty, nameof(vm.SpeedPercent));
+
+        var buttonFromDropFrame = new Button
+        {
+            Text = "From drop frame",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(10, 0, 10, 0),
+            Command = vm.FromDropFrameCommand,
+        }.BindDynamicTheme();
+
+        var buttonToDropFrame = new Button
+        {
+            Text = "To drop frame",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Command = vm.ToDropFrameCommand,
+        }.BindDynamicTheme();
+
+        var buttonFromToDropFrameBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Children =
+            {
+                vm.EntrySpeedInPercent,
+                buttonFromDropFrame,
+                buttonToDropFrame,
+            },
+        };
+        grid.Add(buttonFromToDropFrameBar, 0, 1);
+
+        var radioAllLines = new RadioButton
+        {
+            Content = "All lines",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 20, 0, 0),
         };
-        vm.EntryLineNumber.SetBinding(Entry.TextProperty, nameof(vm.LineNumber));
-        grid.Add(vm.EntryLineNumber, 0, 1);
+        radioAllLines.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.AllLines));
+        grid.Add(radioAllLines, 0, 2);
+
+        var radioSelectedLinesOnly = new RadioButton
+        {
+            Content = "Selected lines only",
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 15),
+        };
+        radioSelectedLinesOnly.SetBinding(RadioButton.IsCheckedProperty, nameof(vm.SelectedLinesOnly));
+        grid.Add(radioSelectedLinesOnly, 0, 3);
+
+
+        var labelAllowOverlap = new Label
+        {
+            Text = "Allow overlap",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 15, 0),
+        };
+
+        var switchAllowOverlap = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        };
+        switchAllowOverlap.SetBinding(Switch.IsToggledProperty, nameof(vm.AllowOverlap));
+        
+        var allowOverlapBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Children =
+            {
+                labelAllowOverlap,
+                switchAllowOverlap,
+            },
+        };
+        grid.Add(allowOverlapBar, 0, 4);
 
 
         var buttonOk = new Button
@@ -72,18 +157,19 @@ public sealed class ChangeSpeedPopup : Popup
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
 
-        var buttonBar = new StackLayout
+        var okCancelButtonBar = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 30, 0, 0),
             Children =
             {
                 buttonOk,
                 buttonCancel,
             },
         };
-        grid.Add(buttonBar, 0, 3);
+        grid.Add(okCancelButtonBar, 0, 5);
 
 
         var windowBorder = new Border
@@ -107,5 +193,3 @@ public sealed class ChangeSpeedPopup : Popup
         vm.Popup = this;
     }
 }
-
-

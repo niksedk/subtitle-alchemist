@@ -33,7 +33,7 @@ using System.Globalization;
 using System.Text;
 using System.Timers;
 using SubtitleAlchemist.Features.Edit.Find;
-using GoToLineNumberPopupModel = SubtitleAlchemist.Features.Edit.GoToLineNumber.GoToLineNumberPopupModel;
+using SubtitleAlchemist.Features.Edit.GoToLineNumber;
 using Path = System.IO.Path;
 using SubtitleAlchemist.Features.Edit.Replace;
 using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
@@ -1591,7 +1591,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     {
         var result = await _popupService
             .ShowPopupAsync<ChangeFrameRatePopupModel>(
-                onPresenting: viewModel => viewModel.Initialize(UpdatedSubtitle, _videoInfo), 
+                onPresenting: viewModel => viewModel.Initialize(UpdatedSubtitle, _videoInfo),
                 CancellationToken.None);
 
         if (result is ChangeFrameRateResult changeFrameRateResult)
@@ -1628,10 +1628,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         if (result is Subtitle subtitle)
         {
-            ShowStatus($"Frame rate changed");
+            Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+            ShowStatus("Speed changed");
+            SelectParagraph(0);
         }
     }
-
 
     private async Task<bool> RequireFfmpegOk()
     {
