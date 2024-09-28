@@ -12,10 +12,6 @@ namespace SubtitleAlchemist.Features.Video.OpenFromUrl
         [ObservableProperty]
         private string _videoUrl = string.Empty;
 
-        public OpenFromUrlPopupModel()
-        {
-        }
-
         [RelayCommand]
         private void Ok()
         {
@@ -38,7 +34,7 @@ namespace SubtitleAlchemist.Features.Video.OpenFromUrl
         {
             Popup?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
             {
-                MainThread.BeginInvokeOnMainThread(async() =>
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
                    
                 });

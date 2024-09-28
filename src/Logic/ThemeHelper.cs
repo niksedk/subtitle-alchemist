@@ -208,15 +208,17 @@ namespace SubtitleAlchemist.Logic
                     SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
                     SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Colors.LightGreen);
                     SetThemeDictionaryColor(dictionaries, ThemeNames.LinkColor, Colors.DarkBlue);
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.TableHeaderBackgroundColor, Color.FromRgb(253, 253, 253));
                 }
                 else if (themeName == "Dark")
                 {
                     SetThemeDictionaryColor(dictionaries, ThemeNames.BackgroundColor, Color.FromRgb(0x1F, 0x1F, 0x1F));
                     SetThemeDictionaryColor(dictionaries, ThemeNames.TextColor, Colors.WhiteSmoke);
-                    SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(20, 20, 20));
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.SecondaryBackgroundColor, Color.FromRgb(52, 52, 52));
                     SetThemeDictionaryColor(dictionaries, ThemeNames.BorderColor, Colors.DarkGray);
                     SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Color.FromRgb(24, 52, 75));
                     SetThemeDictionaryColor(dictionaries, ThemeNames.LinkColor, Colors.LightSkyBlue);
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.TableHeaderBackgroundColor, Color.FromRgb(52, 52, 52));
                 }
             }
         }

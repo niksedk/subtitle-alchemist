@@ -79,6 +79,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<AdjustAllTimesPage>();
             builder.Services.AddTransient<AdjustAllTimesPageModel>();
             builder.Services.AddTransient<TaskbarList>();
+            builder.Services.AddTransient<ISpellCheckManager, SpellCheckManager>();
             builder.Services.AddTransient<INamesList, SeNamesList>();
             builder.Services.AddTransient<IAutoBackup, AutoBackup>();
             builder.Services.AddTransient<IFileHelper, FileHelper>();

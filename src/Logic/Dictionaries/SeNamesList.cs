@@ -13,10 +13,10 @@ public class SeNamesList : INamesList
     private readonly HashSet<string> _abbreviationList = new();
     public string LanguageName { get; private set; } = "en";
 
-    public void Load(string dictionaryFolder, string languageName)
+    public void Load(string dictionaryFolder, string languageCode)
     {
         _dictionaryFolder = dictionaryFolder;
-        LanguageName = languageName;
+        LanguageName = languageCode;
 
         _namesList = new HashSet<string>();
         _namesMultiList = new HashSet<string>();

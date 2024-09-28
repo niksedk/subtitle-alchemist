@@ -8,5 +8,6 @@
         public const string BorderColor = "BorderColor";
         public const string ActiveBackgroundColor = "ActiveBackgroundColor";
         public const string LinkColor = "LinkColor";
+        public const string TableHeaderBackgroundColor = "LinkColor";
     }
 }
