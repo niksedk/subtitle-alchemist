@@ -41,6 +41,9 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     [ObservableProperty]
     private string _currentText;
 
+    [ObservableProperty]
+    private FormattedString _currentFormattedText;
+
     private bool _loading = true;
     private SpellCheckWord _currentSpellCheckWord;
     private Subtitle _subtitle = new();
@@ -64,6 +67,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         _wordNotFoundOriginal = string.Empty;
         _currentWord = string.Empty;
         _currentText = string.Empty;
+        _currentFormattedText = new FormattedString();
     }
 
     private void UpdateChangedWordInUi(string fromWord, string toWord, int wordIndex)
@@ -111,6 +115,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
             WordNotFoundOriginal = results[0].Word.Text;
             CurrentWord = results[0].Word.Text;
             CurrentText = results[0].Paragraph.Text;
+            CurrentFormattedText = HighLightCurrentWord(results[0].Word, results[0].Paragraph);
             _currentSpellCheckWord = results[0].Word;
             _lastSpellCheckResult = results[0];
 
@@ -130,6 +135,29 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
                 });
             });
         }
+    }
+
+    private static FormattedString HighLightCurrentWord(SpellCheckWord word, Paragraph paragraph)
+    {
+        var text = paragraph.Text.Trim();
+        var pre = string.Empty;
+        if (word.Index > 0)
+        {
+            pre = text.Substring(0, word.Index);
+        }
+
+        var post = string.Empty;
+        if (word.Index + word.Text.Length < text.Length)
+        {
+            post = text.Substring(word.Index + word.Text.Length);
+        }
+
+        var formattedString = new FormattedString();
+        formattedString.Spans.Add(new Span { FontSize = 18, Text = pre });
+        formattedString.Spans.Add(new Span { FontSize = 18, Text = word.Text, TextColor = Colors.Red, FontAttributes = FontAttributes.Bold });
+        formattedString.Spans.Add(new Span { FontSize = 18, Text = post });
+
+        return formattedString;
     }
 
     [RelayCommand]

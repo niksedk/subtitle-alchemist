@@ -48,14 +48,14 @@ public class SpellCheckerPage : ContentPage
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
         };
-        labelCurrentText.SetBinding(Label.TextProperty, nameof(vm.CurrentText));
+        labelCurrentText.SetBinding(Label.FormattedTextProperty, nameof(vm.CurrentFormattedText));
         var borderCurrentText = new Border
         {
             Content = labelCurrentText,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            HeightRequest = 140,
             StrokeThickness = 1,
+            HeightRequest = 130,
             StrokeShape = new RoundRectangle
             {
                 CornerRadius = new CornerRadius(5)

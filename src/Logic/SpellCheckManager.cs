@@ -4,6 +4,7 @@ using SubtitleAlchemist.Logic.Dictionaries;
 using WeCantSpell.Hunspell;
 using System.Globalization;
 using Nikse.SubtitleEdit.Core.SpellCheck;
+using System.Collections.Generic;
 
 namespace SubtitleAlchemist.Logic;
 
