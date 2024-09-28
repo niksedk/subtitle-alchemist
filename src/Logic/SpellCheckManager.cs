@@ -4,7 +4,7 @@ using SubtitleAlchemist.Logic.Dictionaries;
 using WeCantSpell.Hunspell;
 using System.Globalization;
 using Nikse.SubtitleEdit.Core.SpellCheck;
-using System.Collections.Generic;
+using HunspellSharp;
 
 namespace SubtitleAlchemist.Logic;
 
@@ -22,6 +22,7 @@ public class SpellCheckManager : ISpellCheckManager
     private static readonly Regex CurrencyRegex = new(@"^[$£€]?-?(?:\d+|\d{1,3}(?:,\d{3})+)?(?:\.\d+)?$", RegexOptions.Compiled);
 
     private WordList? _hunspellDictionary;
+    private Hunspell? _hunspell;
     private SpellCheckResult? _currentResult;
     private readonly INamesList _namesList;
     private readonly HashSet<string> _ignoredWords;
@@ -76,6 +77,8 @@ public class SpellCheckManager : ISpellCheckManager
 
         if (File.Exists(dictionaryFile))
         {
+            _hunspell = new Hunspell(Path.ChangeExtension(dictionaryFile, ".aff"), dictionaryFile);
+
             _hunspellDictionary = WordList.CreateFromFiles(dictionaryFile);
             return true;
         }
@@ -250,13 +253,18 @@ public class SpellCheckManager : ISpellCheckManager
             return true;
         }
 
-        if (_hunspellDictionary == null)
+        var isCorrect = false;
+        if (_hunspellDictionary != null)
         {
-            return false;
+            isCorrect = _hunspellDictionary.Check(word);
         }
 
-        var spellCheck = _hunspellDictionary.Check(word);
-        return spellCheck;
+        if (!isCorrect && _hunspell != null)
+        {
+            isCorrect = _hunspell.Spell(word);
+        }
+
+        return isCorrect;
     }
 
     private static bool IsEmailUrlOrHashTag(string word)
