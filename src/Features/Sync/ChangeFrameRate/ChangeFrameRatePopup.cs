@@ -10,7 +10,7 @@ public sealed class ChangeFrameRatePopup : Popup
     {
         BindingContext = vm;
 
-        CanBeDismissedByTappingOutsideOfPopup = true;
+        CanBeDismissedByTappingOutsideOfPopup = false;
 
         var grid = new Grid
         {

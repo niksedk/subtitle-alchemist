@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using System.Collections.ObjectModel;
+using SubtitleAlchemist.Logic.Media;
 
 namespace SubtitleAlchemist.Features.Sync.ChangeFrameRate
 {
@@ -18,11 +19,13 @@ namespace SubtitleAlchemist.Features.Sync.ChangeFrameRate
         [ObservableProperty]
         private double _selectedToFrameRate;
 
-        private Subtitle _subtitle = new Subtitle();
+        private Subtitle _subtitle = new();
+        private readonly IFileHelper _fileHelper;
 
-        public ChangeFrameRatePopupModel()
+        public ChangeFrameRatePopupModel(IFileHelper fileHelper)
         {
-            // add list of common frame rates
+            _fileHelper = fileHelper;
+
             _frameRates = new ObservableCollection<double>()
             {
                 23.976,
@@ -44,16 +47,54 @@ namespace SubtitleAlchemist.Features.Sync.ChangeFrameRate
         }
 
         [RelayCommand]
-        private void BrowseFromFrameRate()
+        private async Task BrowseFromFrameRate()
         {
-
+            var oldToFrameRate = SelectedToFrameRate;
+            var frameRate = await BrowseFrameRate();
+            if (frameRate > 0.001)
+            {
+                SelectedFromFrameRate = frameRate;
+                SelectedToFrameRate = oldToFrameRate;
+            }
         }
 
         [RelayCommand]
-        private void BrowseToFrameRate()
+        private async Task BrowseToFrameRate()
         {
-
+            var oldFromFrameRate = SelectedFromFrameRate;
+            var frameRate = await BrowseFrameRate();
+            if (frameRate > 0.001)
+            {
+                SelectedToFrameRate = frameRate;
+                SelectedFromFrameRate = oldFromFrameRate;
+            }
         }
+
+        private async Task<double> BrowseFrameRate()
+        {
+            var videoFileName = await _fileHelper.PickAndShowVideoFile("Open video file");
+            if (string.IsNullOrEmpty(videoFileName) || !File.Exists(videoFileName))
+            {
+                return 0;
+            }
+
+            var mediaInfo = FfmpegMediaInfo2.Parse(videoFileName);
+            if (mediaInfo.FramesRate > 0.001m)
+            {
+                var frameRate = (double)mediaInfo.FramesRate;
+
+                if (!FrameRates.Contains(frameRate))
+                {
+                    FrameRates.Add(frameRate);
+                    FrameRates = new ObservableCollection<double>(FrameRates.OrderBy(x => x));
+                }
+
+                return frameRate;
+            }
+
+            return 0;
+        }
+
 
         [RelayCommand]
         private void Ok()
@@ -86,7 +127,7 @@ namespace SubtitleAlchemist.Features.Sync.ChangeFrameRate
             });
         }
 
-        public void Initialize(Subtitle subtitle)
+        public void Initialize(Subtitle subtitle, VideoInfo videoInfo)
         {
             Popup?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
             {
@@ -96,6 +137,17 @@ namespace SubtitleAlchemist.Features.Sync.ChangeFrameRate
                 {
                     SelectedFromFrameRate = FrameRates[0];
                     SelectedToFrameRate = FrameRates[2];
+
+                    if (videoInfo.FramesPerSecond > 0.001)
+                    {
+                        if (!FrameRates.Contains(videoInfo.FramesPerSecond))
+                        {
+                            FrameRates.Add(videoInfo.FramesPerSecond);
+                            FrameRates = new ObservableCollection<double>(FrameRates.OrderBy(x => x));
+                        }
+
+                        SelectedFromFrameRate = videoInfo.FramesPerSecond;
+                    }
                 });
 
                 return false;

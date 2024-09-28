@@ -105,6 +105,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private bool _firstPlay = true;
     private int _changeSubtitleHash = -1;
     private int _autoBackupSubtitleHash = -1;
+    private VideoInfo _videoInfo = new();
 
     private readonly IPopupService _popupService;
     private readonly IAutoBackup _autoBackup;
@@ -1589,7 +1590,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private async Task ChangeFrameRateShow()
     {
         var result = await _popupService
-            .ShowPopupAsync<ChangeFrameRatePopupModel>(onPresenting: viewModel => viewModel.Initialize(UpdatedSubtitle), CancellationToken.None);
+            .ShowPopupAsync<ChangeFrameRatePopupModel>(
+                onPresenting: viewModel => viewModel.Initialize(UpdatedSubtitle, _videoInfo), 
+                CancellationToken.None);
 
         if (result is ChangeFrameRateResult changeFrameRateResult)
         {

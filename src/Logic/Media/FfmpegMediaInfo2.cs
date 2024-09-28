@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Nikse.SubtitleEdit.Core.Common;
@@ -11,9 +12,12 @@ namespace SubtitleAlchemist.Logic.Media
 
         public Dimension Dimension { get; set; } = new(0, 0);
         public TimeCode Duration { get; set; } = new(0);
+        public decimal FramesRate { get; set; } = new(0);
 
         private static readonly Regex ResolutionRegex = new(@"\d\d+x\d\d+", RegexOptions.Compiled);
         private static readonly Regex DurationRegex = new(@"Duration: \d+[:\.,]\d+[:\.,]\d+[:\.,]\d+", RegexOptions.Compiled);
+        private static readonly Regex Fps1Regex = new(@" \d+\.\d+ fps", RegexOptions.Compiled);
+        private static readonly Regex Fps2Regex = new(@" \d+ fps", RegexOptions.Compiled);
 
         private FfmpegMediaInfo2()
         {
@@ -54,6 +58,20 @@ namespace SubtitleAlchemist.Logic.Media
         internal static FfmpegMediaInfo2 ParseLog(string log)
         {
             var info = new FfmpegMediaInfo2();
+
+            var fpsMatch = Fps1Regex.Match(log);
+            if (!fpsMatch.Success)
+            {
+                fpsMatch = Fps2Regex.Match(log);
+            }
+            if (fpsMatch.Success)
+            {
+                var fps = fpsMatch.Value.Trim().Split(' ')[0];
+                if (double.TryParse(fps, NumberStyles.Any, CultureInfo.InvariantCulture, out var f))
+                {
+                    info.FramesRate = (decimal)f;
+                }
+            }
 
             foreach (var line in log.SplitToLines())
             {
