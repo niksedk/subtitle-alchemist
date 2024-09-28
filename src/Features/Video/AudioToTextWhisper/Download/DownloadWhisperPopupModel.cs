@@ -200,7 +200,7 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
         private void Unpack(string folder, string skipFolderLevel)
         {
             _downloadStream.Position = 0;
-            _zipUnpacker.UnpackZipStream(_downloadStream, folder, skipFolderLevel, false, new List<string>());
+            _zipUnpacker.UnpackZipStream(_downloadStream, folder, skipFolderLevel, false, new List<string>(), null);
             _downloadStream.Dispose();
         }
 

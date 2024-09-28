@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.SpellCheck;
 
 namespace SubtitleAlchemist.Logic;
 
@@ -8,7 +9,7 @@ public class SpellCheckResult
 {
     public int LineIndex { get; set; }
     public int WordIndex { get; set; }
-    public string Word { get; set; } = string.Empty;
+    public SpellCheckWord Word { get; set; } = new();
     public List<string> Suggestions { get; set; } = new();
     public bool IsCommonMisspelling { get; set; }
     public Paragraph Paragraph { get; set; } = new();

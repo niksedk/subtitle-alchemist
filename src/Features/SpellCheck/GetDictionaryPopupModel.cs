@@ -74,7 +74,11 @@ namespace SubtitleAlchemist.Features.SpellCheck
                     return;
                 }
 
-                UnpackDictionary();
+                var dicFileName = UnpackDictionary();
+                if (SelectedDictionary != null)
+                {
+                    SelectedDictionary.DictionaryFileName = dicFileName ?? string.Empty;
+                }
 
                 if (Popup != null)
                 {
@@ -101,7 +105,7 @@ namespace SubtitleAlchemist.Features.SpellCheck
             }
         }
 
-        private void UnpackDictionary()
+        private string? UnpackDictionary()
         {
             var folder = Se.DictionariesFolder;
 
@@ -110,15 +114,20 @@ namespace SubtitleAlchemist.Features.SpellCheck
                 Directory.CreateDirectory(folder);
             }
 
+            var outputFileNames = new List<string>();
+
             _downloadStream.Position = 0;
             _zipUnpacker.UnpackZipStream(
                 _downloadStream, 
                 folder, 
                 string.Empty, 
                 true, 
-                new List<string> { ".dic", ".aff"});
+                new List<string> { ".dic", ".aff"},
+                outputFileNames);
 
             _downloadStream.Dispose();
+
+            return outputFileNames.FirstOrDefault(p => p.EndsWith(".dic", StringComparison.OrdinalIgnoreCase));
         }
 
         private void Close()

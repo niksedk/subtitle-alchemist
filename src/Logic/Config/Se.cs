@@ -13,6 +13,7 @@ public class Se
     public SeFile File { get; set; } = new();
     public SeTools Tools { get; set; } = new();
     public SeSync Synchronization { get; set; } = new();
+    public SeSpellCheck SpellCheck { get; set; } = new();
     public static SeLanguage Language { get; set; } = new();
     public static Se Settings { get; set; } = new();
     public static string DictionariesFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "Dictionaries");
@@ -76,6 +77,11 @@ public class Se
         if (Settings.Synchronization == null)
         {
             Settings.Synchronization = new();
+        }
+
+        if (Settings.SpellCheck == null)
+        {
+            Settings.SpellCheck = new();
         }
 
         if (Settings.Tools.FixCommonErrors.Profiles.Count == 0)

@@ -337,6 +337,22 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 ShowStatus($"Total adjustment: {tc.ToShortDisplayString()}");
             }
         }
+
+        if (page == nameof(SpellCheckerPage))
+        {
+            MakeHistoryForUndo("Before spell check");
+
+            if (query["Subtitle"] is Subtitle subtitle)
+            {
+                Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+                SelectParagraph(0);
+            }
+
+            if (query["TotalChangedWords"] is int totalChangedWords)
+            {
+                ShowStatus($"Spell check done - changed words: {totalChangedWords}");
+            }
+        }
     }
 
     private void MakeHistoryForUndo(string description)

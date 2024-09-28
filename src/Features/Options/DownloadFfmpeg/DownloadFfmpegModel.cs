@@ -103,7 +103,7 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
             if (folder != null)
             {
                 _downloadStream.Position = 0;
-                _zipUnpacker.UnpackZipStream(_downloadStream, folder, string.Empty, false, new List<string>());
+                _zipUnpacker.UnpackZipStream(_downloadStream, folder);
             }
 
             _downloadStream.Dispose();

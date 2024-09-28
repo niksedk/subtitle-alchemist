@@ -54,7 +54,7 @@ public class SpellCheckerPage : ContentPage
             Content = labelCurrentText,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            HeightRequest = 150,
+            HeightRequest = 140,
             StrokeThickness = 1,
             StrokeShape = new RoundRectangle
             {

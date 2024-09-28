@@ -6,7 +6,7 @@ public class ZipUnpacker : IZipUnpacker
 {
     public void UnpackZipStream(Stream zipStream, string outputPath)
     {
-        UnpackZipStream(zipStream, outputPath, string.Empty, false, new List<string>());
+        UnpackZipStream(zipStream, outputPath, string.Empty, false, new List<string>(), null);
     }
 
     public void UnpackZipStream(
@@ -14,7 +14,8 @@ public class ZipUnpacker : IZipUnpacker
     string outputPath,
     string skipFolderLevel,
     bool allToOutputPath,
-    List<string> allowedExtensions)
+    List<string> allowedExtensions,
+    List<string>? outputFileNames)
     {
         allowedExtensions = allowedExtensions.Select(x => x.ToLowerInvariant()).ToList();
 
@@ -56,6 +57,7 @@ public class ZipUnpacker : IZipUnpacker
                 using var entryStream = entry.Open();
                 using var fileStream = File.Create(filePath);
                 entryStream.CopyTo(fileStream);
+                outputFileNames?.Add(filePath);
             }
         }
     }

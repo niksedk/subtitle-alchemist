@@ -1,9 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
+using System.Collections.ObjectModel;
+using System.Web;
+using Nikse.SubtitleEdit.Core.SpellCheck;
 
 namespace SubtitleAlchemist.Features.SpellCheck;
 
@@ -38,18 +41,34 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     [ObservableProperty]
     private string _currentText;
 
-
+    private bool _loading = true;
+    private SpellCheckWord _currentSpellCheckWord;
     private Subtitle _subtitle = new();
     private readonly ISpellCheckManager _spellCheckManager;
+    private readonly IPopupService _popupService;
     private SpellCheckResult? _lastSpellCheckResult;
+    private int _totalChangedWords;
 
-    public SpellCheckerPageModel(ISpellCheckManager spellCheckManager)
+    public SpellCheckerPageModel(ISpellCheckManager spellCheckManager, IPopupService popupService)
     {
         _spellCheckManager = spellCheckManager;
+        _spellCheckManager.OnWordChanged += (sender, e) =>
+        {
+            UpdateChangedWordInUi(e.FromWord, e.ToWord, e.WordIndex);
+            _totalChangedWords++;
+        };
 
+        _popupService = popupService;
+
+        _currentSpellCheckWord = new SpellCheckWord();
         _wordNotFoundOriginal = string.Empty;
         _currentWord = string.Empty;
         _currentText = string.Empty;
+    }
+
+    private void UpdateChangedWordInUi(string fromWord, string toWord, int wordIndex)
+    {
+        //TODO: update subtitle list view
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -64,11 +83,24 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         Languages = new ObservableCollection<SpellCheckDictionaryDisplay>(spellCheckLanguages);
         if (Languages.Count > 0)
         {
-            SelectedLanguage = Languages[0];
+            if (!string.IsNullOrEmpty(Se.Settings.SpellCheck.LastLanguageDictionaryFile))
+            {
+                SelectedLanguage = Languages.FirstOrDefault(l => l.DictionaryFileName == Se.Settings.SpellCheck.LastLanguageDictionaryFile);
+            }
+
+            SelectedLanguage = Languages.FirstOrDefault(l => l.Name.Contains("English", StringComparison.OrdinalIgnoreCase));
+
+            if (SelectedLanguage == null)
+            {
+                SelectedLanguage = Languages[0];
+            }
+
             _spellCheckManager.Initialize(SelectedLanguage.DictionaryFileName);
 
             DoSpellCheck();
         }
+
+        _loading = false;
     }
 
     private void DoSpellCheck()
@@ -76,27 +108,41 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         var results = _spellCheckManager.CheckSpelling(_subtitle, _lastSpellCheckResult);
         if (results.Count > 0)
         {
-            WordNotFoundOriginal = results[0].Word;
-            CurrentWord = results[0].Word;
+            WordNotFoundOriginal = results[0].Word.Text;
+            CurrentWord = results[0].Word.Text;
             CurrentText = results[0].Paragraph.Text;
+            _currentSpellCheckWord = results[0].Word;
             _lastSpellCheckResult = results[0];
 
-            var suggestions = _spellCheckManager.GetSuggestions(results[0].Word);
+            var suggestions = _spellCheckManager.GetSuggestions(results[0].Word.Text);
             Suggestions = new ObservableCollection<string>(suggestions);
             SuggestionsAvailable = true;
+        }
+        else
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+                {
+                    { "Page", nameof(SpellCheckerPage) },
+                    { "Subtitle", _subtitle },
+                    { "TotalChangedWords", _totalChangedWords },
+                });
+            });
         }
     }
 
     [RelayCommand]
     public void ChangeWord()
     {
+        _spellCheckManager.ChangeWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
         DoSpellCheck();
     }
 
     [RelayCommand]
     public void ChangeAllWords()
     {
-        _spellCheckManager.AddChangeAllWord(WordNotFoundOriginal, CurrentWord);
+        _spellCheckManager.ChangeAllWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
         DoSpellCheck();
     }
 
@@ -130,11 +176,28 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public void GoogleIt(string word)
     {
+        UiUtil.OpenUrl("https://www.google.com/search?q=" + HttpUtility.UrlEncode(word));
     }
 
     [RelayCommand]
-    public void DownloadDictionary(string word)
+    public async Task DownloadDictionary(string word)
     {
+        var result = await _popupService.ShowPopupAsync<GetDictionaryPopupModel>(onPresenting: viewModel => viewModel.Initialize(), CancellationToken.None);
+        if (result is SpellCheckDictionary dictionary)
+        {
+            var spellCheckLanguages = _spellCheckManager.GetDictionaryLanguages(Se.DictionariesFolder);
+            Languages = new ObservableCollection<SpellCheckDictionaryDisplay>(spellCheckLanguages);
+            if (Languages.Count > 0)
+            {
+                SelectedLanguage = Languages.FirstOrDefault(l => l.DictionaryFileName == dictionary.DictionaryFileName);
+                if (SelectedLanguage == null)
+                {
+                    SelectedLanguage = Languages[0];
+                }
+
+                DoSpellCheck();
+            }
+        }
     }
 
     [RelayCommand]
@@ -155,6 +218,11 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         }
 
         _spellCheckManager.Initialize(SelectedLanguage.DictionaryFileName);
-        DoSpellCheck();
+        Se.Settings.SpellCheck.LastLanguageDictionaryFile = SelectedLanguage.DictionaryFileName;
+
+        if (!_loading)
+        {
+            DoSpellCheck();
+        }
     }
 }
