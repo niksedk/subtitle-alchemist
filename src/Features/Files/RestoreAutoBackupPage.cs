@@ -3,9 +3,9 @@ using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Files;
 
-public partial class RestoreAutoBackupPage : ContentPage
+public class RestoreAutoBackupPage : ContentPage
 {
-    public RestoreAutoBackupPage(Files.RestoreAutoBackupModel vm)
+    public RestoreAutoBackupPage(RestoreAutoBackupModel vm)
     {
         this.BindDynamicTheme();
         Padding = new Thickness(10);
@@ -19,6 +19,7 @@ public partial class RestoreAutoBackupPage : ContentPage
             RowSpacing = 20,
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto }, // title
@@ -43,17 +44,27 @@ public partial class RestoreAutoBackupPage : ContentPage
 
 
         var header = MakeHeader(vm);
-
         var collectionView = MakeCollectionView(vm);
+
+        var gridSubtitleFiles = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star },
+            },
+        };
+        gridSubtitleFiles.Add(header, 0, 0);
+        gridSubtitleFiles.Add(collectionView, 0, 1);
 
         var border = new Border
         {
             Padding = new Thickness(10),
-            Content = new StackLayout
-            {
-                HorizontalOptions = LayoutOptions.Fill,
-                Children = { header, collectionView }
-            },
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Content =  gridSubtitleFiles,
             StrokeShape = new RoundRectangle
             {
                 CornerRadius = new CornerRadius(5)
@@ -69,7 +80,7 @@ public partial class RestoreAutoBackupPage : ContentPage
             Text = "Open containing folder",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme();
+        };
         grid.Add(vm.LabelOpenFolder, 0, 2);
         var tapGestureRecognizer = new TapGestureRecognizer();
         tapGestureRecognizer.Tapped += (s, e) => vm.OpenContainingFolderTapped();
@@ -170,7 +181,7 @@ public partial class RestoreAutoBackupPage : ContentPage
         return collectionView;
     }
 
-    private Grid MakeHeader(RestoreAutoBackupModel vm)
+    private static Grid MakeHeader(RestoreAutoBackupModel vm)
     {
         // Create the header grid
         var gridHeader = new Grid
@@ -197,17 +208,24 @@ public partial class RestoreAutoBackupPage : ContentPage
         gridHeader.Add(
             new Label
             {
-                Text = "Description",
+                Text = "File name",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
             }, 1, 0);
         gridHeader.Add(
             new Label
             {
-                Text = "Subtitle lines",
+                Text = "Extension",
                 FontAttributes = FontAttributes.Bold,
                 VerticalTextAlignment = TextAlignment.Center
             }, 2, 0);
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Size",
+                FontAttributes = FontAttributes.Bold,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 3, 0);
 
         return gridHeader;
     }
