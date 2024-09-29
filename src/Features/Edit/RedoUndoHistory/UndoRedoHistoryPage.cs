@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Converters;
 
 namespace SubtitleAlchemist.Features.Edit.RedoUndoHistory;
@@ -177,7 +178,7 @@ public class UndoRedoHistoryPage : ContentPage
         // Create the header grid
         var gridHeader = new Grid
         {
-            BackgroundColor = Color.FromRgb(22, 22, 22), //TODO: Add to resources, header background color
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
             Padding = new Thickness(5),
             ColumnDefinitions =
             {

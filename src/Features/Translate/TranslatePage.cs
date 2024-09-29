@@ -278,7 +278,7 @@ public class TranslatePage : ContentPage
         // Create the header grid
         var headerGrid = new Grid
         {
-            BackgroundColor = Color.FromRgb(22, 22, 22), //TODO: Add to resources, header background color
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
             Padding = new Thickness(5),
             ColumnDefinitions =
             {

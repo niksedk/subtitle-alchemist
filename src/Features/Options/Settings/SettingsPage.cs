@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Markup;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Controls.RadialControl;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
 
@@ -105,13 +106,21 @@ public class SettingsPage : ContentPage
         _vm.SaveSettings();
     }
 
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        _vm.OnAppearing();
+    }
+
     private static IView MakeLeftMenuItem(SettingsViewModel vm, PageNames pageName, string text)
     {
         var label = new Label
         {
-            Margin = 5,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
+            Padding = 10,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
             FontSize = 17,
             Text = text,
             ClassId = pageName.ToString(),

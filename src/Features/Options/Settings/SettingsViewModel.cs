@@ -1,6 +1,7 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SharpHook.Native;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Logic;
@@ -61,11 +62,11 @@ public partial class SettingsViewModel : ObservableObject
             {
                 if (label.ClassId == pageName.ToString())
                 {
-                    label.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
+                    label.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
                 }
                 else
                 {
-                    label.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+                    label.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
                 }
             }
         }
@@ -154,5 +155,13 @@ public partial class SettingsViewModel : ObservableObject
         ThemeHelper.UpdateTheme(Theme);
 
         await LeftMenuTapped(null, new TappedEventArgs(null), _pageName);
+    }
+
+    public void OnAppearing()
+    {
+        MainThread.BeginInvokeOnMainThread(async() =>
+        {
+            await LeftMenuTapped(null, new TappedEventArgs(null), PageNames.General);
+        });
     }
 }

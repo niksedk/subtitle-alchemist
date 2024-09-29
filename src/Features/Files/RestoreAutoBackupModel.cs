@@ -68,6 +68,7 @@ public partial class RestoreAutoBackupModel : ObservableObject
             Files.Add(new DisplayFile(fileName, displayDate, Utilities.FormatBytesToDisplayFileSize(fileInfo.Length)));
         }
 
+        Files = new ObservableCollection<DisplayFile>(Files.OrderByDescending(f => f.DateAndTime));
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {

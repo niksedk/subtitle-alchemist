@@ -6,6 +6,7 @@ using SubtitleAlchemist.Controls.AudioVisualizerControl;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Converters;
 
 namespace SubtitleAlchemist.Features.Sync.AdjustAllTimes;
@@ -253,7 +254,7 @@ public class AdjustAllTimesPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            BackgroundColor = Color.FromRgb(22, 22, 22), //TODO: Add to resources, header background color
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
             Padding = new Thickness(5),
             ColumnDefinitions =
             {

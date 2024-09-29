@@ -5,6 +5,7 @@ using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Converters;
 using System.Collections.ObjectModel;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.SpellCheck;
 
@@ -420,7 +421,7 @@ public class SpellCheckerPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            BackgroundColor = Color.FromRgb(22, 22, 22), //TODO: Add to resources, header background color
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
             Padding = new Thickness(5),
             ColumnDefinitions =
             {
@@ -458,7 +459,7 @@ public class SpellCheckerPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            BackgroundColor = Color.FromRgb(22, 22, 22), //TODO: Add to resources, header background color
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
             Padding = new Thickness(5),
             ColumnDefinitions =
             {

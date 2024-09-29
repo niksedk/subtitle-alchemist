@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Converters;
 
 namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
@@ -351,7 +352,7 @@ public class FixCommonErrorsPage : ContentPage
         // Create the header grid
         var gridHeader = new Grid
         {
-            BackgroundColor = Color.FromRgb(22, 22, 22), //TODO: Add to resources, header background color
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
             Padding = new Thickness(5),
             ColumnDefinitions =
             {
@@ -536,7 +537,7 @@ public class FixCommonErrorsPage : ContentPage
     {
         var gridHeader = new Grid
         {
-            BackgroundColor = Color.FromRgb(22, 22, 22), //TODO: Add to resources, header background color
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
             Padding = new Thickness(5),
             HorizontalOptions = LayoutOptions.Fill,
             ColumnDefinitions =
