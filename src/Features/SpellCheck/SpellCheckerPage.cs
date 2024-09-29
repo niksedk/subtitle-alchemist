@@ -29,9 +29,9 @@ public class SpellCheckerPage : ContentPage
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
-                new() { Width = new GridLength(3, GridUnitType.Star) }, // spell check
-                new() { Width = new GridLength(2, GridUnitType.Star) }, // language and suggestions
-                new() { Width = new GridLength(3, GridUnitType.Star) }, // subtitle list / video player
+                new() { Width = new GridLength(2, GridUnitType.Star) }, // spell check
+                new() { Width = new GridLength(1, GridUnitType.Star) }, // language and suggestions
+                new() { Width = new GridLength(2, GridUnitType.Star) }, // subtitle list / video player
             },
             Margin = new Thickness(25),
             HorizontalOptions = LayoutOptions.Fill,
@@ -121,8 +121,7 @@ public class SpellCheckerPage : ContentPage
         grid.Add(column1, 0, 1);    
 
 
-        var column2Grid = MakeLanguageAndSuggestionsGrid(vm);
-        grid.Add(column2Grid, 1, 1);
+        grid.Add(MakeLanguageAndSuggestionsView(vm), 1, 1);
 
 
         Content = grid;
@@ -221,33 +220,9 @@ public class SpellCheckerPage : ContentPage
         return gridWordButtons;
     }
 
-    private static Grid MakeLanguageAndSuggestionsGrid(SpellCheckerPageModel vm)
+    private static StackLayout MakeLanguageAndSuggestionsView(SpellCheckerPageModel vm)
     {
-        var grid = new Grid
-        {
-            RowDefinitions = new RowDefinitionCollection
-            {
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) }, // suggestions
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-            },
-            ColumnDefinitions = new ColumnDefinitionCollection
-            {
-                new() { Width = new GridLength(1, GridUnitType.Star) },
-                new() { Width = new GridLength(1, GridUnitType.Star) },
-            },
-            ColumnSpacing = 10,
-            RowSpacing = 10,
-            Margin = new Thickness(25, 0, 25, 0),
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-        };
-
-        var labelLanguage = new Label
+       var labelLanguage = new Label
         {
             Text = "Language",
             HorizontalOptions = LayoutOptions.Start,
@@ -256,45 +231,53 @@ public class SpellCheckerPage : ContentPage
 
         var pickerLanguage = new Picker
         {
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            WidthRequest = 150,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(10, 0, 10, 0),
         }.BindDynamicTheme();
         pickerLanguage.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Languages));
         pickerLanguage.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedLanguage));
         pickerLanguage.SelectedIndexChanged += vm.LanguageChanged;
 
-
         var buttonDownloadDictionary = new Button
         {
             Text = "...",
-            HorizontalOptions = LayoutOptions.Start,
+            HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.DownloadDictionaryCommand,
+            Margin = new Thickness(0,5,10,5),
         }.BindDynamicTheme();
 
-        var languageBar = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            Margin = new Thickness(0, 0, 0, 15),
-            Children =
-            {
-                labelLanguage,
-                pickerLanguage,
-                buttonDownloadDictionary,
-            }
-        };
-        grid.Add(languageBar, 0);
-        grid.SetColumnSpan(languageBar, 2);
 
+        var languageGrid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            RowDefinitions = new RowDefinitionCollection
+            {
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
+            },
+            ColumnDefinitions = new ColumnDefinitionCollection
+            {
+                new() { Width = new GridLength(1, GridUnitType.Auto) },
+                new() { Width = new GridLength(1, GridUnitType.Star) },
+            },
+            ColumnSpacing = 0,
+            RowSpacing = 0,
+        };
+        languageGrid.Add(labelLanguage, 0, 0);
+        languageGrid.Add(pickerLanguage, 1, 0);
+        languageGrid.Add(buttonDownloadDictionary, 1, 1);
+
+       
         var labelSuggestions = new Label
         {
             Text = "Suggestions",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0,0,0,2),
         };
-        grid.Add(labelSuggestions, 0, 1);
 
         var collectionViewSuggestions = new CollectionView
         {
@@ -313,7 +296,7 @@ public class SpellCheckerPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(0, 0, 0, 10),
-            HeightRequest = 395,
+            HeightRequest = 345,
         };
         collectionViewSuggestions.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Suggestions));
         collectionViewSuggestions.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedSuggestion), BindingMode.TwoWay);
@@ -330,8 +313,6 @@ public class SpellCheckerPage : ContentPage
                 CornerRadius = new CornerRadius(5)
             },
         };
-
-        grid.Add(borderSuggestions, 0, 2);
 
         var buttonSuggestionUse = new Button
         {
@@ -360,10 +341,23 @@ public class SpellCheckerPage : ContentPage
                 buttonSuggestionUseAlways,
             }
         };
-        grid.Add(buttonBar, 0, 3);
 
+        var column = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(20, 0, 20, 0),
+            Children =
+            {
+                languageGrid,
+                labelSuggestions,
+                borderSuggestions,
+                buttonBar,
+            }
+        };
 
-        return grid;
+        return column;
     }
 
     public void Initialize(Subtitle subtitle, string videoFileName, SpellCheckerPageModel vm)
