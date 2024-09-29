@@ -11,18 +11,21 @@ namespace SubtitleAlchemist.Features.SpellCheck;
 public class SpellCheckerPage : ContentPage
 {
     private readonly Grid _mainGrid;
-
+    private readonly SpellCheckerPageModel _vm;
 
     public SpellCheckerPage(SpellCheckerPageModel vm)
     {
         this.BindDynamicTheme();
         vm.Page = this;
         BindingContext = vm;
+        _vm = vm;
 
         var grid = new Grid
         {
             RowDefinitions = new RowDefinitionCollection
             {
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
                 new() { Height = new GridLength(1, GridUnitType.Auto) },
@@ -114,9 +117,7 @@ public class SpellCheckerPage : ContentPage
 
         var column2Grid = MakeSuggestionsGrid(vm);
         grid.Add(column2Grid, 1, 1);
-        grid.SetRowSpan(column2Grid, 9);
-
-        // add video player / subtitle list (from model in query method)
+        grid.SetRowSpan(column2Grid, 4);
 
         Content = grid;
     }
@@ -296,7 +297,7 @@ public class SpellCheckerPage : ContentPage
                 var labelSuggestion = new Label
                 {
                     HorizontalOptions = LayoutOptions.Fill,
-                    VerticalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Fill,
                     Margin = new Thickness(5),
                 };
                 labelSuggestion.SetBinding(Label.TextProperty, ".");
@@ -309,6 +310,7 @@ public class SpellCheckerPage : ContentPage
             HeightRequest = 395,
         };
         collectionViewSuggestions.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Suggestions));
+        collectionViewSuggestions.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedSuggestion), BindingMode.TwoWay);
 
         var borderSuggestions = new Border
         {
@@ -364,32 +366,52 @@ public class SpellCheckerPage : ContentPage
         vm.Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
         vm.SubtitleList.BatchCommit();
 
+        var subtitleGrid = MakeSubtitleGrid(vm);
         if (string.IsNullOrEmpty(videoFileName))
         {
-            // no video player or waveform
-            var subtitleGrid = MakeSubtitleGrid(vm);
-            _mainGrid.Add(subtitleGrid, 2);
-            _mainGrid.SetRowSpan(subtitleGrid, 8);
-
+            // only subtitle list
+            _mainGrid.Add(subtitleGrid, 2,1);
+            _mainGrid.SetRowSpan(subtitleGrid, 4);
             return;
         }
 
-        // video player and waveform
+        var grid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            BackgroundColor = Color.FromRgb(22, 22, 22), //TODO: Add to resources, header background color
+            Padding = new Thickness(5),
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+            },
+            RowDefinitions =
+            {
+                new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }, // video player
+                new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }, // subtitle list
+            },
+            HeightRequest = 500,
+        };
+
+        // video player and subtitle list
         var mediaElementGrid = MakeMediaElementGrid(vm);
         mediaElementGrid.Margin = new Thickness(0, 0, 0, 10);
-        _mainGrid.Add(mediaElementGrid, 2);
-        _mainGrid.SetRowSpan(mediaElementGrid, 9);
-
         vm.VideoPlayer.Source = MediaSource.FromFile(videoFileName);
+        
+        grid.Add(mediaElementGrid, 0);
+        grid.Add(subtitleGrid, 0, 1);
+
+        _mainGrid.Add(grid, 2, 1);
+        _mainGrid.SetRowSpan(grid, 4);
     }
 
-    private MediaElement MakeMediaElementGrid(SpellCheckerPageModel vm)
+    private static MediaElement MakeMediaElementGrid(SpellCheckerPageModel vm)
     {
         vm.VideoPlayer = new MediaElement { ZIndex = -10000 };
         return vm.VideoPlayer;
     }
 
-    private Border MakeSubtitleGrid(SpellCheckerPageModel vm)
+    private static Border MakeSubtitleGrid(SpellCheckerPageModel vm)
     {
         // Create the header grid
         var headerGrid = new Grid
@@ -402,18 +424,14 @@ public class SpellCheckerPage : ContentPage
             {
                 new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
                 new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
-                new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
                 new ColumnDefinition { Width = new GridLength(4, GridUnitType.Star) }
             },
         };
 
         // Add headers
-        headerGrid.Add(new Label { Text = "Number", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
+        headerGrid.Add(new Label { Text = "#", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
         headerGrid.Add(new Label { Text = "Show", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 1, 0);
-        headerGrid.Add(new Label { Text = "Hide", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 2, 0);
         headerGrid.Add(new Label { Text = "Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
-
-
 
         vm.SubtitleList = new CollectionView
         {
@@ -428,7 +446,6 @@ public class SpellCheckerPage : ContentPage
                     ColumnDefinitions =
                     {
                         new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
-                        new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
                         new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
                         new ColumnDefinition { Width = new GridLength(4, GridUnitType.Star) }
                     },
@@ -445,17 +462,13 @@ public class SpellCheckerPage : ContentPage
                 var startTimeLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
                 startTimeLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Start), BindingMode.Default, new TimeSpanToStringConverter());
 
-                var originalTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
-                originalTextLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.End), BindingMode.Default, new TimeSpanToStringConverter());
-
                 var translatedTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
                 translatedTextLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Text));
 
                 // Add labels to grid
                 gridTexts.Add(numberLabel, 0, 0);
                 gridTexts.Add(startTimeLabel, 1, 0);
-                gridTexts.Add(originalTextLabel, 2, 0);
-                gridTexts.Add(translatedTextLabel, 3, 0);
+                gridTexts.Add(translatedTextLabel, 2, 0);
 
                 return gridTexts;
             })
@@ -480,6 +493,7 @@ public class SpellCheckerPage : ContentPage
 
         vm.SubtitleList.SelectionMode = SelectionMode.Single;
         vm.SubtitleList.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Paragraphs), BindingMode.TwoWay);
+        vm.SubtitleList.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedParagraph), BindingMode.TwoWay);
         vm.SubtitleList.SelectionChanged += vm.SubtitlesViewSelectionChanged;
 
         var border = new Border
@@ -495,5 +509,11 @@ public class SpellCheckerPage : ContentPage
         border.Content = gridLayout;
 
         return border;
+    }
+
+    protected override void OnDisappearing()
+    {
+        _vm.OnDisappearing();
+        base.OnDisappearing();
     }
 }

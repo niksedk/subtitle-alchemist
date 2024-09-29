@@ -24,13 +24,19 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     private ObservableCollection<DisplayParagraph> _paragraphs = new();
 
     [ObservableProperty]
+    private DisplayParagraph? _selectedParagraph;
+
+    [ObservableProperty]
     private ObservableCollection<string> _suggestions = new();
 
     [ObservableProperty]
-    private ObservableCollection<Logic.SpellCheckDictionaryDisplay> _languages = new();
+    private string? _selectedSuggestion;
 
     [ObservableProperty]
-    private Logic.SpellCheckDictionaryDisplay? _selectedLanguage;
+    private ObservableCollection<SpellCheckDictionaryDisplay> _languages = new();
+
+    [ObservableProperty]
+    private SpellCheckDictionaryDisplay? _selectedLanguage;
 
     [ObservableProperty]
     private bool _suggestionsAvailable;
@@ -63,6 +69,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     private readonly IPopupService _popupService;
     private SpellCheckResult? _lastSpellCheckResult;
     private int _totalChangedWords;
+    private string _videoFileName = string.Empty;
 
     public SpellCheckerPageModel(ISpellCheckManager spellCheckManager, IPopupService popupService)
     {
@@ -95,6 +102,13 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
+        var videoFileName = string.Empty;
+        if (query["VideoFileName"] is string vfn)
+        {
+            videoFileName = vfn;
+            _videoFileName = vfn;
+        }
+
         _subtitle = subtitle;
         var spellCheckLanguages = _spellCheckManager.GetDictionaryLanguages(Se.DictionariesFolder);
         Languages = new ObservableCollection<SpellCheckDictionaryDisplay>(spellCheckLanguages);
@@ -117,7 +131,198 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
             DoSpellCheck();
         }
 
+        Page?.Initialize(subtitle, videoFileName, this);
+
         _loading = false;
+    }
+
+    private void DoSpellCheck()
+    {
+        var results = _spellCheckManager.CheckSpelling(_subtitle, _lastSpellCheckResult);
+        if (results.Count > 0)
+        {
+            WordNotFoundOriginal = results[0].Word.Text;
+            CurrentWord = results[0].Word.Text;
+            CurrentText = results[0].Paragraph.Text;
+            CurrentFormattedText = HighLightCurrentWord(results[0].Word, results[0].Paragraph);
+            _currentSpellCheckWord = results[0].Word;
+            _lastSpellCheckResult = results[0];
+
+            var suggestions = _spellCheckManager.GetSuggestions(results[0].Word.Text);
+            Suggestions = new ObservableCollection<string>(suggestions);
+            SuggestionsAvailable = true;
+
+            var lineIndex = _subtitle.Paragraphs.IndexOf(results[0].Paragraph) + 1;
+            Title = $"Spell checker - line {lineIndex} of {_subtitle.Paragraphs.Count}";
+
+            if (!string.IsNullOrEmpty(_videoFileName))
+            {
+                VideoPlayer.SeekTo(results[0].Paragraph.StartTime.TimeSpan);
+                VideoPlayer.Pause();
+            }
+
+            SelectedParagraph = Paragraphs.FirstOrDefault(p => p.P.Id == results[0].Paragraph.Id);
+            if (SelectedParagraph != null)
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    SubtitleList.ScrollTo(SelectedParagraph);
+                });
+            }
+        }
+        else
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+                {
+                    { "Page", nameof(SpellCheckerPage) },
+                    { "Subtitle", _subtitle },
+                    { "TotalChangedWords", _totalChangedWords },
+                });
+            });
+        }
+    }
+
+    private static FormattedString HighLightCurrentWord(SpellCheckWord word, Paragraph paragraph)
+    {
+        var text = paragraph.Text.Trim();
+        var pre = string.Empty;
+        if (word.Index > 0)
+        {
+            pre = text[..word.Index];
+        }
+
+        var post = string.Empty;
+        if (word.Index + word.Text.Length < text.Length)
+        {
+            post = text[(word.Index + word.Text.Length)..];
+        }
+
+        var formattedString = new FormattedString();
+        formattedString.Spans.Add(new Span { FontSize = 18, Text = pre });
+        formattedString.Spans.Add(new Span { FontSize = 18, Text = word.Text, TextColor = Colors.Red, FontAttributes = FontAttributes.Bold });
+        formattedString.Spans.Add(new Span { FontSize = 18, Text = post });
+
+        return formattedString;
+    }
+
+    [RelayCommand]
+    public void ChangeWord()
+    {
+        _spellCheckManager.ChangeWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
+        DoSpellCheck();
+    }
+
+    [RelayCommand]
+    public void ChangeAllWords()
+    {
+        _spellCheckManager.ChangeAllWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
+        DoSpellCheck();
+    }
+
+    [RelayCommand]
+    public void SkipWord()
+    {
+        DoSpellCheck();
+    }
+
+    [RelayCommand]
+    public void SkipAllWord()
+    {
+        _spellCheckManager.AddIgnoreWord(WordNotFoundOriginal);
+        DoSpellCheck();
+    }
+
+    [RelayCommand]
+    public void AddToNames()
+    {
+        _spellCheckManager.AddToNames(CurrentWord);
+        DoSpellCheck();
+    }
+
+    [RelayCommand]
+    public void AddToUserDictionary(string word)
+    {
+        _spellCheckManager.AdToUserDictionary(CurrentWord);
+        DoSpellCheck();
+    }
+
+    [RelayCommand]
+    public void GoogleIt()
+    {
+        UiUtil.OpenUrl("https://www.google.com/search?q=" + HttpUtility.UrlEncode(CurrentWord));
+    }
+
+    [RelayCommand]
+    public async Task DownloadDictionary(string word)
+    {
+        var result = await _popupService.ShowPopupAsync<GetDictionaryPopupModel>(onPresenting: viewModel => viewModel.Initialize(), CancellationToken.None);
+        if (result is SpellCheckDictionary dictionary)
+        {
+            var spellCheckLanguages = _spellCheckManager.GetDictionaryLanguages(Se.DictionariesFolder);
+            Languages = new ObservableCollection<SpellCheckDictionaryDisplay>(spellCheckLanguages);
+            if (Languages.Count > 0)
+            {
+                SelectedLanguage = Languages.FirstOrDefault(l => l.DictionaryFileName == dictionary.DictionaryFileName);
+                SelectedLanguage ??= Languages[0];
+
+                DoSpellCheck();
+            }
+        }
+    }
+
+    [RelayCommand]
+    public void SuggestionUseOnce()
+    {
+        if (SelectedSuggestion == null)
+        {
+            return;
+        }
+
+        _spellCheckManager.ChangeWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
+        DoSpellCheck();
+    }
+
+    [RelayCommand]
+    public void SuggestionUseAlways()
+    {
+        if (SelectedSuggestion == null)
+        {
+            return;
+        }
+
+        //TODO: always...
+
+        _spellCheckManager.ChangeWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
+        DoSpellCheck();
+    }
+
+    public void LanguageChanged(object? sender, EventArgs e)
+    {
+        if (SelectedLanguage == null)
+        {
+            return;
+        }
+
+        if (!_loading)
+        {
+            _spellCheckManager.Initialize(SelectedLanguage.DictionaryFileName, GetTwoLetterLanguageCode(SelectedLanguage));
+            Se.Settings.SpellCheck.LastLanguageDictionaryFile = SelectedLanguage.DictionaryFileName;
+            DoSpellCheck();
+        }
+    }
+
+    public void SubtitlesViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+
+    }
+
+    public void OnDisappearing()
+    {
+        VideoPlayer.Handler?.DisconnectHandler();
+        VideoPlayer.Dispose();
+        Se.SaveSettings();
     }
 
     private static string GetTwoLetterLanguageCode(SpellCheckDictionaryDisplay? language)
@@ -286,159 +491,5 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         }
 
         return "en";
-    }
-
-    private void DoSpellCheck()
-    {
-        var results = _spellCheckManager.CheckSpelling(_subtitle, _lastSpellCheckResult);
-        if (results.Count > 0)
-        {
-            WordNotFoundOriginal = results[0].Word.Text;
-            CurrentWord = results[0].Word.Text;
-            CurrentText = results[0].Paragraph.Text;
-            CurrentFormattedText = HighLightCurrentWord(results[0].Word, results[0].Paragraph);
-            _currentSpellCheckWord = results[0].Word;
-            _lastSpellCheckResult = results[0];
-
-            var suggestions = _spellCheckManager.GetSuggestions(results[0].Word.Text);
-            Suggestions = new ObservableCollection<string>(suggestions);
-            SuggestionsAvailable = true;
-
-            var lineIndex = _subtitle.Paragraphs.IndexOf(results[0].Paragraph) + 1;
-            Title = $"Spell checker - line {lineIndex} of {_subtitle.Paragraphs.Count}";
-        }
-        else
-        {
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await Shell.Current.GoToAsync("..", new Dictionary<string, object>
-                {
-                    { "Page", nameof(SpellCheckerPage) },
-                    { "Subtitle", _subtitle },
-                    { "TotalChangedWords", _totalChangedWords },
-                });
-            });
-        }
-    }
-
-    private static FormattedString HighLightCurrentWord(SpellCheckWord word, Paragraph paragraph)
-    {
-        var text = paragraph.Text.Trim();
-        var pre = string.Empty;
-        if (word.Index > 0)
-        {
-            pre = text.Substring(0, word.Index);
-        }
-
-        var post = string.Empty;
-        if (word.Index + word.Text.Length < text.Length)
-        {
-            post = text.Substring(word.Index + word.Text.Length);
-        }
-
-        var formattedString = new FormattedString();
-        formattedString.Spans.Add(new Span { FontSize = 18, Text = pre });
-        formattedString.Spans.Add(new Span { FontSize = 18, Text = word.Text, TextColor = Colors.Red, FontAttributes = FontAttributes.Bold });
-        formattedString.Spans.Add(new Span { FontSize = 18, Text = post });
-
-        return formattedString;
-    }
-
-    [RelayCommand]
-    public void ChangeWord()
-    {
-        _spellCheckManager.ChangeWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
-        DoSpellCheck();
-    }
-
-    [RelayCommand]
-    public void ChangeAllWords()
-    {
-        _spellCheckManager.ChangeAllWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
-        DoSpellCheck();
-    }
-
-    [RelayCommand]
-    public void SkipWord()
-    {
-        DoSpellCheck();
-    }
-
-    [RelayCommand]
-    public void SkipAllWord()
-    {
-        _spellCheckManager.AddIgnoreWord(WordNotFoundOriginal);
-        DoSpellCheck();
-    }
-
-    [RelayCommand]
-    public void AddToNames()
-    {
-        _spellCheckManager.AddToNames(CurrentWord);
-        DoSpellCheck();
-    }
-
-    [RelayCommand]
-    public void AddToUserDictionary(string word)
-    {
-        _spellCheckManager.AdToUserDictionary(CurrentWord);
-        DoSpellCheck();
-    }
-
-    [RelayCommand]
-    public void GoogleIt(string word)
-    {
-        UiUtil.OpenUrl("https://www.google.com/search?q=" + HttpUtility.UrlEncode(word));
-    }
-
-    [RelayCommand]
-    public async Task DownloadDictionary(string word)
-    {
-        var result = await _popupService.ShowPopupAsync<GetDictionaryPopupModel>(onPresenting: viewModel => viewModel.Initialize(), CancellationToken.None);
-        if (result is SpellCheckDictionary dictionary)
-        {
-            var spellCheckLanguages = _spellCheckManager.GetDictionaryLanguages(Se.DictionariesFolder);
-            Languages = new ObservableCollection<SpellCheckDictionaryDisplay>(spellCheckLanguages);
-            if (Languages.Count > 0)
-            {
-                SelectedLanguage = Languages.FirstOrDefault(l => l.DictionaryFileName == dictionary.DictionaryFileName);
-                if (SelectedLanguage == null)
-                {
-                    SelectedLanguage = Languages[0];
-                }
-
-                DoSpellCheck();
-            }
-        }
-    }
-
-    [RelayCommand]
-    public void SuggestionUseOnce(string word)
-    {
-    }
-
-    [RelayCommand]
-    public void SuggestionUseAlways(string word)
-    {
-    }
-
-    public void LanguageChanged(object? sender, EventArgs e)
-    {
-        if (SelectedLanguage == null)
-        {
-            return;
-        }
-
-        if (!_loading)
-        {
-            _spellCheckManager.Initialize(SelectedLanguage.DictionaryFileName, GetTwoLetterLanguageCode(SelectedLanguage));
-            Se.Settings.SpellCheck.LastLanguageDictionaryFile = SelectedLanguage.DictionaryFileName;
-            DoSpellCheck();
-        }
-    }
-
-    public void SubtitlesViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        
     }
 }
