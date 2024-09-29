@@ -42,7 +42,7 @@ public class SpellCheckerPage : ContentPage
 
         var labelTitle = new Label
         {
-            FontSize = 24,
+            FontSize = 20,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 15),
@@ -51,6 +51,15 @@ public class SpellCheckerPage : ContentPage
         grid.Add(labelTitle, 0);
         grid.SetColumnSpan(labelTitle, 2);
 
+        grid.Add(MakeSpellCheckColumn(vm), 0, 1);    
+
+        grid.Add(MakeLanguageAndSuggestionsColumn(vm), 1, 1);
+
+        Content = grid;
+    }
+
+    private static StackLayout MakeSpellCheckColumn(SpellCheckerPageModel vm)
+    {
         var labelCurrentText = new Label
         {
             HorizontalOptions = LayoutOptions.Center,
@@ -62,7 +71,7 @@ public class SpellCheckerPage : ContentPage
             Content = labelCurrentText,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            HeightRequest = 130,
+            HeightRequest = 120,
         }.BindDynamicTheme();
 
         labelCurrentText.SetBinding(Label.FormattedTextProperty, nameof(vm.CurrentFormattedText));
@@ -83,7 +92,7 @@ public class SpellCheckerPage : ContentPage
             Text = "Edit Whole Text",
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 5, 0, 25)
+            Margin = new Thickness(0, 5, 0, 15)
         }.BindDynamicTheme();
 
         var labelWordNotFound = new Label
@@ -118,13 +127,7 @@ public class SpellCheckerPage : ContentPage
                 gridWordButtons,
             }
         };
-        grid.Add(column1, 0, 1);    
-
-
-        grid.Add(MakeLanguageAndSuggestionsView(vm), 1, 1);
-
-
-        Content = grid;
+        return column1;
     }
 
     private static Grid MakeButtonGrid(SpellCheckerPageModel vm)
@@ -217,10 +220,47 @@ public class SpellCheckerPage : ContentPage
         gridWordButtons.Add(buttonGoogleIt, 0, 4);
         gridWordButtons.SetColumnSpan(buttonGoogleIt, 2);
 
+        var labelStatusText = new Label
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+        };
+        labelStatusText.SetBinding(Label.TextProperty, nameof(vm.StatusText));
+        gridWordButtons.Add(labelStatusText, 0, 5);
+        vm.LabelStatusText = labelStatusText;
+
+        var okCancelBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            Margin = new Thickness(0, 10, 0, 0),
+            Children =
+            {
+                new Button
+                {
+                    Text = "OK",
+                    HorizontalOptions = LayoutOptions.Fill,
+                    VerticalOptions = LayoutOptions.Fill,
+                    Command = vm.OkCommand,
+                    Margin = new Thickness(0, 0, 10, 0),
+                }.BindDynamicTheme(),
+                new Button
+                {
+                    Text = "Cancel",
+                    HorizontalOptions = LayoutOptions.Fill,
+                    VerticalOptions = LayoutOptions.Fill,
+                    Command = vm.CancelCommand,
+                }.BindDynamicTheme(),
+            }
+        };
+
+        gridWordButtons.Add(okCancelBar, 0, 6);
+        gridWordButtons.SetColumnSpan(okCancelBar, 2);
+
         return gridWordButtons;
     }
 
-    private static StackLayout MakeLanguageAndSuggestionsView(SpellCheckerPageModel vm)
+    private static StackLayout MakeLanguageAndSuggestionsColumn(SpellCheckerPageModel vm)
     {
        var labelLanguage = new Label
         {
@@ -296,8 +336,8 @@ public class SpellCheckerPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(0, 0, 0, 10),
-            HeightRequest = 345,
-        };
+            HeightRequest = 325,
+        }.BindDynamicTheme();
         collectionViewSuggestions.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Suggestions));
         collectionViewSuggestions.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedSuggestion), BindingMode.TwoWay);
 

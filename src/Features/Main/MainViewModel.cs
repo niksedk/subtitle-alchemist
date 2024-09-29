@@ -173,7 +173,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 p.Text = displayParagraph.Text;
                 p.StartTime.TotalMilliseconds = displayParagraph.Start.TotalMilliseconds;
                 p.EndTime.TotalMilliseconds = displayParagraph.End.TotalMilliseconds;
-                subtitle.Paragraphs.Add(displayParagraph.P);
+                subtitle.Paragraphs.Add(p);
             }
 
             return subtitle;

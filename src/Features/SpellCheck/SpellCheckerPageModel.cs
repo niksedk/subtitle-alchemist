@@ -18,6 +18,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     public SpellCheckerPage? Page { get; set; }
     public CollectionView SubtitleList { get; internal set; } = new();
     public MediaElement VideoPlayer { get; set; } = new();
+    public Label LabelStatusText { get; set; } = new();
 
 
     [ObservableProperty]
@@ -57,6 +58,9 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     private string _currentText;
 
     [ObservableProperty]
+    private string _statusText;
+
+    [ObservableProperty]
     private string _title;
 
     [ObservableProperty]
@@ -76,7 +80,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         _spellCheckManager = spellCheckManager;
         _spellCheckManager.OnWordChanged += (sender, e) =>
         {
-            UpdateChangedWordInUi(e.FromWord, e.ToWord, e.WordIndex);
+            UpdateChangedWordInUi(e.FromWord, e.ToWord, e.WordIndex, e.Paragraph);
             _totalChangedWords++;
         };
 
@@ -88,11 +92,17 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         _currentText = string.Empty;
         _currentFormattedText = new FormattedString();
         _title = "Spell checker";
+        _statusText = string.Empty;
     }
 
-    private void UpdateChangedWordInUi(string fromWord, string toWord, int wordIndex)
+    private void UpdateChangedWordInUi(string fromWord, string toWord, int wordIndex, Paragraph paragraph)
     {
-        //TODO: update subtitle list view
+        CurrentText = paragraph.Text;
+        SelectedParagraph = Paragraphs.FirstOrDefault(p => p.P.Id == paragraph.Id);
+        if (SelectedParagraph != null)
+        {
+            SelectedParagraph.Text = paragraph.Text;
+        }
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -110,30 +120,37 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         }
 
         _subtitle = subtitle;
-        var spellCheckLanguages = _spellCheckManager.GetDictionaryLanguages(Se.DictionariesFolder);
-        Languages = new ObservableCollection<SpellCheckDictionaryDisplay>(spellCheckLanguages);
-        if (Languages.Count > 0)
+
+        Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(50), () =>
         {
-            if (!string.IsNullOrEmpty(Se.Settings.SpellCheck.LastLanguageDictionaryFile))
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                SelectedLanguage = Languages.FirstOrDefault(l => l.DictionaryFileName == Se.Settings.SpellCheck.LastLanguageDictionaryFile);
-            }
+                var spellCheckLanguages = _spellCheckManager.GetDictionaryLanguages(Se.DictionariesFolder);
+                Languages = new ObservableCollection<SpellCheckDictionaryDisplay>(spellCheckLanguages);
+                if (Languages.Count > 0)
+                {
+                    if (!string.IsNullOrEmpty(Se.Settings.SpellCheck.LastLanguageDictionaryFile))
+                    {
+                        SelectedLanguage = Languages.FirstOrDefault(l => l.DictionaryFileName == Se.Settings.SpellCheck.LastLanguageDictionaryFile);
+                    }
 
-            SelectedLanguage = Languages.FirstOrDefault(l => l.Name.Contains("English", StringComparison.OrdinalIgnoreCase));
+                    SelectedLanguage = Languages.FirstOrDefault(l => l.Name.Contains("English", StringComparison.OrdinalIgnoreCase));
+                    if (SelectedLanguage == null)
+                    {
+                        SelectedLanguage = Languages[0];
+                    }
 
-            if (SelectedLanguage == null)
-            {
-                SelectedLanguage = Languages[0];
-            }
+                    _spellCheckManager.Initialize(SelectedLanguage.DictionaryFileName, GetTwoLetterLanguageCode(SelectedLanguage));
 
-            _spellCheckManager.Initialize(SelectedLanguage.DictionaryFileName, GetTwoLetterLanguageCode(SelectedLanguage));
+                    DoSpellCheck();
+                }
 
-            DoSpellCheck();
-        }
+                Page?.Initialize(subtitle, videoFileName, this);
 
-        Page?.Initialize(subtitle, videoFileName, this);
-
-        _loading = false;
+                _loading = false;
+            });
+            return false;
+        });
     }
 
     private void DoSpellCheck()
@@ -151,6 +168,10 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
             var suggestions = _spellCheckManager.GetSuggestions(results[0].Word.Text);
             Suggestions = new ObservableCollection<string>(suggestions);
             SuggestionsAvailable = true;
+            if (suggestions.Count > 0)
+            {
+                SelectedSuggestion = suggestions[0];
+            }
 
             var lineIndex = _subtitle.Paragraphs.IndexOf(results[0].Paragraph) + 1;
             Title = $"Spell checker - line {lineIndex} of {_subtitle.Paragraphs.Count}";
@@ -166,7 +187,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    SubtitleList.ScrollTo(SelectedParagraph);
+                    SubtitleList.ScrollTo(SelectedParagraph, null, ScrollToPosition.Center);
                 });
             }
         }
@@ -211,6 +232,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     public void ChangeWord()
     {
         _spellCheckManager.ChangeWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
+        ShowStatus($"Change word from \"{WordNotFoundOriginal}\" to \"{CurrentWord}\"");
         DoSpellCheck();
     }
 
@@ -218,12 +240,15 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     public void ChangeAllWords()
     {
         _spellCheckManager.ChangeAllWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
+        ShowStatus($"Change all words from \"{WordNotFoundOriginal}\" to \"{CurrentWord}\"");
         DoSpellCheck();
     }
 
     [RelayCommand]
     public void SkipWord()
     {
+        _spellCheckManager.AddIgnoreWord(WordNotFoundOriginal);
+        ShowStatus($"Ignore word \"{WordNotFoundOriginal}\"");
         DoSpellCheck();
     }
 
@@ -231,6 +256,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     public void SkipAllWord()
     {
         _spellCheckManager.AddIgnoreWord(WordNotFoundOriginal);
+        ShowStatus($"Ignore word \"{WordNotFoundOriginal}\" always");
         DoSpellCheck();
     }
 
@@ -238,6 +264,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     public void AddToNames()
     {
         _spellCheckManager.AddToNames(CurrentWord);
+        ShowStatus($"Word \"{CurrentWord}\" added to names list");
         DoSpellCheck();
     }
 
@@ -245,6 +272,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     public void AddToUserDictionary(string word)
     {
         _spellCheckManager.AdToUserDictionary(CurrentWord);
+        ShowStatus($"Word \"{CurrentWord}\" added to user dictionary");
         DoSpellCheck();
     }
 
@@ -267,6 +295,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
                 SelectedLanguage = Languages.FirstOrDefault(l => l.DictionaryFileName == dictionary.DictionaryFileName);
                 SelectedLanguage ??= Languages[0];
 
+                ShowStatus($"Downloaded dictionary \"{dictionary.EnglishName}\"");
                 DoSpellCheck();
             }
         }
@@ -280,7 +309,8 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
-        _spellCheckManager.ChangeWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
+        _spellCheckManager.ChangeWord(WordNotFoundOriginal, SelectedSuggestion, _currentSpellCheckWord);
+        ShowStatus($"Use suggestion \"{CurrentWord}\"");
         DoSpellCheck();
     }
 
@@ -292,10 +322,32 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
-        //TODO: always...
-
-        _spellCheckManager.ChangeWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
+        _spellCheckManager.ChangeAllWord(WordNotFoundOriginal, SelectedSuggestion, _currentSpellCheckWord);
+        ShowStatus($"Use suggestion \"{CurrentWord}\" always");
         DoSpellCheck();
+    }
+
+    [RelayCommand]
+    public async Task Ok()
+    {
+        var lineIndex = -1;
+        if (SelectedParagraph != null)
+        {
+            lineIndex = _subtitle.Paragraphs.IndexOf(SelectedParagraph.P);
+        }
+
+        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+        {
+            { "Page", nameof(SpellCheckerPage) },
+            { "Subtitle", _subtitle },
+            { "LineIndex", lineIndex },
+        });
+    }
+
+    [RelayCommand]
+    public async Task Cancel()
+    {
+        await Shell.Current.GoToAsync("..");
     }
 
     public void LanguageChanged(object? sender, EventArgs e)
@@ -323,6 +375,25 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         VideoPlayer.Handler?.DisconnectHandler();
         VideoPlayer.Dispose();
         Se.SaveSettings();
+    }
+
+    private void ShowStatus(string statusText)
+    {
+        LabelStatusText.Opacity = 0;
+        StatusText = statusText;
+        LabelStatusText.FadeTo(1, 200);
+
+        Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(6_000), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (StatusText == statusText)
+                {
+                    LabelStatusText.FadeTo(0, 200);
+                }
+            });
+            return false;
+        });
     }
 
     private static string GetTwoLetterLanguageCode(SpellCheckDictionaryDisplay? language)
