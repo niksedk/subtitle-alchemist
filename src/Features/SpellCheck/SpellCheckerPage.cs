@@ -1,10 +1,18 @@
-﻿using Microsoft.Maui.Controls.Shapes;
+﻿using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Shapes;
+using Nikse.SubtitleEdit.Core.Common;
+using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Converters;
+using System.Collections.ObjectModel;
 
 namespace SubtitleAlchemist.Features.SpellCheck;
 
 public class SpellCheckerPage : ContentPage
 {
+    private readonly Grid _mainGrid;
+
+
     public SpellCheckerPage(SpellCheckerPageModel vm)
     {
         this.BindDynamicTheme();
@@ -31,14 +39,16 @@ public class SpellCheckerPage : ContentPage
             Margin = new Thickness(25),
         };
 
+        _mainGrid = grid;
+
         var labelTitle = new Label
         {
-            Text = "Spell Checker",
             FontSize = 24,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 15),
         };
+        labelTitle.SetBinding(Label.TextProperty, nameof(vm.Title));
         grid.Add(labelTitle, 0);
         grid.SetColumnSpan(labelTitle, 2);
 
@@ -346,5 +356,144 @@ public class SpellCheckerPage : ContentPage
 
 
         return grid;
+    }
+
+    public void Initialize(Subtitle subtitle, string videoFileName, SpellCheckerPageModel vm)
+    {
+        vm.SubtitleList.BatchBegin();
+        vm.Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+        vm.SubtitleList.BatchCommit();
+
+        if (string.IsNullOrEmpty(videoFileName))
+        {
+            // no video player or waveform
+            var subtitleGrid = MakeSubtitleGrid(vm);
+            _mainGrid.Add(subtitleGrid, 2);
+            _mainGrid.SetRowSpan(subtitleGrid, 8);
+
+            return;
+        }
+
+        // video player and waveform
+        var mediaElementGrid = MakeMediaElementGrid(vm);
+        mediaElementGrid.Margin = new Thickness(0, 0, 0, 10);
+        _mainGrid.Add(mediaElementGrid, 2);
+        _mainGrid.SetRowSpan(mediaElementGrid, 9);
+
+        vm.VideoPlayer.Source = MediaSource.FromFile(videoFileName);
+    }
+
+    private MediaElement MakeMediaElementGrid(SpellCheckerPageModel vm)
+    {
+        vm.VideoPlayer = new MediaElement { ZIndex = -10000 };
+        return vm.VideoPlayer;
+    }
+
+    private Border MakeSubtitleGrid(SpellCheckerPageModel vm)
+    {
+        // Create the header grid
+        var headerGrid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            BackgroundColor = Color.FromRgb(22, 22, 22), //TODO: Add to resources, header background color
+            Padding = new Thickness(5),
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
+                new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
+                new ColumnDefinition { Width = new GridLength(4, GridUnitType.Star) }
+            },
+        };
+
+        // Add headers
+        headerGrid.Add(new Label { Text = "Number", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
+        headerGrid.Add(new Label { Text = "Show", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 1, 0);
+        headerGrid.Add(new Label { Text = "Hide", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 2, 0);
+        headerGrid.Add(new Label { Text = "Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
+
+
+
+        vm.SubtitleList = new CollectionView
+        {
+            ItemTemplate = new DataTemplate(() =>
+            {
+                // Each row will be a Grid
+                var gridTexts = new Grid
+                {
+                    HorizontalOptions = LayoutOptions.Fill,
+                    VerticalOptions = LayoutOptions.Fill,
+                    Padding = new Thickness(5),
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                        new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
+                        new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
+                        new ColumnDefinition { Width = new GridLength(4, GridUnitType.Star) }
+                    },
+                    RowDefinitions =
+                    {
+                        new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) }
+                    }
+                };
+
+                // Bind each cell to the appropriate property
+                var numberLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
+                numberLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Number));
+
+                var startTimeLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
+                startTimeLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Start), BindingMode.Default, new TimeSpanToStringConverter());
+
+                var originalTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
+                originalTextLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.End), BindingMode.Default, new TimeSpanToStringConverter());
+
+                var translatedTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
+                translatedTextLabel.SetBinding(Label.TextProperty, nameof(DisplayParagraph.Text));
+
+                // Add labels to grid
+                gridTexts.Add(numberLabel, 0, 0);
+                gridTexts.Add(startTimeLabel, 1, 0);
+                gridTexts.Add(originalTextLabel, 2, 0);
+                gridTexts.Add(translatedTextLabel, 3, 0);
+
+                return gridTexts;
+            })
+        }.BindDynamicTheme();
+
+
+        var gridLayout = new Grid
+        {
+            RowDefinitions = new RowDefinitionCollection
+            {
+                new() { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Star) },
+            },
+            ColumnDefinitions = new ColumnDefinitionCollection
+            {
+                new() { Width = new GridLength(1, GridUnitType.Star) },
+            }
+        }.BindDynamicTheme();
+
+        gridLayout.Add(headerGrid, 0, 0);
+        gridLayout.Add(vm.SubtitleList, 0, 1);
+
+        vm.SubtitleList.SelectionMode = SelectionMode.Single;
+        vm.SubtitleList.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Paragraphs), BindingMode.TwoWay);
+        vm.SubtitleList.SelectionChanged += vm.SubtitlesViewSelectionChanged;
+
+        var border = new Border
+        {
+            Content = gridLayout,
+            Padding = new Thickness(5),
+            Margin = new Thickness(10),
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+        }.BindDynamicTheme();
+        border.Content = gridLayout;
+
+        return border;
     }
 }

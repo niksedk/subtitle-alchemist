@@ -40,6 +40,7 @@ using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 using SubtitleAlchemist.Features.Video.OpenFromUrl;
 using SubtitleAlchemist.Features.Sync.ChangeFrameRate;
 using SubtitleAlchemist.Features.Sync.ChangeSpeed;
+using SpellCheckDictionary = SubtitleAlchemist.Features.SpellCheck.SpellCheckDictionary;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -1548,6 +1549,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             { "Page", nameof(MainPage) },
             { "Subtitle", UpdatedSubtitle },
+            { "VideoFileName", _videoFileName },
         });
     }
 

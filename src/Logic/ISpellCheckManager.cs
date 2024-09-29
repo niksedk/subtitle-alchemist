@@ -7,8 +7,7 @@ public interface ISpellCheckManager
 {
     event SpellCheckManager.SpellCheckWordChangedHandler? OnWordChanged;
     List<SpellCheckResult> CheckSpelling(Subtitle subtitle, SpellCheckResult? startFrom = null);
-    bool Initialize(string dictionaryFile);
-    bool Initialize(List<string> words);
+    bool Initialize(string dictionaryFile, string twoLetterLanguageCode);
     void AddIgnoreWord(string word);
     void ChangeWord(string fromWord, string toWord, SpellCheckWord spellCheckWord);
     void ChangeAllWord(string fromWord, string toWord, SpellCheckWord spellCheckWord);
