@@ -65,8 +65,9 @@ public class SpellCheckerPage : ContentPage
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
         };
+        labelCurrentText.SetBinding(Label.FormattedTextProperty, nameof(vm.CurrentFormattedText));
 
-        var scrollViewCurrentText = new ScrollView
+       var scrollViewCurrentText = new ScrollView
         {
             Content = labelCurrentText,
             HorizontalOptions = LayoutOptions.Fill,
@@ -74,7 +75,6 @@ public class SpellCheckerPage : ContentPage
             HeightRequest = 120,
         }.BindDynamicTheme();
 
-        labelCurrentText.SetBinding(Label.FormattedTextProperty, nameof(vm.CurrentFormattedText));
         var borderCurrentText = new Border
         {
             Content = scrollViewCurrentText,
@@ -92,7 +92,8 @@ public class SpellCheckerPage : ContentPage
             Text = "Edit Whole Text",
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 5, 0, 15)
+            Margin = new Thickness(0, 5, 0, 15),
+            Command = vm.EditCurrentTextCommand,
         }.BindDynamicTheme();
 
         var labelWordNotFound = new Label
@@ -110,6 +111,7 @@ public class SpellCheckerPage : ContentPage
             Margin = new Thickness(0, 0, 0, 5),
         }.BindDynamicTheme();
         entryWordNotFound.SetBinding(Entry.TextProperty, nameof(vm.CurrentWord));
+        vm.EntryWordNotFound = entryWordNotFound;
 
         var gridWordButtons = MakeButtonGrid(vm);
 
@@ -306,8 +308,8 @@ public class SpellCheckerPage : ContentPage
             ColumnSpacing = 0,
             RowSpacing = 0,
         };
-        languageGrid.Add(labelLanguage, 0, 0);
-        languageGrid.Add(pickerLanguage, 1, 0);
+        languageGrid.Add(labelLanguage, 0);
+        languageGrid.Add(pickerLanguage, 1);
         languageGrid.Add(buttonDownloadDictionary, 1, 1);
 
        

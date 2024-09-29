@@ -19,7 +19,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     public CollectionView SubtitleList { get; internal set; } = new();
     public MediaElement VideoPlayer { get; set; } = new();
     public Label LabelStatusText { get; set; } = new();
-
+    public Entry EntryWordNotFound { get; set; } = new();
 
     [ObservableProperty]
     private ObservableCollection<DisplayParagraph> _paragraphs = new();
@@ -234,8 +234,27 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     }
 
     [RelayCommand]
+    public async Task EditCurrentText()
+    {
+        var title = $"Edit text (line {_subtitle.Paragraphs.IndexOf(_currentParagraph) + 1} of {_subtitle.Paragraphs.Count})";
+        var result = await _popupService.ShowPopupAsync<EditCurrentTextPopupModel>(onPresenting: viewModel => viewModel.Initialize(title, CurrentText), CancellationToken.None);
+        if (result is string text)
+        {
+            _currentParagraph.Text = text;
+
+            DoSpellCheck();
+        }
+    }
+
+    [RelayCommand]
     public void ChangeWord()
     {
+        if (string.IsNullOrWhiteSpace(CurrentWord) || WordNotFoundOriginal == CurrentWord)
+        {
+            EntryWordNotFound.Focus();
+            return;
+        }
+
         _spellCheckManager.ChangeWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord, _currentParagraph);
         ShowStatus($"Change word from \"{WordNotFoundOriginal}\" to \"{CurrentWord}\"");
         DoSpellCheck();
@@ -244,6 +263,12 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public void ChangeAllWords()
     {
+        if (string.IsNullOrWhiteSpace(CurrentWord) || WordNotFoundOriginal == CurrentWord)
+        {
+            EntryWordNotFound.Focus();
+            return;
+        }
+
         _spellCheckManager.ChangeAllWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord, _currentParagraph);
         ShowStatus($"Change all words from \"{WordNotFoundOriginal}\" to \"{CurrentWord}\"");
         DoSpellCheck();
@@ -267,6 +292,12 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public void AddToNames()
     {
+        if (string.IsNullOrWhiteSpace(CurrentWord))
+        {
+            EntryWordNotFound.Focus();
+            return;
+        }
+
         _spellCheckManager.AddToNames(CurrentWord);
         ShowStatus($"Word \"{CurrentWord}\" added to names list");
         DoSpellCheck();
@@ -275,6 +306,12 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public void AddToUserDictionary(string word)
     {
+        if (string.IsNullOrWhiteSpace(CurrentWord))
+        {
+            EntryWordNotFound.Focus();
+            return;
+        }
+
         _spellCheckManager.AdToUserDictionary(CurrentWord);
         ShowStatus($"Word \"{CurrentWord}\" added to user dictionary");
         DoSpellCheck();
