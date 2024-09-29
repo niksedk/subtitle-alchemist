@@ -67,12 +67,13 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     private FormattedString _currentFormattedText;
 
     private bool _loading = true;
+    private bool _closing;
     private SpellCheckWord _currentSpellCheckWord;
     private Subtitle _subtitle = new();
     private readonly ISpellCheckManager _spellCheckManager;
     private readonly IPopupService _popupService;
     private SpellCheckResult? _lastSpellCheckResult;
-    private int _totalChangedWords;
+    private Paragraph _currentParagraph;
     private string _videoFileName = string.Empty;
 
     public SpellCheckerPageModel(ISpellCheckManager spellCheckManager, IPopupService popupService)
@@ -81,7 +82,6 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         _spellCheckManager.OnWordChanged += (sender, e) =>
         {
             UpdateChangedWordInUi(e.FromWord, e.ToWord, e.WordIndex, e.Paragraph);
-            _totalChangedWords++;
         };
 
         _popupService = popupService;
@@ -93,6 +93,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         _currentFormattedText = new FormattedString();
         _title = "Spell checker";
         _statusText = string.Empty;
+        _currentParagraph = new Paragraph();
     }
 
     private void UpdateChangedWordInUi(string fromWord, string toWord, int wordIndex, Paragraph paragraph)
@@ -164,6 +165,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
             CurrentFormattedText = HighLightCurrentWord(results[0].Word, results[0].Paragraph);
             _currentSpellCheckWord = results[0].Word;
             _lastSpellCheckResult = results[0];
+            _currentParagraph = results[0].Paragraph;
 
             var suggestions = _spellCheckManager.GetSuggestions(results[0].Word.Text);
             Suggestions = new ObservableCollection<string>(suggestions);
@@ -193,13 +195,16 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         }
         else
         {
+            _closing = true;
             MainThread.BeginInvokeOnMainThread(async () =>
             {
                 await Shell.Current.GoToAsync("..", new Dictionary<string, object>
                 {
                     { "Page", nameof(SpellCheckerPage) },
                     { "Subtitle", _subtitle },
-                    { "TotalChangedWords", _totalChangedWords },
+                    { "TotalChangedWords", _spellCheckManager.NoOfChangedWords },
+                    { "TotalSkippedWords", _spellCheckManager.NoOfSkippedWords },
+                    { "AutoClose", true },
                 });
             });
         }
@@ -231,7 +236,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public void ChangeWord()
     {
-        _spellCheckManager.ChangeWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
+        _spellCheckManager.ChangeWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord, _currentParagraph);
         ShowStatus($"Change word from \"{WordNotFoundOriginal}\" to \"{CurrentWord}\"");
         DoSpellCheck();
     }
@@ -239,7 +244,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public void ChangeAllWords()
     {
-        _spellCheckManager.ChangeAllWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord);
+        _spellCheckManager.ChangeAllWord(WordNotFoundOriginal, CurrentWord, _currentSpellCheckWord, _currentParagraph);
         ShowStatus($"Change all words from \"{WordNotFoundOriginal}\" to \"{CurrentWord}\"");
         DoSpellCheck();
     }
@@ -247,8 +252,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public void SkipWord()
     {
-        _spellCheckManager.AddIgnoreWord(WordNotFoundOriginal);
-        ShowStatus($"Ignore word \"{WordNotFoundOriginal}\"");
+        ShowStatus($"Ignore word \"{WordNotFoundOriginal}\" once");
         DoSpellCheck();
     }
 
@@ -309,7 +313,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
-        _spellCheckManager.ChangeWord(WordNotFoundOriginal, SelectedSuggestion, _currentSpellCheckWord);
+        _spellCheckManager.ChangeWord(WordNotFoundOriginal, SelectedSuggestion, _currentSpellCheckWord, _currentParagraph);
         ShowStatus($"Use suggestion \"{CurrentWord}\"");
         DoSpellCheck();
     }
@@ -322,7 +326,7 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
-        _spellCheckManager.ChangeAllWord(WordNotFoundOriginal, SelectedSuggestion, _currentSpellCheckWord);
+        _spellCheckManager.ChangeAllWord(WordNotFoundOriginal, SelectedSuggestion, _currentSpellCheckWord, _currentParagraph);
         ShowStatus($"Use suggestion \"{CurrentWord}\" always");
         DoSpellCheck();
     }
@@ -330,17 +334,15 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public async Task Ok()
     {
-        var lineIndex = -1;
-        if (SelectedParagraph != null)
-        {
-            lineIndex = _subtitle.Paragraphs.IndexOf(SelectedParagraph.P);
-        }
+        _closing = true;
 
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(SpellCheckerPage) },
             { "Subtitle", _subtitle },
-            { "LineIndex", lineIndex },
+            { "TotalChangedWords", _spellCheckManager.NoOfChangedWords },
+            { "TotalSkippedWords", _spellCheckManager.NoOfSkippedWords },
+            { "AutoClose", false },
         });
     }
 
@@ -387,6 +389,11 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                if (_closing)
+                {
+                    return;
+                }
+
                 if (StatusText == statusText)
                 {
                     LabelStatusText.FadeTo(0, 200);

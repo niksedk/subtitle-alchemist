@@ -12,6 +12,8 @@ public class SpellCheckManager : ISpellCheckManager, IDoSpell
 {
     public delegate void SpellCheckWordChangedHandler(object sender, SpellCheckWordChangedEvent e);
     public event SpellCheckWordChangedHandler? OnWordChanged;
+    public int NoOfChangedWords { get; set; }
+    public int NoOfSkippedWords { get; set; }
 
     private static readonly Regex EmailRegex = new(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", RegexOptions.Compiled);
     private static readonly Regex UrlRegex = new(@"^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -27,8 +29,6 @@ public class SpellCheckManager : ISpellCheckManager, IDoSpell
     private SpellCheckWordLists? _spellCheckWordLists;
     private readonly List<string> _skipAllList;
     private readonly Dictionary<string, string> _changeAllDictionary;
-    private int _noOfChangedWords;
-    private int _noOfSkippedWords;
 
     public SpellCheckManager()
     {
@@ -117,7 +117,7 @@ public class SpellCheckManager : ISpellCheckManager, IDoSpell
             for (var wordIndex = startWordIndex; wordIndex < words.Count; wordIndex++)
             {
                 var word = words[wordIndex];
-                if (!IsWordCorrect(word.Text, p.Text, words, wordIndex))
+                if (!IsWordCorrect(word, p, words, wordIndex))
                 {
                     results.Add(new SpellCheckResult
                     {
@@ -158,6 +158,8 @@ public class SpellCheckManager : ISpellCheckManager, IDoSpell
             return;
         }
 
+        NoOfSkippedWords++;
+
         if (!_skipAllList.Contains(word))
         {
             _skipAllList.Add(word);
@@ -185,27 +187,29 @@ public class SpellCheckManager : ISpellCheckManager, IDoSpell
         }
     }
 
-    public void ChangeWord(string fromWord, string toWord, SpellCheckWord spellCheckWord)
+    public void ChangeWord(string fromWord, string toWord, SpellCheckWord spellCheckWord, Paragraph p)
     {
         if (_currentResult == null)
         {
             return;
         }
 
-        var text = _currentResult.Paragraph.Text.Remove(spellCheckWord.Index, spellCheckWord.Length);
+        var text = p.Text.Remove(spellCheckWord.Index, spellCheckWord.Length);
         text = text.Insert(spellCheckWord.Index, toWord);
-        _currentResult.Paragraph.Text = text;
+        p.Text = text;
+
+        NoOfChangedWords++;
 
         OnWordChanged?.Invoke(this, new SpellCheckWordChangedEvent
         {
-            Paragraph = _currentResult.Paragraph,
+            Paragraph = p,
             FromWord = fromWord,
             ToWord = toWord,
             Word = spellCheckWord,
         });
     }
 
-    public void ChangeAllWord(string fromWord, string toWord, SpellCheckWord spellCheckWord)
+    public void ChangeAllWord(string fromWord, string toWord, SpellCheckWord spellCheckWord, Paragraph p)
     {
         if (string.IsNullOrWhiteSpace(fromWord) || string.IsNullOrWhiteSpace(toWord))
         {
@@ -224,15 +228,17 @@ public class SpellCheckManager : ISpellCheckManager, IDoSpell
             _changeAllDictionary.Add(fromWord, toWord);
         }
 
-        ChangeWord(fromWord, toWord, spellCheckWord);
+        ChangeWord(fromWord, toWord, spellCheckWord, p);
     }
 
     public void AddToNames(string word)
     {
+        _spellCheckWordLists?.AddName(word);
     }
 
     public void AdToUserDictionary(string word)
     {
+        _spellCheckWordLists?.AddUserWord(word);
     }
 
     public bool DoSpell(string word)
@@ -251,12 +257,15 @@ public class SpellCheckManager : ISpellCheckManager, IDoSpell
         return isCorrect;
     }
 
-    private bool IsWordCorrect(string word, string text, List<SpellCheckWord> words, int wordIndex)
+    private bool IsWordCorrect(SpellCheckWord spellCheckWord, Paragraph p, List<SpellCheckWord> words, int wordIndex)
     {
+        var word = spellCheckWord.Text;
+        var text = p.Text;
+
         if (_skipAllList.Contains(word.ToUpperInvariant()) ||
             (word.StartsWith('\'') || word.EndsWith('\'')) && _skipAllList.Contains(word.Trim('\'').ToUpperInvariant()))
         {
-            _noOfSkippedWords++;
+            NoOfSkippedWords++;
             return true;
         }
 
@@ -298,13 +307,14 @@ public class SpellCheckManager : ISpellCheckManager, IDoSpell
 
         if (_changeAllDictionary.ContainsKey(word) && NotSameSpecialEnding(words[wordIndex], _changeAllDictionary[word], text))
         {
-            _noOfChangedWords++;
-            ChangeWord(word, _changeAllDictionary[word], words[wordIndex]);
+            ChangeWord(word, _changeAllDictionary[word], words[wordIndex], p);
+            return true;
         }
-        else if (word.EndsWith('\'') && _changeAllDictionary.ContainsKey(word.TrimEnd('\'')))
+        
+        if (word.EndsWith('\'') && _changeAllDictionary.ContainsKey(word.TrimEnd('\'')))
         {
-            _noOfChangedWords++;
-            ChangeWord(word, _changeAllDictionary[word] + word.Remove(0, word.TrimEnd('\'').Length), words[wordIndex]);
+            ChangeWord(word, _changeAllDictionary[word] + word.Remove(0, word.TrimEnd('\'').Length), words[wordIndex], p);
+            return true;
         }
 
         return isCorrect;

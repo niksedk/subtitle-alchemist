@@ -349,9 +349,28 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 SelectParagraph(0);
             }
 
-            if (query["TotalChangedWords"] is int totalChangedWords)
+            if (query["TotalChangedWords"] is not int totalChangedWords)
             {
-                ShowStatus($"Spell check done - changed words: {totalChangedWords}");
+                return;
+            }
+
+            if (query["TotalSkippedWords"] is not int totalSkippedWords)
+            {
+                return;
+            }
+
+            if (query["AutoClose"] is not bool autoClose)
+            {
+                return;
+            }
+
+            if (autoClose && totalChangedWords == 0 && totalSkippedWords == 0)
+            {
+                ShowStatus("No spelling errors found");
+            }
+            else
+            {
+                ShowStatus($"Spell check done - changed words: {totalChangedWords}, skipped words: {totalSkippedWords}");
             }
         }
     }
@@ -1239,6 +1258,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                if (_stopping)
+                {
+                    return;
+                }
+
                 if (StatusText == statusText)
                 {
                     LabelStatusText.FadeTo(0, 200);

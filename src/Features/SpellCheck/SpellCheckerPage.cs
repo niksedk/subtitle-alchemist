@@ -360,7 +360,7 @@ public class SpellCheckerPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             Margin = new Thickness(0, 0, 10, 0),
-            Command = vm.SuggestionUseAlwaysCommand,
+            Command = vm.SuggestionUseOnceCommand,
         }.BindDynamicTheme();
 
         var buttonSuggestionUseAlways = new Button
