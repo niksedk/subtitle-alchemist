@@ -464,14 +464,14 @@ public class SpellCheckerPage : ContentPage
             {
                 new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
                 new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
-                new ColumnDefinition { Width = new GridLength(4, GridUnitType.Star) }
+                new ColumnDefinition { Width = new GridLength(5, GridUnitType.Star) }
             },
         };
 
         // Add headers
-        headerGrid.Add(new Label { Text = "#", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
-        headerGrid.Add(new Label { Text = "Show", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 1, 0);
-        headerGrid.Add(new Label { Text = "Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
+        headerGrid.Add(new Label { Text = "#", FontAttributes = FontAttributes.Bold }, 0, 0);
+        headerGrid.Add(new Label { Text = "Show", FontAttributes = FontAttributes.Bold }, 1, 0);
+        headerGrid.Add(new Label { Text = "Text", FontAttributes = FontAttributes.Bold }, 2, 0);
 
         vm.SubtitleList = new CollectionView
         {
@@ -487,7 +487,7 @@ public class SpellCheckerPage : ContentPage
                     {
                         new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
                         new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
-                        new ColumnDefinition { Width = new GridLength(4, GridUnitType.Star) }
+                        new ColumnDefinition { Width = new GridLength(5, GridUnitType.Star) }
                     },
                     RowDefinitions =
                     {
