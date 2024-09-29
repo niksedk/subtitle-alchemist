@@ -24,22 +24,18 @@ public class SpellCheckerPage : ContentPage
         {
             RowDefinitions = new RowDefinitionCollection
             {
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) }, // title
+                new() { Height = new GridLength(1, GridUnitType.Star) }, // content
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
-                new() { Width = new GridLength(1, GridUnitType.Star) },
-                new() { Width = new GridLength(1, GridUnitType.Star) },
-                new() { Width = new GridLength(1, GridUnitType.Star) },
+                new() { Width = new GridLength(3, GridUnitType.Star) }, // spell check
+                new() { Width = new GridLength(2, GridUnitType.Star) }, // language and suggestions
+                new() { Width = new GridLength(3, GridUnitType.Star) }, // subtitle list / video player
             },
             Margin = new Thickness(25),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
         };
 
         _mainGrid = grid;
@@ -54,7 +50,6 @@ public class SpellCheckerPage : ContentPage
         labelTitle.SetBinding(Label.TextProperty, nameof(vm.Title));
         grid.Add(labelTitle, 0);
         grid.SetColumnSpan(labelTitle, 2);
-
 
         var labelCurrentText = new Label
         {
@@ -82,7 +77,6 @@ public class SpellCheckerPage : ContentPage
                 CornerRadius = new CornerRadius(5)
             },
         };
-        grid.Add(borderCurrentText, 0, 1);
 
         var buttonEditWholeText = new Button
         {
@@ -91,7 +85,6 @@ public class SpellCheckerPage : ContentPage
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(0, 5, 0, 25)
         }.BindDynamicTheme();
-        grid.Add(buttonEditWholeText, 0, 2);
 
         var labelWordNotFound = new Label
         {
@@ -100,7 +93,6 @@ public class SpellCheckerPage : ContentPage
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(0, 0, 0, 5)
         };
-        grid.Add(labelWordNotFound, 0, 3);
 
         var entryWordNotFound = new Entry
         {
@@ -109,15 +101,29 @@ public class SpellCheckerPage : ContentPage
             Margin = new Thickness(0, 0, 0, 5),
         }.BindDynamicTheme();
         entryWordNotFound.SetBinding(Entry.TextProperty, nameof(vm.CurrentWord));
-        grid.Add(entryWordNotFound, 0, 4);
 
         var gridWordButtons = MakeButtonGrid(vm);
-        grid.Add(gridWordButtons, 0, 5);
+
+        var column1 = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            Children =
+            {
+                borderCurrentText,
+                buttonEditWholeText,
+                labelWordNotFound,
+                entryWordNotFound,
+                gridWordButtons,
+            }
+        };
+        grid.Add(column1, 0, 1);    
 
 
-        var column2Grid = MakeSuggestionsGrid(vm);
+        var column2Grid = MakeLanguageAndSuggestionsGrid(vm);
         grid.Add(column2Grid, 1, 1);
-        grid.SetRowSpan(column2Grid, 4);
+
 
         Content = grid;
     }
@@ -215,7 +221,7 @@ public class SpellCheckerPage : ContentPage
         return gridWordButtons;
     }
 
-    private static Grid MakeSuggestionsGrid(SpellCheckerPageModel vm)
+    private static Grid MakeLanguageAndSuggestionsGrid(SpellCheckerPageModel vm)
     {
         var grid = new Grid
         {
@@ -371,7 +377,6 @@ public class SpellCheckerPage : ContentPage
         {
             // only subtitle list
             _mainGrid.Add(subtitleGrid, 2,1);
-            _mainGrid.SetRowSpan(subtitleGrid, 4);
             return;
         }
 
@@ -402,7 +407,6 @@ public class SpellCheckerPage : ContentPage
         grid.Add(subtitleGrid, 0, 1);
 
         _mainGrid.Add(grid, 2, 1);
-        _mainGrid.SetRowSpan(grid, 4);
     }
 
     private static MediaElement MakeMediaElementGrid(SpellCheckerPageModel vm)
