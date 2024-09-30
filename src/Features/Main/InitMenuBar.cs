@@ -262,11 +262,18 @@ internal static class InitMenuBar
             Text = "Close video file",
             Command = vm.VideoCloseCommand,
         });
+
         menu.Add(new MenuFlyoutSeparator());
+
         menu.Add(new MenuFlyoutItem
         {
             Text = "Audio to text (Whisper)...",
             Command = vm.VideoAudioToTextWhisperCommand,
+        });
+        menu.Add(new MenuFlyoutItem
+        {
+            Text = "Generate video with burned-in subtitles",
+            Command = vm.VideoBurnInCommand,
         });
         menu.Add(new MenuFlyoutItem
         {

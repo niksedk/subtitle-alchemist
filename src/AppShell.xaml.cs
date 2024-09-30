@@ -8,6 +8,8 @@ using SubtitleAlchemist.Features.Tools.AdjustDuration;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
+using SubtitleAlchemist.Features.Video.BurnIn;
+using SubtitleAlchemist.Features.Video.TextToSpeech;
 
 namespace SubtitleAlchemist
 {
@@ -29,6 +31,8 @@ namespace SubtitleAlchemist
             Routing.RegisterRoute(nameof(ExportEbuPage), typeof(ExportEbuPage));
             Routing.RegisterRoute(nameof(UndoRedoHistoryPage), typeof(UndoRedoHistoryPage));
             Routing.RegisterRoute(nameof(AdjustAllTimesPage), typeof(AdjustAllTimesPage));
+            Routing.RegisterRoute(nameof(BurnInPage), typeof(BurnInPage));
+            Routing.RegisterRoute(nameof(TextToSpeechPage), typeof(TextToSpeechPage));
         }
     }
 }
