@@ -42,10 +42,21 @@ public partial class RestoreAutoBackupModel : ObservableObject
             return;
         }
 
+        var answer = await Page.DisplayAlert(
+            "Restore auto-backup file?",
+            $"Do you want to restore \"{file.FileName}\" from {file.DateAndTime}?",
+            "Yes",
+            "No");
+
+        if (!answer)
+        {
+            return;
+        }
+
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(RestoreAutoBackupPage) },
-            { "SubtitleFileName", SelectedFile.FullPath },
+            { "SubtitleFileName", file.FullPath },
         });
     }
 
@@ -61,7 +72,7 @@ public partial class RestoreAutoBackupModel : ObservableObject
                 continue;
             }
 
-            var displayDate = path.Substring(0, 19).Replace('_', ' ');
+            var displayDate = path[..19].Replace('_', ' ');
             displayDate = displayDate.Remove(13, 1).Insert(13, ":");
             displayDate = displayDate.Remove(16, 1).Insert(16, ":");
 

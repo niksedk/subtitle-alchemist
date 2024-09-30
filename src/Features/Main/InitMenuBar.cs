@@ -331,16 +331,16 @@ internal static class InitMenuBar
     {
         var menu = new MenuBarItem { Text = "Help" };
 
-        menu.Add(new MenuFlyoutItem
-        {
-            Text = "Check for updates...",
-        });
-        menu.Add(new MenuFlyoutSeparator());
-        menu.Add(new MenuFlyoutItem
-        {
-            Text = "Help",
-        });
-        menu.Add(new MenuFlyoutSeparator());
+        //menu.Add(new MenuFlyoutItem
+        //{
+        //    Text = "Check for updates...",
+        //});
+        //menu.Add(new MenuFlyoutSeparator());
+        //menu.Add(new MenuFlyoutItem
+        //{
+        //    Text = "Help",
+        //});
+        //menu.Add(new MenuFlyoutSeparator());
         menu.Add(new MenuFlyoutItem
         {
             Text = "About...",

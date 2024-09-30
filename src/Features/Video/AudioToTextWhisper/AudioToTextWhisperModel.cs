@@ -143,7 +143,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     private readonly Timer _timerWaveExtract = new();
 
     private Stopwatch _sw = new();
-    private StringBuilder _ffmpegLog = new StringBuilder();
+    private StringBuilder _ffmpegLog = new();
 
     public AudioToTextWhisperModel(IPopupService popupService, TaskbarList taskbarList)
     {
@@ -724,6 +724,21 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return;
         }
 
+
+        if (language.Code != "en" && IsModelEnglishOnly(model.Model))
+        {
+            var answer = await Page.DisplayAlert(
+                "Warning",
+                "English model should only be used with English language.\nContinue anyway?",
+                "Yes",
+                "No");
+
+            if (!answer)
+            {
+                return;
+            }
+        }
+
         TranscribeButton.IsEnabled = false;
         ConsoleText.Text = string.Empty;
 
@@ -777,7 +792,9 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             return false;
         }
 
+
         _settings.WhisperChoice = engine.Choice;
+        SaveSettings();
 
         _showProgressPct = -1;
 
@@ -969,7 +986,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             MainThread.BeginInvokeOnMainThread(() =>
             {
 #if WINDOWS
-                _windowHandle = ((MauiWinUIWindow)App.Current!.Windows[0]!.Handler!.PlatformView!).WindowHandle;
+                _windowHandle = ((MauiWinUIWindow)Application.Current!.Windows[0]!.Handler!.PlatformView!).WindowHandle;
 #endif
 
                 ProgressValue = 0;
@@ -1057,7 +1074,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         return true;
     }
 
-    private void OutputHandler(object sendingProcess, System.Diagnostics.DataReceivedEventArgs outLine)
+    private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
     {
         if (string.IsNullOrWhiteSpace(outLine.Data))
         {
@@ -1354,7 +1371,16 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         }
         else
         {
-            PickerLanguage.SelectedItem = Languages.FirstOrDefault();
+            language = Languages.FirstOrDefault(l => l.Code == "en");
+            if (language != null)
+            {
+                _settings.WhisperLanguageCode = language.Code;
+                PickerLanguage.SelectedItem = language;
+            }
+            else
+            {
+                PickerLanguage.SelectedItem = Languages.FirstOrDefault();
+            }
         }
 
         var model = Models.FirstOrDefault(m => m.ToString() == _settings.WhisperModel);
@@ -1474,6 +1500,13 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     public async Task MouseClickedProcessingSettings(object? sender, TappedEventArgs e)
     {
         await _popupService.ShowPopupAsync<WhisperPostProcessingPopupModel>(onPresenting: viewModel => viewModel.LoadSettings(), CancellationToken.None);
+    }
+
+    private static bool IsModelEnglishOnly(WhisperModel model)
+    {
+        return model.Name.EndsWith(".en", StringComparison.InvariantCulture) ||
+               model.Name == "distil-large-v2" ||
+               model.Name == "distil-large-v3";
     }
 
     public void DeleteTempFiles()

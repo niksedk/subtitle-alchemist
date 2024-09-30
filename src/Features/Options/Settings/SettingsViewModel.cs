@@ -1,7 +1,6 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SharpHook.Native;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Logic;
@@ -15,9 +14,16 @@ namespace SubtitleAlchemist.Features.Options.Settings;
 
 public partial class SettingsViewModel : ObservableObject
 {
-    public Dictionary<PageNames, View> Pages { get; set; }
-    public Border Page { get; set; }
+    public List<SettingItem> AllSettings { get; init; } = new();
+
+    [ObservableProperty]
+    private ObservableCollection<SettingItem> _filteredSettings;
+
+    [ObservableProperty]
+    private string _searchText;
+
     public VerticalStackLayout LeftMenu { get; set; }
+    public CollectionView SettingList { get; set; }
     public SettingsPage? SettingsPage { get; set; }
     public BoxView SyntaxErrorColorBox { get; set; }
 
@@ -30,37 +36,30 @@ public partial class SettingsViewModel : ObservableObject
     private ObservableCollection<string> _themes = new() { "Light", "Dark", "Custom" };
 
     private readonly IPopupService _popupService;
-    private PageNames _pageName = PageNames.General;
+    private SectionName _sectionName = SectionName.General;
 
     public SettingsViewModel(IPopupService popupService)
     {
         _popupService = popupService;
 
-        Pages = new Dictionary<PageNames, View>();
-        Page = new Border();
         LeftMenu = new VerticalStackLayout();
         SyntaxErrorColorBox = new BoxView();
+
+        AllSettings = new List<SettingItem>();
+        _filteredSettings = new ObservableCollection<SettingItem>();
 
         LoadSettings();
     }
 
-    public async Task LeftMenuTapped(object? sender, TappedEventArgs e, PageNames pageName)
+    public async Task LeftMenuTapped(object? sender, TappedEventArgs e, SectionName sectionName)
     {
-        _pageName = pageName;
-
-        if (Page.Content != null)
-        {
-            await Page.Content.FadeTo(0, 200);
-        }
-
-        Pages[pageName].Opacity = 0;
-        Page.Content = Pages[pageName];
+        _sectionName = sectionName;
 
         foreach (var child in LeftMenu.Children)
         {
             if (child is Label label)
             {
-                if (label.ClassId == pageName.ToString())
+                if (label.ClassId == sectionName.ToString())
                 {
                     label.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
                 }
@@ -71,7 +70,9 @@ public partial class SettingsViewModel : ObservableObject
             }
         }
 
-        await Page.Content.FadeTo(1, 200);
+        var settingItem = AllSettings.FirstOrDefault(x => x.SectionName == sectionName);
+        SettingList.ScrollTo(settingItem, null, ScrollToPosition.Start);
+
     }
 
     [RelayCommand]
@@ -154,14 +155,14 @@ public partial class SettingsViewModel : ObservableObject
 
         ThemeHelper.UpdateTheme(Theme);
 
-        await LeftMenuTapped(null, new TappedEventArgs(null), _pageName);
+        await LeftMenuTapped(null, new TappedEventArgs(null), _sectionName);
     }
 
     public void OnAppearing()
     {
         MainThread.BeginInvokeOnMainThread(async() =>
         {
-            await LeftMenuTapped(null, new TappedEventArgs(null), PageNames.General);
+            await LeftMenuTapped(null, new TappedEventArgs(null), SectionName.General);
         });
     }
 }

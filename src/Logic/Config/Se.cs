@@ -141,11 +141,11 @@ public class Se
         return Path.Combine(FileSystem.Current.AppDataDirectory, "whisper_log.txt");
     }
 
-
     private static void UpdateLibSeSettings()
     {
         Configuration.Settings.General.FFmpegLocation = Settings.General.FfmpegPath;
         Configuration.Settings.General.UseDarkTheme = Settings.General.Theme == "Dark";
+        Configuration.Settings.General.UseTimeFormatHHMMSSFF = Settings.General.UseTimeFormatHhMmSsFf;
 
         var tts = Settings.Tools.AudioToText;
         Configuration.Settings.Tools.WhisperChoice = tts.WhisperChoice;

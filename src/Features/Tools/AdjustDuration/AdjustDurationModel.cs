@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic.Config;
 using System.Collections.ObjectModel;
+using System.Timers;
+using SubtitleAlchemist.Features.Main;
 
 namespace SubtitleAlchemist.Features.Tools.AdjustDuration;
 
@@ -14,7 +16,10 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
     internal const string ModeRecalculate = "recalc";
 
     [ObservableProperty]
-    private decimal _adjustSeconds;
+    private ObservableCollection<DisplayParagraph> _paragraphs = new();
+
+    [ObservableProperty]
+    private TimeSpan _adjustSeconds;
 
     [ObservableProperty]
     private ObservableCollection<string> _adjustViaItems;
@@ -43,6 +48,9 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private bool _doNotExtendPastShotChanges;
 
+    [ObservableProperty]
+    private string _previewInfo = string.Empty;
+
     public AdjustDurationPage? Page { get; set; }
     public View ViewAdjustViaSeconds { get; set; }
     public View ViewAdjustViaPercent { get; set; }
@@ -52,6 +60,8 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
     private Subtitle _subtitle = new();
     private List<int> _selectedIndices = new();
     private List<double> _shotChanges = new();
+    private readonly System.Timers.Timer _previewTimer;
+    private int _previewLastHash = -1;
 
     public AdjustDurationModel()
     {
@@ -69,13 +79,85 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
         ViewAdjustViaPercent = new BoxView();
         ViewAdjustViaFixed = new BoxView();
         ViewAdjustRecalculate = new BoxView();
+
+        _previewTimer = new System.Timers.Timer(1000);
+        _previewTimer.Elapsed += PreviewTimerElapsed;
+    }
+
+    private void PreviewTimerElapsed(object? sender, ElapsedEventArgs e)
+    {
+        _previewTimer.Stop();
+
+        var subtitle = new Subtitle(_subtitle, false);
+        var idx = AdjustViaItems.IndexOf(SelectedAdjustViaItem);
+        switch (idx)
+        {
+            case 0: // seconds
+                subtitle.AdjustDisplayTimeUsingSeconds(AdjustSeconds.TotalSeconds, null, _shotChanges, EnforceDurationLimits);
+                UpdateParagraphs(subtitle);
+                break;
+            case 1: // percent
+                subtitle.AdjustDisplayTimeUsingPercent(AdjustPercentage, null, _shotChanges, EnforceDurationLimits);
+                UpdateParagraphs(subtitle);
+                break;
+            case 2: // fixed
+                subtitle.SetFixedDuration(null, (double)AdjustFixedValue, _shotChanges);
+                UpdateParagraphs(subtitle);
+                break;
+            case 3: // recalculate
+                subtitle.RecalculateDisplayTimes(
+                    (double)AdjustRecalculateMaximumCharacters,
+                    _selectedIndices,
+                    (double)AdjustRecalculateOptimalCharacters,
+                    AdjustRecalculateExtendOnly,
+                    _shotChanges);
+                UpdateParagraphs(subtitle);
+                break;
+        }
+
+        _previewTimer.Start();
+    }
+
+    private void UpdateParagraphs(Subtitle subtitle)
+    {
+        if (Paragraphs.Count != subtitle.Paragraphs.Count)
+        {
+            Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+        }
+        else
+        {
+            var hash = subtitle.GetFastHashCode(string.Empty);
+            if (_previewLastHash == hash)
+            {
+                return; // no changes
+            }
+
+            double totalDurationMs = 0;
+            double originalTotalDurationMs = 0;
+            Page?.BatchBegin();
+            for (var i = 0; i < subtitle.Paragraphs.Count; i++)
+            {
+                Paragraphs[i].End = subtitle.Paragraphs[i].EndTime.TimeSpan;
+                Paragraphs[i].Duration = subtitle.Paragraphs[i].Duration.TimeSpan;
+                totalDurationMs += subtitle.Paragraphs[i].Duration.TotalMilliseconds;
+                originalTotalDurationMs += _subtitle.Paragraphs[i].Duration.TotalMilliseconds;
+            }
+            Page?.BatchCommit();
+
+            _previewLastHash = hash;
+
+            var averageDurationMs = totalDurationMs / subtitle.Paragraphs.Count;
+            var originalAverageDurationMs = originalTotalDurationMs / subtitle.Paragraphs.Count;
+            PreviewInfo = $"New average duration: {new TimeCode(averageDurationMs).ToShortDisplayString()}, old average duration: {new TimeCode(originalAverageDurationMs).ToShortDisplayString()}";
+        }
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query["Subtitle"] is Subtitle subtitle)
         {
-            _subtitle = subtitle;
+            _subtitle = new Subtitle(subtitle, false);
+            Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
         }
 
         if (query["SelectedIndexes"] is List<int> selectedIndices)
@@ -87,6 +169,8 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
         {
             _shotChanges = shotChanges;
         }
+
+        Page?.Initialize(_subtitle, this);
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
@@ -109,7 +193,7 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
                     SelectedAdjustViaItem = AdjustViaItems[3];
                 }
 
-                AdjustSeconds = Se.Settings.Tools.AdjustDurations.AdjustDurationSeconds;
+                AdjustSeconds = TimeSpan.FromSeconds(Se.Settings.Tools.AdjustDurations.AdjustDurationSeconds);
                 AdjustPercentage = Se.Settings.Tools.AdjustDurations.AdjustDurationPercent;
                 AdjustRecalculateExtendOnly = Se.Settings.Tools.AdjustDurations.AdjustDurationExtendOnly;
                 AdjustFixedValue = Se.Settings.Tools.AdjustDurations.AdjustDurationFixed;
@@ -117,6 +201,8 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
                 AdjustRecalculateOptimalCharacters = Se.Settings.Tools.AdjustDurations.AdjustDurationOptimalCps;
                 EnforceDurationLimits = Se.Settings.Tools.AdjustDurations.AdjustDurationExtendEnforceDurationLimits;
                 DoNotExtendPastShotChanges = Se.Settings.Tools.AdjustDurations.AdjustDurationExtendCheckShotChanges;
+
+                _previewTimer.Start();
             });
             return false;
         });
@@ -125,7 +211,7 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task Ok()
     {
-        Se.Settings.Tools.AdjustDurations.AdjustDurationSeconds = AdjustSeconds;
+        Se.Settings.Tools.AdjustDurations.AdjustDurationSeconds = AdjustSeconds.TotalSeconds;
         Se.Settings.Tools.AdjustDurations.AdjustDurationPercent = AdjustPercentage;
         Se.Settings.Tools.AdjustDurations.AdjustDurationFixed = AdjustFixedValue;
         Se.Settings.Tools.AdjustDurations.AdjustDurationMaximumCps = AdjustRecalculateMaximumCharacters;
@@ -140,7 +226,7 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
         if (SelectedAdjustViaItem == AdjustViaItems[0])
         {
             Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModeSeconds;
-            subtitle.AdjustDisplayTimeUsingSeconds((double)AdjustSeconds, _selectedIndices, _shotChanges, EnforceDurationLimits);
+            subtitle.AdjustDisplayTimeUsingSeconds(AdjustSeconds.TotalSeconds, _selectedIndices, _shotChanges, EnforceDurationLimits);
             info = "Subtitle durations adjusted by " + AdjustSeconds + " seconds.";
         }
         else if (SelectedAdjustViaItem == AdjustViaItems[1])

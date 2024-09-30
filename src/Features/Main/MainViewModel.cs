@@ -207,9 +207,10 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             if (query["SubtitleFileName"] is string subtitleFileName && !string.IsNullOrWhiteSpace(subtitleFileName))
             {
-                MakeHistoryForUndo($"Before restore auto-backup");
-                _subtitleFileName = subtitleFileName;
+                MakeHistoryForUndo("Before restore auto-backup");
                 SubtitleOpen(subtitleFileName, null);
+                _subtitleFileName = string.Empty;
+                SetTitle(_subtitleFileName);
             }
         }
 
@@ -1085,7 +1086,14 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     {
         if (Window != null)
         {
-            Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
+            if (string.IsNullOrEmpty(subtitleFileName))
+            {
+                Window.Title = "Untitled - Subtitle Alchemist";
+            }
+            else
+            {
+                Window.Title = $"{subtitleFileName} - Subtitle Alchemist";
+            }
         }
     }
 
