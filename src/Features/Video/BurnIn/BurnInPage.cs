@@ -1,5 +1,7 @@
+using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Shapes;
 using Nikse.SubtitleEdit.Core.Common;
-using SubtitleAlchemist.Features.Tools.AdjustDuration;
+using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 
@@ -18,19 +20,16 @@ public class BurnInPage : ContentPage
         {
             RowDefinitions =
             {
-                new RowDefinition { Height = GridLength.Auto }, 
+                new RowDefinition { Height = GridLength.Auto },  // title
                 new RowDefinition { Height = GridLength.Auto }, 
                 new RowDefinition { Height = GridLength.Auto }, 
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Star }, // Subtitle list
             },
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star },
             },
             Margin = new Thickness(2),
             Padding = new Thickness(30, 20, 30, 10),
@@ -42,10 +41,23 @@ public class BurnInPage : ContentPage
         _grid = pageGrid;
 
 
-        var topBar = MakeTopBar(vm);
-        pageGrid.Add(topBar, 0);
+        var labelTitle = new Label
+        {
+            Text = Se.Language.BurnIn.Title,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 25),
+            FontSize = 18,
+        }.BindDynamicThemeTextColorOnly();
+        pageGrid.Add(labelTitle, 0);
+        pageGrid.SetColumnSpan(labelTitle, 3);
 
-      
+        pageGrid.Add(MakeTextPropertiesView(vm), 0, 1);
+        pageGrid.Add(MakeVideoPropertiesView(vm), 0, 2);
+        pageGrid.Add(MakeCutPropertiesView(vm), 1, 1);
+        pageGrid.Add(MakeAudioPropertiesView(vm), 1, 2);
+        pageGrid.Add(MakeTargetFilePropertiesView(vm), 0, 3);
+        pageGrid.Add(MakeVideoPlayerView(vm), 1, 3);
 
         var buttonOk = new Button
         {
@@ -78,7 +90,7 @@ public class BurnInPage : ContentPage
             },
         }.BindDynamicTheme();
 
-        pageGrid.Add(okCancelBar, 0, 5);
+        pageGrid.Add(okCancelBar, 0, 4);
 
         Content = pageGrid;
 
@@ -87,58 +99,761 @@ public class BurnInPage : ContentPage
         vm.Page = this;
     }
 
+    private IView MakeTextPropertiesView(BurnInPageModel vm)
+    {
+        var stack = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+        };
+
+        var textWidth = 200;
+
+        
+        var fontSizeLabel = new Label
+        {
+            Text = "Font Size",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+        }.BindDynamicThemeTextColorOnly();
+        var fontSizeEntry = new Entry
+        {
+            Text = "20",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+            Keyboard = Keyboard.Numeric,
+        }.BindDynamicTheme();
+
+        var stackFontSize = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                fontSizeLabel,
+                fontSizeEntry,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackFontSize);
+
+        var labelFontBold = new Label
+        {
+            Text = "Font bold",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+        }.BindDynamicThemeTextColorOnly();
+        var fontBoldSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        var stackFontBold = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelFontBold,
+                fontBoldSwitch,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackFontBold);
+
+        var labelTextColor = new Label
+        {
+            Text = "Text Color",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+        }.BindDynamicThemeTextColorOnly();
+        var textColorEntry = new Entry
+        {
+            Text = "White",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+        }.BindDynamicTheme();
+        var stackTextColor = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelTextColor,
+                textColorEntry,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackTextColor);
+
+        var border = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(15),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = stack,
+        }.BindDynamicTheme();
+
+        return border;
+    }
+
+    private IView MakeVideoPropertiesView(BurnInPageModel vm)
+    {
+        var stack = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+        };
+
+        var textWidth = 200;
+
+
+        var labelResolution = new Label
+        {
+            Text = "Resolution",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var entryWidth = new Entry
+        {
+            Text = "1920",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+            Keyboard = Keyboard.Numeric,
+        }.BindDynamicTheme();
+        var labelX = new Label
+        {
+            Text = "x",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+        }.BindDynamicThemeTextColorOnly();
+        var entryHeight = new Entry
+        {
+            Text = "1080",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+            Keyboard = Keyboard.Numeric,
+        }.BindDynamicTheme();
+        var buttonResolution = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            //Command = vm.GetResolutionCommand,
+        }.BindDynamicTheme();
+
+        var stackResolution = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelResolution,
+                entryWidth,
+                labelX,
+                entryHeight,
+                buttonResolution,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackResolution);
+
+        var labelEncoding = new Label
+        {
+            Text = "Encoding",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var pickerEncoding = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+        }.BindDynamicTheme();
+
+        var stackEncoding = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelEncoding,
+                pickerEncoding,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackEncoding);
+
+        var labelPixelFormat = new Label()
+        {
+            Text = "Pixel Format",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var pickerPixelFormat = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+        }.BindDynamicTheme();
+        var stackPixelFormat = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelPixelFormat,
+                pickerPixelFormat,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackPixelFormat);
+        
+
+        var labelPreset = new Label
+        {
+            Text = "Preset",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var pickerPreset = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+        }.BindDynamicTheme();
+        var stackPreset = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelPreset,
+                pickerPreset,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackPreset);
+
+        var labelCrf = new Label
+        {
+            Text = "CRF",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var pickerCrf = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+        }.BindDynamicTheme();
+        var stackCrf = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelCrf,
+                pickerCrf,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackCrf);
+
+
+        var labelTuneFor = new Label
+        {
+            Text = "Tune For",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var pickerTuneFor = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+        }.BindDynamicTheme();
+        var stackTuneFor = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelTuneFor,
+                pickerTuneFor,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackTuneFor);
+
+
+        var border = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(15),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = stack,
+        }.BindDynamicTheme();
+
+        return border;
+    }
+
+    private IView MakeCutPropertiesView(BurnInPageModel vm)
+    {
+        var stack = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+        };
+
+        var textWidth = 200;
+
+
+        var labelCutEnabled = new Label
+        {
+            Text = "Cut",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+        }.BindDynamicThemeTextColorOnly();
+        var cutSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        var stackCutEnabled = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelCutEnabled,
+                cutSwitch,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackCutEnabled);
+
+        var labelFromTime = new Label
+        {
+            Text = "From Time",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var subTimeUpDown = new SubTimeUpDown()
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+        }.BindDynamicTheme();
+        var stackFromTime = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelFromTime,
+                subTimeUpDown,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackFromTime);
+
+        var labelToTime = new Label
+        {
+            Text = "To Time",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var subTimeUpDownTo = new SubTimeUpDown()
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+        }.BindDynamicTheme();
+        var stackToTime = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelToTime,
+                subTimeUpDownTo,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackToTime);
+        
+
+        var border = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(15),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = stack,
+        }.BindDynamicTheme();
+
+        return border;
+    }
+
+    private IView MakeAudioPropertiesView(BurnInPageModel vm)
+    {
+        var stack = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+        };
+
+        var textWidth = 200;
+
+
+       var labelEncoding = new Label
+       {
+           Text = "Encoding",
+           HorizontalOptions = LayoutOptions.Start,
+           VerticalOptions = LayoutOptions.Center,
+           Margin = new Thickness(0, 0, 0, 0),
+           FontSize = 16,
+           WidthRequest = textWidth,
+       }.BindDynamicThemeTextColorOnly();
+        var pickerEncoding = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+        }.BindDynamicTheme();
+        var stackPicker = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelEncoding,
+                pickerEncoding,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackPicker);
+
+
+        var labelStereo = new Label
+        {
+            Text = "Stereo",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var switchStereo = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        var stackStereo = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelStereo,
+                switchStereo,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackStereo);
+
+
+        var labelSampleRate = new Label
+        {
+            Text = "Sample Rate",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var pickerSampleRate = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+        }.BindDynamicTheme();
+        var stackSampleRate = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelSampleRate,
+                pickerSampleRate,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackSampleRate);
+
+        var labelBitRate = new Label
+        {
+            Text = "Bit Rate",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var pickerBitRate = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+        }.BindDynamicTheme();
+        var stackBitRate = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelBitRate,
+                pickerBitRate,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackBitRate);
+
+
+        var border = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(15),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = stack,
+        }.BindDynamicTheme();
+
+        return border;
+    }
+
+    private IView MakeTargetFilePropertiesView(BurnInPageModel vm)
+    {
+        var stack = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+        };
+
+        var textWidth = 200;
+
+
+        var labelTargetFileSize = new Label
+        {
+            Text = "Target File Size (requires 2 pass encoding)",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var switchTargetFileSize = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        var stackTargetFileSize = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelTargetFileSize,
+                switchTargetFileSize,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackTargetFileSize);
+
+        var labelTargetFileSizeValue = new Label
+        {
+            Text = "File size (MB)",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var entryTargetFileSizeValue = new Entry
+        {
+            Text = "100",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = textWidth,
+            Keyboard = Keyboard.Numeric,
+        }.BindDynamicTheme();
+        var stackTargetFileSizeValue = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelTargetFileSizeValue,
+                entryTargetFileSizeValue,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackTargetFileSizeValue);
+
+
+        var border = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(15),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = stack,
+        }.BindDynamicTheme();
+
+        return border;
+    }
+
+    private IView MakeVideoPlayerView(BurnInPageModel vm)
+    {
+        vm.VideoPlayer = new MediaElement { ZIndex = -10000 };
+
+        var border = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(15),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = vm.VideoPlayer,
+        }.BindDynamicTheme();
+
+        return border;
+    }
+
     public void Initialize(Subtitle subtitle, BurnInPageModel vm)
     {
 
-    }
-
-    private static View MakeTopBar(BurnInPageModel vm)
-    {
-        var topBar = new Grid
-        {
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Star },
-                new RowDefinition { Height = GridLength.Star },
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Star }, // Title
-                new ColumnDefinition { Width = GridLength.Star }, // Adjust via
-            },
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 10),
-        }.BindDynamicTheme();
-
-        var labelTitle = new Label
-        {
-            Text = Se.Language.AdjustDurations.Title,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 0, 25),
-            FontSize = 18,
-        }.BindDynamicThemeTextColorOnly();
-        topBar.Add(labelTitle, 0);
-        topBar.SetColumnSpan(labelTitle, 2);
-
-        var labelAdjustVia = new Label
-        {
-            Text = Se.Language.AdjustDurations.AdjustVia,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicThemeTextColorOnly();
-        topBar.Add(labelAdjustVia, 0, 1);
-
-        var pickerAdjustVia = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme();
-        pickerAdjustVia.SetBinding(Picker.ItemsSourceProperty, nameof(vm.AdjustViaItems));
-        pickerAdjustVia.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedAdjustViaItem));
-        topBar.Add(pickerAdjustVia, 1, 1);
-
-        return topBar;
     }
 }

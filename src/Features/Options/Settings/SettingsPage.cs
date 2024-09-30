@@ -259,7 +259,7 @@ public class SettingsPage : ContentPage
     {
         var textWidth = 200;
 
-        vm.AllSettings.Add(new SettingItem("Tools", SectionName.Toolbar));
+        vm.AllSettings.Add(new SettingItem("Toolbar", SectionName.Toolbar));
 
         var switchFileNew = new Switch
         {

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
@@ -49,6 +50,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public View ViewAdjustViaPercent { get; set; }
     public View ViewAdjustViaFixed { get; set; }
     public View ViewAdjustRecalculate { get; set; }
+    public MediaElement VideoPlayer { get; set; }
 
     private Subtitle _subtitle = new();
     private List<int> _selectedIndices = new();
@@ -85,16 +87,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             _subtitle = new Subtitle(subtitle, false);
         }
 
-        if (query["SelectedIndexes"] is List<int> selectedIndices)
-        {
-            _selectedIndices = selectedIndices;
-        }
-
-        if (query["ShotChanges"] is List<double> shotChanges)
-        {
-            _shotChanges = shotChanges;
-        }
-
+       
      //   Page?.Initialize(_subtitle, this);
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>

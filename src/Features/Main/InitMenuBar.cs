@@ -278,6 +278,7 @@ internal static class InitMenuBar
         menu.Add(new MenuFlyoutItem
         {
             Text = "Text to speech and add to video...",
+            Command = vm.VideoSpeechToTextCommand,
         });
 
         return menu;

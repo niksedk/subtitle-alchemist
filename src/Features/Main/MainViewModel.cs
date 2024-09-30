@@ -41,6 +41,7 @@ using SubtitleAlchemist.Features.Video.OpenFromUrl;
 using SubtitleAlchemist.Features.Sync.ChangeFrameRate;
 using SubtitleAlchemist.Features.Sync.ChangeSpeed;
 using SubtitleAlchemist.Features.Video.BurnIn;
+using SubtitleAlchemist.Features.Video.TextToSpeech;
 using SpellCheckDictionary = SubtitleAlchemist.Features.SpellCheck.SpellCheckDictionary;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -1509,6 +1510,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         await Shell.Current.GoToAsync(nameof(AudioToTextWhisperPage), new Dictionary<string, object>
         {
             { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
+            { "SubtitleFileName", _subtitleFileName },
             { "VideoFileName", _videoFileName },
         });
     }
@@ -1525,6 +1528,26 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         await Shell.Current.GoToAsync(nameof(BurnInPage), new Dictionary<string, object>
         {
             { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
+            { "SubtitleFileName", _subtitleFileName },
+            { "VideoFileName", _videoFileName },
+        });
+    }
+
+    [RelayCommand]
+    private async Task VideoSpeechToText()
+    {
+        var ffmpegOk = await RequireFfmpegOk();
+        if (!ffmpegOk)
+        {
+            return;
+        }
+
+        await Shell.Current.GoToAsync(nameof(TextToSpeechPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
+            { "SubtitleFileName", _subtitleFileName },
             { "VideoFileName", _videoFileName },
         });
     }

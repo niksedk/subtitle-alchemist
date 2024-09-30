@@ -6,4 +6,5 @@ public class SeLanguage
     public LanguageAdjustDisplayDurations AdjustDurations { get; set; } = new();
     public LanguageSettings Settings { get; set; } = new();
     public LanguageEbuSaveOptions EbuSaveOptions { get; set; } = new();
+    public LanguageBurnIn BurnIn { get; set; } = new();
 }

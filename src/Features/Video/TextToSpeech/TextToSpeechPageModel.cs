@@ -86,16 +86,6 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             _subtitle = new Subtitle(subtitle, false);
         }
 
-        if (query["SelectedIndexes"] is List<int> selectedIndices)
-        {
-            _selectedIndices = selectedIndices;
-        }
-
-        if (query["ShotChanges"] is List<double> shotChanges)
-        {
-            _shotChanges = shotChanges;
-        }
-
      //   Page?.Initialize(_subtitle, this);
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
