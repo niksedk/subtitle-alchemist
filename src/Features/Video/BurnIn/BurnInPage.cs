@@ -9,8 +9,6 @@ namespace SubtitleAlchemist.Features.Video.BurnIn;
 
 public class BurnInPage : ContentPage
 {
-    private readonly Grid _grid;
-
     public BurnInPage(BurnInPageModel vm)
     {
         BindingContext = vm;
@@ -38,8 +36,6 @@ public class BurnInPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
-        _grid = pageGrid;
-
 
         var labelTitle = new Label
         {
@@ -92,14 +88,21 @@ public class BurnInPage : ContentPage
 
         pageGrid.Add(okCancelBar, 0, 4);
 
-        Content = pageGrid;
+        var scrollView = new ScrollView
+        {
+            Content = pageGrid,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        }.BindDynamicTheme();
+
+        Content = scrollView;
 
         this.BindDynamicTheme();
 
         vm.Page = this;
     }
 
-    private IView MakeTextPropertiesView(BurnInPageModel vm)
+    private static IView MakeTextPropertiesView(BurnInPageModel vm)
     {
         var stack = new StackLayout
         {
@@ -110,8 +113,8 @@ public class BurnInPage : ContentPage
             Spacing = 5,
         };
 
-        var textWidth = 200;
-
+        var textWidth = 150;
+        var controlWidth = 200;
         
         var fontSizeLabel = new Label
         {
@@ -120,15 +123,17 @@ public class BurnInPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
             FontSize = 16,
+            WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
-        var fontSizeEntry = new Entry
+        var entryFontSize = new Entry
         {
-            Text = "20",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = textWidth,
+            WidthRequest = controlWidth,
             Keyboard = Keyboard.Numeric,
+            MaxLength = 4,
         }.BindDynamicTheme();
+        entryFontSize.SetBinding(Entry.TextProperty, nameof(vm.SelectedFontSize));
 
         var stackFontSize = new StackLayout
         {
@@ -140,7 +145,7 @@ public class BurnInPage : ContentPage
             Children =
             {
                 fontSizeLabel,
-                fontSizeEntry,
+                entryFontSize,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackFontSize);
@@ -151,13 +156,14 @@ public class BurnInPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
-            FontSize = 16,
+            WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
-        var fontBoldSwitch = new Switch
+        var switchFontBold = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
+        switchFontBold.SetBinding(Switch.IsToggledProperty, nameof(vm.FontIsBold));
         var stackFontBold = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -168,7 +174,7 @@ public class BurnInPage : ContentPage
             Children =
             {
                 labelFontBold,
-                fontBoldSwitch,
+                switchFontBold,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackFontBold);
@@ -179,15 +185,19 @@ public class BurnInPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
-            FontSize = 16,
-        }.BindDynamicThemeTextColorOnly();
-        var textColorEntry = new Entry
-        {
-            Text = "White",
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
             WidthRequest = textWidth,
-        }.BindDynamicTheme();
+        }.BindDynamicThemeTextColorOnly();
+        var boxViewTextColor = new BoxView
+        {
+            WidthRequest = 25,
+            HeightRequest = 25,
+            Color = Colors.Red,
+        };
+        boxViewTextColor.SetBinding(BoxView.ColorProperty, nameof(vm.FontTextColor));
+        var tapGestureRecognizerTextColor = new TapGestureRecognizer();
+        tapGestureRecognizerTextColor.Tapped += vm.FontTextColorTapped;
+        boxViewTextColor.GestureRecognizers.Add(tapGestureRecognizerTextColor);
+
         var stackTextColor = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -198,7 +208,7 @@ public class BurnInPage : ContentPage
             Children =
             {
                 labelTextColor,
-                textColorEntry,
+                boxViewTextColor,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackTextColor);
@@ -220,7 +230,7 @@ public class BurnInPage : ContentPage
         return border;
     }
 
-    private IView MakeVideoPropertiesView(BurnInPageModel vm)
+    private static IView MakeVideoPropertiesView(BurnInPageModel vm)
     {
         var stack = new StackLayout
         {
@@ -231,7 +241,8 @@ public class BurnInPage : ContentPage
             Spacing = 5,
         };
 
-        var textWidth = 200;
+        var textWidth = 175;
+        var controlWidth = 300;
 
 
         var labelResolution = new Label
@@ -248,7 +259,7 @@ public class BurnInPage : ContentPage
             Text = "1920",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = textWidth,
+            WidthRequest = 75,
             Keyboard = Keyboard.Numeric,
         }.BindDynamicTheme();
         var labelX = new Label
@@ -264,7 +275,7 @@ public class BurnInPage : ContentPage
             Text = "1080",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = textWidth,
+            WidthRequest = 75,
             Keyboard = Keyboard.Numeric,
         }.BindDynamicTheme();
         var buttonResolution = new Button
@@ -307,8 +318,11 @@ public class BurnInPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = textWidth,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
+        pickerEncoding.SetBinding(Picker.ItemsSourceProperty, nameof(vm.VideoEncodings));
+        pickerEncoding.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedVideoEncoding));
+        pickerEncoding.SelectedIndexChanged += vm.VideoEncodingChanged;
 
         var stackEncoding = new StackLayout
         {
@@ -325,52 +339,23 @@ public class BurnInPage : ContentPage
         }.BindDynamicTheme();
         stack.Children.Add(stackEncoding);
 
-        var labelPixelFormat = new Label()
-        {
-            Text = "Pixel Format",
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 0, 0),
-            FontSize = 16,
-            WidthRequest = textWidth,
-        }.BindDynamicThemeTextColorOnly();
-        var pickerPixelFormat = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            WidthRequest = textWidth,
-        }.BindDynamicTheme();
-        var stackPixelFormat = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Margin = new Thickness(0, 0, 0, 0),
-            Spacing = 5,
-            Children =
-            {
-                labelPixelFormat,
-                pickerPixelFormat,
-            },
-        }.BindDynamicTheme();
-        stack.Children.Add(stackPixelFormat);
-        
-
         var labelPreset = new Label
         {
-            Text = "Preset",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
             FontSize = 16,
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
+        labelPreset.SetBinding(Label.TextProperty, nameof(vm.VideoPresetText));
         var pickerPreset = new Picker
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = textWidth,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
+        pickerPreset.SetBinding(Picker.ItemsSourceProperty, nameof(vm.VideoPresets));
+        pickerPreset.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedVideoPreset));
         var stackPreset = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -388,19 +373,29 @@ public class BurnInPage : ContentPage
 
         var labelCrf = new Label
         {
-            Text = "CRF",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
             FontSize = 16,
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
+        labelCrf.SetBinding(Label.TextProperty, nameof(vm.VideoCrfText));
         var pickerCrf = new Picker
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = textWidth,
+            WidthRequest = 100,
         }.BindDynamicTheme();
+        pickerCrf.SetBinding(Picker.ItemsSourceProperty, nameof(vm.VideoCrf));
+        pickerCrf.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedVideoCrf));
+        var labelCrfHint = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 10,
+        }.BindDynamicThemeTextColorOnly();
+        labelCrfHint.SetBinding(Label.TextProperty, nameof(vm.VideoCrfHint));
         var stackCrf = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -412,9 +407,42 @@ public class BurnInPage : ContentPage
             {
                 labelCrf,
                 pickerCrf,
+                labelCrfHint,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackCrf);
+
+
+        var labelPixelFormat = new Label
+        {
+            Text = "Pixel Format",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var pickerPixelFormat = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerPixelFormat.SetBinding(Picker.ItemsSourceProperty, nameof(vm.VideoPixelFormats));
+        var stackPixelFormat = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelPixelFormat,
+                pickerPixelFormat,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackPixelFormat);
 
 
         var labelTuneFor = new Label
@@ -430,8 +458,10 @@ public class BurnInPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = textWidth,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
+        pickerTuneFor.SetBinding(Picker.ItemsSourceProperty, nameof(vm.VideoTuneFor));
+        pickerTuneFor.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedVideoTuneFor));
         var stackTuneFor = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -465,7 +495,7 @@ public class BurnInPage : ContentPage
         return border;
     }
 
-    private IView MakeCutPropertiesView(BurnInPageModel vm)
+    private static IView MakeCutPropertiesView(BurnInPageModel vm)
     {
         var stack = new StackLayout
         {
@@ -585,7 +615,7 @@ public class BurnInPage : ContentPage
         return border;
     }
 
-    private IView MakeAudioPropertiesView(BurnInPageModel vm)
+    private static IView MakeAudioPropertiesView(BurnInPageModel vm)
     {
         var stack = new StackLayout
         {
@@ -598,8 +628,7 @@ public class BurnInPage : ContentPage
 
         var textWidth = 200;
 
-
-       var labelEncoding = new Label
+        var labelEncoding = new Label
        {
            Text = "Encoding",
            HorizontalOptions = LayoutOptions.Start,
@@ -614,6 +643,8 @@ public class BurnInPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = textWidth,
         }.BindDynamicTheme();
+        pickerEncoding.SetBinding(Picker.ItemsSourceProperty, nameof(vm.AudioEncodings));
+        pickerEncoding.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedAudioEncoding));
         var stackPicker = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -644,6 +675,7 @@ public class BurnInPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
+        switchStereo.SetBinding(Switch.IsToggledProperty, nameof(vm.AudioIsStereo));
         var stackStereo = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -675,6 +707,8 @@ public class BurnInPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = textWidth,
         }.BindDynamicTheme();
+        pickerSampleRate.SetBinding(Picker.ItemsSourceProperty, nameof(vm.AudioSampleRates));
+        pickerSampleRate.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedAudioSampleRate));
         var stackSampleRate = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -705,6 +739,8 @@ public class BurnInPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = textWidth,
         }.BindDynamicTheme();
+        pickerBitRate.SetBinding(Picker.ItemsSourceProperty, nameof(vm.AudioBitRates));
+        pickerBitRate.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedAudioBitRate));
         var stackBitRate = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,

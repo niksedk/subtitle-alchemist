@@ -35,7 +35,7 @@ public class LanguageBurnIn
 
     public LanguageBurnIn()
     {
-        Title = "Generate video with burned-in subtitle";
+        Title = "Generate video with burned-in subtitles";
         InfoAssaOff = "Note: Advanced SubStation Alpha styling supported.";
         InfoAssaOn = "Note: Advanced SubStation Alpha styling will be used :)";
         XGeneratedWithBurnedInSubsInX = "\"{0}\" generated with burned-in subtitle in {1}.";

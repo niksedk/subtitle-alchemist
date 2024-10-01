@@ -272,7 +272,7 @@ internal static class InitMenuBar
         });
         menu.Add(new MenuFlyoutItem
         {
-            Text = "Generate video with burned-in subtitles",
+            Text = "Generate video with burned-in subtitles...",
             Command = vm.VideoBurnInCommand,
         });
         menu.Add(new MenuFlyoutItem

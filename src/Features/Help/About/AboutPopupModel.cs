@@ -25,29 +25,29 @@ namespace SubtitleAlchemist.Features.Help.About
             LabelSourceCodeLink.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
         }
 
-        public void SourceLinkMouseExitedPoweredBy(object? sender, PointerEventArgs e)
+        public void SourceLinkMouseExited(object? sender, PointerEventArgs e)
         {
             LabelSourceCodeLink.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
         }
 
-        public void SourceLinkMouseClickedPoweredBy(object? sender, TappedEventArgs e)
+        public void SourceLinkMouseClicked(object? sender, TappedEventArgs e)
         {
             UiUtil.OpenUrl("https://github.com/niksedk/subtitle-alchemist");
         }
 
-        public void DonateLinkMouseEnteredPoweredBy(object? sender, PointerEventArgs e)
+        public void DonateLinkMouseEntered(object? sender, PointerEventArgs e)
         {
             LabelDonateLink.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
         }
 
-        public void DonateLinkMouseExitedPoweredBy(object? sender, PointerEventArgs e)
+        public void DonateLinkMouseExited(object? sender, PointerEventArgs e)
         {
             LabelDonateLink.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
         }
 
-        public void DonateLinkMouseClickedPoweredBy(object? sender, TappedEventArgs e)
+        public void DonateLinkMouseClicked(object? sender, TappedEventArgs e)
         {
-            UiUtil.OpenUrl("https://www.paypal.com/donate?hosted_button_id=4XEHVLANCQBCU");
+            UiUtil.OpenUrl("https://github.com/sponsors/niksedk?frequency=one-time");
         }
     }
 }

@@ -131,19 +131,19 @@ public sealed class AboutPopup : Popup
 
         var pointerGesture = new PointerGestureRecognizer();
         pointerGesture.PointerEntered += vm.SourceLinkMouseEnteredPoweredBy;
-        pointerGesture.PointerExited += vm.SourceLinkMouseExitedPoweredBy;
+        pointerGesture.PointerExited += vm.SourceLinkMouseExited;
         labelSourceCodeLink.GestureRecognizers.Add(pointerGesture);
         var tapGesture = new TapGestureRecognizer();
-        tapGesture.Tapped += vm.SourceLinkMouseClickedPoweredBy;
+        tapGesture.Tapped += vm.SourceLinkMouseClicked;
         labelSourceCodeLink.GestureRecognizers.Add(tapGesture);
         vm.LabelSourceCodeLink = labelSourceCodeLink;
 
         var pointerGestureDonate = new PointerGestureRecognizer();
-        pointerGestureDonate.PointerEntered += vm.DonateLinkMouseEnteredPoweredBy;
-        pointerGestureDonate.PointerExited += vm.DonateLinkMouseExitedPoweredBy;
+        pointerGestureDonate.PointerEntered += vm.DonateLinkMouseEntered;
+        pointerGestureDonate.PointerExited += vm.DonateLinkMouseExited;
         labelDonateLink.GestureRecognizers.Add(pointerGestureDonate);
         var tapGestureDonate = new TapGestureRecognizer();
-        tapGestureDonate.Tapped += vm.DonateLinkMouseClickedPoweredBy;
+        tapGestureDonate.Tapped += vm.DonateLinkMouseClicked;
         labelDonateLink.GestureRecognizers.Add(tapGestureDonate);
         vm.LabelDonateLink = labelDonateLink;
 
