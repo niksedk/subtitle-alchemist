@@ -22,7 +22,8 @@ public class BurnInPage : ContentPage
                 new RowDefinition { Height = GridLength.Auto }, 
                 new RowDefinition { Height = GridLength.Auto }, 
                 new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto }, // help link
+                new RowDefinition { Height = GridLength.Auto }, // buttons
             },
             ColumnDefinitions =
             {
@@ -55,6 +56,36 @@ public class BurnInPage : ContentPage
         pageGrid.Add(MakeTargetFilePropertiesView(vm), 0, 3);
         pageGrid.Add(MakeVideoPlayerView(vm), 1, 3);
 
+        var labelHelp = new Label
+        {
+            Text = "Help",
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            TextDecorations = TextDecorations.Underline,
+        }.BindDynamicThemeTextColorOnly();
+        var tapGestureRecognizerHelp = new TapGestureRecognizer();
+        tapGestureRecognizerHelp.Tapped += vm.HelpTapped;
+        labelHelp.GestureRecognizers.Add(tapGestureRecognizerHelp);
+        var pointerGestureHelp = new PointerGestureRecognizer();
+        pointerGestureHelp.PointerEntered += vm.LabelHelpMouseEntered;
+        pointerGestureHelp.PointerExited += vm.LabelHelpMouseExited;
+        labelHelp.GestureRecognizers.Add(pointerGestureHelp);
+        vm.LabelHelp = labelHelp;
+
+        pageGrid.Add(labelHelp, 0, 4);
+        pageGrid.SetColumnSpan(labelHelp, 2);
+
+        var buttonGenerate = new Button
+        {
+            Text = "Generate",
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 15, 10),
+            Command = vm.GenerateCommand,
+        }.BindDynamicTheme();
+
         var buttonOk = new Button
         {
             Text = "Ok",
@@ -73,7 +104,7 @@ public class BurnInPage : ContentPage
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
 
-        var okCancelBar = new StackLayout
+        var buttonBar = new StackLayout
         {
             Margin = new Thickness(0, 25, 0, 0),
             Orientation = StackOrientation.Horizontal,
@@ -81,12 +112,13 @@ public class BurnInPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
             Children =
             {
+                buttonGenerate,
                 buttonOk,
                 buttonCancel,
             },
         }.BindDynamicTheme();
 
-        pageGrid.Add(okCancelBar, 0, 4);
+        pageGrid.Add(buttonBar, 0, 5);
 
         var scrollView = new ScrollView
         {

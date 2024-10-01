@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Markup;
 using SubtitleAlchemist.Logic;
 
@@ -33,6 +34,7 @@ public class SettingsPage : ContentPage
         {
             RowDefinitions =
             {
+                new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Star },
             },
             ColumnDefinitions =
@@ -41,13 +43,27 @@ public class SettingsPage : ContentPage
                 new ColumnDefinition { Width = GridLength.Star }
             },
             Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
+            RowSpacing = 0,
+            ColumnSpacing = 5,
             HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+
+        var searchBar = new SearchBar
+        {
+            Placeholder = "Search text",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Fill,
+            WidthRequest = 400,
+        };
+        searchBar.SetBinding(Entry.TextProperty, nameof(vm.SearchText));
+        searchBar.SearchButtonPressed += vm.SearchButtonPressed;
+        searchBar.TextChanged += vm.SearchBarTextChanged;
+        grid.Add(searchBar, 1, 0);
 
         vm.LeftMenu = new VerticalStackLayout
         {
+            Margin = new Thickness(0,0,50,0),
             Children =
             {
                 MakeLeftMenuItem(vm, SectionName.General, "General"),
@@ -63,10 +79,10 @@ public class SettingsPage : ContentPage
             }
         };
 
-        grid.Add(vm.LeftMenu, 0, 0);
+        grid.Add(vm.LeftMenu, 0, 1);
 
         var settings = MakeSettingItems(vm);
-        grid.Add(settings, 1, 0);
+        grid.Add(settings, 1, 1);
 
         Content = grid;
     }
@@ -99,7 +115,7 @@ public class SettingsPage : ContentPage
         }.BindDynamicTheme();
 
         var tapGesture = new TapGestureRecognizer();
-        tapGesture.Tapped += async (sender, e) => await vm.LeftMenuTapped(sender, e, sectionName);
+        tapGesture.Tapped += (sender, e) => vm.LeftMenuTapped(sender, e, sectionName);
         label.GestureRecognizers.Add(tapGesture);
 
         return label;
@@ -166,12 +182,16 @@ public class SettingsPage : ContentPage
     {
         var collectionView = new CollectionView
         {
+            Margin = new Thickness(0, 0, 0, 0),
             ItemsLayout = new GridItemsLayout(1, ItemsLayoutOrientation.Vertical),
             SelectionMode = SelectionMode.None,
+            VerticalOptions = LayoutOptions.Start,
             ItemTemplate = new DataTemplate(() =>
             {
                 var contentView = new ContentView();
-                contentView.SetBinding(ContentView.ContentProperty, "WholeView");
+                contentView.Margin = new Thickness(0, 0, 0, 0);
+                contentView.Padding = new Thickness(0, 0, 0, 0);
+                contentView.SetBinding(ContentView.ContentProperty,  nameof(SettingItem.WholeView));
                 return contentView;
             }),
         }.BindDynamicTheme();

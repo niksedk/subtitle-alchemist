@@ -130,7 +130,7 @@ public sealed class AboutPopup : Popup
         }.BindDynamicTheme();
 
         var pointerGesture = new PointerGestureRecognizer();
-        pointerGesture.PointerEntered += vm.SourceLinkMouseEnteredPoweredBy;
+        pointerGesture.PointerEntered += vm.SourceLinkMouseEntered;
         pointerGesture.PointerExited += vm.SourceLinkMouseExited;
         labelSourceCodeLink.GestureRecognizers.Add(pointerGesture);
         var tapGesture = new TapGestureRecognizer();

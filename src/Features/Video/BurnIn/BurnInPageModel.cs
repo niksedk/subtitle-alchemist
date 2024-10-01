@@ -6,6 +6,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Controls.ColorPickerControl;
+using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Video.BurnIn;
 
@@ -151,6 +153,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
     public BurnInPage? Page { get; set; }
     public MediaElement VideoPlayer { get; set; }
+    public Label LabelHelp { get; set; }
 
     private Subtitle _subtitle = new();
     private readonly IPopupService _popupService;
@@ -237,6 +240,12 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             });
             return false;
         });
+    }
+
+    [RelayCommand]
+    private async Task Generate()
+    {
+
     }
 
     [RelayCommand]
@@ -537,5 +546,41 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             VideoCrf = new ObservableCollection<string>(items);
             SelectedVideoCrf = "23";
         }
+    }
+
+    public void HelpTapped(object? sender, TappedEventArgs e)
+    {
+        var codec = SelectedVideoEncoding.Codec;
+
+        if (codec == "libx265")
+        {
+            UiUtil.OpenUrl("http://trac.ffmpeg.org/wiki/Encode/H.265");
+        }
+        else if (codec == "libvpx-vp9")
+        {
+            UiUtil.OpenUrl("http://trac.ffmpeg.org/wiki/Encode/VP9");
+        }
+        else if (codec is "h264_nvenc" or "hevc_nvenc")
+        {
+            UiUtil.OpenUrl("https://trac.ffmpeg.org/wiki/HWAccelIntro");
+        }
+        else if (codec == "prores_ks")
+        {
+            UiUtil.OpenUrl("https://ottverse.com/ffmpeg-convert-to-apple-prores-422-4444-hq");
+        }
+        else
+        {
+            UiUtil.OpenUrl("http://trac.ffmpeg.org/wiki/Encode/H.264");
+        }
+    }
+
+    public void LabelHelpMouseEntered(object? sender, PointerEventArgs e)
+    {
+        LabelHelp.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
+    }
+
+    public void LabelHelpMouseExited(object? sender, PointerEventArgs e)
+    {
+        LabelHelp.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
     }
 }

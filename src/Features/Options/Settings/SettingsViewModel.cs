@@ -17,9 +17,6 @@ public partial class SettingsViewModel : ObservableObject
     public List<SettingItem> AllSettings { get; init; } = new();
 
     [ObservableProperty]
-    private ObservableCollection<SettingItem> _filteredSettings;
-
-    [ObservableProperty]
     private string _searchText;
 
     public VerticalStackLayout LeftMenu { get; set; }
@@ -46,12 +43,11 @@ public partial class SettingsViewModel : ObservableObject
         SyntaxErrorColorBox = new BoxView();
 
         AllSettings = new List<SettingItem>();
-        _filteredSettings = new ObservableCollection<SettingItem>();
 
         LoadSettings();
     }
 
-    public async Task LeftMenuTapped(object? sender, TappedEventArgs e, SectionName sectionName)
+    public void LeftMenuTapped(object? sender, TappedEventArgs e, SectionName sectionName)
     {
         _sectionName = sectionName;
 
@@ -155,14 +151,68 @@ public partial class SettingsViewModel : ObservableObject
 
         ThemeHelper.UpdateTheme(Theme);
 
-        await LeftMenuTapped(null, new TappedEventArgs(null), _sectionName);
+        LeftMenuTapped(null, new TappedEventArgs(null), _sectionName);
     }
 
     public void OnAppearing()
     {
-        MainThread.BeginInvokeOnMainThread(async() =>
+        MainThread.BeginInvokeOnMainThread(() =>
         {
-            await LeftMenuTapped(null, new TappedEventArgs(null), SectionName.General);
+            LeftMenuTapped(null, new TappedEventArgs(null), SectionName.General);
         });
+    }
+
+    public void SearchButtonPressed(object? sender, EventArgs e)
+    {
+        if (SettingsPage == null)
+        {
+            return;
+        }
+
+        SettingsPage.BatchBegin();
+
+        SettingItem? lastCategory = null;
+        SettingItem? lastSubCategory = null;
+        foreach (var setting in AllSettings)
+        {
+            if (setting.Type == SettingItemType.Category)
+            {
+                lastCategory = setting;
+                lastSubCategory = null;
+            }
+            else if (setting.Type == SettingItemType.SubCategory)
+            {
+                lastSubCategory = setting;
+            }
+
+            if (string.IsNullOrWhiteSpace(SearchText))
+            {
+                setting.WholeView.IsVisible = true;
+            }
+            else if (setting.Text.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+            {
+                setting.WholeView.IsVisible = true;
+
+                if (lastCategory != null)
+                {
+                    lastCategory.WholeView.IsVisible = true;
+                }
+                if (lastSubCategory != null)
+                {
+                    lastSubCategory.WholeView.IsVisible = true;
+                }
+            }
+            else
+            {
+                setting.WholeView.IsVisible = false;
+            }
+        }
+
+        SettingsPage.BatchCommit();
+    }
+
+    public void SearchBarTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        SearchButtonPressed(sender, e);
     }
 }

@@ -20,7 +20,7 @@ namespace SubtitleAlchemist.Features.Help.About
             });
         }
 
-        public void SourceLinkMouseEnteredPoweredBy(object? sender, PointerEventArgs e)
+        public void SourceLinkMouseEntered(object? sender, PointerEventArgs e)
         {
             LabelSourceCodeLink.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
         }
