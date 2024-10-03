@@ -36,6 +36,11 @@ namespace SubtitleAlchemist.Logic.Media
             return ParseLog(log);
         }
 
+        public long GetTotalFrames()
+        {
+            return (long)((double)FramesRate * Duration.TotalMilliseconds / TimeCode.BaseUnit);
+        }
+
         public bool HasFrontCenterAudio(int trackNumber)
         {
             if (trackNumber < 0)

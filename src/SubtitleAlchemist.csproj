@@ -135,6 +135,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Reference Include="Microsoft.MacCatalyst">
+	    <HintPath>..\..\..\Program Files\dotnet\packs\Microsoft.MacCatalyst.Ref.net8.0_17.5\17.5.8030\ref\net8.0\Microsoft.MacCatalyst.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Update="Resources\Images\btn_close.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

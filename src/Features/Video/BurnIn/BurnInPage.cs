@@ -85,6 +85,7 @@ public class BurnInPage : ContentPage
             Margin = new Thickness(0, 0, 15, 10),
             Command = vm.GenerateCommand,
         }.BindDynamicTheme();
+        vm.ButtonGenerate = buttonGenerate;
 
         var buttonOk = new Button
         {

@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-using System.Globalization;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -8,6 +6,15 @@ using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
+using SubtitleAlchemist.Logic.Media;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Timers;
+using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using Timer = System.Timers.Timer;
 
 namespace SubtitleAlchemist.Features.Video.BurnIn;
 
@@ -154,10 +161,24 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public BurnInPage? Page { get; set; }
     public MediaElement VideoPlayer { get; set; }
     public Label LabelHelp { get; set; }
+    public Button ButtonGenerate { get; set; }
 
     private Subtitle _subtitle = new();
     private readonly IPopupService _popupService;
     private bool _loading = true;
+    private string _videoFileName;
+    private StringBuilder _log;
+    private static readonly Regex FrameFinderRegex = new Regex(@"[Ff]rame=\s*\d+", RegexOptions.Compiled);
+    private long _startTicks;
+    private long _processedFrames;
+    private Process? _onePassProcess;
+    private readonly Timer _timerOnePass = new();
+    private bool _doAbort;
+    private bool _isBatchMode;
+    private List<BurnInJobItem> _jobItems = new();
+    private int _jobItemIndex = -1;
+
+
 
     public BurnInPageModel(IPopupService popupService)
     {
@@ -213,6 +234,68 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             "320k",
         };
         _selectedAudioBitRate = _audioBitRates[2];
+
+        _log = new StringBuilder();
+
+        _timerOnePass.Elapsed += TimerOnePassElapsed;
+        _timerOnePass.Interval = 100;
+    }
+
+    private void TimerOnePassElapsed(object? sender, ElapsedEventArgs e)
+    {
+        if (_onePassProcess == null)
+        {
+            return;
+        }
+
+        if (_doAbort)
+        {
+            _timerOnePass.Stop();
+#pragma warning disable CA1416
+            _onePassProcess.Kill(true);
+#pragma warning restore CA1416
+            return;
+        }
+
+        if (!_onePassProcess.HasExited)
+        {
+            var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
+            // ElapsedText = $"Time elapsed: {new TimeCode(durationMs).ToShortDisplayString()}";
+
+            return;
+        }
+
+        _timerOnePass.Stop();
+
+
+        var jobItem = _jobItems[_jobItemIndex];
+
+        if (!File.Exists(jobItem.OutputVideoFileName))
+        {
+
+            SeLogger.WhisperInfo("Output video file not found: " + jobItem.OutputVideoFileName + Environment.NewLine +
+                                 "ffmpeg: " + _onePassProcess.StartInfo.FileName + Environment.NewLine +
+                                 "Parameters: " + _onePassProcess.StartInfo.Arguments + Environment.NewLine +
+                                 "OS: " + Environment.OSVersion + Environment.NewLine +
+                                 "64-bit: " + Environment.Is64BitOperatingSystem + Environment.NewLine +
+                                 "ffmpeg exit code: " + _onePassProcess.ExitCode + Environment.NewLine +
+                                 "ffmpeg log: " + _log);
+
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                var answer = await Page!.DisplayAlert(
+                    "Unable to generate video",
+                    "Output video file not generated: " + jobItem.OutputVideoFileName + Environment.NewLine +
+                    "Parameters: " + _onePassProcess.StartInfo.Arguments,
+                    "OK", "Cancel");
+
+            });
+
+            ButtonGenerate.IsEnabled = true;
+            return;
+        }
+
+        UiUtil.OpenFolderFromFileName(jobItem.OutputVideoFileName);
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -220,6 +303,11 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         if (query["Subtitle"] is Subtitle subtitle)
         {
             _subtitle = new Subtitle(subtitle, false);
+        }
+
+        if (query["VideoFileName"] is string videoFileName)
+        {
+            _videoFileName = videoFileName;
         }
 
 
@@ -245,7 +333,248 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task Generate()
     {
+        if (CutIsActive && CutFrom >= CutTo)
+        {
+            var answer = await Page!.DisplayAlert(
+                "Cut settings error",
+                "Cut end time must be after cut start time",
+                "OK", "Cancel");
 
+            return;
+        }
+
+        _doAbort = false;
+        _log.Clear();
+        _processedFrames = 0;
+        ButtonGenerate.IsEnabled = false;
+
+        _jobItems = GetJobItems();
+        if (_jobItems.Count == 0)
+        {
+            return;
+        }
+
+        _startTicks = DateTime.UtcNow.Ticks;
+
+        for (var index = 0; index < _jobItems.Count; index++)
+        {
+            _jobItemIndex = index;
+            var jobItem = _jobItems[index];
+            var mediaInfo = FfmpegMediaInfo2.Parse(jobItem.InputVideoFileName);
+            jobItem.TotalFrames = mediaInfo.GetTotalFrames();
+            jobItem.Width = mediaInfo.Dimension.Width;
+            jobItem.Height = mediaInfo.Dimension.Height;
+            jobItem.UseTargetFileSize = UseTargetFileSize;
+            jobItem.TargetFileSize = UseTargetFileSize ? TargetFileSize : 0;
+            jobItem.AssaSubtitleFileName = MakeAssa(jobItem.SubtitleFileName);
+
+
+            bool result;
+            if (jobItem.UseTargetFileSize)
+            {
+                result = RunTwoPassEncoding(jobItem);
+                if (result)
+                {
+                    //_timerFirstPass.Start();
+                }
+            }
+            else
+            {
+                result = RunOnePassEncoding(jobItem);
+                if (result)
+                {
+                    _timerOnePass.Start();
+                }
+            }
+        }
+    }
+
+    private bool RunTwoPassEncoding(BurnInJobItem jobItem)
+    {
+        var process = GetFfmpegProcess(jobItem);
+        return true;
+    }
+
+    private bool RunOnePassEncoding(BurnInJobItem jobItem)
+    {
+        _onePassProcess = GetFfmpegProcess(jobItem);
+#pragma warning disable CA1416 // Validate platform compatibility
+        _onePassProcess.Start();
+#pragma warning restore CA1416 // Validate platform compatibility
+        _onePassProcess.BeginOutputReadLine();
+        _onePassProcess.BeginErrorReadLine();
+        return true;
+    }
+
+    private Process GetFfmpegProcess(BurnInJobItem jobItem, int? passNumber = null, string? twoPassBitRate = null, bool preview = false)
+    {
+        var audioCutTracks = string.Empty;
+        //if (listViewAudioTracks.Visible)
+        //{
+        //    for (var index = 0; index < listViewAudioTracks.Items.Count; index++)
+        //    {
+        //        var listViewItem = listViewAudioTracks.Items[index];
+        //        if (!listViewItem.Checked)
+        //        {
+        //            audioCutTracks += $"-map 0:a:{index} ";
+        //        }
+        //    }
+        //}
+
+        var pass = string.Empty;
+        if (passNumber.HasValue)
+        {
+            pass = passNumber.Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        var cutStart = string.Empty;
+        var cutEnd = string.Empty;
+        if (CutIsActive && !preview)
+        {
+            var start = CutFrom;
+            cutStart = $"-ss {start.Hours:00}:{start.Minutes:00}:{start.Seconds:00}";
+
+            var end = CutTo;
+            var duration = end - start;
+            cutEnd = $"-t {duration.Hours:00}:{duration.Minutes:00}:{duration.Seconds:00}";
+        }
+
+        return VideoPreviewGenerator.GenerateHardcodedVideoFile(
+            jobItem.InputVideoFileName,
+            jobItem.AssaSubtitleFileName,
+            jobItem.OutputVideoFileName,
+            jobItem.Width,
+            jobItem.Height,
+            SelectedVideoEncoding.Codec,
+            SelectedVideoPreset,
+            SelectedVideoPixelFormat.Codec,
+            SelectedVideoCrf,
+            SelectedAudioEncoding,
+            AudioIsStereo,
+            SelectedAudioSampleRate.Replace("Hz", string.Empty).Trim(),
+            SelectedVideoTuneFor,
+            SelectedAudioBitRate,
+            pass,
+            twoPassBitRate,
+            OutputHandler,
+            cutStart,
+            cutEnd,
+            audioCutTracks);
+    }
+    private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
+    {
+        if (string.IsNullOrWhiteSpace(outLine.Data))
+        {
+            return;
+        }
+
+        _log?.AppendLine(outLine.Data);
+
+        var match = FrameFinderRegex.Match(outLine.Data);
+        if (!match.Success)
+        {
+            return;
+        }
+
+        var arr = match.Value.Split('=');
+        if (arr.Length != 2)
+        {
+            return;
+        }
+
+        if (long.TryParse(arr[1].Trim(), out var f))
+        {
+            _processedFrames = f;
+        }
+    }
+
+    private List<BurnInJobItem> GetJobItems()
+    {
+
+        var subtitle = new Subtitle(_subtitle);
+
+        var srt = new SubRip();
+        var srtFileName = Path.Combine(Path.GetTempFileName() + srt.Extension);
+        File.WriteAllText(srtFileName, srt.ToText(subtitle, string.Empty));
+
+        return new List<BurnInJobItem>()
+        {
+            new()
+            {
+                InputVideoFileName = _videoFileName,
+                OutputVideoFileName = MakeOutputFileName(_videoFileName),
+                SubtitleFileName = srtFileName,
+            },
+        };
+    }
+
+    private string MakeAssa(string subtitleFileName)
+    {
+        var isAssa = subtitleFileName.EndsWith(".ass");
+
+        var subtitle = Subtitle.Parse(subtitleFileName);
+
+        if (!isAssa)
+        {
+            SetStyleForNonAssa(subtitle);
+        }
+
+        var assa = new AdvancedSubStationAlpha();
+        var assaFileName = Path.Combine(Path.GetTempFileName() + assa.Extension);
+        File.WriteAllText(assaFileName, assa.ToText(subtitle, string.Empty));
+        return assaFileName;
+    }
+
+    private void SetStyleForNonAssa(Subtitle sub)
+    {
+        sub.Header = AdvancedSubStationAlpha.DefaultHeader;
+        var style = AdvancedSubStationAlpha.GetSsaStyle("Default", sub.Header);
+        style.FontSize = CalculateFontSize(_jobItems[_jobItemIndex].Width, _jobItems[_jobItemIndex].Height, 0.4f);
+        style.Bold = FontIsBold;
+        style.FontName = SelectedFontFamily;
+        //style.Background = panelOutlineColor.BackColor;
+        style.Primary = System.Drawing.Color.FromArgb(255, (int)(FontTextColor.Red * 255.0), (int)(FontTextColor.Green*255.0), (int)(FontTextColor.Blue * 255.0));
+        //style.OutlineWidth = numericUpDownOutline.Value;
+        //style.ShadowWidth = style.OutlineWidth * 0.5m;
+
+        //if (checkBoxAlignRight.Checked)
+        //{
+        //    style.Alignment = "3";
+        //}
+
+        //if (checkBoxBox.Checked)
+        //{
+        //    style.BorderStyle = "4"; // box - multi line
+        //    style.ShadowWidth = 0;
+        //    style.OutlineWidth = numericUpDownOutline.Value;
+        //}
+        //else
+        //{
+        //    style.Outline = panelOutlineColor.BackColor;
+        //}
+
+        sub.Header = AdvancedSubStationAlpha.GetHeaderAndStylesFromAdvancedSubStationAlpha(sub.Header, new List<SsaStyle> { style });
+        sub.Header = AdvancedSubStationAlpha.AddTagToHeader("PlayResX", "PlayResX: " + ((int)VideoWidth).ToString(CultureInfo.InvariantCulture), "[Script Info]", sub.Header);
+        sub.Header = AdvancedSubStationAlpha.AddTagToHeader("PlayResY", "PlayResY: " + ((int)VideoHeight).ToString(CultureInfo.InvariantCulture), "[Script Info]", sub.Header);
+    }
+
+    private static string MakeOutputFileName(string videoFileName)
+    {
+        var nameNoExt = Path.GetFileNameWithoutExtension(videoFileName);
+        var ext = Path.GetExtension(videoFileName).ToLowerInvariant();
+        if (ext != ".mp4" && ext != ".mkv")
+        {
+            ext = ".mkv";
+        };
+
+        var fileName = Path.Combine(Path.GetDirectoryName(videoFileName)!, nameNoExt + "_burned-in" + ext);
+
+        if (File.Exists(fileName))
+        {
+            fileName = Path.Combine(Path.GetDirectoryName(videoFileName)!, nameNoExt + "_burned-in_" + Guid.NewGuid() + ext);
+        }
+
+        return fileName;
     }
 
     [RelayCommand]
@@ -582,5 +911,26 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public void LabelHelpMouseExited(object? sender, PointerEventArgs e)
     {
         LabelHelp.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+    }
+
+    public static int CalculateFontSize(int videoWidth, int videoHeight, double factor, int minSize = 8, int maxSize = 1000)
+    {
+        if (factor is < 0 or > 1)
+        {
+            throw new ArgumentException("Factor must be between 0 and 1", nameof(factor));
+        }
+
+        // Calculate the diagonal resolution
+        var diagonalResolution = Math.Sqrt(videoWidth * videoWidth + videoHeight * videoHeight);
+
+        // Calculate base size (when factor is 0.5)
+        var baseSize = diagonalResolution * 0.02; // 2% of diagonal as base size
+
+        // Apply logarithmic scaling
+        var scaleFactor = Math.Pow(maxSize / baseSize, 2 * (factor - 0.5));
+        var fontSize = (int)Math.Round(baseSize * scaleFactor);
+
+        // Clamp the font size between minSize and maxSize
+        return Math.Clamp(fontSize, minSize, maxSize);
     }
 }
