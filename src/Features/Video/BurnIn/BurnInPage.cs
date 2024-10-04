@@ -95,6 +95,7 @@ public class BurnInPage : ContentPage
             Margin = new Thickness(0, 0, 15, 10),
             Command = vm.OkCommand,
         }.BindDynamicTheme();
+        vm.ButtonOk = buttonOk;
 
         var buttonCancel = new Button
         {
@@ -149,24 +150,32 @@ public class BurnInPage : ContentPage
         var textWidth = 150;
         var controlWidth = 200;
         
-        var fontSizeLabel = new Label
+        var labelFontFactor = new Label
         {
-            Text = "Font Size",
+            Text = "Font factor",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
-            FontSize = 16,
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
-        var entryFontSize = new Entry
+        var pickerFontFactor = new Picker
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = controlWidth,
-            Keyboard = Keyboard.Numeric,
-            MaxLength = 4,
+            WidthRequest = 125,
         }.BindDynamicTheme();
-        entryFontSize.SetBinding(Entry.TextProperty, nameof(vm.SelectedFontSize));
+        pickerFontFactor.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FontFactors));
+        pickerFontFactor.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedFontFactor));
+        pickerFontFactor.SelectedIndexChanged += vm.FontFactorChanged;
+        var labelFontSize = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            WidthRequest = textWidth,
+            FontSize = 12,
+        }.BindDynamicThemeTextColorOnly();
+        labelFontSize.SetBinding(Label.TextProperty, nameof(vm.FontSizeText));
 
         var stackFontSize = new StackLayout
         {
@@ -177,8 +186,9 @@ public class BurnInPage : ContentPage
             Spacing = 5,
             Children =
             {
-                fontSizeLabel,
-                entryFontSize,
+                labelFontFactor,
+                pickerFontFactor,
+                labelFontSize,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackFontSize);
@@ -295,6 +305,8 @@ public class BurnInPage : ContentPage
             WidthRequest = 75,
             Keyboard = Keyboard.Numeric,
         }.BindDynamicTheme();
+        entryWidth.SetBinding(Entry.TextProperty, nameof(vm.VideoWidth));
+        entryWidth.TextChanged += vm.VideoWidthChanged;
         var labelX = new Label
         {
             Text = "x",
@@ -311,6 +323,8 @@ public class BurnInPage : ContentPage
             WidthRequest = 75,
             Keyboard = Keyboard.Numeric,
         }.BindDynamicTheme();
+        entryHeight.SetBinding(Entry.TextProperty, nameof(vm.VideoHeight));
+        entryHeight.TextChanged += vm.VideoHeightChanged;
         var buttonResolution = new Button
         {
             Text = "...",

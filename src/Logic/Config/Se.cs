@@ -14,6 +14,7 @@ public class Se
     public SeTools Tools { get; set; } = new();
     public SeSync Synchronization { get; set; } = new();
     public SeSpellCheck SpellCheck { get; set; } = new();
+    public SeVideo Video { get; set; } = new();
     public static SeLanguage Language { get; set; } = new();
     public static Se Settings { get; set; } = new();
     public static string DictionariesFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "Dictionaries");
@@ -82,6 +83,11 @@ public class Se
         if (Settings.SpellCheck == null)
         {
             Settings.SpellCheck = new();
+        }
+
+        if (Settings.Video == null)
+        {
+            Settings.Video = new();
         }
 
         if (Settings.Tools.FixCommonErrors.Profiles.Count == 0)

@@ -14,6 +14,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using SubtitleAlchemist.Logic.Config;
 using Timer = System.Timers.Timer;
 
 namespace SubtitleAlchemist.Features.Video.BurnIn;
@@ -21,10 +22,13 @@ namespace SubtitleAlchemist.Features.Video.BurnIn;
 public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private ObservableCollection<int> _fontSizes;
+    private ObservableCollection<double> _fontFactors;
 
     [ObservableProperty]
-    private int _selectedFontSize;
+    private double _selectedFontFactor;
+
+    [ObservableProperty]
+    private string _fontSizeText;
 
     [ObservableProperty]
     private bool _fontIsBold;
@@ -162,6 +166,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public MediaElement VideoPlayer { get; set; }
     public Label LabelHelp { get; set; }
     public Button ButtonGenerate { get; set; }
+    public Button ButtonOk { get; set; }
 
     private Subtitle _subtitle = new();
     private readonly IPopupService _popupService;
@@ -177,16 +182,26 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private bool _isBatchMode;
     private List<BurnInJobItem> _jobItems = new();
     private int _jobItemIndex = -1;
-
-
+    private FfmpegMediaInfo2? _mediaInfo;
 
     public BurnInPageModel(IPopupService popupService)
     {
         _popupService = popupService;
-        _selectedFontSize = 39;
+
+        // font factors between 0-1
+        _fontFactors = new ObservableCollection<double>(
+            Enumerable.Range(200, 1000)
+            .Select(i => Math.Round(i * 0.0005, 3))
+            .ToList().Distinct());
+        _selectedFontFactor = 0.4;
+        _fontSizeText = string.Empty;
+
         _selectedFontOutline = 2.0m;
 
         _fontTextColor = Colors.WhiteSmoke;
+
+        _videoWidth = 1920;
+        _videoHeight = 1080;
 
         _videoEncodings = new ObservableCollection<VideoEncodingItem>(VideoEncodingItem.VideoEncodings);
         _selectedVideoEncoding = _videoEncodings[0];
@@ -289,13 +304,19 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
                     "Parameters: " + _onePassProcess.StartInfo.Arguments,
                     "OK", "Cancel");
 
+                ButtonGenerate.IsEnabled = true;
+                ButtonOk.IsEnabled = true;
             });
 
-            ButtonGenerate.IsEnabled = true;
             return;
         }
 
-        UiUtil.OpenFolderFromFileName(jobItem.OutputVideoFileName);
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ButtonGenerate.IsEnabled = true;
+            ButtonOk.IsEnabled = true;
+            UiUtil.OpenFolderFromFileName(jobItem.OutputVideoFileName);
+        });
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -317,17 +338,55 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                // Load settings
+                LoadSettings();
 
-
-                // set batch or single file mode
-
+                if (string.IsNullOrWhiteSpace(_videoFileName))
+                {
+                    _isBatchMode = true;
+                }
+                else
+                {
+                    _mediaInfo = FfmpegMediaInfo2.Parse(_videoFileName);
+                    VideoWidth = _mediaInfo.Dimension.Width;
+                    VideoHeight = _mediaInfo.Dimension.Height;
+                    _isBatchMode = false;
+                }
 
                 _loading = false;
                 VideoEncodingChanged(null, EventArgs.Empty);
             });
             return false;
         });
+    }
+
+    private void LoadSettings()
+    {
+        var settings = Se.Settings.Video.BurnIn;
+        SelectedFontFactor = settings.FontFactor;
+        FontIsBold = settings.FontBold;
+        SelectedFontOutline = settings.Outline;
+        SelectedFontFamily = settings.FontName;
+        FontTextColor = settings.NonAssaTextColor;
+        FontBoxColor = settings.NonAssaBoxColor;
+        FontShadowColor = settings.NonAssaShadowColor;
+        FontFixRtl = settings.NonAssaFixRtlUnicode;
+        FontAlignRight = settings.NonAssaAlignRight;
+    }
+
+    private void SaveSettings()
+    {
+        var settings = Se.Settings.Video.BurnIn;
+        settings.FontFactor = SelectedFontFactor;
+        settings.FontBold = FontIsBold;
+        settings.Outline = SelectedFontOutline;
+        settings.FontName = SelectedFontFamily;
+        settings.NonAssaTextColor = FontTextColor;
+        settings.NonAssaBoxColor = FontBoxColor;
+        settings.NonAssaShadowColor = FontShadowColor;
+        settings.NonAssaFixRtlUnicode = FontFixRtl;
+        settings.NonAssaAlignRight = FontAlignRight;
+
+        Se.SaveSettings();
     }
 
     [RelayCommand]
@@ -347,7 +406,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         _log.Clear();
         _processedFrames = 0;
         ButtonGenerate.IsEnabled = false;
-
+        ButtonOk.IsEnabled = false;
+        SaveSettings();
         _jobItems = GetJobItems();
         if (_jobItems.Count == 0)
         {
@@ -529,11 +589,11 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     {
         sub.Header = AdvancedSubStationAlpha.DefaultHeader;
         var style = AdvancedSubStationAlpha.GetSsaStyle("Default", sub.Header);
-        style.FontSize = CalculateFontSize(_jobItems[_jobItemIndex].Width, _jobItems[_jobItemIndex].Height, 0.4f);
+        style.FontSize = CalculateFontSize(_jobItems[_jobItemIndex].Width, _jobItems[_jobItemIndex].Height, SelectedFontFactor);
         style.Bold = FontIsBold;
         style.FontName = SelectedFontFamily;
         //style.Background = panelOutlineColor.BackColor;
-        style.Primary = System.Drawing.Color.FromArgb(255, (int)(FontTextColor.Red * 255.0), (int)(FontTextColor.Green*255.0), (int)(FontTextColor.Blue * 255.0));
+        style.Primary = System.Drawing.Color.FromArgb(255, (int)(FontTextColor.Red * 255.0), (int)(FontTextColor.Green * 255.0), (int)(FontTextColor.Blue * 255.0));
         //style.OutlineWidth = numericUpDownOutline.Value;
         //style.ShadowWidth = style.OutlineWidth * 0.5m;
 
@@ -580,7 +640,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task Ok()
     {
-
+        SaveSettings();
+        await Shell.Current.GoToAsync("..");
     }
 
     [RelayCommand]
@@ -913,9 +974,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         LabelHelp.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
     }
 
-    public static int CalculateFontSize(int videoWidth, int videoHeight, double factor, int minSize = 8, int maxSize = 1000)
+    public static int CalculateFontSize(int videoWidth, int videoHeight, double factor, int minSize = 8, int maxSize = 2000)
     {
-        if (factor is < 0 or > 1)
+        if (factor is < 0 or > 5)
         {
             throw new ArgumentException("Factor must be between 0 and 1", nameof(factor));
         }
@@ -924,7 +985,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         var diagonalResolution = Math.Sqrt(videoWidth * videoWidth + videoHeight * videoHeight);
 
         // Calculate base size (when factor is 0.5)
-        var baseSize = diagonalResolution * 0.02; // 2% of diagonal as base size
+        var baseSize = diagonalResolution * 0.019; // 2% of diagonal as base size
 
         // Apply logarithmic scaling
         var scaleFactor = Math.Pow(maxSize / baseSize, 2 * (factor - 0.5));
@@ -932,5 +993,26 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
         // Clamp the font size between minSize and maxSize
         return Math.Clamp(fontSize, minSize, maxSize);
+    }
+
+    public void FontFactorChanged(object? sender, EventArgs e)
+    {
+        UpdateFontSizeLabel();
+    }
+
+    private void UpdateFontSizeLabel()
+    {
+        var fontSize = CalculateFontSize(VideoWidth, VideoHeight, SelectedFontFactor).ToString(CultureInfo.InvariantCulture);
+        FontSizeText = $"Font size {fontSize}";
+    }
+
+    public void VideoWidthChanged(object? sender, TextChangedEventArgs e)
+    {
+        UpdateFontSizeLabel();
+    }
+
+    public void VideoHeightChanged(object? sender, TextChangedEventArgs e)
+    {
+        UpdateFontSizeLabel();
     }
 }
