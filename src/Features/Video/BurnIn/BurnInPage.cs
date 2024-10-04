@@ -92,6 +92,7 @@ public class BurnInPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 15, 10),
+            Command = vm.ModeSwitchCommand,
         }.BindDynamicTheme();
         buttonMode.SetBinding(Button.TextProperty, nameof(vm.ButtonModeText));
         vm.ButtonMode = buttonMode;

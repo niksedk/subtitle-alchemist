@@ -390,10 +390,10 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         FontIsBold = settings.FontBold;
         SelectedFontOutline = settings.Outline;
         SelectedFontFamily = settings.FontName;
-        FontTextColor = settings.NonAssaTextColor;
-        FontOutlineColor = settings.NonAssaOutlineColor;
-        FontBoxColor = settings.NonAssaBoxColor;
-        FontShadowColor = settings.NonAssaShadowColor;
+        FontTextColor = Color.FromArgb(settings.NonAssaTextColor);
+        FontOutlineColor = Color.FromArgb(settings.NonAssaOutlineColor);
+        FontBoxColor = Color.FromArgb(settings.NonAssaBoxColor);
+        FontShadowColor = Color.FromArgb(settings.NonAssaShadowColor);
         FontFixRtl = settings.NonAssaFixRtlUnicode;
         FontAlignRight = settings.NonAssaAlignRight;
     }
@@ -405,10 +405,10 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         settings.FontBold = FontIsBold;
         settings.Outline = SelectedFontOutline;
         settings.FontName = SelectedFontFamily;
-        settings.NonAssaTextColor = FontTextColor;
-        settings.NonAssaOutlineColor = FontOutlineColor;
-        settings.NonAssaBoxColor = FontBoxColor;
-        settings.NonAssaShadowColor = FontShadowColor;
+        settings.NonAssaTextColor = FontTextColor.ToArgbHex();
+        settings.NonAssaOutlineColor = FontOutlineColor.ToArgbHex();
+        settings.NonAssaBoxColor = FontBoxColor.ToArgbHex();
+        settings.NonAssaShadowColor = FontShadowColor.ToArgbHex();
         settings.NonAssaFixRtlUnicode = FontFixRtl;
         settings.NonAssaAlignRight = FontAlignRight;
 
@@ -660,6 +660,12 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         }
 
         return fileName;
+    }
+    [RelayCommand]
+    private void ModeSwitch()
+    {
+        _isBatchMode = !_isBatchMode;
+        ButtonModeText = _isBatchMode ? "Batch mode" : "Single mode";
     }
 
     [RelayCommand]
