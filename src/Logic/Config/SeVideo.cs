@@ -32,6 +32,7 @@ public class VideoBurnIn
     public Color NonAssaBoxColor { get; set; }
     public Color NonAssaTextColor { get; set; }
     public Color NonAssaShadowColor { get; set; }
+    public Color NonAssaOutlineColor { get; internal set; }
     public bool NonAssaAlignRight { get; set; }
     public bool NonAssaFixRtlUnicode { get; set; }
     public string EmbedOutputExt { get; set; }
@@ -58,6 +59,7 @@ public class VideoBurnIn
         NonAssaBoxColor = Color.FromArgb("#aa000000");
         NonAssaTextColor = Colors.White;
         NonAssaShadowColor = Colors.Black;
+        NonAssaOutlineColor = Colors.Black;
         EmbedOutputSuffix = "embed";
         EmbedOutputReplace = "embed" + Environment.NewLine + "SoftSub" + Environment.NewLine + "SoftSubbed";
         OutputFileSuffix = "_new";

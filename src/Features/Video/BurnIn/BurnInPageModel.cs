@@ -40,16 +40,22 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private decimal _selectedFontOutline;
 
     [ObservableProperty]
+    private string _fontOutlineText;
+
+    [ObservableProperty]
+    private string _fontShadowText;
+
+    [ObservableProperty]
     private ObservableCollection<string> _fontFamilies;
 
     [ObservableProperty]
     private string _selectedFontFamily;
 
     [ObservableProperty]
-    private ObservableCollection<string> _fontBoxTypes;
+    private ObservableCollection<FontBoxItem> _fontBoxTypes;
 
     [ObservableProperty]
-    private string _selectedFontBoxType;
+    private FontBoxItem _selectedFontBoxType;
 
     [ObservableProperty]
     private Color _fontTextColor;
@@ -155,18 +161,21 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private TimeSpan _cutTo;
 
 
-
     [ObservableProperty]
     private bool _useTargetFileSize;
 
     [ObservableProperty]
     private int _targetFileSize;
 
+    [ObservableProperty]
+    private string _buttonModeText;
+
     public BurnInPage? Page { get; set; }
     public MediaElement VideoPlayer { get; set; }
     public Label LabelHelp { get; set; }
     public Button ButtonGenerate { get; set; }
     public Button ButtonOk { get; set; }
+    public Button ButtonMode { get; internal set; }
 
     private Subtitle _subtitle = new();
     private readonly IPopupService _popupService;
@@ -196,9 +205,22 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         _selectedFontFactor = 0.4;
         _fontSizeText = string.Empty;
 
+        _fontTextColor = Colors.WhiteSmoke;
+
+        _fontOutlineText = "Outline";
+        _fontOutlines = new ObservableCollection<decimal>(Enumerable.Range(0, 50).Select(p => (decimal)p));
         _selectedFontOutline = 2.0m;
 
-        _fontTextColor = Colors.WhiteSmoke;
+        _fontShadowText = "Shadow";
+
+
+        _fontBoxTypes = new ObservableCollection<FontBoxItem>
+        {
+            new FontBoxItem(FontBoxType.None, "None"),
+            new FontBoxItem(FontBoxType.OneBox, "One box"),
+            new FontBoxItem(FontBoxType.BoxPerLine, "Box per line"),
+        };
+        _selectedFontBoxType = _fontBoxTypes[0];
 
         _videoWidth = 1920;
         _videoHeight = 1080;
@@ -249,6 +271,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             "320k",
         };
         _selectedAudioBitRate = _audioBitRates[2];
+
+        _buttonModeText = "Batch mode";
 
         _log = new StringBuilder();
 
@@ -367,6 +391,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         SelectedFontOutline = settings.Outline;
         SelectedFontFamily = settings.FontName;
         FontTextColor = settings.NonAssaTextColor;
+        FontOutlineColor = settings.NonAssaOutlineColor;
         FontBoxColor = settings.NonAssaBoxColor;
         FontShadowColor = settings.NonAssaShadowColor;
         FontFixRtl = settings.NonAssaFixRtlUnicode;
@@ -381,6 +406,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         settings.Outline = SelectedFontOutline;
         settings.FontName = SelectedFontFamily;
         settings.NonAssaTextColor = FontTextColor;
+        settings.NonAssaOutlineColor = FontOutlineColor;
         settings.NonAssaBoxColor = FontBoxColor;
         settings.NonAssaShadowColor = FontShadowColor;
         settings.NonAssaFixRtlUnicode = FontFixRtl;
@@ -592,26 +618,25 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         style.FontSize = CalculateFontSize(_jobItems[_jobItemIndex].Width, _jobItems[_jobItemIndex].Height, SelectedFontFactor);
         style.Bold = FontIsBold;
         style.FontName = SelectedFontFamily;
-        //style.Background = panelOutlineColor.BackColor;
+        style.Background = System.Drawing.Color.FromArgb(255, (int)(FontOutlineColor.Red * 255.0), (int)(FontOutlineColor.Green * 255.0), (int)(FontOutlineColor.Blue * 255.0));
         style.Primary = System.Drawing.Color.FromArgb(255, (int)(FontTextColor.Red * 255.0), (int)(FontTextColor.Green * 255.0), (int)(FontTextColor.Blue * 255.0));
-        //style.OutlineWidth = numericUpDownOutline.Value;
-        //style.ShadowWidth = style.OutlineWidth * 0.5m;
+        style.OutlineWidth = SelectedFontOutline;
+        style.ShadowWidth = style.OutlineWidth * 0.5m;
 
-        //if (checkBoxAlignRight.Checked)
-        //{
-        //    style.Alignment = "3";
-        //}
+        if (FontAlignRight)
+        {
+            style.Alignment = "3";
+        }
 
-        //if (checkBoxBox.Checked)
-        //{
-        //    style.BorderStyle = "4"; // box - multi line
-        //    style.ShadowWidth = 0;
-        //    style.OutlineWidth = numericUpDownOutline.Value;
-        //}
-        //else
-        //{
-        //    style.Outline = panelOutlineColor.BackColor;
-        //}
+        if (SelectedFontBoxType.BoxType == FontBoxType.BoxPerLine)
+        {
+            style.BorderStyle = "4"; // box - multi line
+            style.ShadowWidth = 0;
+        }
+        else
+        {
+            style.Outline = System.Drawing.Color.FromArgb(255, (int)(FontOutlineColor.Red * 255.0), (int)(FontOutlineColor.Green * 255.0), (int)(FontOutlineColor.Blue * 255.0));
+        }
 
         sub.Header = AdvancedSubStationAlpha.GetHeaderAndStylesFromAdvancedSubStationAlpha(sub.Header, new List<SsaStyle> { style });
         sub.Header = AdvancedSubStationAlpha.AddTagToHeader("PlayResX", "PlayResX: " + ((int)VideoWidth).ToString(CultureInfo.InvariantCulture), "[Script Info]", sub.Header);
@@ -661,6 +686,36 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             if (result is Color color)
             {
                 FontTextColor = color;
+            }
+        });
+    }
+
+    public void FontOutlineColorTapped(object? sender, TappedEventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            var result = await _popupService.ShowPopupAsync<ColorPickerPopupModel>(
+                onPresenting: vm => vm.SetCurrentColor(FontOutlineColor),
+                CancellationToken.None);
+
+            if (result is Color color)
+            {
+                FontOutlineColor = color;
+            }
+        });
+    }
+
+    public void FontShadowColorTapped(object? sender, TappedEventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            var result = await _popupService.ShowPopupAsync<ColorPickerPopupModel>(
+                onPresenting: vm => vm.SetCurrentColor(FontShadowColor),
+                CancellationToken.None);
+
+            if (result is Color color)
+            {
+                FontShadowColor = color;
             }
         });
     }
@@ -1003,7 +1058,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private void UpdateFontSizeLabel()
     {
         var fontSize = CalculateFontSize(VideoWidth, VideoHeight, SelectedFontFactor).ToString(CultureInfo.InvariantCulture);
-        FontSizeText = $"Font size {fontSize}";
+        FontSizeText = $"Font size {fontSize} for {VideoWidth}x{VideoHeight}";
     }
 
     public void VideoWidthChanged(object? sender, TextChangedEventArgs e)
@@ -1014,5 +1069,26 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public void VideoHeightChanged(object? sender, TextChangedEventArgs e)
     {
         UpdateFontSizeLabel();
+    }
+
+    internal void FontBoxTypeChanged(object? sender, EventArgs e)
+    {
+        if (SelectedFontBoxType.BoxType == FontBoxType.None)
+        {
+            FontOutlineText = "Outline";
+            FontShadowText = "Shadow";
+        }
+
+        if (SelectedFontBoxType.BoxType == FontBoxType.OneBox)
+        {
+            FontOutlineText = "Outline";
+            FontShadowText = "Box";
+        }
+
+        if (SelectedFontBoxType.BoxType == FontBoxType.BoxPerLine)
+        {
+            FontOutlineText = "Box";
+            FontShadowText = "Shadow";
+        }
     }
 }

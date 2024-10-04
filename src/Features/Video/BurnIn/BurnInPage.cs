@@ -87,6 +87,15 @@ public class BurnInPage : ContentPage
         }.BindDynamicTheme();
         vm.ButtonGenerate = buttonGenerate;
 
+        var buttonMode = new Button
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 15, 10),
+        }.BindDynamicTheme();
+        buttonMode.SetBinding(Button.TextProperty, nameof(vm.ButtonModeText));
+        vm.ButtonMode = buttonMode;
+
         var buttonOk = new Button
         {
             Text = "Ok",
@@ -115,6 +124,7 @@ public class BurnInPage : ContentPage
             Children =
             {
                 buttonGenerate,
+                buttonMode,
                 buttonOk,
                 buttonCancel,
             },
@@ -234,7 +244,6 @@ public class BurnInPage : ContentPage
         {
             WidthRequest = 25,
             HeightRequest = 25,
-            Color = Colors.Red,
         };
         boxViewTextColor.SetBinding(BoxView.ColorProperty, nameof(vm.FontTextColor));
         var tapGestureRecognizerTextColor = new TapGestureRecognizer();
@@ -255,6 +264,172 @@ public class BurnInPage : ContentPage
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackTextColor);
+
+        // Outline
+        var labelOutline = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        labelOutline.SetBinding(Label.TextProperty, nameof(vm.FontOutlineText));
+        var pickerOutline = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerOutline.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FontOutlines));
+        var boxViewOutlineColor = new BoxView
+        {
+            WidthRequest = 25,
+            HeightRequest = 25,
+        };
+        boxViewOutlineColor.SetBinding(BoxView.ColorProperty, nameof(vm.FontOutlineColor));
+        var tapGestureRecognizerOutlineColor = new TapGestureRecognizer();
+        tapGestureRecognizerOutlineColor.Tapped += vm.FontOutlineColorTapped;
+        boxViewOutlineColor.GestureRecognizers.Add(tapGestureRecognizerOutlineColor);
+        var stackOutline = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelOutline,
+                pickerOutline,
+                boxViewOutlineColor,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackOutline);
+
+        // Shadow
+        var labelShadowColor = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        labelShadowColor.SetBinding(Label.TextProperty, nameof(vm.FontShadowText));
+        var boxViewShadowColor = new BoxView
+        {
+            WidthRequest = 25,
+            HeightRequest = 25,
+        };
+        boxViewShadowColor.SetBinding(BoxView.ColorProperty, nameof(vm.FontShadowColor));
+        var tapGestureRecognizerShadowColor = new TapGestureRecognizer();
+        tapGestureRecognizerShadowColor.Tapped += vm.FontShadowColorTapped;
+        boxViewShadowColor.GestureRecognizers.Add(tapGestureRecognizerShadowColor);
+        var stackShadowColor = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelShadowColor,
+                boxViewShadowColor,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackShadowColor);
+
+        // Box type
+        var labelBoxType = new Label
+        {
+            Text = "Box type",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var pickerBoxType = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerBoxType.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FontBoxTypes));
+        pickerBoxType.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedFontBoxType));
+        pickerBoxType.SelectedIndexChanged += vm.FontBoxTypeChanged;
+        var stackBoxType = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelBoxType,
+                pickerBoxType,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackBoxType);
+
+        var labelFixRtl = new Label
+        {
+            Text = "Fix RTL",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var switchFixRtl = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        switchFixRtl.SetBinding(Switch.IsToggledProperty, nameof(vm.FontFixRtl));
+        var stackFixRtl = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelFixRtl,
+                switchFixRtl,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackFixRtl);
+
+        var labelAlignRight = new Label
+        {
+            Text = "Align right",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+        var switchAlignRight = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        switchAlignRight.SetBinding(Switch.IsToggledProperty, nameof(vm.FontAlignRight));
+        var stackAlignRight = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelAlignRight,
+                switchAlignRight,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackAlignRight);
+
 
         var border = new Border
         {
