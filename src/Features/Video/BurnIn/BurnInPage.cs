@@ -1,6 +1,8 @@
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using Nikse.SubtitleEdit.Core.Common;
+using SkiaSharp.Views.Maui.Controls;
+using SpriteKit;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
@@ -23,6 +25,7 @@ public class BurnInPage : ContentPage
                 new RowDefinition { Height = GridLength.Auto }, 
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto }, // help link
+                new RowDefinition { Height = GridLength.Auto }, // progress bar
                 new RowDefinition { Height = GridLength.Auto }, // buttons
             },
             ColumnDefinitions =
@@ -77,6 +80,21 @@ public class BurnInPage : ContentPage
         pageGrid.Add(labelHelp, 0, 4);
         pageGrid.SetColumnSpan(labelHelp, 2);
 
+        var progressBar = new ProgressBar
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            Progress = 0,
+            ProgressColor = Colors.Orange,
+            IsVisible = false,
+        };
+        progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));
+        vm.ProgressBar = progressBar;
+        pageGrid.Add(progressBar, 0, 5);
+        pageGrid.SetColumnSpan(progressBar, 2);
+
+
         var buttonGenerate = new Button
         {
             Text = "Generate",
@@ -116,6 +134,15 @@ public class BurnInPage : ContentPage
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
 
+        var labelProgress = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(25, 0, 0, 0),
+            FontSize = 16,
+        }.BindDynamicThemeTextColorOnly();
+        labelProgress.SetBinding(Label.TextProperty, nameof(vm.ProgressText));
+
         var buttonBar = new StackLayout
         {
             Margin = new Thickness(0, 25, 0, 0),
@@ -128,10 +155,11 @@ public class BurnInPage : ContentPage
                 buttonMode,
                 buttonOk,
                 buttonCancel,
+                labelProgress,
             },
         }.BindDynamicTheme();
 
-        pageGrid.Add(buttonBar, 0, 5);
+        pageGrid.Add(buttonBar, 0, 6);
 
         var scrollView = new ScrollView
         {
@@ -169,15 +197,17 @@ public class BurnInPage : ContentPage
             Margin = new Thickness(0, 0, 0, 0),
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
-        var pickerFontFactor = new Picker
+        var entryFontFactor = new Entry
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = 110,
+            WidthRequest = 75,
+            Keyboard = Keyboard.Numeric,
         }.BindDynamicTheme();
-        pickerFontFactor.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FontFactors));
-        pickerFontFactor.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedFontFactor));
-        pickerFontFactor.SelectedIndexChanged += vm.FontFactorChanged;
+        entryFontFactor.SetBinding(Entry.TextProperty, nameof(vm.SelectedFontFactor));
+        entryFontFactor.TextChanged += vm.FontFactorChanged;
+        ToolTipProperties.SetText(entryFontFactor, "Set a factor between 0 and 1");
+
         var labelFontSize = new Label
         {
             HorizontalOptions = LayoutOptions.Start,
@@ -198,7 +228,7 @@ public class BurnInPage : ContentPage
             Children =
             {
                 labelFontFactor,
-                pickerFontFactor,
+                entryFontFactor,
                 labelFontSize,
             },
         }.BindDynamicTheme();
@@ -898,7 +928,16 @@ public class BurnInPage : ContentPage
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackToTime);
-        
+
+        var imagePreview = new Image
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(10),
+        };
+        vm.ImagePreview = imagePreview;
+        stack.Children.Add(imagePreview);
+
 
         var border = new Border
         {

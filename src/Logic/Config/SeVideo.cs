@@ -33,7 +33,7 @@ public class VideoBurnIn
     public string NonAssaBoxColor { get; set; }
     public string NonAssaTextColor { get; set; }
     public string NonAssaShadowColor { get; set; }
-    public string NonAssaOutlineColor { get; internal set; }
+    public string NonAssaOutlineColor { get; set; }
     public string NonAssaAlignment { get; set; }
     public bool NonAssaFixRtlUnicode { get; set; }
     public decimal NonAssaMarginVertical { get; set; }

@@ -16,6 +16,9 @@ using System.Timers;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Logic.Config;
 using Timer = System.Timers.Timer;
+using System;
+using SkiaSharp;
+using SkiaSharp.Views.Maui;
 
 namespace SubtitleAlchemist.Features.Video.BurnIn;
 
@@ -184,12 +187,20 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private string _buttonModeText;
 
+    [ObservableProperty]
+    private string _progressText;
+
+    [ObservableProperty]
+    private double _progressValue;
+
     public BurnInPage? Page { get; set; }
     public MediaElement VideoPlayer { get; set; }
     public Label LabelHelp { get; set; }
     public Button ButtonGenerate { get; set; }
     public Button ButtonOk { get; set; }
     public Button ButtonMode { get; internal set; }
+    public ProgressBar ProgressBar { get; set; }
+    public Image ImagePreview { get; set; }
 
     private Subtitle _subtitle = new();
     private readonly IPopupService _popupService;
@@ -319,14 +330,23 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
         if (!_onePassProcess.HasExited)
         {
+            //var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
+            //// ElapsedText = $"Time elapsed: {new TimeCode(durationMs).ToShortDisplayString()}";
+
+            var percentage = (int)Math.Round((double)_processedFrames / _jobItems[_jobItemIndex].TotalFrames * 100.0, MidpointRounding.AwayFromZero);
             var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
-            // ElapsedText = $"Time elapsed: {new TimeCode(durationMs).ToShortDisplayString()}";
+            var msPerFrame = (float)durationMs / _processedFrames;
+            var estimatedTotalMs = msPerFrame * _jobItems[_jobItemIndex].TotalFrames;
+            var estimatedLeft = ProgressHelper.ToProgressTime(estimatedTotalMs - durationMs);
+
+            ProgressText = $"Generating video... {percentage}%     {estimatedLeft}";
+
 
             return;
         }
 
         _timerOnePass.Stop();
-
+        ProgressText = string.Empty;
 
         var jobItem = _jobItems[_jobItemIndex];
 
@@ -352,6 +372,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
                 ButtonGenerate.IsEnabled = true;
                 ButtonOk.IsEnabled = true;
                 ButtonMode.IsEnabled = true;
+                ProgressBar.IsVisible = false;
+                ProgressValue = 0;
             });
 
             return;
@@ -362,6 +384,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             ButtonGenerate.IsEnabled = true;
             ButtonOk.IsEnabled = true;
             ButtonMode.IsEnabled = true;
+            ProgressBar.IsVisible = false;
+            ProgressValue = 0;
             UiUtil.OpenFolderFromFileName(jobItem.OutputVideoFileName);
         });
     }
@@ -401,6 +425,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
                 _loading = false;
                 VideoEncodingChanged(null, EventArgs.Empty);
+                UpdateNonAssaPreview();
             });
             return false;
         });
@@ -459,6 +484,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         ButtonGenerate.IsEnabled = false;
         ButtonOk.IsEnabled = false;
         ButtonMode.IsEnabled = false;
+        ProgressValue = 0;
+        ProgressBar.IsVisible = true;
         SaveSettings();
         _jobItems = GetJobItems();
         if (_jobItems.Count == 0)
@@ -597,6 +624,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         if (long.TryParse(arr[1].Trim(), out var f))
         {
             _processedFrames = f;
+            ProgressValue = (double)_processedFrames / _jobItems[_jobItemIndex].TotalFrames;
         }
     }
 
@@ -690,11 +718,34 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
         return fileName;
     }
+
     [RelayCommand]
     private void ModeSwitch()
     {
         _isBatchMode = !_isBatchMode;
         ButtonModeText = _isBatchMode ? "Batch mode" : "Single mode";
+
+        UpdateNonAssaPreview();
+    }
+
+    private void UpdateNonAssaPreview()
+    {
+        if (_loading || FontOutlineColor == null)
+        {
+            return;
+        }
+
+        var fontSize =(float) CalculateFontSize(VideoWidth, VideoHeight, SelectedFontFactor);
+        var image = TextToImageGenerator.GenerateImage(
+            "This is a test", 
+            fontSize, 
+            FontIsBold, 
+            FontTextColor.ToSKColor(),
+            FontOutlineColor.ToSKColor(), 
+            FontShadowColor.ToSKColor(), 
+            (float)SelectedFontOutline,
+            (float)SelectedFontShadowWidth);
+        ImagePreview.Source = image.ToImageSource();
     }
 
     [RelayCommand]
@@ -721,6 +772,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             if (result is Color color)
             {
                 FontTextColor = color;
+                UpdateNonAssaPreview();
             }
         });
     }
@@ -736,6 +788,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             if (result is Color color)
             {
                 FontOutlineColor = color;
+                UpdateNonAssaPreview();
             }
         });
     }
@@ -751,6 +804,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             if (result is Color color)
             {
                 FontShadowColor = color;
+                UpdateNonAssaPreview();
             }
         });
     }
@@ -1066,16 +1120,13 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
     public static int CalculateFontSize(int videoWidth, int videoHeight, double factor, int minSize = 8, int maxSize = 2000)
     {
-        if (factor is < 0 or > 5)
-        {
-            throw new ArgumentException("Factor must be between 0 and 1", nameof(factor));
-        }
+        factor = Math.Clamp(factor, 0, 1);
 
         // Calculate the diagonal resolution
         var diagonalResolution = Math.Sqrt(videoWidth * videoWidth + videoHeight * videoHeight);
 
         // Calculate base size (when factor is 0.5)
-        var baseSize = diagonalResolution * 0.019; // 2% of diagonal as base size
+        var baseSize = diagonalResolution * 0.019; // around 2% of diagonal as base size
 
         // Apply logarithmic scaling
         var scaleFactor = Math.Pow(maxSize / baseSize, 2 * (factor - 0.5));
@@ -1088,6 +1139,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public void FontFactorChanged(object? sender, EventArgs e)
     {
         UpdateFontSizeLabel();
+        UpdateNonAssaPreview();
     }
 
     private void UpdateFontSizeLabel()
@@ -1099,11 +1151,13 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public void VideoWidthChanged(object? sender, TextChangedEventArgs e)
     {
         UpdateFontSizeLabel();
+        UpdateNonAssaPreview();
     }
 
     public void VideoHeightChanged(object? sender, TextChangedEventArgs e)
     {
         UpdateFontSizeLabel();
+        UpdateNonAssaPreview();
     }
 
     internal void FontBoxTypeChanged(object? sender, EventArgs e)
@@ -1125,14 +1179,17 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             FontOutlineText = "Box";
             FontShadowText = "Shadow";
         }
+
+        UpdateNonAssaPreview();
     }
 
     public void FontShadowWidthChanged(object? sender, TextChangedEventArgs e)
     {
-
+        UpdateNonAssaPreview();
     }
 
     public void FontOutlineWidthChanged(object? sender, TextChangedEventArgs e)
     {
+        UpdateNonAssaPreview();
     }
 }
