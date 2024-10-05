@@ -43,6 +43,12 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private string _fontOutlineText;
 
     [ObservableProperty]
+    private ObservableCollection<decimal> _fontShadowWidths;
+
+    [ObservableProperty]
+    private decimal _selectedFontShadowWidth;
+
+    [ObservableProperty]
     private string _fontShadowText;
 
     [ObservableProperty]
@@ -70,11 +76,19 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private Color _fontShadowColor;
 
     [ObservableProperty]
+    private int _fontMarginHorizontal;
+
+    [ObservableProperty]
+    private int _fontMarginVertical;
+
+    [ObservableProperty]
     private bool _fontFixRtl;
 
     [ObservableProperty]
-    private bool _fontAlignRight;
+    private ObservableCollection<AlignmentItem> _fontAlignments;
 
+    [ObservableProperty]
+    private AlignmentItem _selectedFontAlignment;
 
     [ObservableProperty]
     private int _videoWidth;
@@ -212,15 +226,22 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         _selectedFontOutline = 2.0m;
 
         _fontShadowText = "Shadow";
-
+        _fontShadowWidths = new ObservableCollection<decimal>(Enumerable.Range(0, 50).Select(p => (decimal)p));
+        _selectedFontShadowWidth = 2.0m;
 
         _fontBoxTypes = new ObservableCollection<FontBoxItem>
         {
-            new FontBoxItem(FontBoxType.None, "None"),
-            new FontBoxItem(FontBoxType.OneBox, "One box"),
-            new FontBoxItem(FontBoxType.BoxPerLine, "Box per line"),
+            new(FontBoxType.None, "None"),
+            new(FontBoxType.OneBox, "One box"),
+            new(FontBoxType.BoxPerLine, "Box per line"),
         };
         _selectedFontBoxType = _fontBoxTypes[0];
+
+        _fontMarginHorizontal = 10;
+        _fontMarginVertical = 10;
+
+        _fontAlignments = new ObservableCollection<AlignmentItem>(AlignmentItem.Alignments);
+        _selectedFontAlignment = AlignmentItem.Alignments[7];
 
         _videoWidth = 1920;
         _videoHeight = 1080;
@@ -330,6 +351,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
                 ButtonGenerate.IsEnabled = true;
                 ButtonOk.IsEnabled = true;
+                ButtonMode.IsEnabled = true;
             });
 
             return;
@@ -339,6 +361,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         {
             ButtonGenerate.IsEnabled = true;
             ButtonOk.IsEnabled = true;
+            ButtonMode.IsEnabled = true;
             UiUtil.OpenFolderFromFileName(jobItem.OutputVideoFileName);
         });
     }
@@ -388,14 +411,15 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         var settings = Se.Settings.Video.BurnIn;
         SelectedFontFactor = settings.FontFactor;
         FontIsBold = settings.FontBold;
-        SelectedFontOutline = settings.Outline;
+        SelectedFontOutline = settings.OutlineWidth;
+        SelectedFontShadowWidth = settings.ShadowWidth;
         SelectedFontFamily = settings.FontName;
         FontTextColor = Color.FromArgb(settings.NonAssaTextColor);
         FontOutlineColor = Color.FromArgb(settings.NonAssaOutlineColor);
         FontBoxColor = Color.FromArgb(settings.NonAssaBoxColor);
         FontShadowColor = Color.FromArgb(settings.NonAssaShadowColor);
         FontFixRtl = settings.NonAssaFixRtlUnicode;
-        FontAlignRight = settings.NonAssaAlignRight;
+        SelectedFontAlignment = FontAlignments.First(p => p.Code == settings.NonAssaAlignment);
     }
 
     private void SaveSettings()
@@ -403,14 +427,15 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         var settings = Se.Settings.Video.BurnIn;
         settings.FontFactor = SelectedFontFactor;
         settings.FontBold = FontIsBold;
-        settings.Outline = SelectedFontOutline;
+        settings.OutlineWidth = SelectedFontOutline;
+        settings.ShadowWidth = SelectedFontShadowWidth;
         settings.FontName = SelectedFontFamily;
         settings.NonAssaTextColor = FontTextColor.ToArgbHex();
         settings.NonAssaOutlineColor = FontOutlineColor.ToArgbHex();
         settings.NonAssaBoxColor = FontBoxColor.ToArgbHex();
         settings.NonAssaShadowColor = FontShadowColor.ToArgbHex();
         settings.NonAssaFixRtlUnicode = FontFixRtl;
-        settings.NonAssaAlignRight = FontAlignRight;
+        settings.NonAssaAlignment = SelectedFontAlignment.Code;
 
         Se.SaveSettings();
     }
@@ -433,6 +458,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         _processedFrames = 0;
         ButtonGenerate.IsEnabled = false;
         ButtonOk.IsEnabled = false;
+        ButtonMode.IsEnabled = false;
         SaveSettings();
         _jobItems = GetJobItems();
         if (_jobItems.Count == 0)
@@ -618,24 +644,27 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         style.FontSize = CalculateFontSize(_jobItems[_jobItemIndex].Width, _jobItems[_jobItemIndex].Height, SelectedFontFactor);
         style.Bold = FontIsBold;
         style.FontName = SelectedFontFamily;
-        style.Background = System.Drawing.Color.FromArgb(255, (int)(FontOutlineColor.Red * 255.0), (int)(FontOutlineColor.Green * 255.0), (int)(FontOutlineColor.Blue * 255.0));
+        style.Background = System.Drawing.Color.FromArgb(255, (int)(FontShadowColor.Red * 255.0), (int)(FontShadowColor.Green * 255.0), (int)(FontShadowColor.Blue * 255.0));
         style.Primary = System.Drawing.Color.FromArgb(255, (int)(FontTextColor.Red * 255.0), (int)(FontTextColor.Green * 255.0), (int)(FontTextColor.Blue * 255.0));
+        style.Outline = System.Drawing.Color.FromArgb(255, (int)(FontOutlineColor.Red * 255.0), (int)(FontOutlineColor.Green * 255.0), (int)(FontOutlineColor.Blue * 255.0));
         style.OutlineWidth = SelectedFontOutline;
-        style.ShadowWidth = style.OutlineWidth * 0.5m;
+        style.ShadowWidth = SelectedFontShadowWidth;
+        style.Alignment = SelectedFontAlignment.Code;
+        style.MarginLeft = FontMarginHorizontal;
+        style.MarginRight = FontMarginHorizontal;
+        style.MarginVertical = FontMarginVertical;
 
-        if (FontAlignRight)
+        if (SelectedFontBoxType.BoxType == FontBoxType.None)
         {
-            style.Alignment = "3";
+            style.BorderStyle = "0"; // bo box
         }
-
-        if (SelectedFontBoxType.BoxType == FontBoxType.BoxPerLine)
+        else if (SelectedFontBoxType.BoxType == FontBoxType.BoxPerLine)
         {
-            style.BorderStyle = "4"; // box - multi line
-            style.ShadowWidth = 0;
+            style.BorderStyle = "3"; // box - per line
         }
         else
         {
-            style.Outline = System.Drawing.Color.FromArgb(255, (int)(FontOutlineColor.Red * 255.0), (int)(FontOutlineColor.Green * 255.0), (int)(FontOutlineColor.Blue * 255.0));
+            style.BorderStyle = "4"; // box - multi line
         }
 
         sub.Header = AdvancedSubStationAlpha.GetHeaderAndStylesFromAdvancedSubStationAlpha(sub.Header, new List<SsaStyle> { style });
@@ -1096,5 +1125,14 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             FontOutlineText = "Box";
             FontShadowText = "Shadow";
         }
+    }
+
+    public void FontShadowWidthChanged(object? sender, TextChangedEventArgs e)
+    {
+
+    }
+
+    public void FontOutlineWidthChanged(object? sender, TextChangedEventArgs e)
+    {
     }
 }

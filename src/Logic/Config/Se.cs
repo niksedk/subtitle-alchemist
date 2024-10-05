@@ -50,7 +50,15 @@ public class Se
         if (System.IO.File.Exists(settingsFileName))
         {
             var json = System.IO.File.ReadAllText(settingsFileName);
-            Settings = JsonSerializer.Deserialize<Se>(json)!;
+
+            try
+            {
+                Settings = JsonSerializer.Deserialize<Se>(json)!;
+            }
+            catch 
+            {
+                Settings = new Se();
+            }
 
             SetDefaultValues();
 

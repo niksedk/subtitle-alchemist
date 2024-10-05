@@ -14,7 +14,8 @@ public class VideoBurnIn
 {
     public string FontName { get; set; }
     public bool FontBold { get; set; }
-    public decimal Outline { get; set; }
+    public decimal OutlineWidth { get; set; }
+    public decimal ShadowWidth { get; set; }
     public double FontFactor { get; set; }
     public string Encoding { get; set; }
     public string Preset { get; set; }
@@ -33,8 +34,10 @@ public class VideoBurnIn
     public string NonAssaTextColor { get; set; }
     public string NonAssaShadowColor { get; set; }
     public string NonAssaOutlineColor { get; internal set; }
-    public bool NonAssaAlignRight { get; set; }
+    public string NonAssaAlignment { get; set; }
     public bool NonAssaFixRtlUnicode { get; set; }
+    public decimal NonAssaMarginVertical { get; set; }
+    public decimal NonAssaMarginHorizontal { get; set; }
     public string EmbedOutputExt { get; set; }
     public string EmbedOutputSuffix { get; set; }
     public string EmbedOutputReplace { get; set; }
@@ -53,12 +56,13 @@ public class VideoBurnIn
         Encoding = "libx264";
         Preset = "medium";
         Crf = "23";
-        Tune = "";
+        Tune = "film";
         AudioEncoding = "copy";
         AudioForceStereo = true;
         AudioSampleRate = "48000";
         FontBold = true;
-        Outline = 6;
+        OutlineWidth = 6;
+        ShadowWidth = 3;
         NonAssaBox = true;
         NonAssaBoxColor = Colors.Black.ToArgbHex();
         NonAssaTextColor = Colors.White.ToArgbHex();
@@ -68,5 +72,6 @@ public class VideoBurnIn
         EmbedOutputReplace = "embed" + Environment.NewLine + "SoftSub" + Environment.NewLine + "SoftSubbed";
         OutputFileSuffix = "_new";
         GenTransparentVideoExtension = ".mkv";
+        NonAssaAlignment = "2";
     }
 }

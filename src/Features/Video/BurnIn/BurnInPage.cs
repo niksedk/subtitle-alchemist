@@ -173,7 +173,7 @@ public class BurnInPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = 125,
+            WidthRequest = 110,
         }.BindDynamicTheme();
         pickerFontFactor.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FontFactors));
         pickerFontFactor.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedFontFactor));
@@ -275,13 +275,16 @@ public class BurnInPage : ContentPage
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
         labelOutline.SetBinding(Label.TextProperty, nameof(vm.FontOutlineText));
-        var pickerOutline = new Picker
+
+        var entryOutlineWidth = new Entry
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = controlWidth,
+            WidthRequest = 75,
+            Keyboard = Keyboard.Numeric,
         }.BindDynamicTheme();
-        pickerOutline.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FontOutlines));
+        entryOutlineWidth.SetBinding(Entry.TextProperty, nameof(vm.SelectedFontOutline));
+        entryOutlineWidth.TextChanged += vm.FontOutlineWidthChanged;
         var boxViewOutlineColor = new BoxView
         {
             WidthRequest = 25,
@@ -301,7 +304,7 @@ public class BurnInPage : ContentPage
             Children =
             {
                 labelOutline,
-                pickerOutline,
+                entryOutlineWidth,
                 boxViewOutlineColor,
             },
         }.BindDynamicTheme();
@@ -316,6 +319,16 @@ public class BurnInPage : ContentPage
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
         labelShadowColor.SetBinding(Label.TextProperty, nameof(vm.FontShadowText));
+        var entryShadowWidth = new Entry
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = 75,
+            Keyboard = Keyboard.Numeric,
+
+        }.BindDynamicTheme();
+        entryShadowWidth.SetBinding(Entry.TextProperty, nameof(vm.SelectedFontShadowWidth));
+        entryShadowWidth.TextChanged += vm.FontShadowWidthChanged;
         var boxViewShadowColor = new BoxView
         {
             WidthRequest = 25,
@@ -335,6 +348,7 @@ public class BurnInPage : ContentPage
             Children =
             {
                 labelShadowColor,
+                entryShadowWidth,
                 boxViewShadowColor,
             },
         }.BindDynamicTheme();
@@ -373,6 +387,101 @@ public class BurnInPage : ContentPage
         }.BindDynamicTheme();
         stack.Children.Add(stackBoxType);
 
+       var labelAlignRight = new Label
+        {
+            Text = "Alignment",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+
+        var pickerAlignment = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerAlignment.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FontAlignments));
+        pickerAlignment.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedFontAlignment));
+
+        var stackAlignRight = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelAlignRight,
+                pickerAlignment,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackAlignRight);
+
+        var labelMargin = new Label
+        {
+            Text = "Margin",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+
+        var labelMarginHorizontal = new Label
+        {
+            Text = "Horizontal",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        
+        var entryMarginHorizontal = new Entry
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = 75,
+            Keyboard = Keyboard.Numeric,
+        }.BindDynamicTheme();
+        entryMarginHorizontal.SetBinding(Entry.TextProperty, nameof(vm.FontMarginHorizontal));
+
+        var labelMarginVertical = new Label
+        {
+            Text = "Vertical",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+
+        var entryMarginVertical = new Entry
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = 75,
+            Keyboard = Keyboard.Numeric,
+        }.BindDynamicTheme();
+        entryMarginVertical.SetBinding(Entry.TextProperty, nameof(vm.FontMarginVertical));
+
+        var stackMargin = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelMargin,
+                labelMarginHorizontal,
+                entryMarginHorizontal,
+                labelMarginVertical,
+                entryMarginVertical,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackMargin);
+
+
         var labelFixRtl = new Label
         {
             Text = "Fix RTL",
@@ -401,36 +510,6 @@ public class BurnInPage : ContentPage
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackFixRtl);
-
-        var labelAlignRight = new Label
-        {
-            Text = "Align right",
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 0, 0),
-            WidthRequest = textWidth,
-        }.BindDynamicThemeTextColorOnly();
-        var switchAlignRight = new Switch
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme();
-        switchAlignRight.SetBinding(Switch.IsToggledProperty, nameof(vm.FontAlignRight));
-        var stackAlignRight = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Margin = new Thickness(0, 0, 0, 0),
-            Spacing = 5,
-            Children =
-            {
-                labelAlignRight,
-                switchAlignRight,
-            },
-        }.BindDynamicTheme();
-        stack.Children.Add(stackAlignRight);
-
 
         var border = new Border
         {
