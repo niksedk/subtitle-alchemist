@@ -33,9 +33,10 @@ namespace SubtitleAlchemist.Features.Video.BurnIn
         [RelayCommand]
         private void Ok()
         {
-            Se.Settings.Video.BurnIn.UseOutputFolder = _useOutputFolder;
-            Se.Settings.Video.BurnIn.OutputFolder = _outputFolder;
-            Se.Settings.Video.BurnIn.BurnInSuffix = _videoOutputSuffix;
+            Se.Settings.Video.BurnIn.UseOutputFolder = UseOutputFolder;
+            Se.Settings.Video.BurnIn.OutputFolder = OutputFolder;
+            Se.Settings.Video.BurnIn.BurnInSuffix = VideoOutputSuffix;
+            Se.SaveSettings();
 
             MainThread.BeginInvokeOnMainThread(() =>
             {

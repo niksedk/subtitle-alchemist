@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.Settings;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SkiaSharp.Views.Maui;
 using SubtitleAlchemist.Controls.ColorPickerControl;
@@ -164,7 +165,14 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private string _selectedAudioBitRate;
 
+    [ObservableProperty]
+    private string _outputSourceFolder;
 
+    [ObservableProperty]
+    private bool _useOutputFolderVisible;
+
+    [ObservableProperty]
+    private bool _useSourceFolderVisible;
 
     [ObservableProperty]
     private bool _cutIsActive;
@@ -206,6 +214,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public ProgressBar ProgressBar { get; set; }
     public Image ImagePreview { get; set; }
     public Border BatchView { get; set; }
+    public Label LabelOutputFolder { get; set; }
 
     private Subtitle _subtitle = new();
     private bool _loading = true;
@@ -487,6 +496,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         FontShadowColor = Color.FromArgb(settings.NonAssaShadowColor);
         FontFixRtl = settings.NonAssaFixRtlUnicode;
         SelectedFontAlignment = FontAlignments.First(p => p.Code == settings.NonAssaAlignment);
+        OutputSourceFolder = settings.OutputFolder; 
+        UseOutputFolderVisible = settings.UseOutputFolder;
+        UseSourceFolderVisible = !settings.UseOutputFolder;
     }
 
     private void SaveSettings()
@@ -1302,5 +1314,24 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private async Task BatchOutputProperties()
     {
         var result = await _popupService.ShowPopupAsync<OutputPropertiesPopupModel>(CancellationToken.None);
+
+        UseOutputFolderVisible = Se.Settings.Video.BurnIn.UseOutputFolder;
+        UseSourceFolderVisible = !Se.Settings.Video.BurnIn.UseOutputFolder;
+        OutputSourceFolder = Se.Settings.Video.BurnIn.OutputFolder;
+    }
+
+    public void OutputFolderLinkMouseEntered(object? sender, PointerEventArgs e)
+    {
+        LabelOutputFolder.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
+    }
+
+    public void OutputFolderLinkMouseExited(object? sender, PointerEventArgs e)
+    {
+        LabelOutputFolder.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+    }
+
+    public void OutputFolderLinkMouseClicked(object? sender, TappedEventArgs e)
+    {
+        UiUtil.OpenFolder(Se.Settings.Video.BurnIn.OutputFolder);
     }
 }

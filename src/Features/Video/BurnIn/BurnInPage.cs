@@ -1461,12 +1461,31 @@ public class BurnInPage : ContentPage
             Command = vm.BatchOutputPropertiesCommand,
         }.BindDynamicTheme();
 
-        var labelOutputProperties = new Label
+        var labelOutputUseSource = new Label
         {
-            Text = "Output properties",
+            Text = "Use source folder",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicThemeTextColorOnly();
+        labelOutputUseSource.SetBinding(IsVisibleProperty, nameof(vm.UseSourceFolderVisible));
+
+        var labelOutputFolder = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            TextDecorations = TextDecorations.Underline,
+        }.BindDynamicThemeTextColorOnly();
+        labelOutputFolder.SetBinding(Label.TextProperty, nameof(vm.OutputSourceFolder));
+        labelOutputFolder.SetBinding(IsVisibleProperty, nameof(vm.UseOutputFolderVisible));
+
+        var pointerGesture = new PointerGestureRecognizer();
+        pointerGesture.PointerEntered += vm.OutputFolderLinkMouseEntered;
+        pointerGesture.PointerExited += vm.OutputFolderLinkMouseExited;
+        labelOutputFolder.GestureRecognizers.Add(pointerGesture);
+        var tapGesture = new TapGestureRecognizer();
+        tapGesture.Tapped += vm.OutputFolderLinkMouseClicked;
+        labelOutputFolder.GestureRecognizers.Add(tapGesture);
+        vm.LabelOutputFolder = labelOutputFolder;
 
         var stackButtons = new StackLayout
         {
@@ -1481,7 +1500,8 @@ public class BurnInPage : ContentPage
                 buttonRemove,
                 buttonClear,
                 buttonOutputProperties,
-                labelOutputProperties,
+                labelOutputUseSource,
+                labelOutputFolder,
             },
         }.BindDynamicTheme();
 
