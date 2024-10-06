@@ -199,6 +199,40 @@ public class BurnInPage : ContentPage
         var textWidth = 150;
         var controlWidth = 200;
 
+        var labelFontName = new Label
+        {
+            Text = "Font name",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
+
+        var pickerFontName = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerFontName.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FontNames));
+        pickerFontName.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedFontName));
+        pickerFontName.SelectedIndexChanged += vm.FontNameChanged;
+
+        var stackFontName = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                labelFontName,
+                pickerFontName,
+            },
+        }.BindDynamicTheme();
+        stack.Children.Add(stackFontName);
+
         var labelFontFactor = new Label
         {
             Text = "Font factor",

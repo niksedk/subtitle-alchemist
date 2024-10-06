@@ -4,9 +4,10 @@ namespace SubtitleAlchemist.Logic.Media;
 
 public static class TextToImageGenerator
 {
-    public static SKBitmap GenerateImage(string text, float fontSize, bool isBold, SKColor textColor, SKColor outlineColor, SKColor shadowColor, float outlineWidth, float shadowWidth)
+    public static SKBitmap GenerateImage(string text, string fontName, float fontSize, bool isBold,
+        SKColor textColor, SKColor outlineColor, SKColor shadowColor, float outlineWidth, float shadowWidth)
     {
-        using var typeface = SKTypeface.FromFamilyName("Arial", isBold ? SKFontStyleWeight.Bold : SKFontStyleWeight.Normal, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
+        using var typeface = SKTypeface.FromFamilyName(fontName, isBold ? SKFontStyleWeight.Bold : SKFontStyleWeight.Normal, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
         using var paint = new SKPaint();
         paint.Typeface = typeface;
         paint.TextSize = fontSize;

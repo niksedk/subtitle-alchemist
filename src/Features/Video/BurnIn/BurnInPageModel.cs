@@ -3,7 +3,6 @@ using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
-using Nikse.SubtitleEdit.Core.Settings;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SkiaSharp.Views.Maui;
 using SubtitleAlchemist.Controls.ColorPickerControl;
@@ -23,6 +22,12 @@ namespace SubtitleAlchemist.Features.Video.BurnIn;
 
 public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 {
+    [ObservableProperty]
+    private ObservableCollection<string> _fontNames;
+
+    [ObservableProperty]
+    private string _selectedFontName;
+
     [ObservableProperty]
     private ObservableCollection<double> _fontFactors;
 
@@ -52,12 +57,6 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
     [ObservableProperty]
     private string _fontShadowText;
-
-    [ObservableProperty]
-    private ObservableCollection<string> _fontFamilies;
-
-    [ObservableProperty]
-    private string _selectedFontFamily;
 
     [ObservableProperty]
     private ObservableCollection<FontBoxItem> _fontBoxTypes;
@@ -238,6 +237,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     {
         _popupService = popupService;
         _fileHelper = fileHelper;
+
+        _fontNames = new ObservableCollection<string>(FontHelper.GetSystemFonts());
+        _selectedFontName = _fontNames.First();
 
         // font factors between 0-1
         _fontFactors = new ObservableCollection<double>(
@@ -489,14 +491,14 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         FontIsBold = settings.FontBold;
         SelectedFontOutline = settings.OutlineWidth;
         SelectedFontShadowWidth = settings.ShadowWidth;
-        SelectedFontFamily = settings.FontName;
+        SelectedFontName = settings.FontName;
         FontTextColor = Color.FromArgb(settings.NonAssaTextColor);
         FontOutlineColor = Color.FromArgb(settings.NonAssaOutlineColor);
         FontBoxColor = Color.FromArgb(settings.NonAssaBoxColor);
         FontShadowColor = Color.FromArgb(settings.NonAssaShadowColor);
         FontFixRtl = settings.NonAssaFixRtlUnicode;
         SelectedFontAlignment = FontAlignments.First(p => p.Code == settings.NonAssaAlignment);
-        OutputSourceFolder = settings.OutputFolder; 
+        OutputSourceFolder = settings.OutputFolder;
         UseOutputFolderVisible = settings.UseOutputFolder;
         UseSourceFolderVisible = !settings.UseOutputFolder;
     }
@@ -508,7 +510,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         settings.FontBold = FontIsBold;
         settings.OutlineWidth = SelectedFontOutline;
         settings.ShadowWidth = SelectedFontShadowWidth;
-        settings.FontName = SelectedFontFamily;
+        settings.FontName = SelectedFontName;
         settings.NonAssaTextColor = FontTextColor.ToArgbHex();
         settings.NonAssaOutlineColor = FontOutlineColor.ToArgbHex();
         settings.NonAssaBoxColor = FontBoxColor.ToArgbHex();
@@ -740,7 +742,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         var style = AdvancedSubStationAlpha.GetSsaStyle("Default", sub.Header);
         style.FontSize = CalculateFontSize(JobItems[_jobItemIndex].Width, JobItems[_jobItemIndex].Height, SelectedFontFactor);
         style.Bold = FontIsBold;
-        style.FontName = SelectedFontFamily;
+        style.FontName = SelectedFontName;
         style.Background = System.Drawing.Color.FromArgb(255, (int)(FontShadowColor.Red * 255.0), (int)(FontShadowColor.Green * 255.0), (int)(FontShadowColor.Blue * 255.0));
         style.Primary = System.Drawing.Color.FromArgb(255, (int)(FontTextColor.Red * 255.0), (int)(FontTextColor.Green * 255.0), (int)(FontTextColor.Blue * 255.0));
         style.Outline = System.Drawing.Color.FromArgb(255, (int)(FontOutlineColor.Red * 255.0), (int)(FontOutlineColor.Green * 255.0), (int)(FontOutlineColor.Blue * 255.0));
@@ -778,11 +780,18 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             ext = ".mkv";
         };
 
-        var fileName = Path.Combine(Path.GetDirectoryName(videoFileName)!, nameNoExt + "_burned-in" + ext);
+        var suffix = Se.Settings.Video.BurnIn.BurnInSuffix;
+        var fileName = Path.Combine(Path.GetDirectoryName(videoFileName)!, nameNoExt + suffix + ext);
+        if (Se.Settings.Video.BurnIn.UseOutputFolder &&
+            !string.IsNullOrEmpty(Se.Settings.Video.BurnIn.OutputFolder) &&
+            Directory.Exists(Se.Settings.Video.BurnIn.OutputFolder))
+        {
+            fileName = Path.Combine(Path.GetDirectoryName(videoFileName)!, nameNoExt + suffix + ext);
+        }
 
         if (File.Exists(fileName))
         {
-            fileName = Path.Combine(Path.GetDirectoryName(videoFileName)!, nameNoExt + "_burned-in_" + Guid.NewGuid() + ext);
+            fileName = fileName.Remove(fileName.Length - ext.Length) + "_" + Guid.NewGuid() + ext;
         }
 
         return fileName;
@@ -807,6 +816,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         var fontSize = (float)CalculateFontSize(VideoWidth, VideoHeight, SelectedFontFactor);
         var image = TextToImageGenerator.GenerateImage(
             "This is a test",
+            SelectedFontName,
             fontSize,
             FontIsBold,
             FontTextColor.ToSKColor(),
@@ -1263,6 +1273,11 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     }
 
     public void FontOutlineWidthChanged(object? sender, TextChangedEventArgs e)
+    {
+        UpdateNonAssaPreview();
+    }
+
+    public void FontNameChanged(object? sender, EventArgs e)
     {
         UpdateNonAssaPreview();
     }
