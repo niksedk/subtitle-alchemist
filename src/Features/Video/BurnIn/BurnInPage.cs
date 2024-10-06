@@ -1487,6 +1487,14 @@ public class BurnInPage : ContentPage
             Command = vm.BatchClearCommand,
         }.BindDynamicTheme();
 
+        var buttonPickSubtitleFile = new Button
+        {
+            Text = "Pick subtitle file",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.BatchClearCommand,
+        }.BindDynamicTheme();
+
         var buttonOutputProperties = new Button
         {
             Text = "Output properties",
@@ -1533,6 +1541,7 @@ public class BurnInPage : ContentPage
                 buttonAdd,
                 buttonRemove,
                 buttonClear,
+                buttonPickSubtitleFile,
                 buttonOutputProperties,
                 labelOutputUseSource,
                 labelOutputFolder,

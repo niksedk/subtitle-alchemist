@@ -238,6 +238,27 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         _popupService = popupService;
         _fileHelper = fileHelper;
 
+        _fontBoxColor = Colors.Wheat;
+        _fontOutlineColor = Colors.Black;
+        _fontShadowColor = Colors.Black;
+        _videoCrfText = string.Empty;
+        _videoCrf =new();
+        _videoTuneFor = new();
+        _videoExtension = new();
+        _outputSourceFolder = string.Empty;
+        _progressText = string.Empty;
+        VideoPlayer = new();
+        LabelHelp = new();
+        ButtonGenerate = new();
+        ButtonOk = new();
+        ButtonMode = new();
+        ProgressValue = 0;
+        ProgressBar = new();
+        ImagePreview = new();
+        BatchView = new();
+        LabelOutputFolder = new();
+        _videoFileName = string.Empty;
+
         _fontNames = new ObservableCollection<string>(FontHelper.GetSystemFonts());
         _selectedFontName = _fontNames.First();
 
@@ -1301,12 +1322,45 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             Height = mediaInfo.Dimension.Height,
             Size = Utilities.FormatBytesToDisplayFileSize(fileInfo.Length),
             Resolution = mediaInfo.Dimension.ToString(),
+            SubtitleFileName = TryGetSubtitleFileName(fileName),
         };
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
             JobItems.Add(jobItem);
         });
+    }
+
+    private static string TryGetSubtitleFileName(string fileName)
+    {
+        var srt = Path.ChangeExtension(fileName, ".srt");
+        if (File.Exists(srt))
+        {
+            return srt;
+        }
+
+        var assa = Path.ChangeExtension(fileName, ".ass");
+        if (File.Exists(srt))
+        {
+            return assa;
+        }
+
+        var dir = Path.GetDirectoryName(fileName);
+        var searchPath = Path.GetFileNameWithoutExtension(fileName);
+        var files = Directory.GetFiles(dir, searchPath + "*");
+        var subtitleExtensions = SubtitleFormat.AllSubtitleFormats.Select(p => p.Extension).Distinct();
+        foreach (var ext in subtitleExtensions)
+        {
+            foreach (var file in files)
+            {
+                if (file.EndsWith(ext, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return file;
+                }
+            }
+        }
+
+        return string.Empty;
     }
 
     [RelayCommand]
@@ -1323,6 +1377,22 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private void BatchClear()
     {
         JobItems.Clear();
+    }
+
+
+    [RelayCommand]
+    private async Task BatchPickSubtitleFile()
+    {
+        if (SelectedJobItem == null)
+        {
+            return;
+        }
+
+        var fileName = await _fileHelper.PickAndShowSubtitleFile("Open subtitle file");
+        if (string.IsNullOrEmpty(fileName))
+        {
+            SelectedJobItem.SubtitleFileName = fileName;
+        }
     }
 
     [RelayCommand]
