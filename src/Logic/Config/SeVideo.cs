@@ -44,7 +44,7 @@ public class VideoBurnIn
     public bool DeleteInputVideoFile { get; set; }
     public bool UseOutputFolder { get; set; }
     public string OutputFolder { get; set; }
-    public string OutputFileSuffix { get; set; }
+    public string BurnInSuffix { get; set; }
 
     public VideoBurnIn()
     {
@@ -70,7 +70,7 @@ public class VideoBurnIn
         NonAssaOutlineColor = Colors.Black.ToArgbHex();
         EmbedOutputSuffix = "embed";
         EmbedOutputReplace = "embed" + Environment.NewLine + "SoftSub" + Environment.NewLine + "SoftSubbed";
-        OutputFileSuffix = "_new";
+        BurnInSuffix = "_new";
         GenTransparentVideoExtension = ".mkv";
         NonAssaAlignment = "2";
     }

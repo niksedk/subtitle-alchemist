@@ -1,11 +1,10 @@
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using Nikse.SubtitleEdit.Core.Common;
-using SkiaSharp.Views.Maui.Controls;
-using SpriteKit;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Video.BurnIn;
 
@@ -21,8 +20,9 @@ public class BurnInPage : ContentPage
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },  // title
-                new RowDefinition { Height = GridLength.Auto }, 
-                new RowDefinition { Height = GridLength.Auto }, 
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto }, // help link
                 new RowDefinition { Height = GridLength.Auto }, // progress bar
@@ -52,12 +52,22 @@ public class BurnInPage : ContentPage
         pageGrid.Add(labelTitle, 0);
         pageGrid.SetColumnSpan(labelTitle, 3);
 
-        pageGrid.Add(MakeTextPropertiesView(vm), 0, 1);
-        pageGrid.Add(MakeVideoPropertiesView(vm), 0, 2);
+        var textView = MakeTextPropertiesView(vm);
+        pageGrid.Add(textView, 0, 1);
+        pageGrid.SetRowSpan(textView, 2);
+
+        var videoView = MakeVideoPropertiesView(vm);
+        pageGrid.Add(videoView, 0, 3);
+
         pageGrid.Add(MakeCutPropertiesView(vm), 1, 1);
-        pageGrid.Add(MakeAudioPropertiesView(vm), 1, 2);
-        pageGrid.Add(MakeTargetFilePropertiesView(vm), 0, 3);
-        pageGrid.Add(MakeVideoPlayerView(vm), 1, 3);
+        pageGrid.Add(MakePreviewView(vm), 1, 2);
+        pageGrid.Add(MakeAudioPropertiesView(vm), 1, 3);
+        pageGrid.Add(MakeTargetFilePropertiesView(vm), 0, 4);
+        pageGrid.Add(MakeVideoPlayerView(vm), 1, 4);
+
+        vm.BatchView = MakeBatchView(vm);
+        pageGrid.Add(vm.BatchView, 0, 4);
+        pageGrid.SetColumnSpan(vm.BatchView, 2);
 
         var labelHelp = new Label
         {
@@ -77,7 +87,7 @@ public class BurnInPage : ContentPage
         labelHelp.GestureRecognizers.Add(pointerGestureHelp);
         vm.LabelHelp = labelHelp;
 
-        pageGrid.Add(labelHelp, 0, 4);
+        pageGrid.Add(labelHelp, 0, 5);
         pageGrid.SetColumnSpan(labelHelp, 2);
 
         var progressBar = new ProgressBar
@@ -91,7 +101,7 @@ public class BurnInPage : ContentPage
         };
         progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));
         vm.ProgressBar = progressBar;
-        pageGrid.Add(progressBar, 0, 5);
+        pageGrid.Add(progressBar, 0, 6);
         pageGrid.SetColumnSpan(progressBar, 2);
 
 
@@ -159,7 +169,7 @@ public class BurnInPage : ContentPage
             },
         }.BindDynamicTheme();
 
-        pageGrid.Add(buttonBar, 0, 6);
+        pageGrid.Add(buttonBar, 0, 7);
 
         var scrollView = new ScrollView
         {
@@ -188,7 +198,7 @@ public class BurnInPage : ContentPage
 
         var textWidth = 150;
         var controlWidth = 200;
-        
+
         var labelFontFactor = new Label
         {
             Text = "Font factor",
@@ -248,6 +258,7 @@ public class BurnInPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
         switchFontBold.SetBinding(Switch.IsToggledProperty, nameof(vm.FontIsBold));
+        switchFontBold.Toggled += vm.FontBoldToggled;
         var stackFontBold = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -417,7 +428,7 @@ public class BurnInPage : ContentPage
         }.BindDynamicTheme();
         stack.Children.Add(stackBoxType);
 
-       var labelAlignRight = new Label
+        var labelAlignRight = new Label
         {
             Text = "Alignment",
             HorizontalOptions = LayoutOptions.Start,
@@ -466,7 +477,7 @@ public class BurnInPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicThemeTextColorOnly();
-        
+
         var entryMarginHorizontal = new Entry
         {
             HorizontalOptions = LayoutOptions.Start,
@@ -747,7 +758,7 @@ public class BurnInPage : ContentPage
 
         var labelPixelFormat = new Label
         {
-            Text = "Pixel Format",
+            Text = "Pixel format",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
@@ -779,7 +790,7 @@ public class BurnInPage : ContentPage
 
         var labelTuneFor = new Label
         {
-            Text = "Tune For",
+            Text = "Tune for",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
@@ -838,8 +849,7 @@ public class BurnInPage : ContentPage
             Spacing = 5,
         };
 
-        var textWidth = 200;
-
+        var textWidth = 120;
 
         var labelCutEnabled = new Label
         {
@@ -847,7 +857,6 @@ public class BurnInPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
-            FontSize = 16,
         }.BindDynamicThemeTextColorOnly();
         var cutSwitch = new Switch
         {
@@ -871,10 +880,10 @@ public class BurnInPage : ContentPage
 
         var labelFromTime = new Label
         {
-            Text = "From Time",
+            Text = "From time",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 0, 0),
+            Margin = new Thickness(25, 0, 0, 0),
             FontSize = 16,
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
@@ -901,10 +910,10 @@ public class BurnInPage : ContentPage
 
         var labelToTime = new Label
         {
-            Text = "To Time",
+            Text = "To time",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 0, 0),
+            Margin = new Thickness(25, 0, 0, 0),
             FontSize = 16,
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
@@ -956,6 +965,52 @@ public class BurnInPage : ContentPage
         return border;
     }
 
+    private static IView MakePreviewView(BurnInPageModel vm)
+    {
+        var stack = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+        };
+
+        var labelCutEnabled = new Label
+        {
+            Text = "Preview",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        stack.Children.Add(labelCutEnabled);
+
+        var imagePreview = new Image
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(10),
+        };
+        vm.ImagePreview = imagePreview;
+        stack.Children.Add(imagePreview);
+
+        var border = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(15),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = stack,
+        }.BindDynamicTheme();
+
+        return border;
+    }
+
     private static IView MakeAudioPropertiesView(BurnInPageModel vm)
     {
         var stack = new StackLayout
@@ -967,17 +1022,17 @@ public class BurnInPage : ContentPage
             Spacing = 5,
         };
 
-        var textWidth = 200;
+        var textWidth = 150;
 
         var labelEncoding = new Label
-       {
-           Text = "Encoding",
-           HorizontalOptions = LayoutOptions.Start,
-           VerticalOptions = LayoutOptions.Center,
-           Margin = new Thickness(0, 0, 0, 0),
-           FontSize = 16,
-           WidthRequest = textWidth,
-       }.BindDynamicThemeTextColorOnly();
+        {
+            Text = "Encoding",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            FontSize = 16,
+            WidthRequest = textWidth,
+        }.BindDynamicThemeTextColorOnly();
         var pickerEncoding = new Picker
         {
             HorizontalOptions = LayoutOptions.Start,
@@ -1035,7 +1090,7 @@ public class BurnInPage : ContentPage
 
         var labelSampleRate = new Label
         {
-            Text = "Sample Rate",
+            Text = "Sample rate",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
@@ -1067,7 +1122,7 @@ public class BurnInPage : ContentPage
 
         var labelBitRate = new Label
         {
-            Text = "Bit Rate",
+            Text = "Bit rate",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
@@ -1126,7 +1181,7 @@ public class BurnInPage : ContentPage
             Spacing = 5,
         };
 
-        var textWidth = 200;
+        var textWidth = 250;
 
 
         var labelTargetFileSize = new Label
@@ -1135,7 +1190,6 @@ public class BurnInPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
-            FontSize = 16,
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
         var switchTargetFileSize = new Switch
@@ -1172,7 +1226,7 @@ public class BurnInPage : ContentPage
             Text = "100",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = textWidth,
+            WidthRequest = 120,
             Keyboard = Keyboard.Numeric,
         }.BindDynamicTheme();
         var stackTargetFileSizeValue = new StackLayout
@@ -1224,6 +1278,228 @@ public class BurnInPage : ContentPage
                 CornerRadius = new CornerRadius(5)
             },
             Content = vm.VideoPlayer,
+        }.BindDynamicTheme();
+
+        return border;
+    }
+
+    private static Border MakeBatchView(BurnInPageModel vm)
+    {
+        var grid = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto }, // header
+                new RowDefinition { Height = GridLength.Star }, // collection view of batch items
+                new RowDefinition { Height = GridLength.Auto }, // buttons
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Star },
+            },
+            Margin = new Thickness(2),
+            Padding = new Thickness(30, 20, 30, 10),
+            RowSpacing = 5,
+            ColumnSpacing = 5,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        }.BindDynamicTheme();
+
+
+        // Create the header grid
+        var gridHeader = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
+            Padding = new Thickness(5),
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = new GridLength(5, GridUnitType.Star) }, // Video file
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Resolution
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Size
+                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Subtitle file
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Status
+            },
+        };
+
+        // Add headers
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Video file",
+                FontAttributes = FontAttributes.Bold,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 0);
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Resolution",
+                FontAttributes = FontAttributes.Bold,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 1);
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Size",
+                FontAttributes = FontAttributes.Bold,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 2);
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Subtitle file",
+                FontAttributes = FontAttributes.Bold,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 3);
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Status",
+                FontAttributes = FontAttributes.Bold,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 4);
+
+        // Add the header grid to the main grid
+        grid.Add(gridHeader, 0, 0);
+
+
+        var collectionView = new CollectionView
+        {
+            SelectionMode = SelectionMode.Single,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            HeightRequest = 250,
+            ItemTemplate = new DataTemplate(() =>
+            {
+                var jobItemGrid = new Grid
+                {
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = new GridLength(5, GridUnitType.Star) }, // Video file
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Resolution
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Size
+                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Subtitle file
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Status
+                    },
+                };
+
+                var labelVideoFile = new Label
+                {
+                    VerticalTextAlignment = TextAlignment.Center,
+                }.BindDynamicThemeTextColorOnly();
+                labelVideoFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.InputVideoFileName));
+                jobItemGrid.Add(labelVideoFile, 0, 0);
+
+                var labelResolution = new Label
+                {
+                    VerticalTextAlignment = TextAlignment.Center
+                }.BindDynamicThemeTextColorOnly();
+                labelResolution.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Resolution));
+                jobItemGrid.Add(labelResolution, 1, 0);
+
+                var labelSize = new Label
+                {
+                    VerticalTextAlignment = TextAlignment.Center
+                }.BindDynamicThemeTextColorOnly();
+                labelSize.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Size));
+                jobItemGrid.Add(labelSize, 2, 0);
+
+                var labelSubtitleFile = new Label
+                {
+                    VerticalTextAlignment = TextAlignment.Center
+                }.BindDynamicThemeTextColorOnly();
+                labelSubtitleFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.SubtitleFileName));
+                jobItemGrid.Add(labelSubtitleFile, 3, 0);
+
+                var labelStatus = new Label
+                {
+                    VerticalTextAlignment = TextAlignment.Center
+                }.BindDynamicThemeTextColorOnly();
+                labelStatus.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Status));
+                jobItemGrid.Add(labelStatus, 4, 0);
+
+                return jobItemGrid;
+            }),
+        }.BindDynamicTheme();
+
+        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.JobItems), BindingMode.TwoWay);
+        collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedJobItem));
+        //collectionView.BindingContext = vm;
+
+        grid.Add(collectionView, 0, 1);
+
+
+        var buttonAdd = new Button
+        {
+            Text = "Add",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.BatchAddCommand,
+        }.BindDynamicTheme();
+
+        var buttonRemove = new Button
+        {
+            Text = "Remove",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.BatchRemoveCommand,
+        }.BindDynamicTheme();
+
+        var buttonClear = new Button
+        {
+            Text = "Clear",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.BatchClearCommand,
+        }.BindDynamicTheme();
+
+        var buttonOutputProperties = new Button
+        {
+            Text = "Output properties",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.BatchOutputPropertiesCommand,
+        }.BindDynamicTheme();
+
+        var labelOutputProperties = new Label
+        {
+            Text = "Output properties",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+
+        var stackButtons = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                buttonAdd,
+                buttonRemove,
+                buttonClear,
+                buttonOutputProperties,
+                labelOutputProperties,
+            },
+        }.BindDynamicTheme();
+
+        grid.Add(stackButtons, 0, 2);
+
+
+        var border = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(15),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = grid,
         }.BindDynamicTheme();
 
         return border;

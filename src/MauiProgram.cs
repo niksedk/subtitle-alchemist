@@ -116,6 +116,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<ChangeFrameRatePopup, ChangeFrameRatePopupModel>();
             builder.Services.AddTransientPopup<ChangeSpeedPopup, ChangeSpeedPopupModel>();
             builder.Services.AddTransientPopup<EditCurrentTextPopup, EditCurrentTextPopupModel>();
+            builder.Services.AddTransientPopup<OutputPropertiesPopup, OutputPropertiesPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

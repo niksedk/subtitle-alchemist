@@ -3,8 +3,11 @@ using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using SkiaSharp.Views.Maui;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections.ObjectModel;
@@ -13,12 +16,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
-using Nikse.SubtitleEdit.Core.SubtitleFormats;
-using SubtitleAlchemist.Logic.Config;
 using Timer = System.Timers.Timer;
-using System;
-using SkiaSharp;
-using SkiaSharp.Views.Maui;
 
 namespace SubtitleAlchemist.Features.Video.BurnIn;
 
@@ -193,6 +191,12 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private double _progressValue;
 
+    [ObservableProperty]
+    private ObservableCollection<BurnInJobItem> _jobItems;
+
+    [ObservableProperty]
+    private BurnInJobItem? _selectedJobItem;
+
     public BurnInPage? Page { get; set; }
     public MediaElement VideoPlayer { get; set; }
     public Label LabelHelp { get; set; }
@@ -201,26 +205,30 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public Button ButtonMode { get; internal set; }
     public ProgressBar ProgressBar { get; set; }
     public Image ImagePreview { get; set; }
+    public Border BatchView { get; set; }
 
     private Subtitle _subtitle = new();
-    private readonly IPopupService _popupService;
     private bool _loading = true;
     private string _videoFileName;
     private StringBuilder _log;
-    private static readonly Regex FrameFinderRegex = new Regex(@"[Ff]rame=\s*\d+", RegexOptions.Compiled);
+    private static readonly Regex FrameFinderRegex = new(@"[Ff]rame=\s*\d+", RegexOptions.Compiled);
     private long _startTicks;
     private long _processedFrames;
     private Process? _onePassProcess;
     private readonly Timer _timerOnePass = new();
     private bool _doAbort;
     private bool _isBatchMode;
-    private List<BurnInJobItem> _jobItems = new();
     private int _jobItemIndex = -1;
     private FfmpegMediaInfo2? _mediaInfo;
 
-    public BurnInPageModel(IPopupService popupService)
+    private readonly IPopupService _popupService;
+    private readonly IFileHelper _fileHelper;
+
+
+    public BurnInPageModel(IPopupService popupService, IFileHelper fileHelper)
     {
         _popupService = popupService;
+        _fileHelper = fileHelper;
 
         // font factors between 0-1
         _fontFactors = new ObservableCollection<double>(
@@ -304,6 +312,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         };
         _selectedAudioBitRate = _audioBitRates[2];
 
+
+        _jobItems = new ObservableCollection<BurnInJobItem>();
+
         _buttonModeText = "Batch mode";
 
         _log = new StringBuilder();
@@ -333,22 +344,20 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             //var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
             //// ElapsedText = $"Time elapsed: {new TimeCode(durationMs).ToShortDisplayString()}";
 
-            var percentage = (int)Math.Round((double)_processedFrames / _jobItems[_jobItemIndex].TotalFrames * 100.0, MidpointRounding.AwayFromZero);
+            var percentage = (int)Math.Round((double)_processedFrames / JobItems[_jobItemIndex].TotalFrames * 100.0, MidpointRounding.AwayFromZero);
             var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
             var msPerFrame = (float)durationMs / _processedFrames;
-            var estimatedTotalMs = msPerFrame * _jobItems[_jobItemIndex].TotalFrames;
+            var estimatedTotalMs = msPerFrame * JobItems[_jobItemIndex].TotalFrames;
             var estimatedLeft = ProgressHelper.ToProgressTime(estimatedTotalMs - durationMs);
 
             ProgressText = $"Generating video... {percentage}%     {estimatedLeft}";
-
-
             return;
         }
 
         _timerOnePass.Stop();
         ProgressText = string.Empty;
 
-        var jobItem = _jobItems[_jobItemIndex];
+        var jobItem = JobItems[_jobItemIndex];
 
         if (!File.Exists(jobItem.OutputVideoFileName))
         {
@@ -379,14 +388,42 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        JobItems[_jobItemIndex].Status = "Done";
+
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            ProgressValue = 0;
+
+            if (_jobItemIndex < JobItems.Count - 1)
+            {
+                _jobItemIndex++;
+                var nextJobItem = JobItems[_jobItemIndex];
+                nextJobItem.Status = "Generating...";
+                jobItem.AssaSubtitleFileName = MakeAssa(jobItem.SubtitleFileName);
+                _startTicks = DateTime.UtcNow.Ticks;
+                _processedFrames = 0;
+                _onePassProcess = GetFfmpegProcess(nextJobItem);
+                var result = RunOnePassEncoding(jobItem);
+                if (result)
+                {
+                    _timerOnePass.Start();
+                }
+                return;
+            }
+
             ButtonGenerate.IsEnabled = true;
             ButtonOk.IsEnabled = true;
             ButtonMode.IsEnabled = true;
             ProgressBar.IsVisible = false;
-            ProgressValue = 0;
-            UiUtil.OpenFolderFromFileName(jobItem.OutputVideoFileName);
+
+            if (JobItems.Count == 1)
+            {
+                UiUtil.OpenFolderFromFileName(jobItem.OutputVideoFileName);
+            }
+            else
+            {
+                // TODO: show info
+            }
         });
     }
 
@@ -403,24 +440,29 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         }
 
 
-        //   Page?.Initialize(_subtitle, this);
-
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 LoadSettings();
 
+                BatchView.IsVisible = false;
+                bool batchMode;
                 if (string.IsNullOrWhiteSpace(_videoFileName))
                 {
-                    _isBatchMode = true;
+                    batchMode = true;
                 }
                 else
                 {
+                    batchMode = false;
                     _mediaInfo = FfmpegMediaInfo2.Parse(_videoFileName);
                     VideoWidth = _mediaInfo.Dimension.Width;
                     VideoHeight = _mediaInfo.Dimension.Height;
-                    _isBatchMode = false;
+                }
+
+                if (batchMode != _isBatchMode)
+                {
+                    ModeSwitch();
                 }
 
                 _loading = false;
@@ -487,18 +529,24 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         ProgressValue = 0;
         ProgressBar.IsVisible = true;
         SaveSettings();
-        _jobItems = GetJobItems();
-        if (_jobItems.Count == 0)
+
+
+        if (!_isBatchMode)
+        {
+            JobItems = GetCurrentVideoAsJobItems();
+        }
+
+        if (JobItems.Count == 0)
         {
             return;
         }
 
         _startTicks = DateTime.UtcNow.Ticks;
 
-        for (var index = 0; index < _jobItems.Count; index++)
+        for (var index = 0; index < JobItems.Count; index++)
         {
             _jobItemIndex = index;
-            var jobItem = _jobItems[index];
+            var jobItem = JobItems[index];
             var mediaInfo = FfmpegMediaInfo2.Parse(jobItem.InputVideoFileName);
             jobItem.TotalFrames = mediaInfo.GetTotalFrames();
             jobItem.Width = mediaInfo.Dimension.Width;
@@ -506,7 +554,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             jobItem.UseTargetFileSize = UseTargetFileSize;
             jobItem.TargetFileSize = UseTargetFileSize ? TargetFileSize : 0;
             jobItem.AssaSubtitleFileName = MakeAssa(jobItem.SubtitleFileName);
-
+            jobItem.Status = "Generating...";
 
             bool result;
             if (jobItem.UseTargetFileSize)
@@ -624,22 +672,25 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         if (long.TryParse(arr[1].Trim(), out var f))
         {
             _processedFrames = f;
-            ProgressValue = (double)_processedFrames / _jobItems[_jobItemIndex].TotalFrames;
+            ProgressValue = (double)_processedFrames / JobItems[_jobItemIndex].TotalFrames;
         }
     }
 
-    private List<BurnInJobItem> GetJobItems()
+    private ObservableCollection<BurnInJobItem> GetCurrentVideoAsJobItems()
     {
-
         var subtitle = new Subtitle(_subtitle);
 
         var srt = new SubRip();
         var srtFileName = Path.Combine(Path.GetTempFileName() + srt.Extension);
         File.WriteAllText(srtFileName, srt.ToText(subtitle, string.Empty));
 
-        return new List<BurnInJobItem>()
+        _mediaInfo = FfmpegMediaInfo2.Parse(_videoFileName);
+        VideoWidth = _mediaInfo.Dimension.Width;
+        VideoHeight = _mediaInfo.Dimension.Height;
+
+        return new ObservableCollection<BurnInJobItem>
         {
-            new()
+            new(_videoFileName, _mediaInfo.Dimension.Width, _mediaInfo.Dimension.Height)
             {
                 InputVideoFileName = _videoFileName,
                 OutputVideoFileName = MakeOutputFileName(_videoFileName),
@@ -650,6 +701,12 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
     private string MakeAssa(string subtitleFileName)
     {
+        if (string.IsNullOrWhiteSpace(subtitleFileName) || !File.Exists(subtitleFileName))
+        {
+            JobItems[_jobItemIndex].Status = "Skipped";
+            return string.Empty;
+        }
+
         var isAssa = subtitleFileName.EndsWith(".ass");
 
         var subtitle = Subtitle.Parse(subtitleFileName);
@@ -669,7 +726,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     {
         sub.Header = AdvancedSubStationAlpha.DefaultHeader;
         var style = AdvancedSubStationAlpha.GetSsaStyle("Default", sub.Header);
-        style.FontSize = CalculateFontSize(_jobItems[_jobItemIndex].Width, _jobItems[_jobItemIndex].Height, SelectedFontFactor);
+        style.FontSize = CalculateFontSize(JobItems[_jobItemIndex].Width, JobItems[_jobItemIndex].Height, SelectedFontFactor);
         style.Bold = FontIsBold;
         style.FontName = SelectedFontFamily;
         style.Background = System.Drawing.Color.FromArgb(255, (int)(FontShadowColor.Red * 255.0), (int)(FontShadowColor.Green * 255.0), (int)(FontShadowColor.Blue * 255.0));
@@ -725,24 +782,24 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         _isBatchMode = !_isBatchMode;
         ButtonModeText = _isBatchMode ? "Batch mode" : "Single mode";
 
-        UpdateNonAssaPreview();
+        BatchView.IsVisible = _isBatchMode;
     }
 
     private void UpdateNonAssaPreview()
     {
-        if (_loading || FontOutlineColor == null)
+        if (_loading)
         {
             return;
         }
 
-        var fontSize =(float) CalculateFontSize(VideoWidth, VideoHeight, SelectedFontFactor);
+        var fontSize = (float)CalculateFontSize(VideoWidth, VideoHeight, SelectedFontFactor);
         var image = TextToImageGenerator.GenerateImage(
-            "This is a test", 
-            fontSize, 
-            FontIsBold, 
+            "This is a test",
+            fontSize,
+            FontIsBold,
             FontTextColor.ToSKColor(),
-            FontOutlineColor.ToSKColor(), 
-            FontShadowColor.ToSKColor(), 
+            FontOutlineColor.ToSKColor(),
+            FontShadowColor.ToSKColor(),
             (float)SelectedFontOutline,
             (float)SelectedFontShadowWidth);
         ImagePreview.Source = image.ToImageSource();
@@ -1160,6 +1217,11 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         UpdateNonAssaPreview();
     }
 
+    public void FontBoldToggled(object? sender, ToggledEventArgs e)
+    {
+        UpdateNonAssaPreview();
+    }
+
     internal void FontBoxTypeChanged(object? sender, EventArgs e)
     {
         if (SelectedFontBoxType.BoxType == FontBoxType.None)
@@ -1191,5 +1253,54 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public void FontOutlineWidthChanged(object? sender, TextChangedEventArgs e)
     {
         UpdateNonAssaPreview();
+    }
+
+    [RelayCommand]
+    private async Task BatchAdd()
+    {
+        var fileName = await _fileHelper.PickAndShowVideoFile("Open video file");
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return;
+        }
+
+        var mediaInfo = FfmpegMediaInfo2.Parse(fileName);
+        var fileInfo = new FileInfo(fileName);
+        var jobItem = new BurnInJobItem(fileName, mediaInfo.Dimension.Width, mediaInfo.Dimension.Height)
+        {
+            OutputVideoFileName = MakeOutputFileName(fileName),
+            TotalFrames = mediaInfo.GetTotalFrames(),
+            Width = mediaInfo.Dimension.Width,
+            Height = mediaInfo.Dimension.Height,
+            Size = Utilities.FormatBytesToDisplayFileSize(fileInfo.Length),
+            Resolution = mediaInfo.Dimension.ToString(),
+        };
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            JobItems.Add(jobItem);
+        });
+    }
+
+    [RelayCommand]
+    private void BatchRemove()
+    {
+        if (SelectedJobItem != null)
+        {
+            var idx = JobItems.IndexOf(SelectedJobItem);
+            JobItems.Remove(SelectedJobItem);
+        }
+    }
+
+    [RelayCommand]
+    private void BatchClear()
+    {
+        JobItems.Clear();
+    }
+
+    [RelayCommand]
+    private async Task BatchOutputProperties()
+    {
+        var result = await _popupService.ShowPopupAsync<OutputPropertiesPopupModel>(CancellationToken.None);
     }
 }
