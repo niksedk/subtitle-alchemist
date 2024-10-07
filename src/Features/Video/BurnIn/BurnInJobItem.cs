@@ -33,6 +33,8 @@ public partial class BurnInJobItem : ObservableObject
     private int _height;
 
     public long TotalFrames { get; set; }
+    public double TotalSeconds { get; set; }
+    public string VideoBitRate { get; set; }
 
     [ObservableProperty]
     private string _size;
@@ -83,5 +85,6 @@ public partial class BurnInJobItem : ObservableObject
         SubtitleFileNameShort = string.Empty;
         AssaSubtitleFileName = string.Empty;
         Size = string.Empty;
+        VideoBitRate = string.Empty;
     }
 }

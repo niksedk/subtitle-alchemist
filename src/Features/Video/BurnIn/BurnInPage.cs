@@ -1231,6 +1231,7 @@ public class BurnInPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
+        switchTargetFileSize.SetBinding(Switch.IsToggledProperty, nameof(vm.UseTargetFileSize));
         var stackTargetFileSize = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -1263,6 +1264,7 @@ public class BurnInPage : ContentPage
             WidthRequest = 120,
             Keyboard = Keyboard.Numeric,
         }.BindDynamicTheme();
+        entryTargetFileSizeValue.SetBinding(Entry.TextProperty, nameof(vm.TargetFileSize));
         var stackTargetFileSizeValue = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,

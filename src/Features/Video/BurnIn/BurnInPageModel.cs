@@ -222,7 +222,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private static readonly Regex FrameFinderRegex = new(@"[Ff]rame=\s*\d+", RegexOptions.Compiled);
     private long _startTicks;
     private long _processedFrames;
-    private Process? _onePassProcess;
+    private Process? _ffmpegProcess;
     private readonly Timer _timerAnalyze = new();
     private readonly Timer _timerGenerate = new();
     private bool _doAbort;
@@ -362,21 +362,21 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
     private void TimerAnalyzeElapsed(object? sender, ElapsedEventArgs e)
     {
-        if (_onePassProcess == null)
+        if (_ffmpegProcess == null)
         {
             return;
         }
 
         if (_doAbort)
         {
-            _timerGenerate.Stop();
+            _timerAnalyze.Stop();
 #pragma warning disable CA1416
-            _onePassProcess.Kill(true);
+            _ffmpegProcess.Kill(true);
 #pragma warning restore CA1416
             return;
         }
 
-        if (!_onePassProcess.HasExited)
+        if (!_ffmpegProcess.HasExited)
         {
             var percentage = (int)Math.Round((double)_processedFrames / JobItems[_jobItemIndex].TotalFrames * 100.0, MidpointRounding.AwayFromZero);
             var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
@@ -396,12 +396,22 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             return;
         }
 
-        //TODO: start next pass
+        _timerAnalyze.Stop();
+
+        var jobItem = JobItems[_jobItemIndex];
+        _ffmpegProcess = GetFfmpegProcess(jobItem, 2);
+#pragma warning disable CA1416 // Validate platform compatibility
+        _ffmpegProcess.Start();
+#pragma warning restore CA1416 // Validate platform compatibility
+        _ffmpegProcess.BeginOutputReadLine();
+        _ffmpegProcess.BeginErrorReadLine();
+
+        _timerGenerate.Start();
     }
 
     private void TimerGenerateElapsed(object? sender, ElapsedEventArgs e)
     {
-        if (_onePassProcess == null)
+        if (_ffmpegProcess == null)
         {
             return;
         }
@@ -410,12 +420,12 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         {
             _timerGenerate.Stop();
 #pragma warning disable CA1416
-            _onePassProcess.Kill(true);
+            _ffmpegProcess.Kill(true);
 #pragma warning restore CA1416
             return;
         }
 
-        if (!_onePassProcess.HasExited)
+        if (!_ffmpegProcess.HasExited)
         {
             var percentage = (int)Math.Round((double)_processedFrames / JobItems[_jobItemIndex].TotalFrames * 100.0, MidpointRounding.AwayFromZero);
             var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
@@ -444,11 +454,11 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         {
 
             SeLogger.WhisperInfo("Output video file not found: " + jobItem.OutputVideoFileName + Environment.NewLine +
-                                 "ffmpeg: " + _onePassProcess.StartInfo.FileName + Environment.NewLine +
-                                 "Parameters: " + _onePassProcess.StartInfo.Arguments + Environment.NewLine +
+                                 "ffmpeg: " + _ffmpegProcess.StartInfo.FileName + Environment.NewLine +
+                                 "Parameters: " + _ffmpegProcess.StartInfo.Arguments + Environment.NewLine +
                                  "OS: " + Environment.OSVersion + Environment.NewLine +
                                  "64-bit: " + Environment.Is64BitOperatingSystem + Environment.NewLine +
-                                 "ffmpeg exit code: " + _onePassProcess.ExitCode + Environment.NewLine +
+                                 "ffmpeg exit code: " + _ffmpegProcess.ExitCode + Environment.NewLine +
                                  "ffmpeg log: " + _log);
 
             MainThread.BeginInvokeOnMainThread(async () =>
@@ -456,7 +466,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
                 await Page!.DisplayAlert(
                     "Unable to generate video",
                     "Output video file not generated: " + jobItem.OutputVideoFileName + Environment.NewLine +
-                    "Parameters: " + _onePassProcess.StartInfo.Arguments,
+                    "Parameters: " + _ffmpegProcess.StartInfo.Arguments,
                     "OK");
 
                 ButtonGenerate.IsEnabled = true;
@@ -610,7 +620,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         // check that all jobs have subtitles
         foreach (var jobItem in JobItems)
         {
-            if (string.IsNullOrWhiteSpace(jobItem.AssaSubtitleFileName))
+            if (string.IsNullOrWhiteSpace(jobItem.SubtitleFileName))
             {
                 await Page!.DisplayAlert(
                     "Missing subtitle",
@@ -641,6 +651,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         var jobItem = JobItems[index];
         var mediaInfo = FfmpegMediaInfo2.Parse(jobItem.InputVideoFileName);
         jobItem.TotalFrames = mediaInfo.GetTotalFrames();
+        jobItem.TotalSeconds = mediaInfo.Duration.TotalSeconds;
         jobItem.Width = mediaInfo.Dimension.Width;
         jobItem.Height = mediaInfo.Dimension.Height;
         jobItem.UseTargetFileSize = UseTargetFileSize;
@@ -654,7 +665,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             result = RunTwoPassEncoding(jobItem);
             if (result)
             {
-                //_timerFirstPass.Start();
+                _timerAnalyze.Start();
             }
         }
         else
@@ -669,22 +680,107 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
     private bool RunTwoPassEncoding(BurnInJobItem jobItem)
     {
-        var process = GetFfmpegProcess(jobItem);
+        var bitRate = GetVideoBitRate(jobItem);
+        jobItem.VideoBitRate = bitRate.ToString(CultureInfo.InvariantCulture) + "k";
+
+        if (bitRate < 10)
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await Page!.DisplayAlert(
+                    "Unable to generate video",
+                    $"Bit rate too low: {bitRate}k",
+                    "OK");
+            });
+            return false;
+        }
+
+        _ffmpegProcess = GetFfmpegProcess(jobItem, 1);
+
+#pragma warning disable CA1416 // Validate platform compatibility
+        _ffmpegProcess.Start();
+#pragma warning restore CA1416 // Validate platform compatibility
+        _ffmpegProcess.BeginOutputReadLine();
+        _ffmpegProcess.BeginErrorReadLine();
+        _startTicks = DateTime.UtcNow.Ticks;
+
         return true;
+    }
+
+    private int GetVideoBitRate(BurnInJobItem item)
+    {
+        var audioMb = 0;
+        if (SelectedAudioEncoding == "copy")
+        {
+            audioMb = GetAudioFileSizeInMb(item);
+        }
+
+        // (MiB * 8192 [converts MiB to kBit]) / video seconds = kBit/s total bitrate
+        var bitRate = (int)Math.Round(((double)TargetFileSize - audioMb) * 8192.0 / item.TotalSeconds);
+        if (SelectedAudioEncoding != "copy" && !string.IsNullOrWhiteSpace(SelectedAudioBitRate))
+        {
+            var audioBitRate = int.Parse(SelectedAudioBitRate.RemoveChar('k').TrimEnd());
+            bitRate -= audioBitRate;
+        }
+
+        return bitRate;
+    }
+
+    private int GetAudioFileSizeInMb(BurnInJobItem item)
+    {
+        var ffmpegLocation = Configuration.Settings.General.FFmpegLocation;
+        if (!Configuration.IsRunningOnWindows && (string.IsNullOrEmpty(ffmpegLocation) || !File.Exists(ffmpegLocation)))
+        {
+            ffmpegLocation = "ffmpeg";
+        }
+
+        var tempFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".aac");
+        var process = new Process
+        {
+            StartInfo =
+            {
+                FileName = ffmpegLocation,
+                Arguments = $"-i \"{item.InputVideoFileName}\" -vn -acodec copy \"{tempFileName}\"",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            }
+        };
+
+        _ = process.Start();
+        process.WaitForExit();
+        try
+        {
+            var length = (int)Math.Round(new FileInfo(tempFileName).Length / 1024.0 / 1024);
+            try
+            {
+                File.Delete(tempFileName);
+            }
+            catch
+            {
+                // ignore
+            }
+
+            return length;
+        }
+        catch
+        {
+            return 0;
+        }
     }
 
     private bool RunOnePassEncoding(BurnInJobItem jobItem)
     {
-        _onePassProcess = GetFfmpegProcess(jobItem);
+        _ffmpegProcess = GetFfmpegProcess(jobItem);
 #pragma warning disable CA1416 // Validate platform compatibility
-        _onePassProcess.Start();
+        _ffmpegProcess.Start();
 #pragma warning restore CA1416 // Validate platform compatibility
-        _onePassProcess.BeginOutputReadLine();
-        _onePassProcess.BeginErrorReadLine();
+        _ffmpegProcess.BeginOutputReadLine();
+        _ffmpegProcess.BeginErrorReadLine();
+
         return true;
     }
 
-    private Process GetFfmpegProcess(BurnInJobItem jobItem, int? passNumber = null, string? twoPassBitRate = null, bool preview = false)
+    private Process GetFfmpegProcess(BurnInJobItem jobItem, int? passNumber = null, bool preview = false)
     {
         var audioCutTracks = string.Empty;
         //if (listViewAudioTracks.Visible)
@@ -733,7 +829,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             SelectedVideoTuneFor,
             SelectedAudioBitRate,
             pass,
-            twoPassBitRate,
+            jobItem.VideoBitRate,
             OutputHandler,
             cutStart,
             cutEnd,
@@ -783,6 +879,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         {
             InputVideoFileName = _videoFileName,
             OutputVideoFileName = MakeOutputFileName(_videoFileName),
+            UseTargetFileSize = UseTargetFileSize,
+            TargetFileSize = TargetFileSize,
         };
         jobItem.AddSubtitleFileName(srtFileName);
 
@@ -1375,6 +1473,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             {
                 OutputVideoFileName = MakeOutputFileName(fileName),
                 TotalFrames = mediaInfo.GetTotalFrames(),
+                TotalSeconds = mediaInfo.Duration.TotalSeconds,
                 Width = mediaInfo.Dimension.Width,
                 Height = mediaInfo.Dimension.Height,
                 Size = Utilities.FormatBytesToDisplayFileSize(fileInfo.Length),
