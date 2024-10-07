@@ -223,7 +223,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private long _startTicks;
     private long _processedFrames;
     private Process? _onePassProcess;
-    private readonly Timer _timerOnePass = new();
+    private readonly Timer _timerAnalyze = new();
+    private readonly Timer _timerGenerate = new();
     private bool _doAbort;
     private bool _isBatchMode;
     private int _jobItemIndex = -1;
@@ -231,7 +232,6 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
     private readonly IPopupService _popupService;
     private readonly IFileHelper _fileHelper;
-
 
     public BurnInPageModel(IPopupService popupService, IFileHelper fileHelper)
     {
@@ -242,7 +242,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         _fontOutlineColor = Colors.Black;
         _fontShadowColor = Colors.Black;
         _videoCrfText = string.Empty;
-        _videoCrf =new();
+        _videoCrf = new();
         _videoTuneFor = new();
         _videoExtension = new();
         _outputSourceFolder = string.Empty;
@@ -351,11 +351,16 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
         _log = new StringBuilder();
 
-        _timerOnePass.Elapsed += TimerOnePassElapsed;
-        _timerOnePass.Interval = 100;
+        _timerGenerate = new();
+        _timerGenerate.Elapsed += TimerGenerateElapsed;
+        _timerGenerate.Interval = 100;
+
+        _timerAnalyze = new();
+        _timerAnalyze.Elapsed += TimerAnalyzeElapsed;
+        _timerAnalyze.Interval = 100;
     }
 
-    private void TimerOnePassElapsed(object? sender, ElapsedEventArgs e)
+    private void TimerAnalyzeElapsed(object? sender, ElapsedEventArgs e)
     {
         if (_onePassProcess == null)
         {
@@ -364,7 +369,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
         if (_doAbort)
         {
-            _timerOnePass.Stop();
+            _timerGenerate.Stop();
 #pragma warning disable CA1416
             _onePassProcess.Kill(true);
 #pragma warning restore CA1416
@@ -373,20 +378,64 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
         if (!_onePassProcess.HasExited)
         {
-            //var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
-            //// ElapsedText = $"Time elapsed: {new TimeCode(durationMs).ToShortDisplayString()}";
-
             var percentage = (int)Math.Round((double)_processedFrames / JobItems[_jobItemIndex].TotalFrames * 100.0, MidpointRounding.AwayFromZero);
             var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
             var msPerFrame = (float)durationMs / _processedFrames;
             var estimatedTotalMs = msPerFrame * JobItems[_jobItemIndex].TotalFrames;
             var estimatedLeft = ProgressHelper.ToProgressTime(estimatedTotalMs - durationMs);
 
-            ProgressText = $"Generating video... {percentage}%     {estimatedLeft}";
+            if (JobItems.Count == 1)
+            {
+                ProgressText = $"Analyzing video... {percentage}%     {estimatedLeft}";
+            }
+            else
+            {
+                ProgressText = $"Analyzing video {_jobItemIndex + 1}/{JobItems.Count}... {percentage}%     {estimatedLeft}";
+            }
+            
             return;
         }
 
-        _timerOnePass.Stop();
+        //TODO: start next pass
+    }
+
+    private void TimerGenerateElapsed(object? sender, ElapsedEventArgs e)
+    {
+        if (_onePassProcess == null)
+        {
+            return;
+        }
+
+        if (_doAbort)
+        {
+            _timerGenerate.Stop();
+#pragma warning disable CA1416
+            _onePassProcess.Kill(true);
+#pragma warning restore CA1416
+            return;
+        }
+
+        if (!_onePassProcess.HasExited)
+        {
+            var percentage = (int)Math.Round((double)_processedFrames / JobItems[_jobItemIndex].TotalFrames * 100.0, MidpointRounding.AwayFromZero);
+            var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
+            var msPerFrame = (float)durationMs / _processedFrames;
+            var estimatedTotalMs = msPerFrame * JobItems[_jobItemIndex].TotalFrames;
+            var estimatedLeft = ProgressHelper.ToProgressTime(estimatedTotalMs - durationMs);
+
+            if (JobItems.Count == 1)
+            {
+                ProgressText = $"Generating video... {percentage}%     {estimatedLeft}";
+            }
+            else
+            {
+                ProgressText = $"Generating video {_jobItemIndex + 1}/{JobItems.Count}... {percentage}%     {estimatedLeft}";
+            }
+
+            return;
+        }
+
+        _timerGenerate.Stop();
         ProgressText = string.Empty;
 
         var jobItem = JobItems[_jobItemIndex];
@@ -404,11 +453,11 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
             MainThread.BeginInvokeOnMainThread(async () =>
             {
-                var answer = await Page!.DisplayAlert(
+                await Page!.DisplayAlert(
                     "Unable to generate video",
                     "Output video file not generated: " + jobItem.OutputVideoFileName + Environment.NewLine +
                     "Parameters: " + _onePassProcess.StartInfo.Arguments,
-                    "OK", "Cancel");
+                    "OK");
 
                 ButtonGenerate.IsEnabled = true;
                 ButtonOk.IsEnabled = true;
@@ -422,24 +471,13 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
         JobItems[_jobItemIndex].Status = "Done";
 
-        MainThread.BeginInvokeOnMainThread(() =>
+        MainThread.BeginInvokeOnMainThread(async() =>
         {
             ProgressValue = 0;
 
             if (_jobItemIndex < JobItems.Count - 1)
             {
-                _jobItemIndex++;
-                var nextJobItem = JobItems[_jobItemIndex];
-                nextJobItem.Status = "Generating...";
-                jobItem.AssaSubtitleFileName = MakeAssa(jobItem.SubtitleFileName);
-                _startTicks = DateTime.UtcNow.Ticks;
-                _processedFrames = 0;
-                _onePassProcess = GetFfmpegProcess(nextJobItem);
-                var result = RunOnePassEncoding(jobItem);
-                if (result)
-                {
-                    _timerOnePass.Start();
-                }
+                InitAndStartJobItem(_jobItemIndex + 1); 
                 return;
             }
 
@@ -454,7 +492,10 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             }
             else
             {
-                // TODO: show info
+                await Page!.DisplayAlert(
+                    "Generating done",
+                    "Number of files generated: " + JobItems.Count,
+                    "OK");
             }
         });
     }
@@ -483,6 +524,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
                 if (string.IsNullOrWhiteSpace(_videoFileName))
                 {
                     batchMode = true;
+                    ButtonMode.IsVisible = false;
                 }
                 else
                 {
@@ -547,12 +589,36 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     {
         if (CutIsActive && CutFrom >= CutTo)
         {
-            var answer = await Page!.DisplayAlert(
+            await Page!.DisplayAlert(
                 "Cut settings error",
                 "Cut end time must be after cut start time",
-                "OK", "Cancel");
+                "OK");
 
             return;
+        }
+
+        if (!_isBatchMode)
+        {
+            JobItems = GetCurrentVideoAsJobItems();
+        }
+
+        if (JobItems.Count == 0)
+        {
+            return;
+        }
+
+        // check that all jobs have subtitles
+        foreach (var jobItem in JobItems)
+        {
+            if (string.IsNullOrWhiteSpace(jobItem.AssaSubtitleFileName))
+            {
+                await Page!.DisplayAlert(
+                    "Missing subtitle",
+                    "Please add a subtitle to all batch items",
+                    "OK");
+
+                return;
+            }
         }
 
         _doAbort = false;
@@ -565,48 +631,38 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         ProgressBar.IsVisible = true;
         SaveSettings();
 
+        InitAndStartJobItem(0);
+    }
 
-        if (!_isBatchMode)
-        {
-            JobItems = GetCurrentVideoAsJobItems();
-        }
-
-        if (JobItems.Count == 0)
-        {
-            return;
-        }
-
+    private void InitAndStartJobItem(int index)
+    {
         _startTicks = DateTime.UtcNow.Ticks;
+        _jobItemIndex = index;
+        var jobItem = JobItems[index];
+        var mediaInfo = FfmpegMediaInfo2.Parse(jobItem.InputVideoFileName);
+        jobItem.TotalFrames = mediaInfo.GetTotalFrames();
+        jobItem.Width = mediaInfo.Dimension.Width;
+        jobItem.Height = mediaInfo.Dimension.Height;
+        jobItem.UseTargetFileSize = UseTargetFileSize;
+        jobItem.TargetFileSize = UseTargetFileSize ? TargetFileSize : 0;
+        jobItem.AssaSubtitleFileName = MakeAssa(jobItem.SubtitleFileName);
+        jobItem.Status = "Generating...";
 
-        for (var index = 0; index < JobItems.Count; index++)
+        bool result;
+        if (jobItem.UseTargetFileSize)
         {
-            _jobItemIndex = index;
-            var jobItem = JobItems[index];
-            var mediaInfo = FfmpegMediaInfo2.Parse(jobItem.InputVideoFileName);
-            jobItem.TotalFrames = mediaInfo.GetTotalFrames();
-            jobItem.Width = mediaInfo.Dimension.Width;
-            jobItem.Height = mediaInfo.Dimension.Height;
-            jobItem.UseTargetFileSize = UseTargetFileSize;
-            jobItem.TargetFileSize = UseTargetFileSize ? TargetFileSize : 0;
-            jobItem.AssaSubtitleFileName = MakeAssa(jobItem.SubtitleFileName);
-            jobItem.Status = "Generating...";
-
-            bool result;
-            if (jobItem.UseTargetFileSize)
+            result = RunTwoPassEncoding(jobItem);
+            if (result)
             {
-                result = RunTwoPassEncoding(jobItem);
-                if (result)
-                {
-                    //_timerFirstPass.Start();
-                }
+                //_timerFirstPass.Start();
             }
-            else
+        }
+        else
+        {
+            result = RunOnePassEncoding(jobItem);
+            if (result)
             {
-                result = RunOnePassEncoding(jobItem);
-                if (result)
-                {
-                    _timerOnePass.Start();
-                }
+                _timerGenerate.Start();
             }
         }
     }
@@ -723,15 +779,14 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         VideoWidth = _mediaInfo.Dimension.Width;
         VideoHeight = _mediaInfo.Dimension.Height;
 
-        return new ObservableCollection<BurnInJobItem>
+        var jobItem = new BurnInJobItem(_videoFileName, _mediaInfo.Dimension.Width, _mediaInfo.Dimension.Height)
         {
-            new(_videoFileName, _mediaInfo.Dimension.Width, _mediaInfo.Dimension.Height)
-            {
-                InputVideoFileName = _videoFileName,
-                OutputVideoFileName = MakeOutputFileName(_videoFileName),
-                SubtitleFileName = srtFileName,
-            },
+            InputVideoFileName = _videoFileName,
+            OutputVideoFileName = MakeOutputFileName(_videoFileName),
         };
+        jobItem.AddSubtitleFileName(srtFileName);
+
+        return new ObservableCollection<BurnInJobItem>(new[] { jobItem });
     }
 
     private string MakeAssa(string subtitleFileName)
@@ -807,7 +862,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             !string.IsNullOrEmpty(Se.Settings.Video.BurnIn.OutputFolder) &&
             Directory.Exists(Se.Settings.Video.BurnIn.OutputFolder))
         {
-            fileName = Path.Combine(Path.GetDirectoryName(videoFileName)!, nameNoExt + suffix + ext);
+            fileName = Path.Combine(Se.Settings.Video.BurnIn.OutputFolder, nameNoExt + suffix + ext);
         }
 
         if (File.Exists(fileName))
@@ -822,7 +877,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private void ModeSwitch()
     {
         _isBatchMode = !_isBatchMode;
-        ButtonModeText = _isBatchMode ? "Batch mode" : "Single mode";
+        ButtonModeText = _isBatchMode ? "Single mode" : "Batch mode";
 
         BatchView.IsVisible = _isBatchMode;
     }
@@ -1306,29 +1361,32 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task BatchAdd()
     {
-        var fileName = await _fileHelper.PickAndShowVideoFile("Open video file");
-        if (string.IsNullOrWhiteSpace(fileName))
+        var fileNames = await _fileHelper.PickAndShowVideoFiles("Open video file");
+        if (fileNames.Length == 0)
         {
             return;
         }
 
-        var mediaInfo = FfmpegMediaInfo2.Parse(fileName);
-        var fileInfo = new FileInfo(fileName);
-        var jobItem = new BurnInJobItem(fileName, mediaInfo.Dimension.Width, mediaInfo.Dimension.Height)
+        foreach (var fileName in fileNames)
         {
-            OutputVideoFileName = MakeOutputFileName(fileName),
-            TotalFrames = mediaInfo.GetTotalFrames(),
-            Width = mediaInfo.Dimension.Width,
-            Height = mediaInfo.Dimension.Height,
-            Size = Utilities.FormatBytesToDisplayFileSize(fileInfo.Length),
-            Resolution = mediaInfo.Dimension.ToString(),
-            SubtitleFileName = TryGetSubtitleFileName(fileName),
-        };
+            var mediaInfo = FfmpegMediaInfo2.Parse(fileName);
+            var fileInfo = new FileInfo(fileName);
+            var jobItem = new BurnInJobItem(fileName, mediaInfo.Dimension.Width, mediaInfo.Dimension.Height)
+            {
+                OutputVideoFileName = MakeOutputFileName(fileName),
+                TotalFrames = mediaInfo.GetTotalFrames(),
+                Width = mediaInfo.Dimension.Width,
+                Height = mediaInfo.Dimension.Height,
+                Size = Utilities.FormatBytesToDisplayFileSize(fileInfo.Length),
+                Resolution = mediaInfo.Dimension.ToString(),
+            };
+            jobItem.AddSubtitleFileName(TryGetSubtitleFileName(fileName));
 
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            JobItems.Add(jobItem);
-        });
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                JobItems.Add(jobItem);
+            });
+        }
     }
 
     private static string TryGetSubtitleFileName(string fileName)

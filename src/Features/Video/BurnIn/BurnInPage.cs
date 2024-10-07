@@ -1362,6 +1362,7 @@ public class BurnInPage : ContentPage
             {
                 Text = "Video file",
                 FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Start,
                 VerticalTextAlignment = TextAlignment.Center
             }, 0);
         gridHeader.Add(
@@ -1369,6 +1370,7 @@ public class BurnInPage : ContentPage
             {
                 Text = "Resolution",
                 FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Start,
                 VerticalTextAlignment = TextAlignment.Center
             }, 1);
         gridHeader.Add(
@@ -1376,6 +1378,7 @@ public class BurnInPage : ContentPage
             {
                 Text = "Size",
                 FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Start,
                 VerticalTextAlignment = TextAlignment.Center
             }, 2);
         gridHeader.Add(
@@ -1383,6 +1386,7 @@ public class BurnInPage : ContentPage
             {
                 Text = "Subtitle file",
                 FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Start,
                 VerticalTextAlignment = TextAlignment.Center
             }, 3);
         gridHeader.Add(
@@ -1390,6 +1394,7 @@ public class BurnInPage : ContentPage
             {
                 Text = "Status",
                 FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Start,
                 VerticalTextAlignment = TextAlignment.Center
             }, 4);
 
@@ -1419,13 +1424,15 @@ public class BurnInPage : ContentPage
 
                 var labelVideoFile = new Label
                 {
+                    HorizontalTextAlignment = TextAlignment.Start,
                     VerticalTextAlignment = TextAlignment.Center,
                 }.BindDynamicThemeTextColorOnly();
-                labelVideoFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.InputVideoFileName));
+                labelVideoFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.InputVideoFileNameShort));
                 jobItemGrid.Add(labelVideoFile, 0, 0);
 
                 var labelResolution = new Label
                 {
+                    HorizontalTextAlignment = TextAlignment.Start,
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
                 labelResolution.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Resolution));
@@ -1433,6 +1440,7 @@ public class BurnInPage : ContentPage
 
                 var labelSize = new Label
                 {
+                    HorizontalTextAlignment = TextAlignment.Start,
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
                 labelSize.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Size));
@@ -1440,13 +1448,15 @@ public class BurnInPage : ContentPage
 
                 var labelSubtitleFile = new Label
                 {
+                    HorizontalTextAlignment = TextAlignment.Start,
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
-                labelSubtitleFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.SubtitleFileName));
+                labelSubtitleFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.SubtitleFileNameShort));
                 jobItemGrid.Add(labelSubtitleFile, 3, 0);
 
                 var labelStatus = new Label
                 {
+                    HorizontalTextAlignment = TextAlignment.Start,
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
                 labelStatus.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Status));
@@ -1492,7 +1502,7 @@ public class BurnInPage : ContentPage
             Text = "Pick subtitle file",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Command = vm.BatchClearCommand,
+            Command = vm.BatchPickSubtitleFileCommand,
         }.BindDynamicTheme();
 
         var buttonOutputProperties = new Button
