@@ -1,0 +1,78 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using SubtitleAlchemist.Logic.Constants;
+
+namespace SubtitleAlchemist.Features.Video.BurnIn;
+
+public partial class ResolutionItem : ObservableObject
+{
+    public ResolutionItemType ItemType { get; set; }
+    public string Name { get; set; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+
+    [ObservableProperty]
+    private Color _backgroundColor;
+
+    [ObservableProperty]
+    private Color _textColor;
+
+    public ResolutionItem( string name, ResolutionItemType itemType)
+    {
+        Name = name;
+        ItemType = itemType;
+        _backgroundColor = Colors.Transparent;
+        if (itemType == ResolutionItemType.Separator)
+        {
+            _textColor = (Color)Application.Current!.Resources[ThemeNames.BorderColor]; // disabled color?
+        }
+        else
+        {
+            _textColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+        }
+    }
+
+    public ResolutionItem(string name, int width, int height)
+    {
+        ItemType = ResolutionItemType.Resolution;
+        Name = name;
+        Width = width;
+        Height = height;
+        _backgroundColor = Colors.Transparent;
+        _textColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+    }
+
+    public override string ToString()
+    {
+        if (ItemType == ResolutionItemType.Resolution)
+        {
+            return $"{Name} - {Width}x{Height}";
+        }
+
+        return Name;
+    }
+
+    public static IEnumerable<ResolutionItem> GetResolutions()
+    {
+        yield return new ResolutionItem("Use source resolution", ResolutionItemType.UseSource);
+        yield return new ResolutionItem("Pick resolution from video...", ResolutionItemType.PickResolution);
+        yield return new ResolutionItem( "Landscape modes", ResolutionItemType.Separator);
+        yield return new ResolutionItem("4K DCI - Aspect Ratio 16∶9", 4096, 2160);
+        yield return new ResolutionItem("4K UHD - Aspect Ratio 16∶9", 3840, 2160);
+        yield return new ResolutionItem("2K WQHD - Aspect Ratio 16∶9", 2560, 1440);
+        yield return new ResolutionItem("2K DCI - Aspect Ratio 16∶9", 2048, 1080);
+        yield return new ResolutionItem("Full HD 1080p - Aspect Ratio 16∶9", 1920, 1080);
+        yield return new ResolutionItem("HD 720p - Aspect Ratio 16∶9", 1280, 720);
+        yield return new ResolutionItem("540p - Aspect Ratio 16∶9", 960, 540);
+        yield return new ResolutionItem("SD PAL - Aspect Ratio 4:3", 720, 576);
+        yield return new ResolutionItem("SD NTSC - Aspect Ratio 3:2", 720, 480);
+        yield return new ResolutionItem("VGA - Aspect Ratio 4:3", 640, 480);
+        yield return new ResolutionItem("360p - Aspect Ratio 16∶9", 640, 360);
+        yield return new ResolutionItem("Portrait modes", ResolutionItemType.Separator);
+        yield return new ResolutionItem("YouTube shorts/TikTok - Aspect Ratio 9∶16", 1080, 1920);
+        yield return new ResolutionItem("YouTube shorts/TikTok - Aspect Ratio 9∶16", 720, 1280);
+        yield return new ResolutionItem("1/2 A - Aspect Ratio 9∶16", 540, 960);
+        yield return new ResolutionItem("1/2 B - Aspect Ratio 9∶16", 360, 540);
+        yield return new ResolutionItem("1/4 A - Aspect Ratio 9∶16", 270, 480);
+        yield return new ResolutionItem("1/4 B - Aspect Ratio 9∶16 - (180x270)", 180, 270);
+    }
+}

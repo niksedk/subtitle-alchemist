@@ -661,8 +661,9 @@ public class BurnInPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
-            //Command = vm.GetResolutionCommand,
+            Command = vm.PickResolutionCommand,
         }.BindDynamicTheme();
+        vm.ButtonResolution = buttonResolution;
 
         var stackResolution = new StackLayout
         {

@@ -214,6 +214,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public Image ImagePreview { get; set; }
     public Border BatchView { get; set; }
     public Label LabelOutputFolder { get; set; }
+    public Button ButtonResolution { get; set; }
 
     private Subtitle _subtitle = new();
     private bool _loading = true;
@@ -252,6 +253,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         ButtonGenerate = new();
         ButtonOk = new();
         ButtonMode = new();
+        ButtonResolution = new();
         ProgressValue = 0;
         ProgressBar = new();
         ImagePreview = new();
@@ -392,7 +394,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             {
                 ProgressText = $"Analyzing video {_jobItemIndex + 1}/{JobItems.Count}... {percentage}%     {estimatedLeft}";
             }
-            
+
             return;
         }
 
@@ -481,13 +483,13 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
         JobItems[_jobItemIndex].Status = "Done";
 
-        MainThread.BeginInvokeOnMainThread(async() =>
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
             ProgressValue = 0;
 
             if (_jobItemIndex < JobItems.Count - 1)
             {
-                InitAndStartJobItem(_jobItemIndex + 1); 
+                InitAndStartJobItem(_jobItemIndex + 1);
                 return;
             }
 
@@ -978,6 +980,12 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         ButtonModeText = _isBatchMode ? "Single mode" : "Batch mode";
 
         BatchView.IsVisible = _isBatchMode;
+    }
+
+    [RelayCommand]
+    private async Task PickResolution()
+    {
+        await _popupService.ShowPopupAsync<ResolutionPopupModel>(CancellationToken.None);
     }
 
     private void UpdateNonAssaPreview()
