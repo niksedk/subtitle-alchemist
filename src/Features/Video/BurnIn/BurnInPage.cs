@@ -637,6 +637,7 @@ public class BurnInPage : ContentPage
         }.BindDynamicTheme();
         entryWidth.SetBinding(Entry.TextProperty, nameof(vm.VideoWidth));
         entryWidth.TextChanged += vm.VideoWidthChanged;
+        vm.EntryWidth = entryWidth;
         var labelX = new Label
         {
             Text = "x",
@@ -645,6 +646,7 @@ public class BurnInPage : ContentPage
             Margin = new Thickness(0, 0, 0, 0),
             FontSize = 16,
         }.BindDynamicThemeTextColorOnly();
+        vm.LabelX = labelX;
         var entryHeight = new Entry
         {
             Text = "1080",
@@ -655,6 +657,7 @@ public class BurnInPage : ContentPage
         }.BindDynamicTheme();
         entryHeight.SetBinding(Entry.TextProperty, nameof(vm.VideoHeight));
         entryHeight.TextChanged += vm.VideoHeightChanged;
+        vm.EntryHeight = entryHeight;
         var buttonResolution = new Button
         {
             Text = "...",

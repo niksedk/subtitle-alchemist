@@ -47,7 +47,7 @@ public sealed class ResolutionPopup : Popup
                     VerticalOptions = LayoutOptions.Center,
                     Padding = new Thickness(5),
                 };
-                label.SetBinding(Label.TextProperty, nameof(ResolutionItem.Name));
+                label.SetBinding(Label.TextProperty, nameof(ResolutionItem.DisplayName));
                 label.SetBinding(VisualElement.BackgroundColorProperty, nameof(ResolutionItem.BackgroundColor));
                 label.SetBinding(Label.TextColorProperty, nameof(ResolutionItem.TextColor));
 

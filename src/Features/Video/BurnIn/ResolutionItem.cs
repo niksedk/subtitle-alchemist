@@ -7,6 +7,7 @@ public partial class ResolutionItem : ObservableObject
 {
     public ResolutionItemType ItemType { get; set; }
     public string Name { get; set; }
+    public string DisplayName { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
 
@@ -16,8 +17,9 @@ public partial class ResolutionItem : ObservableObject
     [ObservableProperty]
     private Color _textColor;
 
-    public ResolutionItem( string name, ResolutionItemType itemType)
+    public ResolutionItem(string name, ResolutionItemType itemType)
     {
+        DisplayName = string.Empty;
         Name = name;
         ItemType = itemType;
         _backgroundColor = Colors.Transparent;
@@ -29,33 +31,33 @@ public partial class ResolutionItem : ObservableObject
         {
             _textColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
         }
+
+        SetDisplayName(name, itemType);
+    }
+
+    private void SetDisplayName(string name, ResolutionItemType itemType)
+    {
+        DisplayName = itemType == ResolutionItemType.Resolution ? $"{name} - {Width}x{Height}" : name;
     }
 
     public ResolutionItem(string name, int width, int height)
     {
+        DisplayName = string.Empty;
         ItemType = ResolutionItemType.Resolution;
         Name = name;
         Width = width;
         Height = height;
         _backgroundColor = Colors.Transparent;
         _textColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+        SetDisplayName(name, ResolutionItemType.Resolution);
     }
 
-    public override string ToString()
-    {
-        if (ItemType == ResolutionItemType.Resolution)
-        {
-            return $"{Name} - {Width}x{Height}";
-        }
-
-        return Name;
-    }
 
     public static IEnumerable<ResolutionItem> GetResolutions()
     {
         yield return new ResolutionItem("Use source resolution", ResolutionItemType.UseSource);
         yield return new ResolutionItem("Pick resolution from video...", ResolutionItemType.PickResolution);
-        yield return new ResolutionItem( "Landscape modes", ResolutionItemType.Separator);
+        yield return new ResolutionItem("Landscape modes", ResolutionItemType.Separator);
         yield return new ResolutionItem("4K DCI - Aspect Ratio 16∶9", 4096, 2160);
         yield return new ResolutionItem("4K UHD - Aspect Ratio 16∶9", 3840, 2160);
         yield return new ResolutionItem("2K WQHD - Aspect Ratio 16∶9", 2560, 1440);

@@ -2,6 +2,7 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Storage;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SkiaSharp.Views.Maui;
@@ -215,6 +216,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public Border BatchView { get; set; }
     public Label LabelOutputFolder { get; set; }
     public Button ButtonResolution { get; set; }
+    public Entry EntryHeight { get; set; }
+    public Entry EntryWidth { get; set; }
+    public Label LabelX { get; set; }
 
     private Subtitle _subtitle = new();
     private bool _loading = true;
@@ -230,6 +234,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private bool _isBatchMode;
     private int _jobItemIndex = -1;
     private FfmpegMediaInfo2? _mediaInfo;
+    private bool _useSourceResolution;
 
     private readonly IPopupService _popupService;
     private readonly IFileHelper _fileHelper;
@@ -260,6 +265,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         BatchView = new();
         LabelOutputFolder = new();
         _videoFileName = string.Empty;
+        EntryWidth = new();
+        EntryHeight = new();
+        LabelX = new();
 
         _fontNames = new ObservableCollection<string>(FontHelper.GetSystemFonts());
         _selectedFontName = _fontNames.First();
@@ -531,6 +539,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             {
                 LoadSettings();
 
+                SetUseSourceResolution();
+
                 BatchView.IsVisible = false;
                 bool batchMode;
                 if (string.IsNullOrWhiteSpace(_videoFileName))
@@ -559,6 +569,22 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         });
     }
 
+    private void SetUseSourceResolution()
+    {
+        if (_useSourceResolution)
+        {
+            EntryWidth.IsVisible = false;
+            EntryHeight.IsVisible = false;
+            LabelX.Text = "Use source resolution";
+        }
+        else
+        {
+            EntryWidth.IsVisible = true;
+            EntryHeight.IsVisible = true;
+            LabelX.Text = "x";
+        }
+    }
+
     private void LoadSettings()
     {
         var settings = Se.Settings.Video.BurnIn;
@@ -576,6 +602,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         OutputSourceFolder = settings.OutputFolder;
         UseOutputFolderVisible = settings.UseOutputFolder;
         UseSourceFolderVisible = !settings.UseOutputFolder;
+        _useSourceResolution = settings.UseSourceResolution;
     }
 
     private void SaveSettings()
@@ -592,6 +619,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         settings.NonAssaShadowColor = FontShadowColor.ToArgbHex();
         settings.NonAssaFixRtlUnicode = FontFixRtl;
         settings.NonAssaAlignment = SelectedFontAlignment.Code;
+        settings.OutputFolder = OutputSourceFolder;
+        settings.UseOutputFolder = UseOutputFolderVisible;
+        settings.UseSourceResolution = _useSourceResolution;
 
         Se.SaveSettings();
     }
@@ -985,7 +1015,38 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task PickResolution()
     {
-        await _popupService.ShowPopupAsync<ResolutionPopupModel>(CancellationToken.None);
+        var resolutionItem = await _popupService.ShowPopupAsync<ResolutionPopupModel>(CancellationToken.None);
+        if (resolutionItem is not ResolutionItem item)
+        {
+            return;
+        }
+
+        if (item.ItemType == ResolutionItemType.PickResolution)
+        {
+            var videoFileName = await _fileHelper.PickAndShowVideoFile("Open video file");
+            if (string.IsNullOrWhiteSpace(videoFileName))
+            {
+                return;
+            }
+
+            var mediaInfo = FfmpegMediaInfo2.Parse(videoFileName);
+            VideoWidth = mediaInfo.Dimension.Width;
+            VideoHeight = mediaInfo.Dimension.Height;
+            _useSourceResolution = false;
+        }
+        else if (item.ItemType == ResolutionItemType.UseSource)
+        {
+            _useSourceResolution = true;
+        }
+        else if (item.ItemType == ResolutionItemType.Resolution)
+        {
+            _useSourceResolution = false;
+            VideoWidth = item.Width;
+            VideoHeight = item.Height;
+        }
+
+        SetUseSourceResolution();
+        SaveSettings();
     }
 
     private void UpdateNonAssaPreview()

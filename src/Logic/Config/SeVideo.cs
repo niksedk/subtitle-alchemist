@@ -45,6 +45,7 @@ public class VideoBurnIn
     public bool UseOutputFolder { get; set; }
     public string OutputFolder { get; set; }
     public string BurnInSuffix { get; set; }
+    public bool UseSourceResolution { get; set; }
 
     public VideoBurnIn()
     {
