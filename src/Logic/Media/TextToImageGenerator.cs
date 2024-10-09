@@ -4,8 +4,17 @@ namespace SubtitleAlchemist.Logic.Media;
 
 public static class TextToImageGenerator
 {
-    public static SKBitmap GenerateImage(string text, string fontName, float fontSize, bool isBold,
-        SKColor textColor, SKColor outlineColor, SKColor shadowColor, float outlineWidth, float shadowWidth)
+    public static SKBitmap GenerateImage(
+        string text,
+        string fontName,
+        float fontSize,
+        bool isBold,
+        SKColor textColor,
+        SKColor outlineColor,
+        SKColor shadowColor,
+        SKColor backgroundColor,
+        float outlineWidth,
+        float shadowWidth)
     {
         using var typeface = SKTypeface.FromFamilyName(fontName, isBold ? SKFontStyleWeight.Bold : SKFontStyleWeight.Normal, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
         using var paint = new SKPaint();
@@ -22,7 +31,7 @@ public static class TextToImageGenerator
 
         var bitmap = new SKBitmap(width, height);
         using var canvas = new SKCanvas(bitmap);
-        canvas.Clear(SKColors.Transparent);
+        canvas.Clear(backgroundColor);
 
         var x = padding + outlineWidth;
         var y = height - padding - outlineWidth;
@@ -55,5 +64,42 @@ public static class TextToImageGenerator
         drawTextWithOutline(x, y, textColor, outlineColor);
 
         return bitmap;
+    }
+
+    public static SKBitmap AddShadowToBitmap(SKBitmap originalBitmap, int shadowWidth, SKColor shadowColor)
+    {
+        // Calculate new dimensions
+        var newWidth = originalBitmap.Width + shadowWidth;
+        var newHeight = originalBitmap.Height + shadowWidth;
+
+        // Create a new bitmap with increased size
+        using var surface = SKSurface.Create(new SKImageInfo(newWidth, newHeight));
+        var canvas = surface.Canvas;
+
+        // Clear the canvas with transparent color
+        canvas.Clear(SKColors.Transparent);
+
+        // Draw the shadow
+        using (var paint = new SKPaint
+               {
+                   Color = shadowColor,
+                   Style = SKPaintStyle.Fill
+               })
+        {
+            // Draw bottom shadow
+            canvas.DrawRect(0, originalBitmap.Height, newWidth, shadowWidth, paint);
+
+            // Draw right shadow
+            canvas.DrawRect(originalBitmap.Width, 0, shadowWidth, originalBitmap.Height, paint);
+        }
+
+        // Draw the original bitmap
+        canvas.DrawBitmap(originalBitmap, 0, 0);
+
+        // Create a new bitmap from the surface
+        using (var image = surface.Snapshot())
+        {
+            return SKBitmap.FromImage(image);
+        }
     }
 }

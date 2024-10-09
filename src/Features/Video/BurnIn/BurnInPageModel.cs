@@ -17,6 +17,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
+using SkiaSharp;
 using Timer = System.Timers.Timer;
 
 namespace SubtitleAlchemist.Features.Video.BurnIn;
@@ -1057,17 +1058,57 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         }
 
         var fontSize = (float)CalculateFontSize(VideoWidth, VideoHeight, SelectedFontFactor);
-        var image = TextToImageGenerator.GenerateImage(
-            "This is a test",
-            SelectedFontName,
-            fontSize,
-            FontIsBold,
-            FontTextColor.ToSKColor(),
-            FontOutlineColor.ToSKColor(),
-            FontShadowColor.ToSKColor(),
-            (float)SelectedFontOutline,
-            (float)SelectedFontShadowWidth);
-        ImagePreview.Source = image.ToImageSource();
+        SKBitmap bitmap;
+
+        if (SelectedFontBoxType.BoxType == FontBoxType.BoxPerLine)
+        {
+            bitmap = TextToImageGenerator.GenerateImage(
+                "This is a test",
+                SelectedFontName,
+                fontSize,
+                FontIsBold,
+                FontTextColor.ToSKColor(),
+                FontShadowColor.ToSKColor(),
+                FontOutlineColor.ToSKColor(),
+                FontOutlineColor.ToSKColor(),
+                (float)0,
+                (float)SelectedFontShadowWidth);
+
+            if (SelectedFontShadowWidth > 0)
+            {
+                bitmap = TextToImageGenerator.AddShadowToBitmap(bitmap, (int)Math.Round(SelectedFontShadowWidth, MidpointRounding.AwayFromZero), FontShadowColor.ToSKColor());
+            }
+        }
+        else if (SelectedFontBoxType.BoxType == FontBoxType.OneBox)
+        {
+            bitmap = TextToImageGenerator.GenerateImage(
+                "This is a test",
+                SelectedFontName,
+                fontSize,
+                FontIsBold,
+                FontTextColor.ToSKColor(),
+                FontOutlineColor.ToSKColor(),
+                SKColors.Red,
+                FontShadowColor.ToSKColor(),
+                (float)SelectedFontOutline,
+                (float)SelectedFontShadowWidth);
+        }
+        else // FontBoxType.None
+        {
+            bitmap = TextToImageGenerator.GenerateImage(
+                "This is a test",
+                SelectedFontName,
+                fontSize,
+                FontIsBold,
+                FontTextColor.ToSKColor(),
+                FontOutlineColor.ToSKColor(),
+                FontShadowColor.ToSKColor(),
+                SKColors.Transparent,
+                (float)SelectedFontOutline,
+                (float)SelectedFontShadowWidth);
+        }
+
+        ImagePreview.Source = bitmap.ToImageSource();
     }
 
     [RelayCommand]
