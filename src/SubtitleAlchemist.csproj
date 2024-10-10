@@ -68,6 +68,10 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
+	<PropertyGroup>
+		<WindowsSdkPackageVersion>10.0.19041.34</WindowsSdkPackageVersion>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<AndroidResource Remove="Resources\Images\dark_theme\**" />
 		<Compile Remove="Resources\Images\dark_theme\**" />
