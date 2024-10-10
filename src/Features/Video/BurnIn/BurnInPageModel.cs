@@ -2,9 +2,9 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui.Storage;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Logic;
@@ -17,13 +17,18 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
-using SkiaSharp;
 using Timer = System.Timers.Timer;
 
 namespace SubtitleAlchemist.Features.Video.BurnIn;
 
 public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 {
+    [ObservableProperty]
+    private string _videoFileName;
+
+    [ObservableProperty]
+    private string _videoFileSize;
+
     [ObservableProperty]
     private ObservableCollection<string> _fontNames;
 
@@ -92,6 +97,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
     [ObservableProperty]
     private AlignmentItem _selectedFontAlignment;
+
+    [ObservableProperty]
+    private string _fontAssaInfo;
 
     [ObservableProperty]
     private int _videoWidth;
@@ -220,22 +228,26 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public Entry EntryHeight { get; set; }
     public Entry EntryWidth { get; set; }
     public Label LabelX { get; set; }
+    public Label LabelVideoFileName { get; set; }
+    public Label LabelVideoFileSize { get; set; }
+    public Border FontAssaView { get; set; }
+    public Border FontPropertiesView { get; set; }
 
     private Subtitle _subtitle = new();
     private bool _loading = true;
-    private string _videoFileName;
     private StringBuilder _log;
     private static readonly Regex FrameFinderRegex = new(@"[Ff]rame=\s*\d+", RegexOptions.Compiled);
     private long _startTicks;
     private long _processedFrames;
     private Process? _ffmpegProcess;
-    private readonly Timer _timerAnalyze = new();
-    private readonly Timer _timerGenerate = new();
+    private readonly Timer _timerAnalyze;
+    private readonly Timer _timerGenerate;
     private bool _doAbort;
     private bool _isBatchMode;
     private int _jobItemIndex = -1;
     private FfmpegMediaInfo2? _mediaInfo;
     private bool _useSourceResolution;
+    private SubtitleFormat? _subtitleFormat;
 
     private readonly IPopupService _popupService;
     private readonly IFileHelper _fileHelper;
@@ -266,9 +278,14 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         BatchView = new();
         LabelOutputFolder = new();
         _videoFileName = string.Empty;
+        _videoFileSize = string.Empty;
         EntryWidth = new();
         EntryHeight = new();
         LabelX = new();
+        LabelVideoFileName = new();
+        LabelVideoFileSize = new();
+        FontAssaView = new();
+        FontPropertiesView = new();
 
         _fontNames = new ObservableCollection<string>(FontHelper.GetSystemFonts());
         _selectedFontName = _fontNames.First();
@@ -304,6 +321,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
         _fontAlignments = new ObservableCollection<AlignmentItem>(AlignmentItem.Alignments);
         _selectedFontAlignment = AlignmentItem.Alignments[7];
+
+        _fontAssaInfo = string.Empty;
 
         _videoWidth = 1920;
         _videoHeight = 1080;
@@ -530,9 +549,20 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
         if (query["VideoFileName"] is string videoFileName)
         {
-            _videoFileName = videoFileName;
+            LabelVideoFileName.IsVisible = true;
+            LabelVideoFileSize.IsVisible = true;
+            VideoFileName = videoFileName;
+        }
+        else
+        {
+            LabelVideoFileName.IsVisible = false;
+            LabelVideoFileSize.IsVisible = false;
         }
 
+        if (query["SubtitleFormat"] is SubtitleFormat subtitleFormat)
+        {
+            _subtitleFormat = subtitleFormat;
+        }
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
@@ -544,7 +574,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
                 BatchView.IsVisible = false;
                 bool batchMode;
-                if (string.IsNullOrWhiteSpace(_videoFileName))
+                if (string.IsNullOrWhiteSpace(VideoFileName))
                 {
                     batchMode = true;
                     ButtonMode.IsVisible = false;
@@ -552,9 +582,17 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
                 else
                 {
                     batchMode = false;
-                    _mediaInfo = FfmpegMediaInfo2.Parse(_videoFileName);
+                    _mediaInfo = FfmpegMediaInfo2.Parse(VideoFileName);
                     VideoWidth = _mediaInfo.Dimension.Width;
                     VideoHeight = _mediaInfo.Dimension.Height;
+                    var bytes = new FileInfo(VideoFileName).Length;
+                    VideoFileSize = Utilities.FormatBytesToDisplayFileSize(bytes);
+
+                    if (_subtitleFormat is { Name: AdvancedSubStationAlpha.NameOfFormat })
+                    {
+                        FontAssaView.IsVisible = true;
+                        FontPropertiesView.IsVisible = false;
+                    }
                 }
 
                 if (batchMode != _isBatchMode)
@@ -901,21 +939,30 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         var subtitle = new Subtitle(_subtitle);
 
         var srt = new SubRip();
-        var srtFileName = Path.Combine(Path.GetTempFileName() + srt.Extension);
-        File.WriteAllText(srtFileName, srt.ToText(subtitle, string.Empty));
+        var subtitleFileName = Path.Combine(Path.GetTempFileName() + srt.Extension);
+        if (_subtitleFormat is { Name: AdvancedSubStationAlpha.NameOfFormat })
+        {
+            var assa = new AdvancedSubStationAlpha();
+            subtitleFileName = Path.Combine(Path.GetTempFileName() + assa.Extension);
+            File.WriteAllText(subtitleFileName, assa.ToText(subtitle, string.Empty));
+        }
+        else
+        {
+            File.WriteAllText(subtitleFileName, srt.ToText(subtitle, string.Empty));
+        }
 
-        _mediaInfo = FfmpegMediaInfo2.Parse(_videoFileName);
+        _mediaInfo = FfmpegMediaInfo2.Parse(VideoFileName);
         VideoWidth = _mediaInfo.Dimension.Width;
         VideoHeight = _mediaInfo.Dimension.Height;
 
-        var jobItem = new BurnInJobItem(_videoFileName, _mediaInfo.Dimension.Width, _mediaInfo.Dimension.Height)
+        var jobItem = new BurnInJobItem(VideoFileName, _mediaInfo.Dimension.Width, _mediaInfo.Dimension.Height)
         {
-            InputVideoFileName = _videoFileName,
-            OutputVideoFileName = MakeOutputFileName(_videoFileName),
+            InputVideoFileName = VideoFileName,
+            OutputVideoFileName = MakeOutputFileName(VideoFileName),
             UseTargetFileSize = UseTargetFileSize,
             TargetFileSize = TargetFileSize,
         };
-        jobItem.AddSubtitleFileName(srtFileName);
+        jobItem.AddSubtitleFileName(subtitleFileName);
 
         return new ObservableCollection<BurnInJobItem>(new[] { jobItem });
     }
@@ -928,7 +975,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             return string.Empty;
         }
 
-        var isAssa = subtitleFileName.EndsWith(".ass");
+        var isAssa = subtitleFileName.EndsWith(".ass", StringComparison.OrdinalIgnoreCase);
 
         var subtitle = Subtitle.Parse(subtitleFileName);
 
@@ -1011,6 +1058,14 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         ButtonModeText = _isBatchMode ? "Single mode" : "Batch mode";
 
         BatchView.IsVisible = _isBatchMode;
+
+        if (_subtitleFormat is { Name: AdvancedSubStationAlpha.NameOfFormat })
+        {
+            FontAssaView.IsVisible = !_isBatchMode;
+            FontPropertiesView.IsVisible = _isBatchMode;
+        }
+
+        UpdateNonAssaPreview();
     }
 
     [RelayCommand]
@@ -1057,13 +1112,22 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        var text = "This is a test";
+
+        if (_subtitleFormat is { Name: AdvancedSubStationAlpha.NameOfFormat } && !_isBatchMode)
+        {
+            ImagePreview.Source = new SKBitmap(1, 1).ToImageSource();
+            return;
+        }
+
+
         var fontSize = (float)CalculateFontSize(VideoWidth, VideoHeight, SelectedFontFactor);
         SKBitmap bitmap;
 
         if (SelectedFontBoxType.BoxType == FontBoxType.BoxPerLine)
         {
             bitmap = TextToImageGenerator.GenerateImage(
-                "This is a test",
+                text,
                 SelectedFontName,
                 fontSize,
                 FontIsBold,
@@ -1082,7 +1146,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         else if (SelectedFontBoxType.BoxType == FontBoxType.OneBox)
         {
             bitmap = TextToImageGenerator.GenerateImage(
-                "This is a test",
+                text,
                 SelectedFontName,
                 fontSize,
                 FontIsBold,
@@ -1096,7 +1160,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         else // FontBoxType.None
         {
             bitmap = TextToImageGenerator.GenerateImage(
-                "This is a test",
+                text,
                 SelectedFontName,
                 fontSize,
                 FontIsBold,

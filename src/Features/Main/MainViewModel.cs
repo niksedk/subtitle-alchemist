@@ -1531,6 +1531,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             { "Subtitle", UpdatedSubtitle },
             { "SubtitleFileName", _subtitleFileName },
             { "VideoFileName", _videoFileName },
+            { "SubtitleFormat", CurrentSubtitleFormat },
         });
     }
 

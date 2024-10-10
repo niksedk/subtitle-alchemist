@@ -1,4 +1,3 @@
-using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Controls.SubTimeControl;
@@ -52,9 +51,13 @@ public class BurnInPage : ContentPage
         pageGrid.Add(labelTitle, 0);
         pageGrid.SetColumnSpan(labelTitle, 3);
 
-        var textView = MakeTextPropertiesView(vm);
-        pageGrid.Add(textView, 0, 1);
-        pageGrid.SetRowSpan(textView, 2);
+        vm.FontPropertiesView = MakeFontPropertiesView(vm);
+        pageGrid.Add(vm.FontPropertiesView, 0, 1);
+        pageGrid.SetRowSpan(vm.FontPropertiesView, 2);
+
+        vm.FontAssaView = MakeFontPropertiesAssaView(vm);
+        pageGrid.Add(vm.FontAssaView, 0, 1);
+        pageGrid.SetRowSpan(vm.FontAssaView, 2);
 
         var videoView = MakeVideoPropertiesView(vm);
         pageGrid.Add(videoView, 0, 3);
@@ -63,7 +66,7 @@ public class BurnInPage : ContentPage
         pageGrid.Add(MakePreviewView(vm), 1, 2);
         pageGrid.Add(MakeAudioPropertiesView(vm), 1, 3);
         pageGrid.Add(MakeTargetFilePropertiesView(vm), 0, 4);
-        pageGrid.Add(MakeVideoPlayerView(vm), 1, 4);
+        pageGrid.Add(MakeVideoInfo(vm), 1, 4);
 
         vm.BatchView = MakeBatchView(vm);
         pageGrid.Add(vm.BatchView, 0, 4);
@@ -185,7 +188,36 @@ public class BurnInPage : ContentPage
         vm.Page = this;
     }
 
-    private static IView MakeTextPropertiesView(BurnInPageModel vm)
+    private static Border MakeFontPropertiesAssaView(BurnInPageModel vm)
+    {
+        var labelAssaInfo = new Label
+        {
+            Text = "Advanced Sub Station Alpha style from current subtitle will be used :)",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+
+        var border = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(15),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = labelAssaInfo,
+        }.BindDynamicTheme();
+
+        border.IsVisible = false;
+
+        return border;
+    }
+
+    private static Border MakeFontPropertiesView(BurnInPageModel vm)
     {
         var stack = new StackLayout
         {
@@ -235,7 +267,7 @@ public class BurnInPage : ContentPage
 
         var labelFontFactor = new Label
         {
-            Text = "Font factor",
+            Text = "Font size factor",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
@@ -1302,9 +1334,67 @@ public class BurnInPage : ContentPage
         return border;
     }
 
-    private IView MakeVideoPlayerView(BurnInPageModel vm)
+    private IView MakeVideoInfo(BurnInPageModel vm)
     {
-        vm.VideoPlayer = new MediaElement { ZIndex = -10000 };
+       var grid = new Grid
+       {
+           RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto }, 
+                new RowDefinition { Height = GridLength.Auto }, 
+            },
+           ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star },
+            },
+           Margin = new Thickness(2),
+           Padding = new Thickness(30, 20, 30, 10),
+           RowSpacing = 5,
+           ColumnSpacing = 5,
+           HorizontalOptions = LayoutOptions.Fill,
+           VerticalOptions = LayoutOptions.Fill,
+       }.BindDynamicTheme();
+
+
+        var labelVideoFileNameLabel = new Label
+        {
+            Text = "Video file:",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 25, 0),
+        }.BindDynamicTheme();
+        vm.LabelVideoFileName = labelVideoFileNameLabel;
+        grid.Add(labelVideoFileNameLabel, 0, 0);
+
+        var labelVideoFileName = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
+        }.BindDynamicTheme();
+        labelVideoFileName.SetBinding(Label.TextProperty, nameof(vm.VideoFileName));
+        grid.Add(labelVideoFileName, 1, 0);
+
+
+        var labelVideoFileSizeLabel = new Label
+        {
+            Text = "Video file size:",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
+        }.BindDynamicTheme();
+        vm.LabelVideoFileSize = labelVideoFileSizeLabel;
+        grid.Add(labelVideoFileSizeLabel, 0, 1);
+
+        var labelVideoFileSize = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
+        }.BindDynamicTheme();
+        labelVideoFileSize.SetBinding(Label.TextProperty, nameof(vm.VideoFileSize));
+        grid.Add(labelVideoFileSize, 1, 1);
 
         var border = new Border
         {
@@ -1317,7 +1407,7 @@ public class BurnInPage : ContentPage
             {
                 CornerRadius = new CornerRadius(5)
             },
-            Content = vm.VideoPlayer,
+            Content = grid,
         }.BindDynamicTheme();
 
         return border;
