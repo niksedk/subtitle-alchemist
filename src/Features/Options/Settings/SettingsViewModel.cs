@@ -39,8 +39,10 @@ public partial class SettingsViewModel : ObservableObject
     {
         _popupService = popupService;
 
+        _searchText = string.Empty;
         LeftMenu = new VerticalStackLayout();
         SyntaxErrorColorBox = new BoxView();
+        SettingList = new CollectionView();
 
         AllSettings = new List<SettingItem>();
 
@@ -132,7 +134,7 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    public async Task ThemeChanged(object? sender, EventArgs eventArgs)
+    public void ThemeChanged(object? sender, EventArgs eventArgs)
     {
         if (sender is not Picker picker)
         {

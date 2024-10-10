@@ -67,7 +67,7 @@ public class VideoPreviewGenerator
     //    return processMakeVideo;
     //}
 
-    public static Process GenerateEmptyAudio(string outputFileName, float seconds, DataReceivedEventHandler dataReceivedHandler = null)
+    public static Process GenerateEmptyAudio(string outputFileName, float seconds, DataReceivedEventHandler? dataReceivedHandler = null)
     {
         var processMakeVideo = new Process
         {
@@ -85,7 +85,7 @@ public class VideoPreviewGenerator
         return processMakeVideo;
     }
 
-    public static Process MergeAudioTracks(string inputFileName1, string inputFileName2, string outputFileName, float startSeconds, DataReceivedEventHandler dataReceivedHandler = null)
+    public static Process MergeAudioTracks(string inputFileName1, string inputFileName2, string outputFileName, float startSeconds, DataReceivedEventHandler? dataReceivedHandler = null)
     {
         var processMakeVideo = new Process
         {
@@ -103,7 +103,7 @@ public class VideoPreviewGenerator
         return processMakeVideo;
     }
 
-    private static void SetupDataReceiveHandler(DataReceivedEventHandler dataReceivedHandler, Process processMakeVideo)
+    private static void SetupDataReceiveHandler(DataReceivedEventHandler? dataReceivedHandler, Process processMakeVideo)
     {
         if (dataReceivedHandler != null)
         {
@@ -117,7 +117,7 @@ public class VideoPreviewGenerator
     /// <summary>
     /// Generate a video with a burned-in Advanced Sub Station Alpha subtitle.
     /// </summary>
-    public static Process GenerateHardcodedVideoFile(string inputVideoFileName, string assaSubtitleFileName, string outputVideoFileName, int width, int height, string videoEncoding, string preset, string pixelFormat, string crf, string audioEncoding, bool forceStereo, string sampleRate, string tune, string audioBitRate, string pass, string twoPassBitRate, DataReceivedEventHandler dataReceivedHandler = null, string cutStart = null, string cutEnd = null, string audioCutTrack = "")
+    public static Process GenerateHardcodedVideoFile(string inputVideoFileName, string assaSubtitleFileName, string outputVideoFileName, int width, int height, string videoEncoding, string preset, string pixelFormat, string crf, string audioEncoding, bool forceStereo, string sampleRate, string tune, string audioBitRate, string pass, string twoPassBitRate, DataReceivedEventHandler? dataReceivedHandler = null, string? cutStart = null, string? cutEnd = null, string audioCutTrack = "")
     {
         if (width % 2 == 1)
         {
@@ -582,7 +582,7 @@ public class VideoPreviewGenerator
     //    return processMakeVideo;
     //}
 
-    public static Process ChangeSpeed(string inputFileName, string outputFileName, float inputSpeed, DataReceivedEventHandler dataReceivedHandler = null)
+    public static Process ChangeSpeed(string inputFileName, string outputFileName, float inputSpeed, DataReceivedEventHandler? dataReceivedHandler = null)
     {
         var speed = Math.Max(0.5f, inputSpeed);
         speed = Math.Min(100, speed);
@@ -604,7 +604,7 @@ public class VideoPreviewGenerator
         return processMakeVideo;
     }
 
-    public static Process TrimSilenceStartAndEnd(string inputFileName, string outputFileName, DataReceivedEventHandler dataReceivedHandler = null)
+    public static Process TrimSilenceStartAndEnd(string inputFileName, string outputFileName, DataReceivedEventHandler? dataReceivedHandler = null)
     {
         var processMakeVideo = new Process
         {
@@ -622,7 +622,7 @@ public class VideoPreviewGenerator
         return processMakeVideo;
     }
 
-    public static Process AddAudioTrack(string inputFileName, string audioFileName, string outputFileName, string audioEncoding, bool? stereo, DataReceivedEventHandler dataReceivedHandler = null)
+    public static Process AddAudioTrack(string inputFileName, string audioFileName, string outputFileName, string audioEncoding, bool? stereo, DataReceivedEventHandler? dataReceivedHandler = null)
     {
         var audioEncodingString = !string.IsNullOrEmpty(audioEncoding) ? "-c:a " + audioEncoding + " " : "-c:a copy ";
         var stereoString = stereo == true ? "-ac 2 " : string.Empty;
@@ -643,7 +643,7 @@ public class VideoPreviewGenerator
         return processMakeVideo;
     }
 
-    public static Process ConvertFormat(string inputFileName, string outputFileName, DataReceivedEventHandler dataReceivedHandler = null)
+    public static Process ConvertFormat(string inputFileName, string outputFileName, DataReceivedEventHandler? dataReceivedHandler = null)
     {
         var processMakeVideo = new Process
         {
@@ -661,7 +661,7 @@ public class VideoPreviewGenerator
         return processMakeVideo;
     }
 
-    public static Process ConvertToAc2(string inputFileName, string outputFileName, DataReceivedEventHandler dataReceivedHandler = null)
+    public static Process ConvertToAc2(string inputFileName, string outputFileName, DataReceivedEventHandler? dataReceivedHandler = null)
     {
         var processMakeVideo = new Process
         {
@@ -679,7 +679,7 @@ public class VideoPreviewGenerator
         return processMakeVideo;
     }
 
-    public static Process GenerateTransparentVideoFile(string assaSubtitleFileName, string outputVideoFileName, int width, int height, string frameRate, string timeCode, DataReceivedEventHandler dataReceivedHandler)
+    public static Process GenerateTransparentVideoFile(string assaSubtitleFileName, string outputVideoFileName, int width, int height, string frameRate, string timeCode, DataReceivedEventHandler? dataReceivedHandler)
     {
         if (width % 2 == 1)
         {

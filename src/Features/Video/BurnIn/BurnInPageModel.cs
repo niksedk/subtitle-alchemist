@@ -235,7 +235,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
     private Subtitle _subtitle = new();
     private bool _loading = true;
-    private StringBuilder _log;
+    private readonly StringBuilder _log;
     private static readonly Regex FrameFinderRegex = new(@"[Ff]rame=\s*\d+", RegexOptions.Compiled);
     private long _startTicks;
     private long _processedFrames;
@@ -891,13 +891,13 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             jobItem.Width,
             jobItem.Height,
             SelectedVideoEncoding.Codec,
-            SelectedVideoPreset,
-            SelectedVideoPixelFormat.Codec,
-            SelectedVideoCrf,
+            SelectedVideoPreset ?? string.Empty,
+            SelectedVideoPixelFormat?.Codec ?? string.Empty,
+            SelectedVideoCrf ?? string.Empty,
             SelectedAudioEncoding,
             AudioIsStereo,
             SelectedAudioSampleRate.Replace("Hz", string.Empty).Trim(),
-            SelectedVideoTuneFor,
+            SelectedVideoTuneFor ?? string.Empty,
             SelectedAudioBitRate,
             pass,
             jobItem.VideoBitRate,
@@ -1677,6 +1677,11 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         }
 
         var dir = Path.GetDirectoryName(fileName);
+        if (string.IsNullOrEmpty(dir))
+        {
+            return string.Empty;
+        }
+
         var searchPath = Path.GetFileNameWithoutExtension(fileName);
         var files = Directory.GetFiles(dir, searchPath + "*");
         var subtitleExtensions = SubtitleFormat.AllSubtitleFormats.Select(p => p.Extension).Distinct();

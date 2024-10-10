@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Features.Main;
-using SubtitleAlchemist.Features.Video.BurnIn;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -55,7 +54,6 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     private List<int> _selectedIndices = new();
     private List<double> _shotChanges = new();
     private readonly System.Timers.Timer _previewTimer;
-    private int _previewLastHash = -1;
 
     public TextToSpeechPageModel()
     {
@@ -77,16 +75,12 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         _previewTimer = new System.Timers.Timer(1000);
     }
 
-  
-
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query["Subtitle"] is Subtitle subtitle)
         {
             _subtitle = new Subtitle(subtitle, false);
         }
-
-     //   Page?.Initialize(_subtitle, this);
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
@@ -96,12 +90,6 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             });
             return false;
         });
-    }
-
-    [RelayCommand]
-    private async Task Ok()
-    {
-       
     }
 
     [RelayCommand]

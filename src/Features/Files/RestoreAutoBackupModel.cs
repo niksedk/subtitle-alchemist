@@ -37,7 +37,7 @@ public partial class RestoreAutoBackupModel : ObservableObject
     [RelayCommand]
     public async Task Ok()
     {
-        if (SelectedFile is not { } file)
+        if (SelectedFile is not { } file || Page == null)
         {
             return;
         }

@@ -266,8 +266,6 @@ public class SettingsPage : ContentPage
 
     private static void MakeToolsSettings(SettingsViewModel vm)
     {
-        var textWidth = 200;
-
         vm.AllSettings.Add(new SettingItem("Tools", SectionName.Tools));
 
         vm.AllSettings.Add(new SettingItem("Fix common errors"));
@@ -381,8 +379,6 @@ public class SettingsPage : ContentPage
 
     private static void MakeWaveformSpectrogramSettings(SettingsViewModel vm)
     {
-        var textWidth = 200;
-
         vm.AllSettings.Add(new SettingItem("Waveform/spectrogram", SectionName.WaveformSpectrogram));
 
         vm.AllSettings.Add(new SettingItem("Waveform"));
@@ -393,10 +389,7 @@ public class SettingsPage : ContentPage
 
     private static void MakeVideoPlayerSettings(SettingsViewModel vm)
     {
-        var textWidth = 200;
-
         vm.AllSettings.Add(new SettingItem("Video player", SectionName.VideoPlayer));
-
         vm.AllSettings.Add(new SettingItem("Video engine"));
     }
 
@@ -985,7 +978,7 @@ public class SettingsPage : ContentPage
         picker.SetBinding(Picker.SelectedItemProperty, nameof(vm.Theme));
         picker.SelectedItem = vm.Theme;
 
-        picker.SelectedIndexChanged += async (o, args) => await vm.ThemeChanged(o, args);
+        picker.SelectedIndexChanged += vm.ThemeChanged;
         grid.Add(picker, 1, 1);
 
         return grid;
