@@ -1135,7 +1135,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
                 FontShadowColor.ToSKColor(),
                 FontOutlineColor.ToSKColor(),
                 FontOutlineColor.ToSKColor(),
-                (float)0,
+                0,
                 (float)SelectedFontShadowWidth);
 
             if (SelectedFontShadowWidth > 0)
@@ -1155,7 +1155,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
                 SKColors.Red,
                 FontShadowColor.ToSKColor(),
                 (float)SelectedFontOutline,
-                (float)SelectedFontShadowWidth);
+                0);
         }
         else // FontBoxType.None
         {

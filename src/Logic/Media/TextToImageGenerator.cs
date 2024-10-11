@@ -68,9 +68,11 @@ public static class TextToImageGenerator
 
     public static SKBitmap AddShadowToBitmap(SKBitmap originalBitmap, int shadowWidth, SKColor shadowColor)
     {
+        var offset = 2;
+
         // Calculate new dimensions
-        var newWidth = originalBitmap.Width + shadowWidth;
-        var newHeight = originalBitmap.Height + shadowWidth;
+        var newWidth = originalBitmap.Width + shadowWidth + offset;
+        var newHeight = originalBitmap.Height + shadowWidth + offset;
 
         // Create a new bitmap with increased size
         using var surface = SKSurface.Create(new SKImageInfo(newWidth, newHeight));
@@ -81,16 +83,16 @@ public static class TextToImageGenerator
 
         // Draw the shadow
         using (var paint = new SKPaint
-               {
-                   Color = shadowColor,
-                   Style = SKPaintStyle.Fill
-               })
+        {
+            Color = shadowColor,
+            Style = SKPaintStyle.Fill
+        })
         {
             // Draw bottom shadow
-            canvas.DrawRect(0, originalBitmap.Height, newWidth, shadowWidth, paint);
+            canvas.DrawRect(0 + offset, originalBitmap.Height, newWidth, shadowWidth, paint);
 
             // Draw right shadow
-            canvas.DrawRect(originalBitmap.Width, 0, shadowWidth, originalBitmap.Height, paint);
+            canvas.DrawRect(originalBitmap.Width, 0 + offset, shadowWidth + offset, originalBitmap.Height, paint);
         }
 
         // Draw the original bitmap
