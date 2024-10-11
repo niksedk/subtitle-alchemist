@@ -9,10 +9,16 @@ namespace SubtitleAlchemist.Logic
 
         private static readonly Stack<List<EventHandler<KeyboardHookEventArgs>>> StackKeyPressed = new();
         private static readonly List<EventHandler<KeyboardHookEventArgs>> CurrentKeyPressedEventHandlers = new();
-
         public static void AddKeyPressed(EventHandler<KeyboardHookEventArgs> keyboardHookEventArgs)
         {
             CurrentKeyPressedEventHandlers.Add(keyboardHookEventArgs);
+        }
+
+        private static readonly Stack<List<EventHandler<KeyboardHookEventArgs>>> StackKeyReleased = new();
+        private static readonly List<EventHandler<KeyboardHookEventArgs>> CurrentKeyReleasedEventHandlers = new();
+        public static void AddKeyReleased(EventHandler<KeyboardHookEventArgs> keyboardHookEventArgs)
+        {
+            CurrentKeyReleasedEventHandlers.Add(keyboardHookEventArgs);
         }
 
         private static readonly Stack<List<EventHandler<MouseHookEventArgs>>> StackMouseClicked = new();
@@ -28,7 +34,6 @@ namespace SubtitleAlchemist.Logic
         {
             CurrentMousePressedEventHandlers.Add(mouseHookEventArgs);
         }
-
 
         private static readonly Stack<List<EventHandler<MouseHookEventArgs>>> StackMouseReleased = new();
         private static readonly List<EventHandler<MouseHookEventArgs>> CurrentMouseReleasedEventHandlers = new();
@@ -91,6 +96,7 @@ namespace SubtitleAlchemist.Logic
         public static void Clear()
         {
             CurrentKeyPressedEventHandlers.Clear();
+            CurrentKeyReleasedEventHandlers.Clear();
             CurrentMouseClickedEventHandlers.Clear();
             CurrentMousePressedEventHandlers.Clear();
             CurrentMouseReleasedEventHandlers.Clear();
@@ -99,6 +105,7 @@ namespace SubtitleAlchemist.Logic
         public static void Push()
         {
             StackKeyPressed.Push(CurrentKeyPressedEventHandlers);
+            StackKeyReleased.Push(CurrentKeyReleasedEventHandlers);
             StackMouseClicked.Push(CurrentMouseClickedEventHandlers);
             StackMousePressed.Push(CurrentMousePressedEventHandlers);
             StackMouseReleased.Push(CurrentMouseReleasedEventHandlers);
@@ -112,6 +119,11 @@ namespace SubtitleAlchemist.Logic
             if (StackKeyPressed.Count > 0)
             {
                 CurrentKeyPressedEventHandlers.AddRange(StackKeyPressed.Pop());
+            }
+
+            if (StackKeyReleased.Count > 0)
+            {
+                CurrentKeyReleasedEventHandlers.AddRange(StackKeyReleased.Pop());
             }
 
             if (StackMouseClicked.Count > 0)
