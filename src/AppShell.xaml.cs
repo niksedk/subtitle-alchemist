@@ -10,6 +10,7 @@ using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Features.Video.BurnIn;
 using SubtitleAlchemist.Features.Video.TextToSpeech;
+using SubtitleAlchemist.Features.Video.TransparentSubtitles;
 
 namespace SubtitleAlchemist
 {
@@ -32,6 +33,7 @@ namespace SubtitleAlchemist
             Routing.RegisterRoute(nameof(UndoRedoHistoryPage), typeof(UndoRedoHistoryPage));
             Routing.RegisterRoute(nameof(AdjustAllTimesPage), typeof(AdjustAllTimesPage));
             Routing.RegisterRoute(nameof(BurnInPage), typeof(BurnInPage));
+            Routing.RegisterRoute(nameof(TransparentSubPage), typeof(TransparentSubPage));
             Routing.RegisterRoute(nameof(TextToSpeechPage), typeof(TextToSpeechPage));
         }
     }

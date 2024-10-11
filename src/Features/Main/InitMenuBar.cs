@@ -277,6 +277,11 @@ internal static class InitMenuBar
         });
         menu.Add(new MenuFlyoutItem
         {
+            Text = "Generate transparent video with subtitles...",
+            Command = vm.VideoGenerateWithTransparentSubtitlesCommand,
+        });
+        menu.Add(new MenuFlyoutItem
+        {
             Text = "Text to speech and add to video...",
             Command = vm.VideoSpeechToTextCommand,
         });

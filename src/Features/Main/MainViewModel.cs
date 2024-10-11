@@ -44,6 +44,7 @@ using SubtitleAlchemist.Features.Main.LayoutPicker;
 using LayoutPickerModel = SubtitleAlchemist.Features.Main.LayoutPicker.LayoutPickerModel;
 using Path = System.IO.Path;
 using SpellCheckDictionary = SubtitleAlchemist.Features.SpellCheck.SpellCheckDictionary;
+using SubtitleAlchemist.Features.Video.TransparentSubtitles;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -1535,6 +1536,26 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             { "SubtitleFormat", CurrentSubtitleFormat },
         });
     }
+
+    [RelayCommand]
+    private async Task VideoGenerateWithTransparentSubtitles()
+    {
+        var ffmpegOk = await RequireFfmpegOk();
+        if (!ffmpegOk)
+        {
+            return;
+        }
+
+        await Shell.Current.GoToAsync(nameof(TransparentSubPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
+            { "SubtitleFileName", _subtitleFileName },
+            { "VideoFileName", _videoFileName },
+            { "SubtitleFormat", CurrentSubtitleFormat },
+        });
+    }
+
 
     [RelayCommand]
     private async Task VideoSpeechToText()
