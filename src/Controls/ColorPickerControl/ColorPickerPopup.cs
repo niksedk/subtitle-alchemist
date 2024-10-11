@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Controls.ColorPickerControl;
 

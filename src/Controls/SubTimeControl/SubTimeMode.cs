@@ -1,8 +1,7 @@
-﻿namespace SubtitleAlchemist.Controls.SubTimeControl
+﻿namespace SubtitleAlchemist.Controls.SubTimeControl;
+
+public enum SubTimeMode
 {
-    public enum SubTimeMode
-    {
-        HhMmSsMs,
-        HhMmSsFf,
-    }
+    HhMmSsMs,
+    HhMmSsFf,
 }
