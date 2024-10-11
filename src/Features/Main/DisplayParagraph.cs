@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Nikse.SubtitleEdit.Core.Common;
-using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Main;
 

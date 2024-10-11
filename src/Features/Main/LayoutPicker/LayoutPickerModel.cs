@@ -4,7 +4,7 @@ using SharpHook.Native;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Media;
 
-namespace SubtitleAlchemist.Features.LayoutPicker
+namespace SubtitleAlchemist.Features.Main.LayoutPicker
 {
     public partial class LayoutPickerModel : ObservableObject
     {

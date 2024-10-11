@@ -17,7 +17,6 @@ using SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export;
 using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
 using SubtitleAlchemist.Features.Files.ExportBinary.PacExport;
 using SubtitleAlchemist.Features.Help.About;
-using SubtitleAlchemist.Features.LayoutPicker;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Features.SpellCheck;
@@ -41,6 +40,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Timers;
+using SubtitleAlchemist.Features.Main.LayoutPicker;
+using LayoutPickerModel = SubtitleAlchemist.Features.Main.LayoutPicker.LayoutPickerModel;
 using Path = System.IO.Path;
 using SpellCheckDictionary = SubtitleAlchemist.Features.SpellCheck.SpellCheckDictionary;
 

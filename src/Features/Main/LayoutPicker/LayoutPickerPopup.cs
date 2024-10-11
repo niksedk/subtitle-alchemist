@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
-namespace SubtitleAlchemist.Features.LayoutPicker;
+namespace SubtitleAlchemist.Features.Main.LayoutPicker;
 
 public class LayoutPickerPopup : Popup
 {

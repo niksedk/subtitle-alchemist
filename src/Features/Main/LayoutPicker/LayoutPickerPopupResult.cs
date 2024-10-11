@@ -1,4 +1,4 @@
-﻿namespace SubtitleAlchemist.Features.LayoutPicker
+﻿namespace SubtitleAlchemist.Features.Main.LayoutPicker
 {
     public class LayoutPickerPopupResult
     {
