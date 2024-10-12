@@ -112,7 +112,7 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
     private ObservableCollection<double> _frameRates;
 
     [ObservableProperty]
-    private double? _selectedFrameRate;
+    private double _selectedFrameRate;
 
     [ObservableProperty]
     private ObservableCollection<string> _videoExtension;
@@ -242,6 +242,7 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
             60,
             120,
         };
+        _selectedFrameRate = 24;
 
         _fontNames = new ObservableCollection<string>(FontHelper.GetSystemFonts());
         _selectedFontName = _fontNames.First();
@@ -549,6 +550,7 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         UseOutputFolderVisible = settings.UseOutputFolder;
         UseSourceFolderVisible = !settings.UseOutputFolder;
         _useSourceResolution = settings.UseSourceResolution;
+        SelectedFrameRate = Se.Settings.Video.Transparent.FrameRate;
     }
 
     private void SaveSettings()
@@ -568,6 +570,8 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         settings.OutputFolder = OutputSourceFolder;
         settings.UseOutputFolder = UseOutputFolderVisible;
         settings.UseSourceResolution = _useSourceResolution;
+
+        Se.Settings.Video.Transparent.FrameRate = SelectedFrameRate;
 
         Se.SaveSettings();
     }
@@ -685,7 +689,7 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
             jobItem.OutputVideoFileName,
             jobItem.Width,
             jobItem.Height,
-            SelectedFrameRate == null ? "24" : SelectedFrameRate.Value.ToString(CultureInfo.InvariantCulture),
+            SelectedFrameRate.ToString(CultureInfo.InvariantCulture),
             timeCode,
             OutputHandler);
     }
@@ -1198,7 +1202,6 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
     {
         if (SelectedJobItem != null)
         {
-            var idx = JobItems.IndexOf(SelectedJobItem);
             JobItems.Remove(SelectedJobItem);
         }
     }
@@ -1217,21 +1220,41 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        var fileName = await _fileHelper.PickAndShowVideoFile("Open video file");
+        var fileName = await _fileHelper.PickAndShowVideoFile("Pick video file");
         if (string.IsNullOrEmpty(fileName))
         {
-            SelectedJobItem.InputVideoFileName = fileName;
+            var mediaInfo = FfmpegMediaInfo2.Parse(fileName);
+            SelectedJobItem.AddInputVideoFileName(fileName);
+            SelectedJobItem.TotalFrames = mediaInfo.GetTotalFrames();
+            SelectedJobItem.TotalSeconds = mediaInfo.Duration.TotalSeconds;
+            SelectedJobItem.Width = mediaInfo.Dimension.Width;
+            SelectedJobItem.Height = mediaInfo.Dimension.Height;
         }
     }
 
     [RelayCommand]
     private async Task BatchOutputProperties()
     {
-        var result = await _popupService.ShowPopupAsync<OutputPropertiesPopupModel>(CancellationToken.None);
+        var input = new OutputProperties
+        {
+            UseOutputFolder = Se.Settings.Video.BurnIn.UseOutputFolder,
+            OutputFolder = Se.Settings.Video.BurnIn.OutputFolder,
+            Suffix = Se.Settings.Video.Transparent.OutputSuffix,
+        };
 
-        UseOutputFolderVisible = Se.Settings.Video.BurnIn.UseOutputFolder;
-        UseSourceFolderVisible = !Se.Settings.Video.BurnIn.UseOutputFolder;
-        OutputSourceFolder = Se.Settings.Video.BurnIn.OutputFolder;
+        var result = await _popupService.ShowPopupAsync<OutputPropertiesPopupModel>(onPresenting: viewModel => viewModel.Initialize(input), CancellationToken.None);
+
+        if (result is OutputProperties outputResult)
+        {
+            Se.Settings.Video.BurnIn.UseOutputFolder = outputResult.UseOutputFolder;
+            Se.Settings.Video.BurnIn.OutputFolder = outputResult.OutputFolder;
+            Se.Settings.Video.Transparent.OutputSuffix = outputResult.Suffix;
+            Se.SaveSettings();
+
+            UseOutputFolderVisible = outputResult.UseOutputFolder;
+            UseSourceFolderVisible = !Se.Settings.Video.BurnIn.UseOutputFolder;
+            OutputSourceFolder = outputResult.OutputFolder;
+        }
     }
 
     public void OutputFolderLinkMouseEntered(object? sender, PointerEventArgs e)

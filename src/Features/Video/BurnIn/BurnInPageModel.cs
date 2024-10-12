@@ -1734,11 +1734,26 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task BatchOutputProperties()
     {
-        var result = await _popupService.ShowPopupAsync<OutputPropertiesPopupModel>(CancellationToken.None);
+        var input = new OutputProperties
+        {
+            UseOutputFolder = Se.Settings.Video.BurnIn.UseOutputFolder,
+            OutputFolder = Se.Settings.Video.BurnIn.OutputFolder,
+            Suffix = Se.Settings.Video.BurnIn.BurnInSuffix,
+        };
 
-        UseOutputFolderVisible = Se.Settings.Video.BurnIn.UseOutputFolder;
-        UseSourceFolderVisible = !Se.Settings.Video.BurnIn.UseOutputFolder;
-        OutputSourceFolder = Se.Settings.Video.BurnIn.OutputFolder;
+        var result = await _popupService.ShowPopupAsync<OutputPropertiesPopupModel>(onPresenting: viewModel => viewModel.Initialize(input), CancellationToken.None);
+
+        if (result is OutputProperties outputResult)
+        {
+            Se.Settings.Video.BurnIn.UseOutputFolder = outputResult.UseOutputFolder;
+            Se.Settings.Video.BurnIn.OutputFolder = outputResult.OutputFolder;
+            Se.Settings.Video.BurnIn.BurnInSuffix = outputResult.Suffix;
+            Se.SaveSettings();
+
+            UseOutputFolderVisible = outputResult.UseOutputFolder;
+            UseSourceFolderVisible = !Se.Settings.Video.BurnIn.UseOutputFolder;
+            OutputSourceFolder = outputResult.OutputFolder;
+        }
     }
 
     public void OutputFolderLinkMouseEntered(object? sender, PointerEventArgs e)

@@ -1,8 +1,6 @@
 ﻿using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Nikse.SubtitleEdit.Core.Common;
-using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Video.BurnIn
 {
@@ -20,27 +18,29 @@ namespace SubtitleAlchemist.Features.Video.BurnIn
         private string _outputFolder;
 
         [ObservableProperty]
-        private string _videoOutputSuffix;
+        private string _outputSuffix;
 
         public OutputPropertiesPopupModel()
         {
-            _useSourceFolder = !Se.Settings.Video.BurnIn.UseOutputFolder;
-            _useOutputFolder = Se.Settings.Video.BurnIn.UseOutputFolder;
-            _outputFolder = Se.Settings.Video.BurnIn.OutputFolder;
-            _videoOutputSuffix = Se.Settings.Video.BurnIn.BurnInSuffix;
+            _useSourceFolder = false;
+            _useOutputFolder = true;
+            _outputFolder = string.Empty;
+            _outputSuffix = string.Empty;
         }
 
         [RelayCommand]
         private void Ok()
         {
-            Se.Settings.Video.BurnIn.UseOutputFolder = UseOutputFolder;
-            Se.Settings.Video.BurnIn.OutputFolder = OutputFolder;
-            Se.Settings.Video.BurnIn.BurnInSuffix = VideoOutputSuffix;
-            Se.SaveSettings();
+            var result = new OutputProperties
+            {
+                OutputFolder = OutputFolder,
+                UseOutputFolder = UseOutputFolder,
+                Suffix = OutputSuffix,
+            };
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Popup?.Close(true);
+                Popup?.Close(result);
             });
         }
 
@@ -65,13 +65,16 @@ namespace SubtitleAlchemist.Features.Video.BurnIn
             });
         }
 
-        public void Initialize(Subtitle updatedSubtitle)
+        public void Initialize(OutputProperties outputProperties)
         {
             Popup?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-
+                    UseSourceFolder = !outputProperties.UseOutputFolder;
+                    UseOutputFolder = outputProperties.UseOutputFolder;
+                    OutputFolder = outputProperties.OutputFolder;
+                    OutputSuffix = outputProperties.Suffix;
                 });
 
                 return false;

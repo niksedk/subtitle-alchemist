@@ -117,7 +117,7 @@ public sealed class OutputPropertiesPopup : Popup
             WidthRequest = 200,
             Margin = new Thickness(0, 25, 0, 0),
         }.BindDynamicTheme();
-        entryVideoOutputSuffix.SetBinding(Entry.TextProperty, nameof(vm.VideoOutputSuffix));
+        entryVideoOutputSuffix.SetBinding(Entry.TextProperty, nameof(vm.OutputSuffix));
         grid.Add(entryVideoOutputSuffix, 1, 3);
         grid.SetColumnSpan(entryVideoOutputSuffix,2);
 

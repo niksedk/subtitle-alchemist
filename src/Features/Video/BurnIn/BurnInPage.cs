@@ -42,7 +42,7 @@ public class BurnInPage : ContentPage
 
         var labelTitle = new Label
         {
-            Text = Se.Language.BurnIn.Title,
+            Text = Se.Language.VideoBurnIn.Title,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 25),

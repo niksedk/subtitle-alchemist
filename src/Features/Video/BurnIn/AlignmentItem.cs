@@ -18,7 +18,7 @@ public class AlignmentItem
             return Name;
         }
 
-        return $"{Name} ({Code})";
+        return $"{Name}";
     }
 
     public static List<AlignmentItem> Alignments = new()

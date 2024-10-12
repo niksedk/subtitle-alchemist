@@ -2,15 +2,29 @@
 
 public class SeVideo
 {
-    public VideoBurnIn BurnIn { get; set; } = new();
+    public SeVideoBurnIn BurnIn { get; set; } = new();
+    public SeVideoTransparent Transparent { get; set; } = new();
 
     public SeVideo()
     {
         BurnIn = new();
+        Transparent = new();
     }
 }
 
-public class VideoBurnIn
+public class SeVideoTransparent
+{
+    public string OutputSuffix { get; set; }
+    public double FrameRate { get; set; }
+
+    public SeVideoTransparent()
+    {
+        OutputSuffix = "_transparent";
+        FrameRate = 23.976;
+    }
+}
+
+public class SeVideoBurnIn
 {
     public string FontName { get; set; }
     public bool FontBold { get; set; }
@@ -47,7 +61,7 @@ public class VideoBurnIn
     public string BurnInSuffix { get; set; }
     public bool UseSourceResolution { get; set; }
 
-    public VideoBurnIn()
+    public SeVideoBurnIn()
     {
         FontName = "Arial";
         PixelFormat = string.Empty;
