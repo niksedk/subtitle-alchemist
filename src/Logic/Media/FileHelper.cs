@@ -38,6 +38,38 @@ namespace SubtitleAlchemist.Logic.Media
             return string.Empty;
         }
 
+        public async Task<string[]> PickAndShowSubtitleFiles(string title)
+        {
+            try
+            {
+                var customFileType = new FilePickerFileType(
+                    new Dictionary<DevicePlatform, IEnumerable<string>>
+                    {
+                        { DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // UTType values
+                        { DevicePlatform.Android, new[] { "application/text" } }, // MIME type
+                        { DevicePlatform.WinUI, new[] { ".srt", ".ass" } }, // file extension
+                        { DevicePlatform.Tizen, new[] { "*/*" } },
+                        { DevicePlatform.macOS, new[] { "srt", "ass" } }, // UTType values
+                    });
+
+                var pickOptions = new PickOptions
+                {
+                    FileTypes = customFileType,
+                    PickerTitle = title,
+                };
+
+                var result = await FilePicker.Default.PickMultipleAsync(pickOptions);
+                return result.Select(p => p.FullPath).ToArray();
+            }
+            catch
+            {
+                // The user canceled or something went wrong
+            }
+
+            return Array.Empty<string>();
+        }
+
+
         public async Task<string> PickAndShowSubtitleFile(string title, SubtitleFormat format)
         {
             try
@@ -152,7 +184,7 @@ namespace SubtitleAlchemist.Logic.Media
                 };
 
                 var result = await FilePicker.Default.PickMultipleAsync(pickOptions);
-                return result.Select(p=>p.FullPath).ToArray();
+                return result.Select(p => p.FullPath).ToArray();
             }
             catch
             {
@@ -207,7 +239,7 @@ namespace SubtitleAlchemist.Logic.Media
             return string.Empty;
         }
 
-        public async Task<string> SaveStreamAs(Stream stream, string title, string fileName,  SubtitleFormat format, CancellationToken cancellationToken = default)
+        public async Task<string> SaveStreamAs(Stream stream, string title, string fileName, SubtitleFormat format, CancellationToken cancellationToken = default)
         {
             try
             {

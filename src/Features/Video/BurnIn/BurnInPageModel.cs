@@ -1633,7 +1633,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task BatchAdd()
     {
-        var fileNames = await _fileHelper.PickAndShowVideoFiles("Open video file");
+        var fileNames = await _fileHelper.PickAndShowVideoFiles("Pick video files");
         if (fileNames.Length == 0)
         {
             return;

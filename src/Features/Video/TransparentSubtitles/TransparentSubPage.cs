@@ -31,6 +31,7 @@ public class TransparentSubPage : ContentPage
             {
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star }, // batch view
             },
             Margin = new Thickness(2),
             Padding = new Thickness(30, 20, 30, 10),
@@ -67,8 +68,8 @@ public class TransparentSubPage : ContentPage
         pageGrid.Add(MakeAudioPropertiesView(vm), 1, 3);
 
         vm.BatchView = MakeBatchView(vm);
-        pageGrid.Add(vm.BatchView, 0, 4);
-        pageGrid.SetColumnSpan(vm.BatchView, 2);
+        pageGrid.Add(vm.BatchView, 2, 1);
+        pageGrid.SetRowSpan(vm.BatchView, 3);
 
         var progressBar = new ProgressBar
         {
@@ -81,8 +82,8 @@ public class TransparentSubPage : ContentPage
         };
         progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));
         vm.ProgressBar = progressBar;
-        pageGrid.Add(progressBar, 0, 6);
-        pageGrid.SetColumnSpan(progressBar, 2);
+        pageGrid.Add(progressBar, 0, 4);
+        pageGrid.SetColumnSpan(progressBar, 3);
 
 
         var buttonGenerate = new Button
@@ -149,7 +150,8 @@ public class TransparentSubPage : ContentPage
             },
         }.BindDynamicTheme();
 
-        pageGrid.Add(buttonBar, 0, 7);
+        pageGrid.Add(buttonBar, 0, 5);
+        pageGrid.SetColumnSpan(buttonBar, 3);
 
         var scrollView = new ScrollView
         {
@@ -977,10 +979,10 @@ public class TransparentSubPage : ContentPage
             Padding = new Thickness(5),
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = new GridLength(5, GridUnitType.Star) }, // Video file
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Resolution
+                new ColumnDefinition { Width = new GridLength(5, GridUnitType.Star) }, // Subtitle file
                 new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Size
-                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Subtitle file
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Resolution
+                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Video file
                 new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Status
             },
         };
@@ -989,7 +991,7 @@ public class TransparentSubPage : ContentPage
         gridHeader.Add(
             new Label
             {
-                Text = "Video file",
+                Text = "Subtitle file",
                 FontAttributes = FontAttributes.Bold,
                 HorizontalTextAlignment = TextAlignment.Start,
                 VerticalTextAlignment = TextAlignment.Center
@@ -997,7 +999,7 @@ public class TransparentSubPage : ContentPage
         gridHeader.Add(
             new Label
             {
-                Text = "Resolution",
+                Text = "Size",
                 FontAttributes = FontAttributes.Bold,
                 HorizontalTextAlignment = TextAlignment.Start,
                 VerticalTextAlignment = TextAlignment.Center
@@ -1005,7 +1007,7 @@ public class TransparentSubPage : ContentPage
         gridHeader.Add(
             new Label
             {
-                Text = "Size",
+                Text = "Resolution",
                 FontAttributes = FontAttributes.Bold,
                 HorizontalTextAlignment = TextAlignment.Start,
                 VerticalTextAlignment = TextAlignment.Center
@@ -1013,7 +1015,7 @@ public class TransparentSubPage : ContentPage
         gridHeader.Add(
             new Label
             {
-                Text = "Subtitle file",
+                Text = "Video file",
                 FontAttributes = FontAttributes.Bold,
                 HorizontalTextAlignment = TextAlignment.Start,
                 VerticalTextAlignment = TextAlignment.Center
@@ -1036,7 +1038,6 @@ public class TransparentSubPage : ContentPage
             SelectionMode = SelectionMode.Single,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            HeightRequest = 250,
             ItemTemplate = new DataTemplate(() =>
             {
                 var jobItemGrid = new Grid
@@ -1056,7 +1057,7 @@ public class TransparentSubPage : ContentPage
                     HorizontalTextAlignment = TextAlignment.Start,
                     VerticalTextAlignment = TextAlignment.Center,
                 }.BindDynamicThemeTextColorOnly();
-                labelVideoFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.InputVideoFileNameShort));
+                labelVideoFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.SubtitleFileName));
                 jobItemGrid.Add(labelVideoFile, 0, 0);
 
                 var labelResolution = new Label
@@ -1064,7 +1065,7 @@ public class TransparentSubPage : ContentPage
                     HorizontalTextAlignment = TextAlignment.Start,
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
-                labelResolution.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Resolution));
+                labelResolution.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Size));
                 jobItemGrid.Add(labelResolution, 1, 0);
 
                 var labelSize = new Label
@@ -1072,7 +1073,7 @@ public class TransparentSubPage : ContentPage
                     HorizontalTextAlignment = TextAlignment.Start,
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
-                labelSize.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Size));
+                labelSize.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Resolution));
                 jobItemGrid.Add(labelSize, 2, 0);
 
                 var labelSubtitleFile = new Label
@@ -1080,7 +1081,7 @@ public class TransparentSubPage : ContentPage
                     HorizontalTextAlignment = TextAlignment.Start,
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
-                labelSubtitleFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.SubtitleFileNameShort));
+                labelSubtitleFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.InputVideoFileNameShort));
                 jobItemGrid.Add(labelSubtitleFile, 3, 0);
 
                 var labelStatus = new Label
@@ -1097,14 +1098,13 @@ public class TransparentSubPage : ContentPage
 
         collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.JobItems), BindingMode.TwoWay);
         collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedJobItem));
-        //collectionView.BindingContext = vm;
 
         grid.Add(collectionView, 0, 1);
 
 
         var buttonAdd = new Button
         {
-            Text = "Add",
+            Text = "Add...",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.BatchAddCommand,
@@ -1128,15 +1128,15 @@ public class TransparentSubPage : ContentPage
 
         var buttonPickSubtitleFile = new Button
         {
-            Text = "Pick subtitle file",
+            Text = "Pick video file...",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Command = vm.BatchPickSubtitleFileCommand,
+            Command = vm.BatchPickVideoFileCommand,
         }.BindDynamicTheme();
 
         var buttonOutputProperties = new Button
         {
-            Text = "Output properties",
+            Text = "Output properties...",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.BatchOutputPropertiesCommand,

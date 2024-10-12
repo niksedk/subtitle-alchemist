@@ -6,6 +6,7 @@ namespace SubtitleAlchemist.Logic.Media;
 public interface IFileHelper
 {
     Task<string> PickAndShowSubtitleFile(string title);
+    Task<string[]> PickAndShowSubtitleFiles(string title);
 
     Task<string> PickAndShowSubtitleFile(string title, SubtitleFormat format);
     Task<string> PickAndShowVideoFile(string title);

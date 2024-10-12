@@ -658,19 +658,6 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
 
     private Process GetFfmpegProcess(BurnInJobItem jobItem, int? passNumber = null, bool preview = false)
     {
-        var audioCutTracks = string.Empty;
-        //if (listViewAudioTracks.Visible)
-        //{
-        //    for (var index = 0; index < listViewAudioTracks.Items.Count; index++)
-        //    {
-        //        var listViewItem = listViewAudioTracks.Items[index];
-        //        if (!listViewItem.Checked)
-        //        {
-        //            audioCutTracks += $"-map 0:a:{index} ";
-        //        }
-        //    }
-        //}
-
         var pass = string.Empty;
         if (passNumber.HasValue)
         {
@@ -824,6 +811,11 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
 
     private static string MakeOutputFileName(string videoFileName)
     {
+        if (string.IsNullOrEmpty(videoFileName))
+        {
+            return string.Empty;
+        }
+
         var nameNoExt = Path.GetFileNameWithoutExtension(videoFileName);
         var ext = Path.GetExtension(videoFileName).ToLowerInvariant();
         if (ext != ".mp4" && ext != ".mkv")
@@ -1121,7 +1113,7 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     private async Task BatchAdd()
     {
-        var fileNames = await _fileHelper.PickAndShowVideoFiles("Open video file");
+        var fileNames = await _fileHelper.PickAndShowSubtitleFiles("Pick subtitle files");
         if (fileNames.Length == 0)
         {
             return;
@@ -1129,19 +1121,34 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
 
         foreach (var fileName in fileNames)
         {
-            var mediaInfo = FfmpegMediaInfo2.Parse(fileName);
-            var fileInfo = new FileInfo(fileName);
-            var jobItem = new BurnInJobItem(fileName, mediaInfo.Dimension.Width, mediaInfo.Dimension.Height)
+            var videoFileName = TryGetVideoFileName(fileName);
+            var width = 0;
+            var height = 0;
+            long totalFrames = 0;
+            double totalSeconds = 0;
+            var resolution = string.Empty;
+            if (!string.IsNullOrEmpty(videoFileName))
             {
-                OutputVideoFileName = MakeOutputFileName(fileName),
-                TotalFrames = mediaInfo.GetTotalFrames(),
-                TotalSeconds = mediaInfo.Duration.TotalSeconds,
-                Width = mediaInfo.Dimension.Width,
-                Height = mediaInfo.Dimension.Height,
+                var mediaInfo = FfmpegMediaInfo2.Parse(videoFileName);
+                width = mediaInfo.Dimension.Width;
+                height = mediaInfo.Dimension.Height;
+                totalFrames = mediaInfo.GetTotalFrames();
+                totalSeconds = mediaInfo.Duration.TotalSeconds;
+                resolution = mediaInfo.Dimension.ToString();
+            }
+
+            var fileInfo = new FileInfo(fileName);
+            var jobItem = new BurnInJobItem(videoFileName, width, height)
+            {
+                OutputVideoFileName = MakeOutputFileName(videoFileName),
+                TotalFrames = totalFrames,
+                TotalSeconds = totalSeconds,
+                Width = width,
+                Height = height,
                 Size = Utilities.FormatBytesToDisplayFileSize(fileInfo.Length),
-                Resolution = mediaInfo.Dimension.ToString(),
+                Resolution = resolution,
             };
-            jobItem.AddSubtitleFileName(TryGetSubtitleFileName(fileName));
+            jobItem.AddSubtitleFileName(fileName);
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -1150,15 +1157,15 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         }
     }
 
-    private static string TryGetSubtitleFileName(string fileName)
+    private static string TryGetVideoFileName(string fileName)
     {
-        var srt = Path.ChangeExtension(fileName, ".srt");
+        var srt = Path.ChangeExtension(fileName, ".mkv");
         if (File.Exists(srt))
         {
             return srt;
         }
 
-        var assa = Path.ChangeExtension(fileName, ".ass");
+        var assa = Path.ChangeExtension(fileName, ".mp4");
         if (File.Exists(srt))
         {
             return assa;
@@ -1172,8 +1179,7 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
 
         var searchPath = Path.GetFileNameWithoutExtension(fileName);
         var files = Directory.GetFiles(dir, searchPath + "*");
-        var subtitleExtensions = SubtitleFormat.AllSubtitleFormats.Select(p => p.Extension).Distinct();
-        foreach (var ext in subtitleExtensions)
+        foreach (var ext in Utilities.VideoFileExtensions)
         {
             foreach (var file in files)
             {
@@ -1203,19 +1209,18 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         JobItems.Clear();
     }
 
-
     [RelayCommand]
-    private async Task BatchPickSubtitleFile()
+    private async Task BatchPickVideoFile()
     {
         if (SelectedJobItem == null)
         {
             return;
         }
 
-        var fileName = await _fileHelper.PickAndShowSubtitleFile("Open subtitle file");
+        var fileName = await _fileHelper.PickAndShowVideoFile("Open video file");
         if (string.IsNullOrEmpty(fileName))
         {
-            SelectedJobItem.SubtitleFileName = fileName;
+            SelectedJobItem.InputVideoFileName = fileName;
         }
     }
 
