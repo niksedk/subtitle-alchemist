@@ -106,7 +106,7 @@ public sealed class OutputPropertiesPopup : Popup
             Text = "Video output suffix",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0,25,0,0),
+            Margin = new Thickness(0,25,10,0),
         }.BindDynamicTheme();
         grid.Add(labelVideoOutputSuffix, 0, 3);
 
@@ -156,14 +156,12 @@ public sealed class OutputPropertiesPopup : Popup
         var windowBorder = new Border
         {
             StrokeThickness = 1,
-            Padding = new Thickness(1),
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             StrokeShape = new RoundRectangle
             {
                 CornerRadius = new CornerRadius(5),
             },
-            BackgroundColor = Colors.Transparent,
             Content = grid,
         }.BindDynamicTheme();
 

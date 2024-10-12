@@ -19,6 +19,7 @@ using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Features.Main.LayoutPicker;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Features.Options.Settings;
+using SubtitleAlchemist.Features.Shared.PickSubtitleLine;
 using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 using SubtitleAlchemist.Features.Sync.ChangeFrameRate;
@@ -30,7 +31,6 @@ using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
 using SubtitleAlchemist.Features.Video.BurnIn;
 using SubtitleAlchemist.Features.Video.OpenFromUrl;
-using SubtitleAlchemist.Features.Video.TextToSpeech;
 using SubtitleAlchemist.Features.Video.TransparentSubtitles;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Dictionaries;
@@ -122,6 +122,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<EditCurrentTextPopup, EditCurrentTextPopupModel>();
             builder.Services.AddTransientPopup<OutputPropertiesPopup, OutputPropertiesPopupModel>();
             builder.Services.AddTransientPopup<ResolutionPopup, ResolutionPopupModel>();
+            builder.Services.AddTransientPopup<PickSubtitleLinePopup, PickSubtitleLinePopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();
