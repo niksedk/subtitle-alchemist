@@ -18,6 +18,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
+using SubtitleAlchemist.Features.Shared.PickSubtitleLine;
 using Timer = System.Timers.Timer;
 
 namespace SubtitleAlchemist.Features.Video.TransparentSubtitles;
@@ -130,7 +131,7 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
     private bool _useSourceFolderVisible;
 
     [ObservableProperty]
-    private bool _cutIsActive;
+    private bool _isCutActive;
 
     [ObservableProperty]
     private TimeSpan _cutFrom;
@@ -159,6 +160,9 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
 
     [ObservableProperty]
     private BurnInJobItem? _selectedJobItem;
+
+    [ObservableProperty]
+    private bool _isSubtitleLoaded;
 
     public TransparentSubPage? Page { get; set; }
     public MediaElement VideoPlayer { get; set; }
@@ -318,6 +322,8 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         if (!_ffmpegProcess.HasExited)
         {
             var percentage = (int)Math.Round((double)_processedFrames / JobItems[_jobItemIndex].TotalFrames * 100.0, MidpointRounding.AwayFromZero);
+            percentage = Math.Clamp(percentage, 0, 100);
+
             var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
             var msPerFrame = (float)durationMs / _processedFrames;
             var estimatedTotalMs = msPerFrame * JobItems[_jobItemIndex].TotalFrames;
@@ -338,7 +344,7 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         _timerAnalyze.Stop();
 
         var jobItem = JobItems[_jobItemIndex];
-        _ffmpegProcess = GetFfmpegProcess(jobItem, 2);
+        _ffmpegProcess = GetFfmpegProcess(jobItem);
 #pragma warning disable CA1416 // Validate platform compatibility
         _ffmpegProcess.Start();
 #pragma warning restore CA1416 // Validate platform compatibility
@@ -454,6 +460,7 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         if (query["Subtitle"] is Subtitle subtitle)
         {
             _subtitle = new Subtitle(subtitle, false);
+            IsSubtitleLoaded = _subtitle.Paragraphs.Count > 0;
         }
 
         if (query["VideoFileName"] is string videoFileName)
@@ -579,7 +586,7 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     private async Task Generate()
     {
-        if (CutIsActive && CutFrom >= CutTo)
+        if (IsCutActive && CutFrom >= CutTo)
         {
             await Page!.DisplayAlert(
                 "Cut settings error",
@@ -631,24 +638,41 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         _startTicks = DateTime.UtcNow.Ticks;
         _jobItemIndex = index;
         var jobItem = JobItems[index];
-        var mediaInfo = FfmpegMediaInfo2.Parse(jobItem.InputVideoFileName);
-        jobItem.TotalFrames = mediaInfo.GetTotalFrames();
-        jobItem.TotalSeconds = mediaInfo.Duration.TotalSeconds;
-        jobItem.Width = mediaInfo.Dimension.Width;
-        jobItem.Height = mediaInfo.Dimension.Height;
+        jobItem.OutputVideoFileName = MakeOutputFileName(jobItem.SubtitleFileName);
+        if (!string.IsNullOrEmpty(jobItem.InputVideoFileName))
+        {
+            var mediaInfo = FfmpegMediaInfo2.Parse(jobItem.InputVideoFileName);
+            jobItem.TotalSeconds = mediaInfo.Duration.TotalSeconds;
+            jobItem.Width = mediaInfo.Dimension.Width;
+            jobItem.Height = mediaInfo.Dimension.Height;
+        }
         jobItem.UseTargetFileSize = UseTargetFileSize;
         jobItem.TargetFileSize = UseTargetFileSize ? TargetFileSize : 0;
         jobItem.AssaSubtitleFileName = MakeAssa(jobItem.SubtitleFileName);
         jobItem.Status = "Generating...";
+        jobItem.TotalFrames = GetTotalFrames(jobItem.AssaSubtitleFileName);
 
-        var result = RunOnePassEncoding(jobItem);
+        var result = RunEncoding(jobItem);
         if (result)
         {
             _timerGenerate.Start();
         }
     }
 
-    private bool RunOnePassEncoding(BurnInJobItem jobItem)
+    private long GetTotalFrames(string subtitleFileName)
+    {
+        var subtitle = Subtitle.Parse(subtitleFileName);
+        if (subtitle.Paragraphs.Count == 0)
+        {
+            return 0;
+        }
+
+        var totalSeconds = subtitle.Paragraphs.Max(p => p.EndTime.TotalSeconds);
+        var frames = (long)Math.Round(SelectedFrameRate * totalSeconds, MidpointRounding.AwayFromZero);
+        return frames;
+    }
+
+    private bool RunEncoding(BurnInJobItem jobItem)
     {
         _ffmpegProcess = GetFfmpegProcess(jobItem);
 #pragma warning disable CA1416 // Validate platform compatibility
@@ -660,27 +684,10 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         return true;
     }
 
-    private Process GetFfmpegProcess(BurnInJobItem jobItem, int? passNumber = null, bool preview = false)
+    private Process GetFfmpegProcess(BurnInJobItem jobItem)
     {
-        var pass = string.Empty;
-        if (passNumber.HasValue)
-        {
-            pass = passNumber.Value.ToString(CultureInfo.InvariantCulture);
-        }
-
-        var cutStart = string.Empty;
-        var cutEnd = string.Empty;
-        if (CutIsActive && !preview)
-        {
-            var start = CutFrom;
-            cutStart = $"-ss {start.Hours:00}:{start.Minutes:00}:{start.Seconds:00}";
-
-            var end = CutTo;
-            var duration = end - start;
-            cutEnd = $"-t {duration.Hours:00}:{duration.Minutes:00}:{duration.Seconds:00}";
-        }
-
-        var totalMs = _subtitle.Paragraphs.Max(p => p.EndTime.TotalMilliseconds);
+        var subtitle = Subtitle.Parse(jobItem.AssaSubtitleFileName);
+        var totalMs = subtitle.Paragraphs.Max(p => p.EndTime.TotalMilliseconds);
         var ts = TimeSpan.FromMilliseconds(totalMs + 2000);
         var timeCode = string.Format($"{ts.Hours:00}\\\\:{ts.Minutes:00}\\\\:{ts.Seconds:00}");
 
@@ -720,6 +727,27 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
             _processedFrames = f;
             ProgressValue = (double)_processedFrames / JobItems[_jobItemIndex].TotalFrames;
         }
+    }
+
+    private Subtitle GetSubtitleBasedOnCut(Subtitle inputSubtitle)
+    {
+        if (!IsCutActive)
+        {
+            return inputSubtitle;
+        }
+
+        var subtitle = new Subtitle();
+        foreach (var p in inputSubtitle.Paragraphs)
+        {
+            if (p.StartTime.TotalMilliseconds >= CutFrom.TotalMilliseconds && p.EndTime.TotalMilliseconds <= CutTo.TotalMilliseconds)
+            {
+                subtitle.Paragraphs.Add(new Paragraph(p));
+            }
+        }
+
+        subtitle.AddTimeToAllParagraphs(TimeSpan.FromMilliseconds(-CutFrom.TotalMilliseconds));
+
+        return subtitle;
     }
 
     private ObservableCollection<BurnInJobItem> GetCurrentVideoAsJobItems()
@@ -766,6 +794,8 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         var isAssa = subtitleFileName.EndsWith(".ass", StringComparison.OrdinalIgnoreCase);
 
         var subtitle = Subtitle.Parse(subtitleFileName);
+
+        subtitle = GetSubtitleBasedOnCut(subtitle);
 
         if (!isAssa)
         {
@@ -842,6 +872,34 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         }
 
         return fileName;
+    }
+
+    [RelayCommand]
+    private void PickFromTime()
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            var result = await _popupService
+                .ShowPopupAsync<PickSubtitleLinePopupModel>(onPresenting: viewModel => viewModel.Initialize(_subtitle, "Select cut from line"), CancellationToken.None);
+            if (result is Paragraph paragraph)
+            {
+                CutFrom = paragraph.StartTime.TimeSpan;
+            }
+        });
+    }
+
+    [RelayCommand]
+    private void PickToTime()
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            var result = await _popupService
+                .ShowPopupAsync<PickSubtitleLinePopupModel>(onPresenting: viewModel => viewModel.Initialize(_subtitle, "Select cut to line"), CancellationToken.None);
+            if (result is Paragraph paragraph)
+            {
+                CutTo = paragraph.EndTime.TimeSpan;
+            }
+        });
     }
 
     [RelayCommand]

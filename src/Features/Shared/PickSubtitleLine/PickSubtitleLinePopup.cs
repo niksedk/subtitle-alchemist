@@ -32,7 +32,7 @@ public sealed class PickSubtitleLinePopup : Popup
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             WidthRequest = 700,
-            HeightRequest = 375,
+            HeightRequest = 500,
         }.BindDynamicTheme();
 
         var labelTitle = new Label
@@ -72,6 +72,7 @@ public sealed class PickSubtitleLinePopup : Popup
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 15, 0, 0),
             Children =
             {
                 buttonOk,
@@ -191,7 +192,6 @@ public sealed class PickSubtitleLinePopup : Popup
         {
             Content = gridLayout,
             Padding = new Thickness(5),
-            Margin = new Thickness(10),
             StrokeShape = new RoundRectangle
             {
                 CornerRadius = new CornerRadius(5)

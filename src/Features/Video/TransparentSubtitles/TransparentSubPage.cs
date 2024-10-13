@@ -710,7 +710,6 @@ public class TransparentSubPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         pickerFrameRate.SetBinding(Picker.ItemsSourceProperty, nameof(vm.FrameRates));
         pickerFrameRate.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedFrameRate));
@@ -772,6 +771,7 @@ public class TransparentSubPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
+        cutSwitch.SetBinding(Switch.IsToggledProperty, nameof(vm.IsCutActive));
         var stackCutEnabled = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -796,12 +796,22 @@ public class TransparentSubPage : ContentPage
             FontSize = 16,
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
-        var subTimeUpDown = new SubTimeUpDown()
+        var subTimeUpDownFrom = new SubTimeUpDown
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = textWidth,
         }.BindDynamicTheme();
+        subTimeUpDownFrom.SetBinding(SubTimeUpDown.TimeProperty, nameof(vm.CutFrom));
+        var buttonFromTime = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            Command = vm.PickFromTimeCommand,
+        }.BindDynamicTheme();
+        buttonFromTime.SetBinding(Button.IsVisibleProperty, nameof(vm.IsSubtitleLoaded));
         var stackFromTime = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -812,7 +822,8 @@ public class TransparentSubPage : ContentPage
             Children =
             {
                 labelFromTime,
-                subTimeUpDown,
+                subTimeUpDownFrom,
+                buttonFromTime,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackFromTime);
@@ -826,12 +837,22 @@ public class TransparentSubPage : ContentPage
             FontSize = 16,
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
-        var subTimeUpDownTo = new SubTimeUpDown()
+        var subTimeUpDownTo = new SubTimeUpDown
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = textWidth,
         }.BindDynamicTheme();
+        subTimeUpDownTo.SetBinding(SubTimeUpDown.TimeProperty, nameof(vm.CutTo));
+        var buttonToTime = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            Command = vm.PickToTimeCommand,
+        }.BindDynamicTheme();
+        buttonToTime.SetBinding(Button.IsVisibleProperty, nameof(vm.IsSubtitleLoaded));
         var stackToTime = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -843,6 +864,7 @@ public class TransparentSubPage : ContentPage
             {
                 labelToTime,
                 subTimeUpDownTo,
+                buttonToTime,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackToTime);

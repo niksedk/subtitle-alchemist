@@ -184,7 +184,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     private bool _useSourceFolderVisible;
 
     [ObservableProperty]
-    private bool _cutIsActive;
+    private bool _isCutActive;
 
     [ObservableProperty]
     private TimeSpan _cutFrom;
@@ -409,6 +409,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         if (!_ffmpegProcess.HasExited)
         {
             var percentage = (int)Math.Round((double)_processedFrames / JobItems[_jobItemIndex].TotalFrames * 100.0, MidpointRounding.AwayFromZero);
+            percentage = Math.Clamp(percentage, 0, 100);
+
             var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
             var msPerFrame = (float)durationMs / _processedFrames;
             var estimatedTotalMs = msPerFrame * JobItems[_jobItemIndex].TotalFrames;
@@ -458,6 +460,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         if (!_ffmpegProcess.HasExited)
         {
             var percentage = (int)Math.Round((double)_processedFrames / JobItems[_jobItemIndex].TotalFrames * 100.0, MidpointRounding.AwayFromZero);
+            percentage = Math.Clamp(percentage, 0, 100);
+
             var durationMs = (DateTime.UtcNow.Ticks - _startTicks) / 10_000;
             var msPerFrame = (float)durationMs / _processedFrames;
             var estimatedTotalMs = msPerFrame * JobItems[_jobItemIndex].TotalFrames;
@@ -668,7 +672,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task Generate()
     {
-        if (CutIsActive && CutFrom >= CutTo)
+        if (IsCutActive && CutFrom >= CutTo)
         {
             await Page!.DisplayAlert(
                 "Cut settings error",
@@ -874,7 +878,7 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
         var cutStart = string.Empty;
         var cutEnd = string.Empty;
-        if (CutIsActive && !preview)
+        if (IsCutActive && !preview)
         {
             var start = CutFrom;
             cutStart = $"-ss {start.Hours:00}:{start.Minutes:00}:{start.Seconds:00}";

@@ -933,6 +933,7 @@ public class BurnInPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
+        cutSwitch.SetBinding(Switch.IsToggledProperty, nameof(vm.IsCutActive));
         var stackCutEnabled = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -957,12 +958,13 @@ public class BurnInPage : ContentPage
             FontSize = 16,
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
-        var subTimeUpDown = new SubTimeUpDown()
+        var subTimeUpDownFrom = new SubTimeUpDown
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = textWidth,
         }.BindDynamicTheme();
+        subTimeUpDownFrom.SetBinding(SubTimeUpDown.TimeProperty, nameof(vm.CutFrom));
         var stackFromTime = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -973,7 +975,7 @@ public class BurnInPage : ContentPage
             Children =
             {
                 labelFromTime,
-                subTimeUpDown,
+                subTimeUpDownFrom,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackFromTime);
@@ -987,12 +989,13 @@ public class BurnInPage : ContentPage
             FontSize = 16,
             WidthRequest = textWidth,
         }.BindDynamicThemeTextColorOnly();
-        var subTimeUpDownTo = new SubTimeUpDown()
+        var subTimeUpDownTo = new SubTimeUpDown
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = textWidth,
         }.BindDynamicTheme();
+        subTimeUpDownTo.SetBinding(SubTimeUpDown.TimeProperty, nameof(vm.CutTo));
         var stackToTime = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,

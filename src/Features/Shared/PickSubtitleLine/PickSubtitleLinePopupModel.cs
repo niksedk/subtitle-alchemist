@@ -31,11 +31,9 @@ namespace SubtitleAlchemist.Features.Shared.PickSubtitleLine
         [RelayCommand]
         private void Ok()
         {
-            var result = string.Empty;
-
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Popup?.Close(result);
+                Popup?.Close(SelectedParagraph?.P);
             });
         }
 
