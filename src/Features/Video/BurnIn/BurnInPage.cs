@@ -31,6 +31,7 @@ public class BurnInPage : ContentPage
             {
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star }, // batch
             },
             Margin = new Thickness(2),
             Padding = new Thickness(30, 20, 30, 10),
@@ -69,8 +70,8 @@ public class BurnInPage : ContentPage
         pageGrid.Add(MakeVideoInfo(vm), 1, 4);
 
         vm.BatchView = MakeBatchView(vm);
-        pageGrid.Add(vm.BatchView, 0, 4);
-        pageGrid.SetColumnSpan(vm.BatchView, 2);
+        pageGrid.Add(vm.BatchView, 2, 1);
+        pageGrid.SetRowSpan(vm.BatchView, 3);
 
         var labelHelp = new Label
         {
@@ -91,7 +92,7 @@ public class BurnInPage : ContentPage
         vm.LabelHelp = labelHelp;
 
         pageGrid.Add(labelHelp, 0, 5);
-        pageGrid.SetColumnSpan(labelHelp, 2);
+        pageGrid.SetColumnSpan(labelHelp, 3);
 
         var progressBar = new ProgressBar
         {
@@ -105,7 +106,7 @@ public class BurnInPage : ContentPage
         progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));
         vm.ProgressBar = progressBar;
         pageGrid.Add(progressBar, 0, 6);
-        pageGrid.SetColumnSpan(progressBar, 2);
+        pageGrid.SetColumnSpan(progressBar, 3);
 
 
         var buttonGenerate = new Button
@@ -1354,6 +1355,8 @@ public class BurnInPage : ContentPage
             Content = stack,
         }.BindDynamicTheme();
 
+        vm.VideoSizeView = border;
+
         return border;
     }
 
@@ -1432,6 +1435,8 @@ public class BurnInPage : ContentPage
             },
             Content = grid,
         }.BindDynamicTheme();
+
+        vm.VideoInfoView = border;
 
         return border;
     }
@@ -1525,7 +1530,7 @@ public class BurnInPage : ContentPage
         {
             SelectionMode = SelectionMode.Single,
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
             HeightRequest = 250,
             ItemTemplate = new DataTemplate(() =>
             {

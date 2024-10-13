@@ -233,6 +233,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
     public Label LabelVideoFileSize { get; set; }
     public Border FontAssaView { get; set; }
     public Border FontPropertiesView { get; set; }
+    public Border VideoSizeView { get; set; }
+    public Border VideoInfoView { get; set; }
 
     private Subtitle _subtitle = new();
     private bool _loading = true;
@@ -578,6 +580,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
                 SetUseSourceResolution();
 
                 BatchView.IsVisible = false;
+                VideoSizeView.IsVisible = true;
+                VideoInfoView.IsVisible = true;
+
                 bool batchMode;
                 if (string.IsNullOrWhiteSpace(VideoFileName))
                 {
@@ -1111,6 +1116,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         ButtonModeText = _isBatchMode ? "Single mode" : "Batch mode";
 
         BatchView.IsVisible = _isBatchMode;
+        VideoSizeView.IsVisible = !_isBatchMode;
+        VideoInfoView.IsVisible = !_isBatchMode;
 
         if (_subtitleFormat is { Name: AdvancedSubStationAlpha.NameOfFormat })
         {

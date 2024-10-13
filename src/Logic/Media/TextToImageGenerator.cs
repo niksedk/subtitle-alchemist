@@ -16,6 +16,8 @@ public static class TextToImageGenerator
         float outlineWidth,
         float shadowWidth)
     {
+        outlineWidth *= 1.8f; // factor to match ASSA
+
         using var typeface = SKTypeface.FromFamilyName(fontName, isBold ? SKFontStyleWeight.Bold : SKFontStyleWeight.Normal, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
         using var paint = new SKPaint();
         paint.Typeface = typeface;
