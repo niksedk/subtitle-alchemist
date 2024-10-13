@@ -17,6 +17,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
+using SubtitleAlchemist.Features.Shared.PickVideoPosition;
 using Timer = System.Timers.Timer;
 
 namespace SubtitleAlchemist.Features.Video.BurnIn;
@@ -1053,6 +1054,54 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         }
 
         return fileName;
+    }
+
+    [RelayCommand]
+    private void PickFromVideoPosition()
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            var videoFileName = VideoFileName;
+            if (string.IsNullOrEmpty(videoFileName))
+            {
+                videoFileName = await _fileHelper.PickAndShowVideoFile("Pick video file");
+                if (string.IsNullOrWhiteSpace(videoFileName))
+                {
+                    return;
+                }
+            }
+
+            var result = await _popupService
+                .ShowPopupAsync<PickVideoPositionPopupModel>(onPresenting: viewModel => viewModel.Initialize(videoFileName, "Select cut from video position"), CancellationToken.None);
+            if (result is TimeSpan timeSpan)
+            {
+                CutFrom = timeSpan;
+            }
+        });
+    }
+
+    [RelayCommand]
+    private void PickToVideoPosition()
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            var videoFileName = VideoFileName;
+            if (string.IsNullOrEmpty(videoFileName))
+            {
+                videoFileName = await _fileHelper.PickAndShowVideoFile("Pick video file");
+                if (string.IsNullOrWhiteSpace(videoFileName))
+                {
+                    return;
+                }
+            }
+
+            var result = await _popupService
+                .ShowPopupAsync<PickVideoPositionPopupModel>(onPresenting: viewModel => viewModel.Initialize(videoFileName, "Select cut to video position"), CancellationToken.None);
+            if (result is TimeSpan timeSpan)
+            {
+                CutTo = timeSpan;
+            }
+        });
     }
 
     [RelayCommand]

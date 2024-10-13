@@ -965,6 +965,15 @@ public class BurnInPage : ContentPage
             WidthRequest = textWidth,
         }.BindDynamicTheme();
         subTimeUpDownFrom.SetBinding(SubTimeUpDown.TimeProperty, nameof(vm.CutFrom));
+        var buttonFromVideoPosition = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            Command = vm.PickFromVideoPositionCommand,
+        }.BindDynamicTheme();
+        ToolTipProperties.SetText(buttonFromVideoPosition, "Get position via video");
         var stackFromTime = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -976,6 +985,7 @@ public class BurnInPage : ContentPage
             {
                 labelFromTime,
                 subTimeUpDownFrom,
+                buttonFromVideoPosition,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackFromTime);
@@ -996,6 +1006,15 @@ public class BurnInPage : ContentPage
             WidthRequest = textWidth,
         }.BindDynamicTheme();
         subTimeUpDownTo.SetBinding(SubTimeUpDown.TimeProperty, nameof(vm.CutTo));
+        var buttonToVideoPosition = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            Command = vm.PickToVideoPositionCommand,
+        }.BindDynamicTheme();
+        ToolTipProperties.SetText(buttonToVideoPosition, "Get position from video");
         var stackToTime = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -1007,6 +1026,7 @@ public class BurnInPage : ContentPage
             {
                 labelToTime,
                 subTimeUpDownTo,
+                buttonToVideoPosition,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackToTime);

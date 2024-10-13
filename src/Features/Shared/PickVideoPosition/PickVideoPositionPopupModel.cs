@@ -1,15 +1,16 @@
 ﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Features.Main;
 
-namespace SubtitleAlchemist.Features.Shared.PickSubtitleLine;
+namespace SubtitleAlchemist.Features.Shared.PickVideoPosition;
 
-public partial class PickSubtitleLinePopupModel : ObservableObject
+public partial class PickVideoPositionPopupModel : ObservableObject
 {
-    public PickSubtitleLinePopup? Popup { get; set; }
+    public PickVideoPositionPopup? Popup { get; set; }
     public CollectionView SubtitleList { get; set; }
+    public MediaElement VideoPlayer { get; set; }
 
     [ObservableProperty]
     private string _title;
@@ -20,12 +21,13 @@ public partial class PickSubtitleLinePopupModel : ObservableObject
     [ObservableProperty]
     private DisplayParagraph? _selectedParagraph;
 
-    public PickSubtitleLinePopupModel()
+    public PickVideoPositionPopupModel()
     {
         SubtitleList = new();
         _title = string.Empty;
         _paragraphs = new ObservableCollection<DisplayParagraph>();
         _selectedParagraph = null;
+        VideoPlayer = new MediaElement();
     }
 
     [RelayCommand]
@@ -33,7 +35,7 @@ public partial class PickSubtitleLinePopupModel : ObservableObject
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Popup?.Close(SelectedParagraph?.P);
+            Popup?.Close(VideoPlayer.Position);
         });
     }
 
@@ -46,14 +48,14 @@ public partial class PickSubtitleLinePopupModel : ObservableObject
         });
     }
 
-    public void Initialize(Subtitle subtitle, string title)
+    public void Initialize(string videoFileName, string title)
     {
         Popup?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 Title = title;
-                Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p=> new DisplayParagraph(p)));
+                VideoPlayer.Source = MediaSource.FromFile(videoFileName);
             });
 
             return false;

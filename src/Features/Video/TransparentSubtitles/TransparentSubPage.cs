@@ -626,8 +626,6 @@ public class TransparentSubPage : ContentPage
         };
 
         var textWidth = 175;
-        var controlWidth = 300;
-
 
         var labelResolution = new Label
         {
@@ -812,6 +810,17 @@ public class TransparentSubPage : ContentPage
             Command = vm.PickFromTimeCommand,
         }.BindDynamicTheme();
         buttonFromTime.SetBinding(Button.IsVisibleProperty, nameof(vm.IsSubtitleLoaded));
+        ToolTipProperties.SetText(buttonFromTime, "Get position from subtitle line");
+        var buttonFromVideoPosition = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            Command = vm.PickFromVideoPositionCommand,
+        }.BindDynamicTheme();
+        ToolTipProperties.SetText(buttonFromVideoPosition, "Get position via video");
+
         var stackFromTime = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -824,6 +833,7 @@ public class TransparentSubPage : ContentPage
                 labelFromTime,
                 subTimeUpDownFrom,
                 buttonFromTime,
+                buttonFromVideoPosition,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackFromTime);
@@ -853,6 +863,16 @@ public class TransparentSubPage : ContentPage
             Command = vm.PickToTimeCommand,
         }.BindDynamicTheme();
         buttonToTime.SetBinding(Button.IsVisibleProperty, nameof(vm.IsSubtitleLoaded));
+        ToolTipProperties.SetText(buttonToTime, "Get position from subtitle line");
+        var buttonToVideoPosition = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            Command = vm.PickToVideoPositionCommand,
+        }.BindDynamicTheme();
+        ToolTipProperties.SetText(buttonToVideoPosition, "Get position from video");
         var stackToTime = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -865,6 +885,7 @@ public class TransparentSubPage : ContentPage
                 labelToTime,
                 subTimeUpDownTo,
                 buttonToTime,
+                buttonToVideoPosition,
             },
         }.BindDynamicTheme();
         stack.Children.Add(stackToTime);
@@ -1052,7 +1073,7 @@ public class TransparentSubPage : ContentPage
             }, 4);
 
         // Add the header grid to the main grid
-        grid.Add(gridHeader, 0, 0);
+        grid.Add(gridHeader, 0);
 
 
         var collectionView = new CollectionView
@@ -1080,7 +1101,7 @@ public class TransparentSubPage : ContentPage
                     VerticalTextAlignment = TextAlignment.Center,
                 }.BindDynamicThemeTextColorOnly();
                 labelVideoFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.SubtitleFileName));
-                jobItemGrid.Add(labelVideoFile, 0, 0);
+                jobItemGrid.Add(labelVideoFile, 0);
 
                 var labelResolution = new Label
                 {
@@ -1088,7 +1109,7 @@ public class TransparentSubPage : ContentPage
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
                 labelResolution.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Size));
-                jobItemGrid.Add(labelResolution, 1, 0);
+                jobItemGrid.Add(labelResolution, 1);
 
                 var labelSize = new Label
                 {
@@ -1096,7 +1117,7 @@ public class TransparentSubPage : ContentPage
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
                 labelSize.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Resolution));
-                jobItemGrid.Add(labelSize, 2, 0);
+                jobItemGrid.Add(labelSize, 2);
 
                 var labelSubtitleFile = new Label
                 {
@@ -1104,7 +1125,7 @@ public class TransparentSubPage : ContentPage
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
                 labelSubtitleFile.SetBinding(Label.TextProperty, nameof(BurnInJobItem.InputVideoFileNameShort));
-                jobItemGrid.Add(labelSubtitleFile, 3, 0);
+                jobItemGrid.Add(labelSubtitleFile, 3);
 
                 var labelStatus = new Label
                 {
@@ -1112,7 +1133,7 @@ public class TransparentSubPage : ContentPage
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
                 labelStatus.SetBinding(Label.TextProperty, nameof(BurnInJobItem.Status));
-                jobItemGrid.Add(labelStatus, 4, 0);
+                jobItemGrid.Add(labelStatus, 4);
 
                 return jobItemGrid;
             }),

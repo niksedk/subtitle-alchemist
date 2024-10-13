@@ -20,6 +20,7 @@ using SubtitleAlchemist.Features.Main.LayoutPicker;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Features.Shared.PickSubtitleLine;
+using SubtitleAlchemist.Features.Shared.PickVideoPosition;
 using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 using SubtitleAlchemist.Features.Sync.ChangeFrameRate;
@@ -123,6 +124,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<OutputPropertiesPopup, OutputPropertiesPopupModel>();
             builder.Services.AddTransientPopup<ResolutionPopup, ResolutionPopupModel>();
             builder.Services.AddTransientPopup<PickSubtitleLinePopup, PickSubtitleLinePopupModel>();
+            builder.Services.AddTransientPopup<PickVideoPositionPopup, PickVideoPositionPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();
