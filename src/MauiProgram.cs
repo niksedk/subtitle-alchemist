@@ -133,6 +133,7 @@ namespace SubtitleAlchemist
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();
             builder.Services.AddHttpClient<ISpellCheckDictionaryDownloadService, SpellCheckDictionaryDownloadService>();
+            builder.Services.AddHttpClient<ITtsDownloadService, TtsDownloadService>();
 
 #if DEBUG
             builder.Logging.AddDebug();

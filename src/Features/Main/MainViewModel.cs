@@ -841,6 +841,18 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         mainPage.Window.MinimumHeight = 600;
         mainPage.Window.MinimumWidth = 900;
 
+        var commandLineArgs = Environment.GetCommandLineArgs();
+        if (commandLineArgs.Length > 1)
+        {
+            var fileName = commandLineArgs[1];
+            if (File.Exists(fileName))
+            {
+                SubtitleOpen(fileName, null);
+            }
+            _loading = false;
+            return;
+        }
+
         if (Se.Settings.File.ShowRecentFiles)
         {
             var first = Se.Settings.File.RecentFiles.FirstOrDefault();

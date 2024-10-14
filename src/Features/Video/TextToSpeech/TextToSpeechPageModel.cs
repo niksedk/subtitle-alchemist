@@ -4,6 +4,7 @@ using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Engines;
 using System.Collections.ObjectModel;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
+using SubtitleAlchemist.Services;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -44,13 +45,15 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
 
     private Subtitle _subtitle = new();
+    private ITtsDownloadService _ttsDownloadService;
 
 
-    public TextToSpeechPageModel()
+    public TextToSpeechPageModel(ITtsDownloadService ttsDownloadService)
     {
+        _ttsDownloadService = ttsDownloadService;
         _engines = new ObservableCollection<ITtsEngine>
         {
-            new Piper(),
+            new Piper(ttsDownloadService),
         };
         _selectedEngine = _engines.FirstOrDefault();
 

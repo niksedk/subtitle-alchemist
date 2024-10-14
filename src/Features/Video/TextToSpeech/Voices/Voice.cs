@@ -2,16 +2,16 @@
 
 public class Voice
 {
-    public string Name { get; set; }
     public object? EngineVoice { get; set; }
+    public string Name => ToString();
 
-    public Voice()
+    public Voice(object voice)
     {
-        Name = string.Empty;
+        EngineVoice = voice;
     }
 
     public override string ToString()
     {
-        return Name;
+        return (EngineVoice == null ? "Unknown" : EngineVoice.ToString()) ?? "Unknown";
     }
 }

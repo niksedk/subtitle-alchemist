@@ -4,6 +4,7 @@ using SubtitleAlchemist.Logic.Config;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Text;
+using SubtitleAlchemist.Services;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech.Engines;
 
@@ -13,6 +14,12 @@ public class Piper : ITtsEngine
     public string Description => "free/fast/good";
     public bool HasLanguageParameter => false;
     public bool IsInstalled => File.Exists(GetPiperExecutableFileName());
+    private readonly ITtsDownloadService _ttsDownloadService;
+
+    public Piper(ITtsDownloadService ttsDownloadService)
+    {
+        _ttsDownloadService = ttsDownloadService;
+    }
 
     public override string ToString()
     {
@@ -60,9 +67,9 @@ public class Piper : ITtsEngine
         return piperFolder;
     }
 
-    public async Task<string[]> GetLanguages(Voice voice)
+    public Task<string[]> GetLanguages(Voice voice)
     {
-        return Array.Empty<string>();
+        return Task.FromResult(Array.Empty<string>());
     }
 
     private static Voice[] Map(string voiceFileName)
@@ -100,7 +107,7 @@ public class Piper : ITtsEngine
                     var configUrl = "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/" + config.Name;
 
                     var piperVoice = new PiperVoice(name.Json, languageDisplay, quality.Json, modelUrl, configUrl);
-                    result.Add(new Voice() { Name = piperVoice.Voice, EngineVoice = piperVoice });
+                    result.Add(new Voice(piperVoice));
                 }
             }
         }
@@ -108,14 +115,21 @@ public class Piper : ITtsEngine
         return result.ToArray();
     }
 
-    public async Task<Voice[]> RefreshVoices()
+    public async Task<Voice[]> RefreshVoices(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var ms = new MemoryStream();
+        await  _ttsDownloadService.DownloadPiperVoiceList(ms, null, cancellationToken);
+        await File.WriteAllBytesAsync(Path.Combine(GetSetPiperFolder(), "voices.json"), ms.ToArray(), cancellationToken);
+        return await GetVoices();
     }
 
     public async Task<List<object>> Speak(string text, Voice voice)
     {
-        var piperVoice = voice.EngineVoice as PiperVoice;
+        if (voice.EngineVoice is not PiperVoice piperVoice)
+        {
+            throw new ArgumentException("Voice is not a PiperVoice");
+        }
+
         var process = StartPiperProcess(piperVoice, text);
         return null;
     }

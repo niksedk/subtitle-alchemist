@@ -13,6 +13,6 @@ public interface ITtsEngine
     string ToString();
     Task<Voice[]> GetVoices();
     Task<string[]> GetLanguages(Voice voice);
-    Task<Voice[]> RefreshVoices();
+    Task<Voice[]> RefreshVoices(CancellationToken cancellationToken);
     Task<List<object>> Speak(string text, Voice voice);
 }
