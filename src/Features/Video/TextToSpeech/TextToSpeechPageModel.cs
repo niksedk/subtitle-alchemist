@@ -1,78 +1,62 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
-using SubtitleAlchemist.Features.Main;
+using SubtitleAlchemist.Features.Video.TextToSpeech.Engines;
+using System.Collections.ObjectModel;
+using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
 public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private ObservableCollection<DisplayParagraph> _paragraphs = new();
+    private ObservableCollection<ITtsEngine> _engines = new();
 
     [ObservableProperty]
-    private TimeSpan _adjustSeconds;
+    private ITtsEngine? _selectedEngine;
 
     [ObservableProperty]
-    private ObservableCollection<string> _adjustViaItems;
+    private ObservableCollection<Voice> _voices = new();
 
     [ObservableProperty]
-    private string _selectedAdjustViaItem;
+    private Voice? _selectedVoice;
 
     [ObservableProperty]
-    private int _adjustPercentage;
+    private bool _hasLanguageParameter;
 
     [ObservableProperty]
-    private decimal _adjustFixedValue;
+    private int _voiceCount;
 
     [ObservableProperty]
-    private decimal _adjustRecalculateMaximumCharacters;
+    private string _voiceTestText;
 
     [ObservableProperty]
-    private decimal _adjustRecalculateOptimalCharacters;
+    private bool _doReviewAudioClips;
 
     [ObservableProperty]
-    private bool _adjustRecalculateExtendOnly;
+    private bool _doGenerateVideoFile;
 
     [ObservableProperty]
-    private bool _enforceDurationLimits;
+    private bool _useCustomAudioEncoding;
 
-    [ObservableProperty]
-    private bool _doNotExtendPastShotChanges;
-
-    [ObservableProperty]
-    private string _previewInfo = string.Empty;
 
     public TextToSpeechPage? Page { get; set; }
-    public View ViewAdjustViaSeconds { get; set; }
-    public View ViewAdjustViaPercent { get; set; }
-    public View ViewAdjustViaFixed { get; set; }
-    public View ViewAdjustRecalculate { get; set; }
+
 
     private Subtitle _subtitle = new();
-    private List<int> _selectedIndices = new();
-    private List<double> _shotChanges = new();
-    private readonly System.Timers.Timer _previewTimer;
+
 
     public TextToSpeechPageModel()
     {
-        _adjustViaItems = new ObservableCollection<string>
+        _engines = new ObservableCollection<ITtsEngine>
         {
-            "Seconds",
-            "Percent",
-            "Fixed",
-            "Recalculate"
+            new Piper(),
         };
+        _selectedEngine = _engines.FirstOrDefault();
 
-        _selectedAdjustViaItem = _adjustViaItems[0];
+        _voices = new ObservableCollection<Voice>();
 
-        ViewAdjustViaSeconds = new BoxView();
-        ViewAdjustViaPercent = new BoxView();
-        ViewAdjustViaFixed = new BoxView();
-        ViewAdjustRecalculate = new BoxView();
-
-        _previewTimer = new System.Timers.Timer(1000);
+        _voiceTestText = "Hello, how are you today?";
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -86,10 +70,20 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                
+
             });
             return false;
         });
+    }
+
+    [RelayCommand]
+    public async Task GenerateTts()
+    {
+    }
+
+    [RelayCommand]
+    public async Task TestVoice()
+    {
     }
 
     [RelayCommand]
@@ -98,4 +92,19 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         await Shell.Current.GoToAsync("..");
     }
 
+    public void SelectedEngineChanged(object? sender, EventArgs e)
+    {
+        if (SelectedEngine != null)
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                var voices = await SelectedEngine.GetVoices();
+                Voices = new ObservableCollection<Voice>(voices);
+                VoiceCount = Voices.Count;
+                SelectedVoice = Voices.FirstOrDefault();
+                HasLanguageParameter = SelectedEngine.HasLanguageParameter;
+            });
+        }
+
+    }
 }

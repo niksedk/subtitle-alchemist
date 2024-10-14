@@ -32,6 +32,7 @@ using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
 using SubtitleAlchemist.Features.Video.BurnIn;
 using SubtitleAlchemist.Features.Video.OpenFromUrl;
+using SubtitleAlchemist.Features.Video.TextToSpeech;
 using SubtitleAlchemist.Features.Video.TransparentSubtitles;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Dictionaries;
@@ -89,6 +90,9 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<BurnInPageModel>();
             builder.Services.AddTransient<TransparentSubPage>();
             builder.Services.AddTransient<TransparentSubPageModel>();
+            builder.Services.AddTransient<TextToSpeechPage>();
+            builder.Services.AddTransient<TextToSpeechPageModel>();
+
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<ISpellCheckManager, SpellCheckManager>();
             builder.Services.AddTransient<INamesList, SeNamesList>();
