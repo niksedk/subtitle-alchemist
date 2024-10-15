@@ -16,7 +16,7 @@ public class TextToSpeechPage : ContentPage
             FontSize = 24,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 15),
+            Margin = new Thickness(0, 0, 0, 35),
         }.BindDynamicTheme();
 
 
@@ -26,7 +26,7 @@ public class TextToSpeechPage : ContentPage
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 10, 0, 0),
+            Margin = new Thickness(0, 10, 0, 10),
             WidthRequest = 100,
         }.BindDynamicTheme();
         var pickerEngine = new Picker
@@ -58,7 +58,7 @@ public class TextToSpeechPage : ContentPage
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 10, 0, 0),
+            Margin = new Thickness(0, 10, 0, 10),
             WidthRequest = 100,
         }.BindDynamicTheme();
         var pickerVoice = new Picker
@@ -173,7 +173,7 @@ public class TextToSpeechPage : ContentPage
             Text = "Review Audio Clips",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
         gridSwitch.Add(labelReviewAudioClips, 0);
