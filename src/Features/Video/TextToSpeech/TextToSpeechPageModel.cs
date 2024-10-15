@@ -4,10 +4,13 @@ using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Engines;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Views;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Services;
 using Plugin.Maui.Audio;
 using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
+using SubtitleAlchemist.Logic.Config;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -44,6 +47,8 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     private bool _useCustomAudioEncoding;
 
     public TextToSpeechPage? Page { get; set; }
+    public MediaElement Player { get; set; }
+    public Label LabelAudioEncodingSettings { get; set; }
 
     private Subtitle _subtitle = new();
     private readonly IAudioManager _audioManager;
@@ -62,6 +67,9 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         _voices = new ObservableCollection<Voice>();
 
         _voiceTestText = "Hello, how are you doing?";
+
+        Player = new MediaElement { IsVisible = false };
+        LabelAudioEncodingSettings = new();
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -75,10 +83,47 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-
+                LoadSettings();
             });
             return false;
         });
+    }
+
+    private void LoadSettings()
+    {
+        var lastEngine = Engines.FirstOrDefault(e => e.Name == Se.Settings.Video.TextToSpeech.Engine);
+        if (lastEngine != null)
+        {
+            SelectedEngine = lastEngine;
+        }
+
+        var lastVoice = Voices.FirstOrDefault(v => v.Name == Se.Settings.Video.TextToSpeech.Voice);
+        if (lastVoice == null)
+        {
+            lastVoice = Voices.FirstOrDefault(p => p.Name.StartsWith("en", StringComparison.OrdinalIgnoreCase) ||
+                                                        p.Name.Contains("English", StringComparison.OrdinalIgnoreCase));
+            SelectedVoice = lastVoice ?? Voices.FirstOrDefault();
+        }
+        else
+        {
+            SelectedVoice = lastVoice;
+        }
+
+        VoiceTestText = Se.Settings.Video.TextToSpeech.VoiceTestText;
+        DoReviewAudioClips = Se.Settings.Video.TextToSpeech.ReviewAudioClips;
+        DoGenerateVideoFile = Se.Settings.Video.TextToSpeech.GenerateVideoFile;
+        UseCustomAudioEncoding = Se.Settings.Video.TextToSpeech.CustomAudio;
+    }
+
+    private void SaveSettings()
+    {
+        Se.Settings.Video.TextToSpeech.Engine = SelectedEngine?.Name ?? string.Empty;
+        Se.Settings.Video.TextToSpeech.Voice = SelectedVoice?.Name ?? string.Empty;
+        Se.Settings.Video.TextToSpeech.VoiceTestText = VoiceTestText;
+        Se.Settings.Video.TextToSpeech.ReviewAudioClips = DoReviewAudioClips;
+        Se.Settings.Video.TextToSpeech.GenerateVideoFile = DoGenerateVideoFile;
+        Se.Settings.Video.TextToSpeech.CustomAudio = UseCustomAudioEncoding;
+        Se.SaveSettings();
     }
 
     [RelayCommand]
@@ -98,7 +143,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         foreach (var paragraph in _subtitle.Paragraphs)
         {
-            
+
         }
     }
 
@@ -160,15 +205,23 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             }
         }
 
+        SaveSettings();
+
         var result = await engine.Speak(VoiceTestText, voice);
-        
-        var audioPlayer = _audioManager.CreatePlayer(result.FileName);
-        audioPlayer.Play();
+
+        //var audioPlayer = _audioManager.CreatePlayer(result.FileName);
+        //audioPlayer.Play();
+
+        Player.Stop();
+        Player.Source = null;
+        Player.Source = MediaSource.FromFile(result.FileName);
+        Player.Play();
     }
 
     [RelayCommand]
     public async Task Cancel()
     {
+        SaveSettings();
         await Shell.Current.GoToAsync("..");
     }
 
@@ -185,6 +238,20 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                 HasLanguageParameter = SelectedEngine.HasLanguageParameter;
             });
         }
+    }
 
+    public void LabelAudioEncodingSettingsMouseEntered(object? sender, PointerEventArgs e)
+    {
+        LabelAudioEncodingSettings.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
+    }
+
+    public void LabelAudioEncodingSettingsMouseExited(object? sender, PointerEventArgs e)
+    {
+        LabelAudioEncodingSettings.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+    }
+
+    public void LabelAudioEncodingSettingsMouseClicked(object? sender, TappedEventArgs e)
+    {
+        
     }
 }

@@ -14,9 +14,9 @@ public class TextToSpeechPage : ContentPage
         {
             Text = "Text to Speech",
             FontSize = 24,
-            HorizontalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 10, 0, 0),
+            Margin = new Thickness(0, 0, 0, 15),
         }.BindDynamicTheme();
 
 
@@ -25,14 +25,15 @@ public class TextToSpeechPage : ContentPage
             Text = "Engine",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 10, 0, 0),
+            WidthRequest = 100,
         }.BindDynamicTheme();
         var pickerEngine = new Picker
         {
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 10),
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         pickerEngine.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Engines));
         pickerEngine.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedEngine));
@@ -42,6 +43,7 @@ public class TextToSpeechPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0,0,0,20),
             Children =
             {
                 labelEngine,
@@ -55,14 +57,15 @@ public class TextToSpeechPage : ContentPage
             Text = "Voice",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 10, 0, 0),
+            WidthRequest = 100,
         }.BindDynamicTheme();
         var pickerVoice = new Picker
         {
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 10),
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         pickerVoice.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Voices));
         pickerVoice.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedVoice));
@@ -70,8 +73,8 @@ public class TextToSpeechPage : ContentPage
         {
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 10, 0, 0),
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicTheme();
         labelVoiceCount.SetBinding(Label.TextProperty, nameof(vm.VoiceCount));
         var voiceStack = new StackLayout
@@ -79,6 +82,7 @@ public class TextToSpeechPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 10),
             Children =
             {
                 labelVoice,
@@ -91,7 +95,7 @@ public class TextToSpeechPage : ContentPage
         {
             Placeholder = "Enter sample text",
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
             WidthRequest = 200,
         }.BindDynamicTheme();
         entryTestVoice.SetBinding(Entry.TextProperty, nameof(vm.VoiceTestText));
@@ -99,8 +103,8 @@ public class TextToSpeechPage : ContentPage
         {
             Text = "Test Voice",
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 10),
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
             Command = vm.TestVoiceCommand,
         }.BindDynamicTheme();
         var voiceTestStack = new StackLayout
@@ -108,6 +112,7 @@ public class TextToSpeechPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 20),
             Children =
             {
                 entryTestVoice,
@@ -134,6 +139,7 @@ public class TextToSpeechPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 25),
             Children =
             {
                 labelLanguage,
@@ -142,95 +148,102 @@ public class TextToSpeechPage : ContentPage
         }.BindDynamicTheme();
         languageStack.SetBinding(StackLayout.IsVisibleProperty, nameof(vm.HasLanguageParameter));
 
+        
+        var gridSwitch = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 40, 0, 20),
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            },
+        }.BindDynamicTheme();
+
         var labelReviewAudioClips = new Label
         {
             Text = "Review Audio Clips",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 10, 0, 0),
+            Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
+        gridSwitch.Add(labelReviewAudioClips, 0);
+
         var switchReviewAudioClips = new Switch
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 10),
+            Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         switchReviewAudioClips.SetBinding(Switch.IsToggledProperty, nameof(vm.DoReviewAudioClips));
-        var reviewAudioClipsStack = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
-            Children =
-            {
-                labelReviewAudioClips,
-                switchReviewAudioClips,
-            },
-        }.BindDynamicTheme();
+        gridSwitch.Add(switchReviewAudioClips, 1);
 
         var labelAddAudioToVideoFile = new Label
         {
             Text = "Add Audio to Video File",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 10, 0, 0),
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
+        gridSwitch.Add(labelAddAudioToVideoFile, 0, 1);
+
         var switchAddAudioToVideoFile = new Switch
         {
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 10),
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         switchAddAudioToVideoFile.SetBinding(Switch.IsToggledProperty, nameof(vm.DoGenerateVideoFile));
-        var addAudioToVideoFileStack = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
-            Children =
-            {
-                labelAddAudioToVideoFile,
-                switchAddAudioToVideoFile,
-            },
-        }.BindDynamicTheme();
+        gridSwitch.Add(switchAddAudioToVideoFile, 1, 1);
 
         var labelCustomAudioEncoding = new Label
         {
             Text = "Custom Audio Encoding",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 10, 0, 0),
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
+        gridSwitch.Add(labelCustomAudioEncoding, 0, 2);
+
         var switchCustomAudioEncoding = new Switch
         {
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 10),
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         switchCustomAudioEncoding.SetBinding(Switch.IsToggledProperty, nameof(vm.UseCustomAudioEncoding));
+        gridSwitch.Add(switchCustomAudioEncoding, 1, 2);
+
         var labelAudioEncodingSettings = new Label
         {
             Text = "Audio Encoding Settings",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 10, 0, 0),
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            TextDecorations = TextDecorations.Underline,
         }.BindDynamicTheme();
-        var stackAudioEncodingSettings = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
-            Children =
-            {
-                labelCustomAudioEncoding,
-                switchCustomAudioEncoding,
-                labelAudioEncodingSettings,
-            },
-        }.BindDynamicTheme();
+        gridSwitch.Add(labelAudioEncodingSettings, 2,2);
+
+        var pointerGesture = new PointerGestureRecognizer();
+        pointerGesture.PointerEntered += vm.LabelAudioEncodingSettingsMouseEntered;
+        pointerGesture.PointerExited += vm.LabelAudioEncodingSettingsMouseExited;
+        labelAudioEncodingSettings.GestureRecognizers.Add(pointerGesture);
+        var tapGesture = new TapGestureRecognizer();
+        tapGesture.Tapped += vm.LabelAudioEncodingSettingsMouseClicked;
+        labelAudioEncodingSettings.GestureRecognizers.Add(tapGesture);
+        vm.LabelAudioEncodingSettings = labelAudioEncodingSettings;
 
 
         var buttonGenerateSpeechFromText = new Button
@@ -239,7 +252,7 @@ public class TextToSpeechPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(0, 0, 15, 10),
-            //Command = vm.GenerateSpeechFromTextCommand,
+            Command = vm.GenerateTtsCommand,
         }.BindDynamicTheme();
         var buttonCancel = new Button
         {
@@ -249,6 +262,8 @@ public class TextToSpeechPage : ContentPage
             Margin = new Thickness(0, 0, 0, 10),
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
+        vm.Player.WidthRequest = 1;
+        vm.Player.HeightRequest = 1;
         var buttonBar = new StackLayout
         {
             Margin = new Thickness(0, 25, 0, 0),
@@ -259,6 +274,7 @@ public class TextToSpeechPage : ContentPage
             {
                 buttonGenerateSpeechFromText,
                 buttonCancel,
+                vm.Player,
             },
         }.BindDynamicTheme();
 
@@ -275,9 +291,7 @@ public class TextToSpeechPage : ContentPage
                 voiceStack,
                 voiceTestStack,
                 languageStack,
-                reviewAudioClipsStack,
-                addAudioToVideoFileStack,
-                stackAudioEncodingSettings,
+                gridSwitch,
                 buttonBar,
             },
         }.BindDynamicTheme();

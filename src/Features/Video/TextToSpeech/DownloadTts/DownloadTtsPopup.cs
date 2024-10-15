@@ -36,11 +36,11 @@ public sealed class DownloadTtsPopup : Popup
 
         var titleLabel = new Label
         {
-            Text = "Downloading Piper",
             FontAttributes = FontAttributes.Bold,
             FontSize = 18,
             Padding = new Thickness(0, 0, 0, 10),
         }.BindDynamicTheme();
+        titleLabel.SetBinding(Label.TextProperty, nameof(vm.TitleText));
         grid.Add(titleLabel, 0, 0);
 
         var progressLabel = new Label
