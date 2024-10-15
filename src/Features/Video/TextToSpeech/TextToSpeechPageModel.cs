@@ -90,7 +90,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
-        var isInstalled = await IsEngineInstalled();
+        var isInstalled = await IsEngineInstalled(engine);
         if (!isInstalled)
         {
             return;
@@ -102,20 +102,14 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         }
     }
 
-    private async Task<bool> IsEngineInstalled()
+    private async Task<bool> IsEngineInstalled(ITtsEngine engine)
     {
-        var engine = SelectedEngine;
-        if (engine == null)
-        {
-            return false;
-        }
-
         if (engine.IsInstalled)
         {
             return true;
         }
 
-        if (engine is Piper piper && Page != null)
+        if (engine is Piper && Page != null)
         {
             var answer = await Page.DisplayAlert(
                 "Download Piper?",
@@ -141,6 +135,12 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         var engine = SelectedEngine;
         var voice = SelectedVoice;
         if (engine == null || voice == null)
+        {
+            return;
+        }
+
+        var isInstalled = await IsEngineInstalled(engine);
+        if (!isInstalled)
         {
             return;
         }

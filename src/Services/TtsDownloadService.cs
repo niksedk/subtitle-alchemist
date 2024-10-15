@@ -5,7 +5,7 @@ namespace SubtitleAlchemist.Services;
 public class TtsDownloadService : ITtsDownloadService
 {
     private readonly HttpClient _httpClient;
-    private const string WindowsPiperUrl = "https://github.com/ggerganov/whisper.cpp/releases/download/v1.6.0/whisper-blas-clblast-bin-x64.zip";
+    private const string WindowsPiperUrl = "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_windows_amd64.zip";
     private const string MacPiperUrl = "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_macos_x64.tar.gz";
 
     public TtsDownloadService(HttpClient httpClient)
