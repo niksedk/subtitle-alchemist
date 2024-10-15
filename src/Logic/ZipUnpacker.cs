@@ -26,7 +26,7 @@ public class ZipUnpacker : IZipUnpacker
             var entryFullName = entry.FullName;
             if (!string.IsNullOrEmpty(skipFolderLevel) && entryFullName.StartsWith(skipFolderLevel))
             {
-                entryFullName = entryFullName[skipFolderLevel.Length..];
+                entryFullName = entryFullName[skipFolderLevel.Length..].Trim('/');
             }
 
             if (allToOutputPath)

@@ -61,7 +61,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         _voices = new ObservableCollection<Voice>();
 
-        _voiceTestText = "Hello, how are you today?";
+        _voiceTestText = "Hello, how are you doing?";
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -143,6 +143,21 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         if (!isInstalled)
         {
             return;
+        }
+
+        if (!engine.IsVoiceInstalled(voice) && voice.EngineVoice is PiperVoice piperVoice)
+        {
+            var modelFileName = Path.Combine(Piper.GetSetPiperFolder(), piperVoice.ModelShort);
+            if (!File.Exists(modelFileName))
+            {
+                var r1 = await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiperVoice(piperVoice), CancellationToken.None);
+            }
+
+            var configFileName = Path.Combine(Piper.GetSetPiperFolder(), piperVoice.ConfigShort);
+            if (!File.Exists(configFileName))
+            {
+                var r1 = await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiperVoice(piperVoice), CancellationToken.None);
+            }
         }
 
         var result = await engine.Speak(VoiceTestText, voice);

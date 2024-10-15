@@ -1,4 +1,7 @@
 ﻿using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
+using System.IO;
+using System.Threading;
+using System;
 
 namespace SubtitleAlchemist.Services;
 
@@ -34,6 +37,11 @@ public class TtsDownloadService : ITtsDownloadService
     public async Task DownloadPiperVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken)
     {
         var url = "https://huggingface.co/rhasspy/piper-voices/resolve/main/voices.json?download=true";
+        await DownloadHelper.DownloadFileAsync(_httpClient, url, stream, progress, cancellationToken);
+    }
+
+    public async Task DownloadPiperVoice(string url, MemoryStream stream, Progress<float> progress, CancellationToken cancellationToken)
+    {
         await DownloadHelper.DownloadFileAsync(_httpClient, url, stream, progress, cancellationToken);
     }
 }

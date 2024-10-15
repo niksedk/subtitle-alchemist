@@ -41,6 +41,28 @@ public class Piper : ITtsEngine
         return Map(voiceFileName);
     }
 
+    public bool IsVoiceInstalled(Voice voice)
+    {
+        if (voice.EngineVoice is not PiperVoice piperVoice)
+        {
+            return false;
+        }
+
+        var modelFileName = Path.Combine(GetSetPiperFolder(), piperVoice.ModelShort);
+        if (!File.Exists(modelFileName))
+        {
+            return false;
+        }
+
+        var configFileName = Path.Combine(GetSetPiperFolder(), piperVoice.ConfigShort);
+        if (!File.Exists(configFileName))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     private static string GetPiperExecutableFileName()
     {
         if (OperatingSystem.IsWindows())
@@ -169,5 +191,5 @@ public class Piper : ITtsEngine
         streamWriter.Close();
 
         return processPiper;
-    }
+    }    
 }
