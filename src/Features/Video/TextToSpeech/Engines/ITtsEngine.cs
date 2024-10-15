@@ -14,5 +14,5 @@ public interface ITtsEngine
     Task<Voice[]> GetVoices();
     Task<string[]> GetLanguages(Voice voice);
     Task<Voice[]> RefreshVoices(CancellationToken cancellationToken);
-    Task<List<object>> Speak(string text, Voice voice);
+    Task<TtsResult> Speak(string text, Voice voice);
 }

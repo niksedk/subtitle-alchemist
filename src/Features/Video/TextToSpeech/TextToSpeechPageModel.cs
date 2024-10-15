@@ -3,21 +3,24 @@ using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Engines;
 using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Core;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Services;
+using Plugin.Maui.Audio;
+using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
 public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private ObservableCollection<ITtsEngine> _engines = new();
+    private ObservableCollection<ITtsEngine> _engines;
 
     [ObservableProperty]
     private ITtsEngine? _selectedEngine;
 
     [ObservableProperty]
-    private ObservableCollection<Voice> _voices = new();
+    private ObservableCollection<Voice> _voices;
 
     [ObservableProperty]
     private Voice? _selectedVoice;
@@ -40,17 +43,16 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     [ObservableProperty]
     private bool _useCustomAudioEncoding;
 
-
     public TextToSpeechPage? Page { get; set; }
 
-
     private Subtitle _subtitle = new();
-    private ITtsDownloadService _ttsDownloadService;
+    private readonly IAudioManager _audioManager;
+    private readonly IPopupService _popupService;
 
-
-    public TextToSpeechPageModel(ITtsDownloadService ttsDownloadService)
+    public TextToSpeechPageModel(ITtsDownloadService ttsDownloadService, IAudioManager audioManager, IPopupService popupService)
     {
-        _ttsDownloadService = ttsDownloadService;
+        _audioManager = audioManager;
+        _popupService = popupService;
         _engines = new ObservableCollection<ITtsEngine>
         {
             new Piper(ttsDownloadService),
@@ -82,11 +84,71 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public async Task GenerateTts()
     {
+        var engine = SelectedEngine;
+        if (engine == null)
+        {
+            return;
+        }
+
+        var isInstalled = await IsEngineInstalled();
+        if (!isInstalled)
+        {
+            return;
+        }
+
+        foreach (var paragraph in _subtitle.Paragraphs)
+        {
+            
+        }
+    }
+
+    private async Task<bool> IsEngineInstalled()
+    {
+        var engine = SelectedEngine;
+        if (engine == null)
+        {
+            return false;
+        }
+
+        if (engine.IsInstalled)
+        {
+            return true;
+        }
+
+        if (engine is Piper piper && Page != null)
+        {
+            var answer = await Page.DisplayAlert(
+                "Download Piper?",
+                $"{Environment.NewLine}\"Text to speech\" requires Piper.{Environment.NewLine}{Environment.NewLine}Download and use Piper?",
+                "Yes",
+                "No");
+
+            if (!answer)
+            {
+                return false;
+            }
+
+            var result = await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiper(), CancellationToken.None);
+            return engine.IsInstalled;
+        }
+
+        return false;
     }
 
     [RelayCommand]
     public async Task TestVoice()
     {
+        var engine = SelectedEngine;
+        var voice = SelectedVoice;
+        if (engine == null || voice == null)
+        {
+            return;
+        }
+
+        var result = await engine.Speak(VoiceTestText, voice);
+        
+        var audioPlayer = _audioManager.CreatePlayer(result.FileName);
+        audioPlayer.Play();
     }
 
     [RelayCommand]

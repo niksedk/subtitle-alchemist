@@ -51,7 +51,7 @@ public class Piper : ITtsEngine
         return "piper";
     }
 
-    private static string GetSetPiperFolder()
+    public static string GetSetPiperFolder()
     {
         if (!Directory.Exists(Se.TtsFolder))
         {
@@ -123,18 +123,22 @@ public class Piper : ITtsEngine
         return await GetVoices();
     }
 
-    public async Task<List<object>> Speak(string text, Voice voice)
+    public async Task<TtsResult> Speak(string text, Voice voice)
     {
         if (voice.EngineVoice is not PiperVoice piperVoice)
         {
             throw new ArgumentException("Voice is not a PiperVoice");
         }
 
-        var process = StartPiperProcess(piperVoice, text);
-        return null;
+        var fileNameOnly = Guid.NewGuid() + ".wav";
+        var process = StartPiperProcess(piperVoice, text, fileNameOnly);
+        await process.WaitForExitAsync();
+
+        var fileName = Path.Combine(GetSetPiperFolder(), fileNameOnly);
+        return new TtsResult(fileName, text);
     }
 
-    private Process StartPiperProcess(PiperVoice voice, string inputText)
+    private Process StartPiperProcess(PiperVoice voice, string inputText, string outputFileName)
     {
         var processPiper = new Process
         {
@@ -142,7 +146,7 @@ public class Piper : ITtsEngine
             {
                 WorkingDirectory = GetSetPiperFolder(),
                 FileName = GetPiperExecutableFileName(),
-                Arguments = $"-m \"{voice.ModelShort}\" -c \"{voice.ConfigShort}\" -f out.wav",
+                Arguments = $"-m \"{voice.ModelShort}\" -c \"{voice.ConfigShort}\" -f {outputFileName}",
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardInput = true,

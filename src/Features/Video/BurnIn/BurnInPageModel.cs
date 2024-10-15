@@ -378,6 +378,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         _selectedAudioBitRate = _audioBitRates[2];
 
 
+        VideoInfoView = new Border();
+        VideoSizeView = new Border();
+
         _jobItems = new ObservableCollection<BurnInJobItem>();
 
         _buttonModeText = "Batch mode";

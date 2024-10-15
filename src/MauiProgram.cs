@@ -3,6 +3,7 @@ using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Markup;
 using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
+using Plugin.Maui.Audio;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Controls.PickerControl;
 using SubtitleAlchemist.Controls.RadialControl;
@@ -38,7 +39,7 @@ using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Dictionaries;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Services;
-using LayoutPickerModel = SubtitleAlchemist.Features.Main.LayoutPicker.LayoutPickerModel;
+using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
 
 namespace SubtitleAlchemist
 {
@@ -53,6 +54,7 @@ namespace SubtitleAlchemist
                 .UseMauiCommunityToolkitMediaElement()
                 .UseMauiCommunityToolkitMarkup()
                 .UseSkiaSharp()
+                .AddAudio()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -129,6 +131,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<ResolutionPopup, ResolutionPopupModel>();
             builder.Services.AddTransientPopup<PickSubtitleLinePopup, PickSubtitleLinePopupModel>();
             builder.Services.AddTransientPopup<PickVideoPositionPopup, PickVideoPositionPopupModel>();
+            builder.Services.AddTransientPopup<DownloadTtsPopup, DownloadTtsPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();
@@ -139,7 +142,7 @@ namespace SubtitleAlchemist
             builder.Logging.AddDebug();
 #endif
 
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            System.Text.Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             return builder.Build();
         }
