@@ -87,9 +87,9 @@ public class ElevenLabs : ITtsEngine
         return true;
     }
 
-    public Task<string[]> GetLanguages(Voice voice)
+    public Task<TtsLanguage[]> GetLanguages(Voice voice)
     {
-        return Task.FromResult(Array.Empty<string>());
+        return Task.FromResult(Array.Empty<TtsLanguage>());
     }
 
     public async Task<Voice[]> RefreshVoices(CancellationToken cancellationToken)

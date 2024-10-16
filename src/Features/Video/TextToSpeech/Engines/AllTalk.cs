@@ -10,7 +10,7 @@ public class AllTalk : ITtsEngine
 {
     public string Name => "AllTalk";
     public string Description => "free/fast/good";
-    public bool HasLanguageParameter => false;
+    public bool HasLanguageParameter => true;
 
     private bool _isInstalled;
     public bool IsInstalled
@@ -98,9 +98,30 @@ public class AllTalk : ITtsEngine
         return true;
     }
 
-    public Task<string[]> GetLanguages(Voice voice)
+    public Task<TtsLanguage[]> GetLanguages(Voice voice)
     {
-        return Task.FromResult(Array.Empty<string>());
+        var languagePairs = new List<TtsLanguage>()
+        {
+            new ("English", "en"),
+            new ("Arabic", "ar"),
+            new ("Chinese", "zh-cn"),
+            new ("Czech", "cs"),
+            new ("Dutch", "nl"),
+            new ("French", "fr"),
+            new ("German", "de"),
+            new ("Hindi", "hi"),
+            new ("Hungarian", "hu"),
+            new ("Italian", "it"),
+            new ("Japanese", "ja"),
+            new ("Turkish", "tr"),
+            new ("Korean", "ko"),
+            new ("Polish", "pl"),
+            new ("Portuguese", "pt"),
+            new ("Russian", "ru"),
+            new ("Spanish", "es"),
+        };
+
+        return Task.FromResult(languagePairs.ToArray());
     }
 
     public async Task<Voice[]> RefreshVoices(CancellationToken cancellationToken)

@@ -67,7 +67,7 @@ public class TtsDownloadService : ITtsDownloadService
         multipartContent.Add(new StringContent("false"), "output_file_timestamp");
         multipartContent.Add(new StringContent("false"), "autoplay");
         multipartContent.Add(new StringContent("1.0"), "autoplay_volume");
-        var result = await _httpClient.PostAsync("/api/tts-generate", multipartContent);
+        var result = await _httpClient.PostAsync(Se.Settings.Video.TextToSpeech.AllTalkUrl.TrimEnd('/') + "/api/tts-generate", multipartContent);
         var bytes = await result.Content.ReadAsByteArrayAsync();
         var resultJson = Encoding.UTF8.GetString(bytes);
 

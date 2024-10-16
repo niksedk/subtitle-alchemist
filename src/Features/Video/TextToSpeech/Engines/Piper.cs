@@ -89,9 +89,9 @@ public class Piper : ITtsEngine
         return piperFolder;
     }
 
-    public Task<string[]> GetLanguages(Voice voice)
+    public Task<TtsLanguage[]> GetLanguages(Voice voice)
     {
-        return Task.FromResult(Array.Empty<string>());
+        return Task.FromResult(Array.Empty<TtsLanguage>());
     }
 
     private static Voice[] Map(string voiceFileName)

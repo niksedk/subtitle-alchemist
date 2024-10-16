@@ -32,6 +32,12 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     private bool _hasLanguageParameter;
 
     [ObservableProperty]
+    private ObservableCollection<TtsLanguage> _languages;
+
+    [ObservableProperty]
+    private TtsLanguage? _selectedLanguage;
+
+    [ObservableProperty]
     private int _voiceCount;
 
     [ObservableProperty]
@@ -67,6 +73,8 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         _selectedEngine = _engines.FirstOrDefault();
 
         _voices = new ObservableCollection<Voice>();
+
+        _languages = new ObservableCollection<TtsLanguage>();
 
         _voiceTestText = "Hello, how are you doing?";
 
@@ -311,9 +319,20 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                     lastVoice = Voices.FirstOrDefault(p => p.Name.StartsWith("en", StringComparison.OrdinalIgnoreCase) ||
                                                            p.Name.Contains("English", StringComparison.OrdinalIgnoreCase));
                 }
-                SelectedVoice = lastVoice ?? Voices.FirstOrDefault();
+                SelectedVoice = lastVoice ?? Voices.First();
 
                 HasLanguageParameter = SelectedEngine.HasLanguageParameter;
+                if (HasLanguageParameter)
+                {
+                    var languages = await SelectedEngine.GetLanguages(SelectedVoice);
+                    Languages.Clear();
+                    foreach (var language in languages)
+                    {
+                        Languages.Add(language);
+                    }
+
+                    SelectedLanguage = Languages.FirstOrDefault();
+                }
             });
         }
     }

@@ -134,6 +134,8 @@ public class TextToSpeechPage : ContentPage
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(0, 0, 0, 10),
         }.BindDynamicTheme();
+        pickerLanguage.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Languages));
+        pickerLanguage.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedLanguage));
         var languageStack = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
