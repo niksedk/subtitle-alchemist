@@ -1,6 +1,6 @@
 ﻿namespace SubtitleAlchemist.Features.Video.TextToSpeech.Voices
 {
-    public class ElevenLabVoice
+    public class ElevenLabVoice  
     {
         public string Voice { get; set; }
         public string Language { get; set; }

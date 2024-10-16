@@ -61,6 +61,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         _engines = new ObservableCollection<ITtsEngine>
         {
             new Piper(ttsDownloadService),
+            new ElevenLabs(),
         };
         _selectedEngine = _engines.FirstOrDefault();
 
@@ -141,10 +142,65 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
+        var generateParagraphAudioStatus = await GenerateParagraphAudio();
+        if (!generateParagraphAudioStatus)
+        {
+            return;
+        }
+
+        var fixParagraphAudioSpeedStatus = await FixParagraphAudioSpeed();
+        if (!fixParagraphAudioSpeedStatus)
+        {
+            return;
+        }
+        
+        var reviewAudioClipsStatus = await ReviewAudioClips();
+        if (!reviewAudioClipsStatus)
+        {
+            return;
+        }
+        
+        var mergeAudioParagraphsResult = await MergeAudioParagraphs();
+    }
+    
+    private async Task<bool> GenerateParagraphAudio()
+    {
         foreach (var paragraph in _subtitle.Paragraphs)
         {
 
         }
+
+        return true;
+    }
+
+    private async Task<bool> FixParagraphAudioSpeed()
+    {
+        foreach (var paragraph in _subtitle.Paragraphs)
+        {
+
+        }
+
+        return true;
+    }
+
+    private async Task<bool> ReviewAudioClips()
+    {
+        foreach (var paragraph in _subtitle.Paragraphs)
+        {
+
+        }
+
+        return true;
+    }
+    
+    private async Task<bool> MergeAudioParagraphs()
+    {
+        foreach (var paragraph in _subtitle.Paragraphs)
+        {
+
+        }
+
+        return true;
     }
 
     private async Task<bool> IsEngineInstalled(ITtsEngine engine)
