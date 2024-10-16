@@ -252,6 +252,9 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
     public void LabelAudioEncodingSettingsMouseClicked(object? sender, TappedEventArgs e)
     {
-        
+        MainThread.BeginInvokeOnMainThread(async() =>
+        {
+            var result = await _popupService.ShowPopupAsync<AudioSettingsPopupModel>(CancellationToken.None);
+        });
     }
 }

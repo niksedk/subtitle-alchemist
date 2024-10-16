@@ -132,6 +132,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<PickSubtitleLinePopup, PickSubtitleLinePopupModel>();
             builder.Services.AddTransientPopup<PickVideoPositionPopup, PickVideoPositionPopupModel>();
             builder.Services.AddTransientPopup<DownloadTtsPopup, DownloadTtsPopupModel>();
+            builder.Services.AddTransientPopup<AudioSettingsPopup, AudioSettingsPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

@@ -54,6 +54,7 @@ namespace SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts
 
             _modelFileName = string.Empty;
             _configFileName = string.Empty;
+            _titleText = string.Empty;
 
             Progress = "Starting...";
             Error = string.Empty;

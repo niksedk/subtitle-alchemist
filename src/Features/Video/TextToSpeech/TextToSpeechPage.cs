@@ -164,13 +164,12 @@ public class TextToSpeechPage : ContentPage
             {
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Auto },
             },
         }.BindDynamicTheme();
 
         var labelReviewAudioClips = new Label
         {
-            Text = "Review Audio Clips",
+            Text = "Review audio clips",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
@@ -189,11 +188,11 @@ public class TextToSpeechPage : ContentPage
 
         var labelAddAudioToVideoFile = new Label
         {
-            Text = "Add Audio to Video File",
+            Text = "Add audio to video file",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 10, 0),
+            Margin = new Thickness(0, 15, 10, 0),
         }.BindDynamicTheme();
         gridSwitch.Add(labelAddAudioToVideoFile, 0, 1);
 
@@ -201,20 +200,20 @@ public class TextToSpeechPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 0, 0),
+            Margin = new Thickness(0, 15, 0, 0),
         }.BindDynamicTheme();
         switchAddAudioToVideoFile.SetBinding(Switch.IsToggledProperty, nameof(vm.DoGenerateVideoFile));
         gridSwitch.Add(switchAddAudioToVideoFile, 1, 1);
 
         var labelCustomAudioEncoding = new Label
         {
-            Text = "Custom Audio Encoding",
+            Text = "Custom audio encoding",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 10, 0),
+            Margin = new Thickness(15, 0, 10, 0),
+            TextDecorations = TextDecorations.Underline,
         }.BindDynamicTheme();
-        gridSwitch.Add(labelCustomAudioEncoding, 0, 2);
 
         var switchCustomAudioEncoding = new Switch
         {
@@ -223,27 +222,31 @@ public class TextToSpeechPage : ContentPage
             Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         switchCustomAudioEncoding.SetBinding(Switch.IsToggledProperty, nameof(vm.UseCustomAudioEncoding));
-        gridSwitch.Add(switchCustomAudioEncoding, 1, 2);
 
-        var labelAudioEncodingSettings = new Label
+        var customAudioEncodingStack = new StackLayout
         {
-            Text = "Audio Encoding Settings",
-            FontSize = 16,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(0, 0, 0, 0),
-            TextDecorations = TextDecorations.Underline,
+            Children =
+            {
+                labelCustomAudioEncoding,
+                switchCustomAudioEncoding,
+            },
         }.BindDynamicTheme();
-        gridSwitch.Add(labelAudioEncodingSettings, 2,2);
+        gridSwitch.Add(customAudioEncodingStack, 0, 2);
+        gridSwitch.SetColumnSpan(customAudioEncodingStack, 2);
+
 
         var pointerGesture = new PointerGestureRecognizer();
         pointerGesture.PointerEntered += vm.LabelAudioEncodingSettingsMouseEntered;
         pointerGesture.PointerExited += vm.LabelAudioEncodingSettingsMouseExited;
-        labelAudioEncodingSettings.GestureRecognizers.Add(pointerGesture);
+        labelCustomAudioEncoding.GestureRecognizers.Add(pointerGesture);
         var tapGesture = new TapGestureRecognizer();
         tapGesture.Tapped += vm.LabelAudioEncodingSettingsMouseClicked;
-        labelAudioEncodingSettings.GestureRecognizers.Add(tapGesture);
-        vm.LabelAudioEncodingSettings = labelAudioEncodingSettings;
+        labelCustomAudioEncoding.GestureRecognizers.Add(tapGesture);
+        vm.LabelAudioEncodingSettings = labelCustomAudioEncoding;
 
 
         var buttonGenerateSpeechFromText = new Button
