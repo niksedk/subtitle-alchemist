@@ -231,7 +231,7 @@ namespace SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts
                 ProgressValue = number;
                 Progress = $"Downloading... {pctString}%";
             });
-            var downloadProgressNull = new Progress<float>(number => { });
+            var downloadProgressNull = new Progress<float>(_ => { });
 
             _downloadTaskVoiceModel = _ttsDownloadService.DownloadPiperVoice(modelUrl, _downloadStreamModel, downloadProgress, _cancellationTokenSource.Token);
             _downloadTaskVoiceConfig = _ttsDownloadService.DownloadPiperVoice(configUrl, _downloadStreamConfig, downloadProgressNull, _cancellationTokenSource.Token);

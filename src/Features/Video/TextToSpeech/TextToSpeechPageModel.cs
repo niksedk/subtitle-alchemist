@@ -61,7 +61,8 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         _engines = new ObservableCollection<ITtsEngine>
         {
             new Piper(ttsDownloadService),
-            new ElevenLabs(),
+            new AllTalk(ttsDownloadService),
+            new ElevenLabs(ttsDownloadService),
         };
         _selectedEngine = _engines.FirstOrDefault();
 
@@ -153,16 +154,16 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             return;
         }
-        
+
         var reviewAudioClipsStatus = await ReviewAudioClips();
         if (!reviewAudioClipsStatus)
         {
             return;
         }
-        
+
         var mergeAudioParagraphsResult = await MergeAudioParagraphs();
     }
-    
+
     private async Task<bool> GenerateParagraphAudio()
     {
         foreach (var paragraph in _subtitle.Paragraphs)
@@ -192,7 +193,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         return true;
     }
-    
+
     private async Task<bool> MergeAudioParagraphs()
     {
         foreach (var paragraph in _subtitle.Paragraphs)
@@ -268,6 +269,15 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         //var audioPlayer = _audioManager.CreatePlayer(result.FileName);
         //audioPlayer.Play();
 
+        if (!File.Exists(result.FileName) && Page != null)
+        {
+            await Page.DisplayAlert(
+                "Test voice error",
+                $"Output audio file was not generated: {result.FileName}",
+                "OK");
+            return;
+        }
+
         Player.Stop();
         Player.Source = null;
         Player.Source = MediaSource.FromFile(result.FileName);
@@ -288,9 +298,21 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             MainThread.BeginInvokeOnMainThread(async () =>
             {
                 var voices = await SelectedEngine.GetVoices();
-                Voices = new ObservableCollection<Voice>(voices);
+                Voices.Clear();
+                foreach (var vo in voices)
+                {
+                    Voices.Add(vo);
+                }
                 VoiceCount = Voices.Count;
-                SelectedVoice = Voices.FirstOrDefault();
+
+                var lastVoice = Voices.FirstOrDefault(v => v.Name == Se.Settings.Video.TextToSpeech.Voice);
+                if (lastVoice == null)
+                {
+                    lastVoice = Voices.FirstOrDefault(p => p.Name.StartsWith("en", StringComparison.OrdinalIgnoreCase) ||
+                                                           p.Name.Contains("English", StringComparison.OrdinalIgnoreCase));
+                }
+                SelectedVoice = lastVoice ?? Voices.FirstOrDefault();
+
                 HasLanguageParameter = SelectedEngine.HasLanguageParameter;
             });
         }
@@ -308,7 +330,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
     public void LabelAudioEncodingSettingsMouseClicked(object? sender, TappedEventArgs e)
     {
-        MainThread.BeginInvokeOnMainThread(async() =>
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
             var result = await _popupService.ShowPopupAsync<AudioSettingsPopupModel>(CancellationToken.None);
         });

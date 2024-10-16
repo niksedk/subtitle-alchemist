@@ -2,6 +2,7 @@
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Logic.Config;
+using SubtitleAlchemist.Services;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech.Engines;
 
@@ -12,8 +13,12 @@ public class ElevenLabs : ITtsEngine
     public bool HasLanguageParameter => true;
     public bool IsInstalled => !string.IsNullOrEmpty(Se.Settings.Video.TextToSpeech.ElevenLabsApiKey);
 
-    public ElevenLabs()
+    private const string JsonFileName = "eleven-labs-voices.json";
+    private readonly ITtsDownloadService _ttsDownloadService;
+
+    public ElevenLabs(ITtsDownloadService ttsDownloadService)
     {
+        _ttsDownloadService = ttsDownloadService;
     }
 
     public override string ToString()
@@ -25,7 +30,7 @@ public class ElevenLabs : ITtsEngine
     {
         var elevenLabsFolder = GetSetElevenLabsFolder();
 
-        var voiceFileName = Path.Combine(elevenLabsFolder, "eleven-labs-voices.json");
+        var voiceFileName = Path.Combine(elevenLabsFolder, JsonFileName);
         if (!File.Exists(voiceFileName))
         {
             using var stream = await FileSystem.OpenAppPackageFileAsync("TtsElevenLabVoices.zip");
@@ -38,8 +43,12 @@ public class ElevenLabs : ITtsEngine
 
     private Voice[] Map(string voiceFileName)
     {
-        var result = new List<Voice>();
+        if (!File.Exists(voiceFileName))
+        {
+            return Array.Empty<Voice>();
+        }
 
+        var result = new List<Voice>();
         var json = File.ReadAllText(voiceFileName);
         var parser = new SeJsonParser();
         var voices = parser.GetArrayElementsByName(json, "voices");
@@ -85,6 +94,9 @@ public class ElevenLabs : ITtsEngine
 
     public async Task<Voice[]> RefreshVoices(CancellationToken cancellationToken)
     {
+        var ms = new MemoryStream();
+        await _ttsDownloadService.DownloadElevenLabsVoiceList(ms, null, cancellationToken);
+        await File.WriteAllBytesAsync(Path.Combine(GetSetElevenLabsFolder(), JsonFileName), ms.ToArray(), cancellationToken);
         return await GetVoices();
     }
 

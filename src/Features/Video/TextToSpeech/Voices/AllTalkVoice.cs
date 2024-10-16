@@ -1,17 +1,21 @@
-﻿namespace SubtitleAlchemist.Features.Video.TextToSpeech.Voices
+﻿namespace SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
+
+public class AllTalkVoice  
 {
-    public class AllTalkVoice  
+    public string Voice { get; set; }
+
+    public override string ToString()
     {
-        public string Voice { get; set; }
+        return Voice;
+    }
 
-        public override string ToString()
-        {
-            return Voice;
-        }
+    public AllTalkVoice()
+    {
+        Voice = string.Empty;
+    }
 
-        public AllTalkVoice(string voice)
-        {
-            Voice = voice;
-        }
-   }
+    public AllTalkVoice(string voice)
+    {
+        Voice = voice;
+    }
 }

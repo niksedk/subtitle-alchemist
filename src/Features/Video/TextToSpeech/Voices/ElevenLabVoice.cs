@@ -1,23 +1,22 @@
-﻿namespace SubtitleAlchemist.Features.Video.TextToSpeech.Voices
+﻿namespace SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
+
+public class ElevenLabVoice  
 {
-    public class ElevenLabVoice  
+    public string Voice { get; set; }
+    public string Language { get; set; }
+    public string Gender { get; set; }
+    public string Model { get; set; }
+
+    public override string ToString()
     {
-        public string Voice { get; set; }
-        public string Language { get; set; }
-        public string Gender { get; set; }
-        public string Model { get; set; }
+        return $"{Language} - {Voice} ({Gender})";
+    }
 
-        public override string ToString()
-        {
-            return $"{Language} - {Voice} ({Gender})";
-        }
-
-        public ElevenLabVoice(string language, string voice, string gender, string description, string useCase, string accent, string voiceId)
-        {
-            Voice = voice;
-            Language = accent;
-            Gender = gender;
-            Model = voiceId;
-        }
-   }
+    public ElevenLabVoice(string language, string voice, string gender, string description, string useCase, string accent, string voiceId)
+    {
+        Voice = voice;
+        Language = accent;
+        Gender = gender;
+        Model = voiceId;
+    }
 }
