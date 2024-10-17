@@ -94,6 +94,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<TransparentSubPageModel>();
             builder.Services.AddTransient<TextToSpeechPage>();
             builder.Services.AddTransient<TextToSpeechPageModel>();
+            builder.Services.AddTransient<ReviewSpeechPage>();
+            builder.Services.AddTransient<ReviewSpeechPageModel>();
 
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<ISpellCheckManager, SpellCheckManager>();

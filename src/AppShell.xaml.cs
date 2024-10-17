@@ -35,6 +35,7 @@ namespace SubtitleAlchemist
             Routing.RegisterRoute(nameof(BurnInPage), typeof(BurnInPage));
             Routing.RegisterRoute(nameof(TransparentSubPage), typeof(TransparentSubPage));
             Routing.RegisterRoute(nameof(TextToSpeechPage), typeof(TextToSpeechPage));
+            Routing.RegisterRoute(nameof(ReviewSpeechPage), typeof(ReviewSpeechPage));
         }
     }
 }
