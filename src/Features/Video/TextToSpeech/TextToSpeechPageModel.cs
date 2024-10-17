@@ -151,65 +151,103 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
-        var generateParagraphAudioStatus = await GenerateParagraphAudio();
-        if (!generateParagraphAudioStatus)
+        var generateSpeechResult = await GenerateSpeech();
+        if (generateSpeechResult == null)
         {
             return;
         }
 
-        var fixParagraphAudioSpeedStatus = await FixParagraphAudioSpeed();
-        if (!fixParagraphAudioSpeedStatus)
+        var fixSpeedResult = await FixSpeed(generateSpeechResult);
+        if (fixSpeedResult == null)
         {
             return;
         }
 
-        var reviewAudioClipsStatus = await ReviewAudioClips();
-        if (!reviewAudioClipsStatus)
+        var reviewAudioClipsResult = await ReviewAudioClips(fixSpeedResult);
+        if (reviewAudioClipsResult == null)
         {
             return;
         }
 
-        var mergeAudioParagraphsResult = await MergeAudioParagraphs();
+        var mergeAudioParagraphsResult = await MergeAudioParagraphs(reviewAudioClipsResult);
     }
 
-    private async Task<bool> GenerateParagraphAudio()
+    private async Task<TtsStepResult[]?> GenerateSpeech()
     {
+        var engine = SelectedEngine;
+        var voice = SelectedVoice;
+        if (engine == null || voice == null) 
+        {
+            return null;
+        }
+
+        var resultList = new List<TtsStepResult>();
         foreach (var paragraph in _subtitle.Paragraphs)
+        {
+            var speachResult = await engine.Speak(paragraph.Text, voice);
+            resultList.Add(new TtsStepResult() 
+            { 
+                Text = paragraph.Text,
+                CurrentFileName = speachResult.FileName,
+                Paragraph = paragraph,
+            });
+        }
+
+        return resultList.ToArray();
+    }
+
+    private async Task<TtsStepResult[]?> FixSpeed(TtsStepResult[] prevoiusStepResult)
+    {
+        var engine = SelectedEngine;
+        var voice = SelectedVoice;
+        if (engine == null || voice == null)
+        {
+            return null;
+        }
+
+        var resultList = new List<TtsStepResult>();
+        foreach (var item in prevoiusStepResult )
         {
 
         }
 
-        return true;
+        return resultList.ToArray();
     }
 
-    private async Task<bool> FixParagraphAudioSpeed()
+    private async Task<TtsStepResult[]?> ReviewAudioClips(TtsStepResult[] prevoiusStepResult)
     {
-        foreach (var paragraph in _subtitle.Paragraphs)
+        var engine = SelectedEngine;
+        var voice = SelectedVoice;
+        if (engine == null || voice == null)
+        {
+            return null;
+        }
+
+        var resultList = new List<TtsStepResult>();
+        foreach (var item in prevoiusStepResult)
         {
 
         }
 
-        return true;
+        return resultList.ToArray();
     }
 
-    private async Task<bool> ReviewAudioClips()
+    private async Task<TtsStepResult[]?> MergeAudioParagraphs(TtsStepResult[] prevoiusStepResult)
     {
-        foreach (var paragraph in _subtitle.Paragraphs)
+        var engine = SelectedEngine;
+        var voice = SelectedVoice;
+        if (engine == null || voice == null)
+        {
+            return null;
+        }
+
+        var resultList = new List<TtsStepResult>();
+        foreach (var item in prevoiusStepResult)
         {
 
         }
 
-        return true;
-    }
-
-    private async Task<bool> MergeAudioParagraphs()
-    {
-        foreach (var paragraph in _subtitle.Paragraphs)
-        {
-
-        }
-
-        return true;
+        return resultList.ToArray();
     }
 
     private async Task<bool> IsEngineInstalled(ITtsEngine engine)
