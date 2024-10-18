@@ -23,6 +23,13 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static Switch BindDynamicThemeTextOnly(this Switch control)
+        {
+            control.SetDynamicResource(Switch.ThumbColorProperty, ThemeNames.TextColor);
+            control.SetDynamicResource(Switch.OnColorProperty, ThemeNames.BorderColor);
+            return control;
+        }
+
         public static Label BindDynamicTheme(this Label control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);

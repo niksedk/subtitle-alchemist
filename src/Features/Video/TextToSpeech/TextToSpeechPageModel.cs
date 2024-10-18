@@ -7,12 +7,10 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Services;
-using Plugin.Maui.Audio;
 using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
-using System;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -68,14 +66,13 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     public Label LabelAudioEncodingSettings { get; set; }
 
     private Subtitle _subtitle = new();
-    private readonly IAudioManager _audioManager;
     private readonly IPopupService _popupService;
     private readonly string _waveFolder;
     private CancellationTokenSource _cancellationTokenSource = new();
+    private WavePeakData _wavePeakData;
 
-    public TextToSpeechPageModel(ITtsDownloadService ttsDownloadService, IAudioManager audioManager, IPopupService popupService)
+    public TextToSpeechPageModel(ITtsDownloadService ttsDownloadService, IPopupService popupService)
     {
-        _audioManager = audioManager;
         _popupService = popupService;
         _engines = new ObservableCollection<ITtsEngine>
         {
@@ -95,7 +92,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         _progressText = string.Empty;
 
         _waveFolder = string.Empty;
-        for (var i=0; i < int.MaxValue; i++)
+        for (var i = 0; i < int.MaxValue; i++)
         {
             _waveFolder = Path.Combine(Path.GetTempPath(), $"Tts_{i}");
             if (!Directory.Exists(_waveFolder))
@@ -107,6 +104,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         Player = new MediaElement { IsVisible = false };
         LabelAudioEncodingSettings = new();
+        _wavePeakData = new WavePeakData(1, new List<WavePeak>());
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -114,6 +112,11 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         if (query["Subtitle"] is Subtitle subtitle)
         {
             _subtitle = new Subtitle(subtitle, false);
+        }
+
+        if (query.ContainsKey("WavePeaks") && query["WavePeaks"] is WavePeakData wavePeakData)
+        {
+            _wavePeakData = wavePeakData;
         }
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
@@ -209,7 +212,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     {
         var engine = SelectedEngine;
         var voice = SelectedVoice;
-        if (engine == null || voice == null) 
+        if (engine == null || voice == null)
         {
             return null;
         }
@@ -271,7 +274,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             }
 
             var mediaInfo = FfmpegMediaInfo2.Parse(outputFileName1);
-            if (mediaInfo.Duration.TotalMilliseconds  <= p.DurationTotalMilliseconds + addDuration)
+            if (mediaInfo.Duration.TotalMilliseconds <= p.DurationTotalMilliseconds + addDuration)
             {
                 resultList.Add(new TtsStepResult
                 {
@@ -346,8 +349,11 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             { "Page", nameof(TextToSpeechPage) },
             { "StepResult", previousStepResult },
+            { "Engines", Engines.ToArray() },
             { "Engine", engine },
+            { "Voices", Voices.ToArray() },
             { "Voice", voice },
+            { "WavePeaks", _wavePeakData },
         });
 
         return null;

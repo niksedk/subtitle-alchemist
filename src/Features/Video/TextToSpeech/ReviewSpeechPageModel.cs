@@ -15,6 +15,18 @@ namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
+    private ObservableCollection<ITtsEngine> _engines;
+
+    [ObservableProperty]
+    private ITtsEngine? _selectedEngine;
+
+    [ObservableProperty]
+    private ObservableCollection<Voice> _voices;
+
+    [ObservableProperty]
+    private Voice? _selectedVoice;
+
+    [ObservableProperty]
     private ObservableCollection<ReviewRow> _lines;
 
     [ObservableProperty]
@@ -54,7 +66,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         if (query["StepResult"] is TtsStepResult[] stepResult)
         {
             _stepResults = stepResult;
-            Paragraphs =new ObservableCollection<DisplayParagraph>(stepResult.Select(p => new DisplayParagraph(p.Paragraph)).ToList());;
+            Paragraphs = new ObservableCollection<DisplayParagraph>(stepResult.Select(p => new DisplayParagraph(p.Paragraph)).ToList()); ;
             Lines.Clear();
             foreach (var p in stepResult)
             {
@@ -63,21 +75,29 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
                     Include = true,
                     Number = p.Paragraph.Number,
                     Text = p.Text,
-                    Voice = _voice.Name,
-                    Speed = p.SpeedFactor.ToString(CultureInfo.CurrentCulture),
-                    Cps = p.Paragraph.GetCharactersPerSecond().ToString(CultureInfo.CurrentCulture),
+                    Voice = p.Voice == null ? string.Empty : p.Voice.ToString(),
+                    Speed = Math.Round(p.SpeedFactor, 2).ToString(CultureInfo.CurrentCulture),
+                    Cps = Math.Round(p.Paragraph.GetCharactersPerSecond(), 2).ToString(CultureInfo.CurrentCulture),
                 });
             }
+
+            SelectedLine = Lines.FirstOrDefault();
+        }
+
+        if (query["Engines"] is ITtsEngine[] engines)
+        {
+            Engines = new ObservableCollection<ITtsEngine>(engines);
+        }
+
+        if (query["Voices"] is Voice[] voices)
+        {
+            Voices = new ObservableCollection<Voice>(voices);
         }
 
         if (query["Voice"] is Voice voice)
         {
             _voice = voice;
-        }
-
-        if (query["Engine"] is ITtsEngine engine)
-        {
-            _engine = engine;
+            SelectedVoice = voice;
         }
     }
 
@@ -89,10 +109,20 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public async Task EditText()
     {
+        if (SelectedLine == null)
+        {
+            return;
+        }
+
         var result = await _popupService
-            .ShowPopupAsync<EditTextPopupModel>(
-                onPresenting: viewModel => viewModel.Initialize("testing 123..."),
-                CancellationToken.None);
+        .ShowPopupAsync<EditTextPopupModel>(
+            onPresenting: viewModel => viewModel.Initialize(SelectedLine.Text),
+            CancellationToken.None);
+
+        if (result is string s && !string.IsNullOrEmpty(s))
+        {
+            SelectedLine.Text = s;
+        }
     }
 
     [RelayCommand]

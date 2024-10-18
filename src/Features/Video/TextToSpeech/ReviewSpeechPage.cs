@@ -1,7 +1,6 @@
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
-using SubtitleAlchemist.Logic.Converters;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -14,6 +13,8 @@ public class ReviewSpeechPage : ContentPage
         BindingContext = vm;
 
         vm.Page = this;
+
+        Resources.Add(ThemeHelper.GetGridSelectionStyle());
 
         var grid = new Grid
         {
@@ -50,7 +51,7 @@ public class ReviewSpeechPage : ContentPage
         var buttonEditText = new Button
         {
             Text = "Edit text",
-            Margin = new Thickness(10),
+            Margin = new Thickness(10, 10, 10 ,25),
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.EditTextCommand,
@@ -87,7 +88,7 @@ public class ReviewSpeechPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(10),
+            Margin = new Thickness(10, 25, 0 , 0),
             Children =
             {
                 buttonPlay,
@@ -99,7 +100,7 @@ public class ReviewSpeechPage : ContentPage
         var labelAutoContinue = new Label
         {
             Text = "Auto continue",
-            Margin = new Thickness(10,25,0,0),
+            Margin = new Thickness(10,5,0,0),
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -117,8 +118,8 @@ public class ReviewSpeechPage : ContentPage
         var buttonRow = new StackLayout
         {
             Orientation = StackOrientation.Vertical,
-            HorizontalOptions = LayoutOptions.End,
-            VerticalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.End,
             Margin = new Thickness(10),
             Children =
             {
@@ -140,7 +141,7 @@ public class ReviewSpeechPage : ContentPage
         {
             Text = "Done",
             Margin = new Thickness(10),
-            HorizontalOptions = LayoutOptions.End,
+            HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.DoneCommand,
         }.BindDynamicTheme();
@@ -168,9 +169,9 @@ public class ReviewSpeechPage : ContentPage
                 new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Include
                 new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Number
                 new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) }, // Voice
-                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Chars/sec
-                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Speed
-                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Text
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Chars/sec
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Speed
+                new ColumnDefinition { Width = new GridLength(4, GridUnitType.Star) }, // Text
             },
         };
 
@@ -197,19 +198,17 @@ public class ReviewSpeechPage : ContentPage
                         new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Include
                         new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Number
                         new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) }, // Voice
-                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Chars/sec
-                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Speed
-                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Text
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Chars/sec
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Speed
+                        new ColumnDefinition { Width = new GridLength(4, GridUnitType.Star) }, // Text
                     },
                 };
-
-                IValueConverter converterShort = new DataTimeToTimeConverter();
 
                 var switchInclude = new Switch
                 {
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
-                }.BindDynamicTheme();
+                }.BindDynamicThemeTextOnly();
                 switchInclude.SetBinding(Switch.IsToggledProperty, nameof(ReviewRow.Include));
                 rulesItemsGrid.Add(switchInclude, 0);
 
@@ -217,7 +216,7 @@ public class ReviewSpeechPage : ContentPage
                 {
                     VerticalOptions = LayoutOptions.Center,
                 }.BindDynamicThemeTextColorOnly();
-                labelDateAndTime.SetBinding(Label.TextProperty, nameof(ReviewRow.Number), BindingMode.Default, converterShort);
+                labelDateAndTime.SetBinding(Label.TextProperty, nameof(ReviewRow.Number));
                 rulesItemsGrid.Add(labelDateAndTime, 1);
 
                 var labelVoice = new Label
@@ -274,6 +273,7 @@ public class ReviewSpeechPage : ContentPage
         vm.CollectionView.SelectionMode = SelectionMode.Single;
         vm.CollectionView.SelectionChanged += vm.CollectionViewSelectionChanged;
         vm.CollectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Lines));
+        vm.CollectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedLine));
 
         var border = new Border
         {
