@@ -8,7 +8,6 @@ using CommunityToolkit.Maui.Views;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Services;
 using Plugin.Maui.Audio;
-using SubtitleAlchemist.Features.Edit.RedoUndoHistory;
 using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
@@ -54,6 +53,15 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     [ObservableProperty]
     private bool _useCustomAudioEncoding;
 
+    [ObservableProperty]
+    private bool _isGenerating;
+
+    [ObservableProperty]
+    private string _progressText;
+
+    [ObservableProperty]
+    private double _progressValue;
+
     public TextToSpeechPage? Page { get; set; }
     public MediaElement Player { get; set; }
     public Label LabelAudioEncodingSettings { get; set; }
@@ -61,7 +69,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     private Subtitle _subtitle = new();
     private readonly IAudioManager _audioManager;
     private readonly IPopupService _popupService;
-    private string _waveFolder;
+    private readonly string _waveFolder;
     private CancellationTokenSource _cancellationTokenSource = new();
 
     public TextToSpeechPageModel(ITtsDownloadService ttsDownloadService, IAudioManager audioManager, IPopupService popupService)
@@ -73,6 +81,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             new Piper(ttsDownloadService),
             new AllTalk(ttsDownloadService),
             new ElevenLabs(ttsDownloadService),
+            new AzureSpeech(ttsDownloadService),
         };
         _selectedEngine = _engines.FirstOrDefault();
 
@@ -82,6 +91,9 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         _voiceTestText = "Hello, how are you doing?";
 
+        _progressText = string.Empty;
+
+        _waveFolder = string.Empty;
         for (var i=0; i < int.MaxValue; i++)
         {
             _waveFolder = Path.Combine(Path.GetTempPath(), $"Tts_{i}");
@@ -105,10 +117,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                LoadSettings();
-            });
+            MainThread.BeginInvokeOnMainThread(LoadSettings);
             return false;
         });
     }
@@ -201,11 +210,11 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         var resultList = new List<TtsStepResult>();
         foreach (var paragraph in _subtitle.Paragraphs)
         {
-            var speachResult = await engine.Speak(paragraph.Text, voice);
+            var speakResult = await engine.Speak(paragraph.Text, voice);
             resultList.Add(new TtsStepResult() 
             { 
                 Text = paragraph.Text,
-                CurrentFileName = speachResult.FileName,
+                CurrentFileName = speakResult.FileName,
                 Paragraph = paragraph,
             });
         }

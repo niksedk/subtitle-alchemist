@@ -171,7 +171,7 @@ public class TextToSpeechPage : ContentPage
 
         var labelReviewAudioClips = new Label
         {
-            Text = "Review audio clips",
+            Text = "Review audio segments",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,

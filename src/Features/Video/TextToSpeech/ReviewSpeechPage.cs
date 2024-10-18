@@ -1,22 +1,16 @@
 using Microsoft.Maui.Controls.Shapes;
-using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
-using SubtitleAlchemist.Logic.Converters;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
 public class ReviewSpeechPage : ContentPage
 {
-    private readonly ReviewSpeechPageModel _vm;
-
     public ReviewSpeechPage(ReviewSpeechPageModel vm)
     {
         this.BindDynamicTheme();
 
         BindingContext = vm;
-        _vm = vm;
 
         vm.Page = this;
 
@@ -27,254 +21,143 @@ public class ReviewSpeechPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
             RowDefinitions = new RowDefinitionCollection
             {
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Star) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
+                new() { Height = new GridLength(1, GridUnitType.Auto) }, // title
+                new() { Height = new GridLength(1, GridUnitType.Star) }, // collection view / audio segments
+                new() { Height = new GridLength(200, GridUnitType.Absolute) }, // waveform
+                new() { Height = new GridLength(1, GridUnitType.Auto) }, // buttons (done)  
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
-                new() { Width = new GridLength(1, GridUnitType.Star) },
-                new() { Width = new GridLength(1, GridUnitType.Star) },
+                new() { Width = new GridLength(1, GridUnitType.Star) }, 
+                new() { Width = new GridLength(1, GridUnitType.Auto) }, // buttons
             },
-        };
-
-        var menuFlyoutMain = new MenuFlyout();
-        var flyoutItem = new MenuFlyoutItem();
-        flyoutItem.Text = "Advanced settings...";
-        flyoutItem.Command = vm.ShowAdvancedSettingsCommand;
-        menuFlyoutMain.Add(flyoutItem);
-        FlyoutBase.SetContextFlyout(grid, menuFlyoutMain);
-
-        var poweredByLabel = new Label
-        {
-            Margin = new Thickness(15, 15, 0, 0),
-            Text = "Powered by ",
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            FontSize = 12,
         }.BindDynamicTheme();
 
-        vm.TitleLabel = new Label
+        var labelTitle = new Label
         {
             Margin = new Thickness(5, 15, 15, 0),
-            Text = "...",
+            Text = "Review audio segments",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            FontSize = 12,
-            TextDecorations = TextDecorations.Underline,
+            FontSize = 20,
+        }.BindDynamicTheme();
+        grid.Add(labelTitle, 0);
+
+        var audioSegmentsBorder = MakeAudioSegmentsView(vm);
+        grid.Add(audioSegmentsBorder, 0, 2);
+        Grid.SetColumnSpan(audioSegmentsBorder, 2);
+
+
+        var buttonEditText = new Button
+        {
+            Text = "Edit text",
+            Margin = new Thickness(10),
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
 
-        var titleTexts = new StackLayout
+        var buttonRegenerate = new Button
+        {
+            Text = "Regenerate audio",
+            Margin = new Thickness(10),
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+
+        var buttonPlay = new Button
+        {
+            Text = "Play",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+
+        var buttonStop = new Button
+        {
+            Text = "Stop",
+            Margin = new Thickness(10),
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+
+        var stackPlayStop = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10),
             Children =
             {
-                poweredByLabel,
-                vm.TitleLabel,
+                buttonPlay,
+                buttonStop,
             }
         };
 
-        var pointerGesture = new PointerGestureRecognizer();
-        pointerGesture.PointerEnteredCommand = new Command(vm.MouseEnteredPoweredBy);
-        pointerGesture.PointerExitedCommand = new Command(vm.MouseExitedPoweredBy);
-        vm.TitleLabel.GestureRecognizers.Add(pointerGesture);
-        var tapGesture = new TapGestureRecognizer();
-        tapGesture.Tapped += vm.MouseClickedPoweredBy;
-        vm.TitleLabel.GestureRecognizers.Add(tapGesture);
 
-        grid.Add(titleTexts, 0, 0);
-        Grid.SetColumnSpan(titleTexts, 2);
-
-        var gridLeft = new Grid
+        var labelAutoContinue = new Label
         {
-            Padding = new Thickness(10),
-            HorizontalOptions = LayoutOptions.Fill,
-            RowDefinitions = new RowDefinitionCollection
-            {
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-            },
-            ColumnDefinitions = new ColumnDefinitionCollection
-            {
-                new() { Width = new GridLength(1, GridUnitType.Auto) },
-                new() { Width = new GridLength(1, GridUnitType.Star) },
-                new() { Width = new GridLength(1, GridUnitType.Auto) },
-                new() { Width = new GridLength(1, GridUnitType.Auto) },
-            },
-        };
-
-        vm.EnginePicker = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            SelectedIndex = 0,
-        }.BindDynamicTheme();
-        vm.EnginePicker.SetBinding(Picker.ItemsSourceProperty, "AutoTranslators");
-        vm.EnginePicker.ItemDisplayBinding = new Binding("Name");
-        vm.EnginePicker.SetBinding(Picker.SelectedItemProperty, "SelectedAutoTranslator");
-        vm.EnginePicker.SelectedIndexChanged += vm.EngineSelectedIndexChanged;
-        gridLeft.Add(vm.EnginePicker, 0, 0);
-
-        var fromLabel = new Label
-        {
-            Text = "From:",
-            FontAttributes = FontAttributes.Bold,
-            HorizontalOptions = LayoutOptions.End,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 10, 0),
-        }.BindDynamicTheme();
-        gridLeft.Add(fromLabel, 2, 0);
-
-        vm.SourceLanguagePicker = new Picker
-        {
-            HorizontalOptions = LayoutOptions.End,
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme();
-        vm.SourceLanguagePicker.ItemsSource = vm.SourceLanguages;
-        vm.SourceLanguagePicker.SetBinding(Picker.SelectedItemProperty, nameof(vm.SourceLanguage));
-        gridLeft.Add(vm.SourceLanguagePicker, 3, 0);
-
-        grid.Add(gridLeft, 0, 1);
-
-
-        var rightGrid = new Grid
-        {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Center,
-            RowDefinitions = new RowDefinitionCollection
-            {
-                new() { Height = new GridLength(1, GridUnitType.Auto) },
-            },
-            ColumnDefinitions = new ColumnDefinitionCollection
-            {
-                new() { Width = new GridLength(1, GridUnitType.Auto) },
-                new() { Width = new GridLength(1, GridUnitType.Auto) },
-                new() { Width = new GridLength(1, GridUnitType.Auto) },
-                new() { Width = new GridLength(1, GridUnitType.Star) },
-            },
-        };
-
-        rightGrid.Add(new Label
-        {
-            Text = "To:",
-            FontAttributes = FontAttributes.Bold,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 10, 0),
-        }.BindDynamicTheme(), 0, 0);
-
-
-        vm.TargetLanguagePicker = new Picker
-        {
+            Text = "Auto continue",
+            Margin = new Thickness(10,25,0,0),
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-        rightGrid.Add(vm.TargetLanguagePicker, 1, 0);
-        vm.TargetLanguagePicker.ItemsSource = vm.TargetLanguages;
-        vm.TargetLanguagePicker.SetBinding(Picker.SelectedItemProperty, nameof(vm.TargetLanguage));
-        vm.TargetLanguagePicker.SelectedIndexChanged += vm.TargetLanguagePickerSelectedIndexChanged;
 
-        vm.ButtonTranslate = new Button
+        var switchAutoContinue = new Switch
         {
-            Text = "Translate",
-            HorizontalOptions = LayoutOptions.End,
-            VerticalOptions = LayoutOptions.Center,
+            IsToggled = vm.AutoContinue,
             Margin = new Thickness(10, 0, 0, 0),
-            Command = vm.TranslateCommand,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
 
-        rightGrid.Add(vm.ButtonTranslate, 2, 0);
 
-        vm.ProgressBar = new ProgressBar
+        var buttonRow = new StackLayout
         {
-            HorizontalOptions = LayoutOptions.Fill,
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
-            IsVisible = false,
-            IsEnabled = false,
-            Progress = 0.0,
-            Margin = new Thickness(5, 0, 5, 0),
+            Margin = new Thickness(10),
+            Children =
+            {
+                buttonEditText,
+                buttonRegenerate,
+                stackPlayStop,
+                labelAutoContinue,
+                switchAutoContinue,
+            }
         };
 
-        rightGrid.Add(vm.ProgressBar, 3, 0);
+        grid.Add(buttonRow, 1, 1);
 
-        grid.Add(rightGrid, 1, 1);
+        var waveformView = MakeWaveformView(vm);
+        grid.Add(waveformView, 0, 2);
+        Grid.SetColumnSpan(waveformView, 2);
 
-        // Define CollectionView
-        vm.CollectionView = new CollectionView
+        var buttonDone = new Button
         {
-            ItemTemplate = new DataTemplate(() =>
-            {
-                // Each row will be a Grid
-                var gridTexts = new Grid
-                {
-                    Padding = new Thickness(5),
-                    ColumnDefinitions =
-                    {
-                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
-                        new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
-                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
-                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }
-                    },
-                    RowDefinitions =
-                    {
-                        new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) }
-                    }
-                };
-
-                // Bind each cell to the appropriate property
-                var numberLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
-                numberLabel.SetBinding(Label.TextProperty, "Number");
-                numberLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
-
-                var startTimeLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
-                startTimeLabel.SetBinding(Label.TextProperty, nameof(TranslateRow.StartTime), BindingMode.Default, new TimeSpanToStringConverter());
-                startTimeLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
-
-                var originalTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
-                originalTextLabel.SetBinding(Label.TextProperty, "OriginalText");
-                originalTextLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
-
-                var translatedTextLabel = new Label { VerticalTextAlignment = TextAlignment.Center }.BindDynamicThemeTextColorOnly();
-                translatedTextLabel.SetBinding(Label.TextProperty, "TranslatedText");
-                translatedTextLabel.SetBinding(BackgroundColorProperty, "BackgroundColor");
-
-                // Add labels to grid
-                gridTexts.Add(numberLabel, 0, 0);
-                gridTexts.Add(startTimeLabel, 1, 0);
-                gridTexts.Add(originalTextLabel, 2, 0);
-                gridTexts.Add(translatedTextLabel, 3, 0);
-
-                return gridTexts;
-            })
+            Text = "Done",
+            Margin = new Thickness(10),
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
+        grid.Add(buttonDone, 0, 3);
 
+        Content = grid;
+    }
 
-        var menuFlyoutLines = new MenuFlyout();
-        var flyoutItem2 = new MenuFlyoutItem();
-        flyoutItem2.Text = "Translate from this line";
-        flyoutItem2.Command = vm.TranslateFromCurrentLineCommand;
-        menuFlyoutLines.Add(flyoutItem2);
-        var flyoutItemCurrentLineOnly = new MenuFlyoutItem();
-        flyoutItemCurrentLineOnly.Text = "Translate this line only";
-        flyoutItemCurrentLineOnly.Command = vm.TranslateCurrentLineOnlyCommand;
-        flyoutItemCurrentLineOnly.KeyboardAccelerators.Add(new KeyboardAccelerator
+    private View MakeWaveformView(ReviewSpeechPageModel vm)
+    {
+        var boxView = new BoxView
         {
-            Modifiers = KeyboardAcceleratorModifiers.Ctrl,
-            Key = "R"
-        });
-        menuFlyoutLines.Add(flyoutItemCurrentLineOnly);
-        menuFlyoutLines.Add(new MenuFlyoutSeparator());
-        var flyoutItemAdvancedSettings = new MenuFlyoutItem();
-        flyoutItemAdvancedSettings.Text = "Advanced settings...";
-        flyoutItemAdvancedSettings.Command = vm.ShowAdvancedSettingsCommand;
-        menuFlyoutLines.Add(flyoutItemAdvancedSettings);
+            BackgroundColor = Colors.Yellow,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        };
 
-        FlyoutBase.SetContextFlyout(vm.CollectionView, menuFlyoutLines);
+        return boxView;
+    }
 
-
+    private Border MakeAudioSegmentsView(ReviewSpeechPageModel vm)
+    {
         // Create the header grid
         var headerGrid = new Grid
         {
@@ -295,7 +178,7 @@ public class ReviewSpeechPage : ContentPage
         headerGrid.Add(new Label { Text = "Original Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 2, 0);
         headerGrid.Add(new Label { Text = "Translated Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
 
-
+        // Add content
         var gridLayout = new Grid
         {
             RowDefinitions = new RowDefinitionCollection
@@ -314,8 +197,9 @@ public class ReviewSpeechPage : ContentPage
 
         vm.CollectionView.SelectionMode = SelectionMode.Single;
         vm.CollectionView.SelectionChanged += vm.CollectionViewSelectionChanged;
+        vm.CollectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Lines));
 
-        var frame = new Border
+        var border = new Border
         {
             Content = gridLayout,
             Padding = new Thickness(5),
@@ -325,185 +209,12 @@ public class ReviewSpeechPage : ContentPage
                 CornerRadius = new CornerRadius(5)
             },
         }.BindDynamicTheme();
-        frame.Content = gridLayout;
 
-        grid.Add(frame, 0, 2);
-        Grid.SetColumnSpan(frame, 2);
-
-        vm.LabelApiKey = new Label
-        {
-            Text = "API key",
-            FontAttributes = FontAttributes.Bold,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(20, 0, 0, 0),
-        }.BindDynamicTheme();
-
-        vm.EntryApiKey = new Entry
-        {
-            Text = string.Empty,
-            VerticalOptions = LayoutOptions.Center,
-            WidthRequest = 200,
-            Placeholder = "Enter API key",
-            Margin = new Thickness(3, 0, 10, 0),
-        }.BindDynamicTheme();
-
-        vm.LabelApiUrl = new Label
-        {
-            Text = "API url",
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(20, 0, 0, 0),
-        }.BindDynamicTheme();
-
-        vm.EntryApiUrl = new Entry
-        {
-            Text = string.Empty,
-            VerticalOptions = LayoutOptions.Center,
-            WidthRequest = 250,
-            Placeholder = "Enter API url",
-            Margin = new Thickness(3, 0, 0, 0),
-        }.BindDynamicTheme();
-
-        vm.ButtonApiUrl = new Button
-        {
-            Text = "...",
-            VerticalOptions = LayoutOptions.Center,
-            Command = vm.PickApiUrlCommand,
-        }.BindDynamicTheme();
-
-        vm.LabelModel = new Label
-        {
-            Text = "Model",
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(20, 0, 0, 0),
-        }.BindDynamicTheme();
-
-        vm.EntryModel = new Entry
-        {
-            Text = string.Empty,
-            VerticalOptions = LayoutOptions.Center,
-            WidthRequest = 250,
-            Placeholder = "Enter model",
-            Margin = new Thickness(3, 0, 0, 0),
-        };
-
-        vm.ButtonModel = new Button
-        {
-            Text = "...",
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(3, 0, 0, 0),
-            Command = vm.PickModelCommand,
-        }.BindDynamicTheme();
-
-        vm.LabelFormality = new Label
-        {
-            Text = "Formality",
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(20, 0, 0, 0),
-        }.BindDynamicTheme();
-
-        vm.PickerFormality = new Picker
-        {
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(3, 0, 0, 0),
-        }.BindDynamicTheme();
-        vm.PickerFormality.ItemsSource = vm.Formalities;
-        vm.PickerFormality.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedFormality));
-
-        var settingsRow = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(10),
-            Children =
-            {
-                vm.LabelApiKey,
-                vm.EntryApiKey,
-                vm.LabelApiUrl,
-                vm.EntryApiUrl,
-                vm.ButtonApiUrl,
-                vm.LabelModel,
-                vm.EntryModel,
-                vm.ButtonModel,
-                vm.LabelFormality,
-                vm.PickerFormality,
-            }
-        };
-
-        grid.Add(settingsRow, 0, 3);
-        Grid.SetColumnSpan(settingsRow, 2);
-
-        vm.ButtonOk = new Button
-        {
-            Text = "OK",
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 10, 0),
-            Command = vm.OkCommand,
-        }.BindDynamicTheme();
-
-        vm.ButtonCancel = new Button
-        {
-            Text = "Cancel",
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Center,
-            Command = vm.CancelCommand,
-        }.BindDynamicTheme();
-
-        var buttonRow = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.End,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(10),
-            Children =
-            {
-                vm.ButtonOk,
-                vm.ButtonCancel,
-            }
-        };
-
-        grid.Add(buttonRow, 0, 4);
-        Grid.SetColumnSpan(buttonRow, 2);
-
-
-        Content = grid;
-
-        vm.CollectionView.SetBinding(ItemsView.ItemsSourceProperty, "Lines");
+        return border;
     }
 
     protected override void OnAppearing()
     {
         base.OnAppearing();
-
-        Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                if (_vm.Lines.Count > 0 && _vm.CollectionView.SelectedItem == null)
-                {
-                    _vm.Lines[0].BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
-                    _vm.CollectionView.SelectedItem = _vm.Lines[0];
-                    _vm.Lines = _vm.Lines;
-                }
-                else if (_vm.CollectionView.SelectedItem is TranslateRow tr)
-                {
-                    tr.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
-                    _vm.Lines = _vm.Lines;
-                }
-            });
-
-            if (!string.IsNullOrWhiteSpace(Se.Settings.Tools.AutoTranslateLastName))
-            {
-                var item = _vm.AutoTranslators.FirstOrDefault(p => p.Name == Se.Settings.Tools.AutoTranslateLastName);
-                if (item != null)
-                {
-                    _vm.SelectedAutoTranslator = item;
-                }
-            }
-
-            return false;
-        });
     }
 }
