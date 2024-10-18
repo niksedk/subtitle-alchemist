@@ -29,8 +29,8 @@ public class ReviewSpeechPage : ContentPage
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
-                new() { Width = new GridLength(1, GridUnitType.Star) }, 
-                new() { Width = new GridLength(1, GridUnitType.Auto) }, // buttons
+                new() { Width = new GridLength(5, GridUnitType.Star) }, 
+                new() { Width = new GridLength(1, GridUnitType.Star) }, // buttons
             },
         }.BindDynamicTheme();
 
@@ -46,7 +46,6 @@ public class ReviewSpeechPage : ContentPage
 
         var audioSegmentsBorder = MakeAudioSegmentsView(vm);
         grid.Add(audioSegmentsBorder, 0, 1);
-        Grid.SetColumnSpan(audioSegmentsBorder, 2);
 
         var buttonEditText = new Button
         {
@@ -87,7 +86,7 @@ public class ReviewSpeechPage : ContentPage
         {
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(10),
             Children =
             {
@@ -143,6 +142,7 @@ public class ReviewSpeechPage : ContentPage
             Margin = new Thickness(10),
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
+            Command = vm.DoneCommand,
         }.BindDynamicTheme();
         grid.Add(buttonDone, 0, 3);
 
@@ -151,14 +151,9 @@ public class ReviewSpeechPage : ContentPage
 
     private View MakeWaveformView(ReviewSpeechPageModel vm)
     {
-        var boxView = new BoxView
-        {
-            BackgroundColor = Colors.Yellow,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-        };
-
-        return boxView;
+        vm.AudioVisualizer.HorizontalOptions = LayoutOptions.Fill;
+        vm.AudioVisualizer.VerticalOptions = LayoutOptions.Fill;
+        return vm.AudioVisualizer;
     }
 
     private Border MakeAudioSegmentsView(ReviewSpeechPageModel vm)
@@ -181,11 +176,11 @@ public class ReviewSpeechPage : ContentPage
 
         // Add headers
         headerGrid.Add(new Label { Text = "Include", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
-        headerGrid.Add(new Label { Text = "Number", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
-        headerGrid.Add(new Label { Text = "Voice", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 1, 0);
-        headerGrid.Add(new Label { Text = "Chars/sec", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 2, 0);
-        headerGrid.Add(new Label { Text = "Speed", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
-        headerGrid.Add(new Label { Text = "Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
+        headerGrid.Add(new Label { Text = "Number", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 1, 0);
+        headerGrid.Add(new Label { Text = "Voice", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 2, 0);
+        headerGrid.Add(new Label { Text = "Chars/sec", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
+        headerGrid.Add(new Label { Text = "Speed", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 4, 0);
+        headerGrid.Add(new Label { Text = "Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 5, 0);
 
         // Create collection view
         var collectionView = new CollectionView

@@ -3,6 +3,7 @@ using System.Globalization;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SubtitleAlchemist.Controls.AudioVisualizerControl;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Engines;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
@@ -27,6 +28,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
     public ReviewSpeechPage? Page { get; set; }
     public CollectionView CollectionView { get; set; }
+    public AudioVisualizer AudioVisualizer { get; set; }
 
 
     private ITtsEngine _engine;
@@ -37,6 +39,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
     public ReviewSpeechPageModel(IPopupService popupService)
     {
+        AudioVisualizer = new AudioVisualizer();
         _lines = new ObservableCollection<ReviewRow>();
         _paragraphs = new ObservableCollection<DisplayParagraph>();
         _popupService = popupService;
@@ -57,6 +60,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
             {
                 Lines.Add(new ReviewRow
                 {
+                    Include = true,
                     Number = p.Paragraph.Number,
                     Text = p.Text,
                     Voice = _voice.Name,

@@ -221,11 +221,13 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             ProgressValue = (double)index / _subtitle.Paragraphs.Count;
             var paragraph = _subtitle.Paragraphs[index];
             var speakResult = await engine.Speak(paragraph.Text, voice);
-            resultList.Add(new TtsStepResult()
+            resultList.Add(new TtsStepResult
             {
                 Text = paragraph.Text,
                 CurrentFileName = speakResult.FileName,
                 Paragraph = paragraph,
+                SpeedFactor = 1.0f,
+                Voice = voice,
             });
         }
 
@@ -277,6 +279,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                     Text = item.Text,
                     CurrentFileName = outputFileName1,
                     SpeedFactor = 1.0f,
+                    Voice = item.Voice,
                 });
                 continue;
             }
@@ -290,6 +293,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                     Text = item.Text,
                     CurrentFileName = item.CurrentFileName,
                     SpeedFactor = 1.0f,
+                    Voice = item.Voice,
                 });
 
                 SeLogger.Error($"TextToSpeech: Duration is zero (skipping): {item.CurrentFileName}, {p}");
@@ -311,6 +315,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                 Text = item.Text,
                 CurrentFileName = outputFileName2,
                 SpeedFactor = (float)factor,
+                Voice = item.Voice,
             });
 
             var mergeProcess = VideoPreviewGenerator.ChangeSpeed(outputFileName1, outputFileName2, (float)factor);
@@ -345,10 +350,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             { "Voice", voice },
         });
 
-        return previousStepResult;
-
-        var resultList = new List<TtsStepResult>();
-        return resultList.ToArray();
+        return null;
     }
 
     private async Task<TtsStepResult[]?> MergeAudioParagraphs(TtsStepResult[] prevoiusStepResult,
@@ -360,7 +362,6 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             return null;
         }
-
 
         var resultList = new List<TtsStepResult>();
         for (var index = 0; index < prevoiusStepResult.Length; index++)
