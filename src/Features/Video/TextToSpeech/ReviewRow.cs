@@ -1,10 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using SubtitleAlchemist.Logic.Constants;
 
-namespace SubtitleAlchemist.Features.Translate;
+namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
 public partial class ReviewRow : ObservableObject
 {
+    [ObservableProperty] private bool _include;
     [ObservableProperty] private int _number;
     [ObservableProperty] private string _voice;
     [ObservableProperty] private string _cps;
@@ -14,6 +15,7 @@ public partial class ReviewRow : ObservableObject
 
     public ReviewRow()
     {
+        _include = true;
         _number = 0;
         _voice = string.Empty;
         _cps = string.Empty;

@@ -1,6 +1,7 @@
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
+using SubtitleAlchemist.Logic.Converters;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -44,9 +45,8 @@ public class ReviewSpeechPage : ContentPage
         grid.Add(labelTitle, 0);
 
         var audioSegmentsBorder = MakeAudioSegmentsView(vm);
-        grid.Add(audioSegmentsBorder, 0, 2);
+        grid.Add(audioSegmentsBorder, 0, 1);
         Grid.SetColumnSpan(audioSegmentsBorder, 2);
-
 
         var buttonEditText = new Button
         {
@@ -54,6 +54,7 @@ public class ReviewSpeechPage : ContentPage
             Margin = new Thickness(10),
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            Command = vm.EditTextCommand,
         }.BindDynamicTheme();
 
         var buttonRegenerate = new Button
@@ -62,6 +63,7 @@ public class ReviewSpeechPage : ContentPage
             Margin = new Thickness(10),
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            Command = vm.RegenerateCommand,
         }.BindDynamicTheme();
 
         var buttonPlay = new Button
@@ -69,6 +71,7 @@ public class ReviewSpeechPage : ContentPage
             Text = "Play",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            Command = vm.PlayCommand,
         }.BindDynamicTheme();
 
         var buttonStop = new Button
@@ -77,6 +80,7 @@ public class ReviewSpeechPage : ContentPage
             Margin = new Thickness(10),
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            Command = vm.StopCommand,
         }.BindDynamicTheme();
 
         var stackPlayStop = new StackLayout
@@ -108,6 +112,7 @@ public class ReviewSpeechPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
+        switchAutoContinue.SetBinding(Switch.IsToggledProperty, nameof(vm.AutoContinue));
 
 
         var buttonRow = new StackLayout
@@ -165,18 +170,94 @@ public class ReviewSpeechPage : ContentPage
             Padding = new Thickness(5),
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
-                new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) },
-                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) },
-                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Include
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Number
+                new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) }, // Voice
+                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Chars/sec
+                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Speed
+                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Text
             },
         };
 
         // Add headers
+        headerGrid.Add(new Label { Text = "Include", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
         headerGrid.Add(new Label { Text = "Number", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
-        headerGrid.Add(new Label { Text = "Show", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 1, 0);
-        headerGrid.Add(new Label { Text = "Original Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 2, 0);
-        headerGrid.Add(new Label { Text = "Translated Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
+        headerGrid.Add(new Label { Text = "Voice", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 1, 0);
+        headerGrid.Add(new Label { Text = "Chars/sec", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 2, 0);
+        headerGrid.Add(new Label { Text = "Speed", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
+        headerGrid.Add(new Label { Text = "Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
+
+        // Create collection view
+        var collectionView = new CollectionView
+        {
+            SelectionMode = SelectionMode.Single,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            ItemTemplate = new DataTemplate(() =>
+            {
+                var rulesItemsGrid = new Grid
+                {
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Include
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Number
+                        new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) }, // Voice
+                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Chars/sec
+                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Speed
+                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Text
+                    },
+                };
+
+                IValueConverter converterShort = new DataTimeToTimeConverter();
+
+                var switchInclude = new Switch
+                {
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicTheme();
+                switchInclude.SetBinding(Switch.IsToggledProperty, nameof(ReviewRow.Include));
+                rulesItemsGrid.Add(switchInclude, 0);
+
+                var labelDateAndTime = new Label
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicThemeTextColorOnly();
+                labelDateAndTime.SetBinding(Label.TextProperty, nameof(ReviewRow.Number), BindingMode.Default, converterShort);
+                rulesItemsGrid.Add(labelDateAndTime, 1);
+
+                var labelVoice = new Label
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicThemeTextColorOnly();
+                labelVoice.SetBinding(Label.TextProperty, nameof(ReviewRow.Voice));
+                rulesItemsGrid.Add(labelVoice, 2);
+
+                var labelCps = new Label
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicThemeTextColorOnly();
+                labelCps.SetBinding(Label.TextProperty, nameof(ReviewRow.Cps));
+                rulesItemsGrid.Add(labelCps, 3);
+
+                var labelSpeed = new Label
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicThemeTextColorOnly();
+                labelSpeed.SetBinding(Label.TextProperty, nameof(ReviewRow.Speed));
+                rulesItemsGrid.Add(labelSpeed, 4);
+
+                var labelText = new Label
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicThemeTextColorOnly();
+                labelText.SetBinding(Label.TextProperty, nameof(ReviewRow.Text));
+                rulesItemsGrid.Add(labelText, 5);
+
+                return rulesItemsGrid;
+            }),
+        };
+        vm.CollectionView = collectionView;
+
 
         // Add content
         var gridLayout = new Grid

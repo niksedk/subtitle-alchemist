@@ -283,6 +283,37 @@ public class TextToSpeechPage : ContentPage
             },
         }.BindDynamicTheme();
 
+        var labelProgressText = new Label
+        {
+            FontSize = 16,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 2),
+        }.BindDynamicTheme();
+        labelProgressText.SetBinding(Label.TextProperty, nameof(vm.ProgressText));
+
+        var progressBar = new ProgressBar
+        {
+            Progress = 0.0,
+            ProgressColor = Colors.Orange,
+            HorizontalOptions = LayoutOptions.Fill,
+        };
+        progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));
+
+        var stackProgress = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
+            Children =
+            {
+                labelProgressText,
+                progressBar,
+            },
+        }.BindDynamicTheme();
+        stackProgress.SetBinding(StackLayout.IsVisibleProperty, nameof(vm.IsGenerating));
+
         var pageStack = new StackLayout
         {
             Orientation = StackOrientation.Vertical,
@@ -297,6 +328,7 @@ public class TextToSpeechPage : ContentPage
                 voiceTestStack,
                 languageStack,
                 gridSwitch,
+                stackProgress,
                 buttonBar,
             },
         }.BindDynamicTheme();

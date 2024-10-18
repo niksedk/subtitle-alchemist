@@ -4,7 +4,7 @@ using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 
-public class DownloadFfmpegPopup : Popup
+public sealed class DownloadFfmpegPopup : Popup
 {
     public DownloadFfmpegPopup(DownloadFfmpegModel vm)
     {

@@ -12,6 +12,7 @@ using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
+using System;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -176,22 +177,28 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         _cancellationTokenSource = new();
         var cancellationToken = _cancellationTokenSource.Token;
+        ProgressValue = 0;
+        ProgressText = string.Empty;
+        IsGenerating = true;
 
         var generateSpeechResult = await GenerateSpeech(cancellationToken);
         if (generateSpeechResult == null)
         {
+            IsGenerating = false;
             return;
         }
 
         var fixSpeedResult = await FixSpeed(generateSpeechResult, cancellationToken);
         if (fixSpeedResult == null)
         {
+            IsGenerating = false;
             return;
         }
 
         var reviewAudioClipsResult = await ReviewAudioClips(fixSpeedResult, cancellationToken);
         if (reviewAudioClipsResult == null)
         {
+            IsGenerating = false;
             return;
         }
 
@@ -208,11 +215,14 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         }
 
         var resultList = new List<TtsStepResult>();
-        foreach (var paragraph in _subtitle.Paragraphs)
+        for (var index = 0; index < _subtitle.Paragraphs.Count; index++)
         {
+            ProgressText = $"Generating speech: segment {index + 1} of {_subtitle.Paragraphs.Count}";
+            ProgressValue = (double)index / _subtitle.Paragraphs.Count;
+            var paragraph = _subtitle.Paragraphs[index];
             var speakResult = await engine.Speak(paragraph.Text, voice);
-            resultList.Add(new TtsStepResult() 
-            { 
+            resultList.Add(new TtsStepResult()
+            {
                 Text = paragraph.Text,
                 CurrentFileName = speakResult.FileName,
                 Paragraph = paragraph,
@@ -234,6 +244,9 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         var resultList = new List<TtsStepResult>();
         for (var index = 0; index < previousStepResult.Length; index++)
         {
+            ProgressText = $"Adjusting speed: segment {index + 1} of {_subtitle.Paragraphs.Count}";
+            ProgressValue = (double)index / _subtitle.Paragraphs.Count;
+
             var item = previousStepResult[index];
             var p = item.Paragraph;
             var next = index + 1 < previousStepResult.Length ? previousStepResult[index + 1] : null;
@@ -258,14 +271,27 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             var mediaInfo = FfmpegMediaInfo2.Parse(outputFileName1);
             if (mediaInfo.Duration.TotalMilliseconds  <= p.DurationTotalMilliseconds + addDuration)
             {
-                item.OldFileNames.Add(item.CurrentFileName);
-                item.CurrentFileName = outputFileName1;
+                resultList.Add(new TtsStepResult
+                {
+                    Paragraph = p,
+                    Text = item.Text,
+                    CurrentFileName = outputFileName1,
+                    SpeedFactor = 1.0f,
+                });
                 continue;
             }
 
             var divisor = (decimal)(p.DurationTotalMilliseconds + addDuration);
             if (divisor <= 0)
             {
+                resultList.Add(new TtsStepResult
+                {
+                    Paragraph = p,
+                    Text = item.Text,
+                    CurrentFileName = item.CurrentFileName,
+                    SpeedFactor = 1.0f,
+                });
+
                 SeLogger.Error($"TextToSpeech: Duration is zero (skipping): {item.CurrentFileName}, {p}");
                 continue;
             }
@@ -279,9 +305,13 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                 outputFileName2 = Path.Combine(_waveFolder, $"{Path.GetFileNameWithoutExtension(overrideFileName)}_{Guid.NewGuid()}{ext}");
             }
 
-            item.OldFileNames.Add(item.CurrentFileName);
-            item.CurrentFileName = outputFileName2;
-            item.SpeedFactor = (float)factor;
+            resultList.Add(new TtsStepResult
+            {
+                Paragraph = p,
+                Text = item.Text,
+                CurrentFileName = outputFileName2,
+                SpeedFactor = (float)factor,
+            });
 
             var mergeProcess = VideoPreviewGenerator.ChangeSpeed(outputFileName1, outputFileName2, (float)factor);
 #pragma warning disable CA1416 // Validate platform compatibility
@@ -331,10 +361,14 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             return null;
         }
 
-        var resultList = new List<TtsStepResult>();
-        foreach (var item in prevoiusStepResult)
-        {
 
+        var resultList = new List<TtsStepResult>();
+        for (var index = 0; index < prevoiusStepResult.Length; index++)
+        {
+            ProgressText = $"Merging audio: segment {index + 1} of {_subtitle.Paragraphs.Count}";
+            ProgressValue = (double)index / _subtitle.Paragraphs.Count;
+
+            var item = prevoiusStepResult[index];
         }
 
         return resultList.ToArray();

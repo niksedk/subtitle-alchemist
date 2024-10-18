@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SubtitleAlchemist.Features.Main;
-using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Engines;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Logic.Config;
@@ -53,14 +53,15 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
             _stepResults = stepResult;
             Paragraphs =new ObservableCollection<DisplayParagraph>(stepResult.Select(p => new DisplayParagraph(p.Paragraph)).ToList());;
             Lines.Clear();
-            foreach (var p in Paragraphs)
+            foreach (var p in stepResult)
             {
                 Lines.Add(new ReviewRow
                 {
-                    Number = p.Number,
-                    //StartTime = p.Start,
-                    //OriginalText = p.Text,
-                    //TranslatedText = string.Empty,
+                    Number = p.Paragraph.Number,
+                    Text = p.Text,
+                    Voice = _voice.Name,
+                    Speed = p.SpeedFactor.ToString(CultureInfo.CurrentCulture),
+                    Cps = p.Paragraph.GetCharactersPerSecond().ToString(CultureInfo.CurrentCulture),
                 });
             }
         }
@@ -84,6 +85,10 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public async Task EditText()
     {
+        var result = await _popupService
+            .ShowPopupAsync<EditTextPopupModel>(
+                onPresenting: viewModel => viewModel.Initialize("testing 123..."),
+                CancellationToken.None);
     }
 
     [RelayCommand]
@@ -118,6 +123,5 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
     public void CollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        throw new NotImplementedException();
     }
 }
