@@ -25,7 +25,7 @@ public class ReviewSpeechPage : ContentPage
             {
                 new() { Height = new GridLength(1, GridUnitType.Auto) }, // title
                 new() { Height = new GridLength(1, GridUnitType.Star) }, // collection view / audio segments
-                new() { Height = new GridLength(200, GridUnitType.Absolute) }, // waveform
+                new() { Height = new GridLength(100, GridUnitType.Absolute) }, // waveform
                 new() { Height = new GridLength(1, GridUnitType.Auto) }, // buttons (done)  
             },
             ColumnDefinitions = new ColumnDefinitionCollection
@@ -67,6 +67,35 @@ public class ReviewSpeechPage : ContentPage
         }.BindDynamicTheme();
         buttonRegenerate.SetBinding(IsEnabledProperty, nameof(vm.IsRegenerateEnabled));
 
+        var labelEngine = new Label
+        {
+            Text = "Engine",
+            Margin = new Thickness(10, 5, 5, 0),
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        var pickerEngine = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        pickerEngine.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Engines));
+        pickerEngine.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedEngine));
+        pickerEngine.SelectedIndexChanged += vm.PickerEngineSelectedIndexChanged;
+        var stackEngine = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(10, 5, 0, 0),
+            Children =
+            {
+                labelEngine,
+                pickerEngine,
+            }
+        };
+
+
         var labelVoice = new Label
         {
             Text = "Voice",
@@ -74,7 +103,6 @@ public class ReviewSpeechPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
-
         var pickerVoice = new Picker
         {
             HorizontalOptions = LayoutOptions.Start,
@@ -82,7 +110,6 @@ public class ReviewSpeechPage : ContentPage
         }.BindDynamicTheme();
         pickerVoice.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Voices));
         pickerVoice.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedVoice));
-
         var stackVoice = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -95,6 +122,34 @@ public class ReviewSpeechPage : ContentPage
                 pickerVoice,
             }
         };
+
+        var labelLanguage = new Label
+        {
+            Text = "Language",
+            Margin = new Thickness(10, 5, 5, 0),
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        var pickerLanguage = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        pickerLanguage.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Languages));
+        pickerLanguage.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedLanguage));
+        var stackLanguage = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(10, 5, 0, 0),
+            Children =
+            {
+                labelLanguage,
+                pickerLanguage,
+            }
+        };
+        stackLanguage.SetBinding(IsVisibleProperty, nameof(vm.HasLanguageParameter));
 
         var buttonPlay = new Button
         {
@@ -130,7 +185,7 @@ public class ReviewSpeechPage : ContentPage
         var labelAutoContinue = new Label
         {
             Text = "Auto continue",
-            Margin = new Thickness(10,5,0,0),
+            Margin = new Thickness(10,0,0,0),
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
@@ -138,11 +193,24 @@ public class ReviewSpeechPage : ContentPage
         var switchAutoContinue = new Switch
         {
             IsToggled = vm.AutoContinue,
-            Margin = new Thickness(10, 0, 0, 0),
+            Margin = new Thickness(5, 0, 0, 0),
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicTheme();
         switchAutoContinue.SetBinding(Switch.IsToggledProperty, nameof(vm.AutoContinue));
+
+        var stackAutoContinue = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(10, 0, 0, 0),
+            Children =
+            {
+                labelAutoContinue,
+                switchAutoContinue,
+            }
+        };
 
 
         var buttonRow = new StackLayout
@@ -150,19 +218,21 @@ public class ReviewSpeechPage : ContentPage
             Orientation = StackOrientation.Vertical,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.End,
-            Margin = new Thickness(10),
+            Margin = new Thickness(5),
             Children =
             {
                 buttonEditText,
                 buttonRegenerate,
+                stackEngine,
                 stackVoice,
+                stackLanguage,
                 stackPlayStop,
-                labelAutoContinue,
-                switchAutoContinue,
+                stackAutoContinue,
             }
         };
 
-        grid.Add(buttonRow, 1, 1);
+        grid.Add(buttonRow, 1);
+        grid.SetRowSpan(buttonRow, 2);   
 
         var waveformView = MakeWaveformView(vm);
         grid.Add(waveformView, 0, 2);
@@ -223,12 +293,12 @@ public class ReviewSpeechPage : ContentPage
         };
 
         // Add headers
-        headerGrid.Add(new Label { Text = "Include", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 0, 0);
-        headerGrid.Add(new Label { Text = "Number", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 1, 0);
-        headerGrid.Add(new Label { Text = "Voice", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 2, 0);
-        headerGrid.Add(new Label { Text = "Chars/sec", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3, 0);
-        headerGrid.Add(new Label { Text = "Speed", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 4, 0);
-        headerGrid.Add(new Label { Text = "Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 5, 0);
+        headerGrid.Add(new Label { Text = "Include", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 0);
+        headerGrid.Add(new Label { Text = "Number", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 1);
+        headerGrid.Add(new Label { Text = "Voice", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 2);
+        headerGrid.Add(new Label { Text = "Chars/sec", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 3);
+        headerGrid.Add(new Label { Text = "Speed", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 4);
+        headerGrid.Add(new Label { Text = "Text", FontAttributes = FontAttributes.Bold, VerticalTextAlignment = TextAlignment.Center }, 5);
 
         // Create collection view
         var collectionView = new CollectionView
@@ -236,6 +306,7 @@ public class ReviewSpeechPage : ContentPage
             SelectionMode = SelectionMode.Single,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
             ItemTemplate = new DataTemplate(() =>
             {
                 var rulesItemsGrid = new Grid
@@ -255,6 +326,7 @@ public class ReviewSpeechPage : ContentPage
                 {
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(5,0,0,0),
                 }.BindDynamicThemeTextOnly();
                 switchInclude.SetBinding(Switch.IsToggledProperty, nameof(ReviewRow.Include));
                 rulesItemsGrid.Add(switchInclude, 0);
@@ -290,6 +362,7 @@ public class ReviewSpeechPage : ContentPage
                 var labelText = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
+                    HorizontalOptions = LayoutOptions.Fill,
                 }.BindDynamicThemeTextColorOnly();
                 labelText.SetBinding(Label.TextProperty, nameof(ReviewRow.Text));
                 rulesItemsGrid.Add(labelText, 5);
@@ -314,7 +387,7 @@ public class ReviewSpeechPage : ContentPage
             }
         }.BindDynamicTheme();
 
-        gridLayout.Add(headerGrid, 0, 0);
+        gridLayout.Add(headerGrid, 0);
         gridLayout.Add(vm.CollectionView, 0, 1);
 
         vm.CollectionView.SelectionMode = SelectionMode.Single;
@@ -325,8 +398,6 @@ public class ReviewSpeechPage : ContentPage
         var border = new Border
         {
             Content = gridLayout,
-            Padding = new Thickness(5),
-            Margin = new Thickness(10),
             StrokeShape = new RoundRectangle
             {
                 CornerRadius = new CornerRadius(5)
@@ -334,10 +405,5 @@ public class ReviewSpeechPage : ContentPage
         }.BindDynamicTheme();
 
         return border;
-    }
-
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
     }
 }

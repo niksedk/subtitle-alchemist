@@ -705,68 +705,70 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     public void SelectedEngineChanged(object? sender, EventArgs e)
     {
         var engine = SelectedEngine;
-        if (engine != null)
+        if (engine == null)
         {
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                var voices = await engine.GetVoices();
-                Voices.Clear();
-                foreach (var vo in voices)
-                {
-                    Voices.Add(vo);
-                }
-                VoiceCount = Voices.Count;
-
-                var lastVoice = Voices.FirstOrDefault(v => v.Name == Se.Settings.Video.TextToSpeech.Voice);
-                if (lastVoice == null)
-                {
-                    lastVoice = Voices.FirstOrDefault(p => p.Name.StartsWith("en", StringComparison.OrdinalIgnoreCase) ||
-                                                           p.Name.Contains("English", StringComparison.OrdinalIgnoreCase));
-                }
-                SelectedVoice = lastVoice ?? Voices.First();
-
-                HasLanguageParameter = engine.HasLanguageParameter;
-                HasApiKey = engine.HasApiKey;
-                HasRegion = engine.HasRegion;
-                HasModel = engine.HasModel;
-
-                if (HasLanguageParameter)
-                {
-                    var languages = await engine.GetLanguages(SelectedVoice);
-                    Languages.Clear();
-                    foreach (var language in languages)
-                    {
-                        Languages.Add(language);
-                    }
-
-                    SelectedLanguage = Languages.FirstOrDefault();
-                }
-
-                if (HasRegion)
-                {
-                    var regions = await engine.GetRegions();
-                    Regions.Clear();
-                    foreach (var region in regions)
-                    {
-                        Regions.Add(region);
-                    }
-
-                    SelectedRegion = Regions.FirstOrDefault();
-                }
-
-                if (HasModel)
-                {
-                    var models = await engine.GetModels();
-                    Models.Clear();
-                    foreach (var model in models)
-                    {
-                        Models.Add(model);
-                    }
-
-                    SelectedModel = Models.FirstOrDefault();
-                }
-            });
+            return;
         }
+
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            var voices = await engine.GetVoices();
+            Voices.Clear();
+            foreach (var vo in voices)
+            {
+                Voices.Add(vo);
+            }
+            VoiceCount = Voices.Count;
+
+            var lastVoice = Voices.FirstOrDefault(v => v.Name == Se.Settings.Video.TextToSpeech.Voice);
+            if (lastVoice == null)
+            {
+                lastVoice = Voices.FirstOrDefault(p => p.Name.StartsWith("en", StringComparison.OrdinalIgnoreCase) ||
+                                                       p.Name.Contains("English", StringComparison.OrdinalIgnoreCase));
+            }
+            SelectedVoice = lastVoice ?? Voices.First();
+
+            HasLanguageParameter = engine.HasLanguageParameter;
+            HasApiKey = engine.HasApiKey;
+            HasRegion = engine.HasRegion;
+            HasModel = engine.HasModel;
+
+            if (HasLanguageParameter)
+            {
+                var languages = await engine.GetLanguages(SelectedVoice);
+                Languages.Clear();
+                foreach (var language in languages)
+                {
+                    Languages.Add(language);
+                }
+
+                SelectedLanguage = Languages.FirstOrDefault();
+            }
+
+            if (HasRegion)
+            {
+                var regions = await engine.GetRegions();
+                Regions.Clear();
+                foreach (var region in regions)
+                {
+                    Regions.Add(region);
+                }
+
+                SelectedRegion = Regions.FirstOrDefault();
+            }
+
+            if (HasModel)
+            {
+                var models = await engine.GetModels();
+                Models.Clear();
+                foreach (var model in models)
+                {
+                    Models.Add(model);
+                }
+
+                SelectedModel = Models.FirstOrDefault();
+            }
+        });
     }
 
     public void LabelAudioEncodingSettingsMouseEntered(object? sender, PointerEventArgs e)
