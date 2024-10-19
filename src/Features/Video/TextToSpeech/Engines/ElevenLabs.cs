@@ -11,7 +11,11 @@ public class ElevenLabs : ITtsEngine
     public string Name => "ElevenLabs";
     public string Description => "pay/fast/good";
     public bool HasLanguageParameter => true;
-    public bool IsInstalled => !string.IsNullOrEmpty(Se.Settings.Video.TextToSpeech.ElevenLabsApiKey);
+
+    public Task<bool> IsInstalled()
+    {
+        return Task.FromResult(!string.IsNullOrEmpty(Se.Settings.Video.TextToSpeech.ElevenLabsApiKey));
+    }
 
     private const string JsonFileName = "eleven-labs-voices.json";
     private readonly ITtsDownloadService _ttsDownloadService;
@@ -100,7 +104,7 @@ public class ElevenLabs : ITtsEngine
         return await GetVoices();
     }
 
-    public async Task<TtsResult> Speak(string text, Voice voice)
+    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language)
     {
         // if (voice.EngineVoice is not PiperVoice piperVoice)
         // {

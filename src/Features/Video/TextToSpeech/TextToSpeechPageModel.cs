@@ -165,7 +165,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             if (File.Exists(videoFileName))
             {
                 _videoFileName = videoFileName;
-                Task.Run(() => { _mediaInfo = FfmpegMediaInfo2.Parse(videoFileName); });
+                Task.Run(() => { _mediaInfo = FfmpegMediaInfo2.Parse(videoFileName); }, _cancellationToken);
             }
         }
 
@@ -315,7 +315,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             ProgressText = $"Generating speech: segment {index + 1} of {_subtitle.Paragraphs.Count}";
             var paragraph = _subtitle.Paragraphs[index];
-            var speakResult = await engine.Speak(paragraph.Text, voice);
+            var speakResult = await engine.Speak(paragraph.Text, _waveFolder, voice, SelectedLanguage);
             resultList.Add(new TtsStepResult
             {
                 Text = paragraph.Text,
@@ -452,6 +452,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             { "Voices", Voices.ToArray() },
             { "Voice", voice },
             { "WavePeaks", _wavePeakData },
+            { "WaveFolder", _waveFolder },
         });
 
         return null;
@@ -556,7 +557,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
     private async Task<bool> IsEngineInstalled(ITtsEngine engine)
     {
-        if (engine.IsInstalled)
+        if (await engine.IsInstalled())
         {
             return true;
         }
@@ -575,7 +576,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             }
 
             var result = await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiper(), CancellationToken.None);
-            return engine.IsInstalled;
+            return await engine.IsInstalled();
         }
 
         return false;
@@ -614,7 +615,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         SaveSettings();
 
-        var result = await engine.Speak(VoiceTestText, voice);
+        var result = await engine.Speak(VoiceTestText, _waveFolder, voice, SelectedLanguage);
 
         //var audioPlayer = _audioManager.CreatePlayer(result.FileName);
         //audioPlayer.Play();

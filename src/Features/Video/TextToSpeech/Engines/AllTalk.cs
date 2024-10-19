@@ -13,26 +13,21 @@ public class AllTalk : ITtsEngine
     public bool HasLanguageParameter => true;
 
     private bool _isInstalled;
-    public bool IsInstalled
+    public async Task<bool> IsInstalled()
     {
-        get
+        if (_isInstalled)
         {
             return true;
-            //if (_isInstalled)
-            //{
-            //    return true;
-            //}
+        }
 
-            //try
-            //{
-            //    var voices = GetVoices().Result;
-            //    _isInstalled = voices.Length > 0;
-            //    return _isInstalled;
-            //}
-            //catch 
-            //{
-            //    return false;
-            //}
+        try
+        {
+            _isInstalled = await _ttsDownloadService.AllTalkIsInstalled();
+            return _isInstalled;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -132,7 +127,7 @@ public class AllTalk : ITtsEngine
         return await GetVoices();
     }
 
-    public async Task<TtsResult> Speak(string text, Voice voice)
+    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language)
     {
         if (voice.EngineVoice is not AllTalkVoice allTalkVoice)
         {
@@ -142,9 +137,9 @@ public class AllTalk : ITtsEngine
         var fileNameOnly = Guid.NewGuid() + ".wav";
         var outputFileName = Path.Combine(GetSetAllTalkFolder(), fileNameOnly);
 
-        var language = "en";
-        await _ttsDownloadService.AllTalkVoiceSpeak(text, allTalkVoice, language, outputFileName);
+        var languageCode = language != null ? language.Code : "en";
+        var allTalkFileNameOutputFileName = await _ttsDownloadService.AllTalkVoiceSpeak(text, allTalkVoice, languageCode, outputFileName);
 
-        return new TtsResult();
+        return new TtsResult { FileName = allTalkFileNameOutputFileName, Text = text };
     }
 }

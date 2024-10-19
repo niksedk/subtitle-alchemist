@@ -11,5 +11,6 @@ public interface ITtsDownloadService
     Task DownloadPiperVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken);
     Task DownloadAllTalkVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken);
     Task<string> AllTalkVoiceSpeak(string text, AllTalkVoice voice, string language, string outputFileName);
+    Task<bool> AllTalkIsInstalled();
     Task DownloadElevenLabsVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken);
 }

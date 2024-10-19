@@ -2,6 +2,7 @@
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Logic.Config;
+using System.Net.Http;
 using System.Text;
 
 namespace SubtitleAlchemist.Services;
@@ -78,7 +79,22 @@ public class TtsDownloadService : ITtsDownloadService
 
         var jsonParser = new SeJsonParser();
         var allTalkOutput = jsonParser.GetFirstObject(resultJson, "output_file_path");
-        return allTalkOutput;
+        return allTalkOutput.Replace("\\\\", "\\");
+    }
+
+    public async Task<bool> AllTalkIsInstalled()
+    {
+        var timeout = Task.Delay(2000); // 2 seconds timeout
+        var request = _httpClient.GetAsync(Se.Settings.Video.TextToSpeech.AllTalkUrl);
+
+        await Task.WhenAny(timeout, request); // wait for either timeout or the request
+
+        if (timeout.IsCompleted) // if the timeout ended first, then handle it
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public async Task DownloadElevenLabsVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken)

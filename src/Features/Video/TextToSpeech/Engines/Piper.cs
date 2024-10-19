@@ -13,7 +13,12 @@ public class Piper : ITtsEngine
     public string Name => "Piper";
     public string Description => "free/fast/good";
     public bool HasLanguageParameter => false;
-    public bool IsInstalled => File.Exists(GetPiperExecutableFileName());
+
+    public Task<bool> IsInstalled()
+    {
+        return Task.FromResult(File.Exists(GetPiperExecutableFileName()));
+    }
+
     private readonly ITtsDownloadService _ttsDownloadService;
 
     public Piper(ITtsDownloadService ttsDownloadService)
@@ -145,7 +150,7 @@ public class Piper : ITtsEngine
         return await GetVoices();
     }
 
-    public async Task<TtsResult> Speak(string text, Voice voice)
+    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language)
     {
         if (voice.EngineVoice is not PiperVoice piperVoice)
         {

@@ -35,6 +35,12 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     private ReviewRow? _selectedLine;
 
     [ObservableProperty]
+    private ObservableCollection<TtsLanguage> _languages;
+
+    [ObservableProperty]
+    private TtsLanguage? _selectedLanguage;
+
+    [ObservableProperty]
     private ObservableCollection<DisplayParagraph> _paragraphs;
 
     [ObservableProperty]
@@ -56,6 +62,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     private TtsStepResult[] _stepResults;
     private bool _skipAutoContinue;
     private WavePeakData _wavePeakData;
+    private string _waveFolder;
 
     public ReviewSpeechPageModel(IPopupService popupService)
     {
@@ -65,6 +72,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         _voices = new ObservableCollection<Voice>();
         _voice = new Voice(new object());
         _engines = new ObservableCollection<ITtsEngine>();
+        _languages = new ObservableCollection<TtsLanguage>();
         CollectionView = new CollectionView();
         _stepResults = Array.Empty<TtsStepResult>();
         _isRegenerateEnabled = true;
@@ -73,6 +81,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         Player.MediaEnded += PlayEnded;
         _skipAutoContinue = false;
         _wavePeakData = new WavePeakData(1, new List<WavePeak>());
+        _waveFolder = Path.GetTempPath();
     }
 
     private void PlayEnded(object? sender, EventArgs e)
@@ -145,6 +154,11 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
             SelectedVoice = voice;
         }
 
+        if (query["WaveFolder"] is string waveFolder && !string.IsNullOrEmpty(waveFolder))
+        {
+            _waveFolder = waveFolder;
+        }
+
         if (query.ContainsKey("WavePeaks") && query["WavePeaks"] is WavePeakData wavePeakData)
         {
             _wavePeakData = wavePeakData;
@@ -158,7 +172,13 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         var engine = SelectedEngine ?? _engine;
         var voice = SelectedVoice;
         var line = SelectedLine;
-        if (engine == null || voice == null || line == null || !engine.IsInstalled)
+        if (engine == null || voice == null || line == null)
+        {
+            return;
+        }
+
+        var isEngineInstalled = await engine.IsInstalled();
+        if (!isEngineInstalled)
         {
             return;
         }
@@ -179,7 +199,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
             }
         }
 
-        var speakResult = await engine.Speak(line.Text, voice);
+        var speakResult = await engine.Speak(line.Text, _waveFolder, voice, SelectedLanguage);
         line.StepResult.CurrentFileName = speakResult.FileName;
 
         _skipAutoContinue = true;
