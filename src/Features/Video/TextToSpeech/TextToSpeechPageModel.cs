@@ -8,6 +8,7 @@ using CommunityToolkit.Maui.Views;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Services;
 using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
@@ -68,8 +69,11 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     private Subtitle _subtitle = new();
     private readonly IPopupService _popupService;
     private readonly string _waveFolder;
-    private CancellationTokenSource _cancellationTokenSource = new();
+    private CancellationTokenSource _cancellationTokenSource;
+    private CancellationToken _cancellationToken;
     private WavePeakData _wavePeakData;
+    private FfmpegMediaInfo2? _mediaInfo;
+    private string _videoFileName = string.Empty;
 
     public TextToSpeechPageModel(ITtsDownloadService ttsDownloadService, IPopupService popupService)
     {
@@ -102,6 +106,9 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             }
         }
 
+        _cancellationTokenSource = new();
+        _cancellationToken = _cancellationTokenSource.Token;
+
         Player = new MediaElement { IsVisible = false };
         LabelAudioEncodingSettings = new();
         _wavePeakData = new WavePeakData(1, new List<WavePeak>());
@@ -109,6 +116,34 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
+        var page = query["Page"].ToString();
+
+        if (page == nameof(ReviewSpeechPage))
+        {
+            if (query.ContainsKey("StepResult") && query["StepResult"] is TtsStepResult[] stepResult)
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+
+
+                    // Merge audio paragraphs
+                    var mergedAudioFileName = await MergeAudioParagraphs(stepResult, _cancellationToken);
+                    if (mergedAudioFileName == null)
+                    {
+                        IsGenerating = false;
+                        return;
+                    }
+
+                    // Add audio to video file
+                    await HandleAddToVideo(mergedAudioFileName, _cancellationToken);
+
+                    IsGenerating = false;
+                });
+            }
+
+            return;
+        }
+
         if (query["Subtitle"] is Subtitle subtitle)
         {
             _subtitle = new Subtitle(subtitle, false);
@@ -117,6 +152,15 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         if (query.ContainsKey("WavePeaks") && query["WavePeaks"] is WavePeakData wavePeakData)
         {
             _wavePeakData = wavePeakData;
+        }
+
+        if (query.ContainsKey("VideoFileName") && query["VideoFileName"] is string videoFileName && !string.IsNullOrEmpty(videoFileName))
+        {
+            if (File.Exists(videoFileName))
+            {
+                _videoFileName = videoFileName;
+                Task.Run(() => { _mediaInfo = FfmpegMediaInfo2.Parse(videoFileName); });
+            }
         }
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
@@ -179,33 +223,75 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         }
 
         _cancellationTokenSource = new();
-        var cancellationToken = _cancellationTokenSource.Token;
+        _cancellationToken = _cancellationTokenSource.Token;
         ProgressValue = 0;
         ProgressText = string.Empty;
         IsGenerating = true;
 
-        var generateSpeechResult = await GenerateSpeech(cancellationToken);
+        // Generate
+        var generateSpeechResult = await GenerateSpeech(_cancellationToken);
         if (generateSpeechResult == null)
         {
             IsGenerating = false;
             return;
         }
 
-        var fixSpeedResult = await FixSpeed(generateSpeechResult, cancellationToken);
+        // Fix speed
+        var fixSpeedResult = await FixSpeed(generateSpeechResult, _cancellationToken);
         if (fixSpeedResult == null)
         {
             IsGenerating = false;
             return;
         }
 
-        var reviewAudioClipsResult = await ReviewAudioClips(fixSpeedResult, cancellationToken);
-        if (reviewAudioClipsResult == null)
+        // Review audio clips
+        if (DoReviewAudioClips)
+        {
+            var reviewAudioClipsResult = await ReviewAudioClips(fixSpeedResult, _cancellationToken);
+            if (reviewAudioClipsResult == null)
+            {
+                IsGenerating = false;
+                return;
+            }
+
+            return;
+        }
+
+        // Merge audio paragraphs
+        var mergedAudioFileName = await MergeAudioParagraphs(fixSpeedResult, _cancellationToken);
+        if (mergedAudioFileName == null)
         {
             IsGenerating = false;
             return;
         }
 
-        var mergeAudioParagraphsResult = await MergeAudioParagraphs(reviewAudioClipsResult, cancellationToken);
+        // Add audio to video file
+        await HandleAddToVideo(mergedAudioFileName, _cancellationToken);
+
+        IsGenerating = false;
+    }
+
+    private async Task HandleAddToVideo(string mergedAudioFileName, CancellationToken cancellationToken)
+    {
+        //TODO: prompt for folder from user
+
+        if (DoGenerateVideoFile && !string.IsNullOrEmpty(_videoFileName))
+        {
+            var outputFileName = await AddAudioToVideoFile(mergedAudioFileName, cancellationToken);
+            if (!string.IsNullOrEmpty(outputFileName) && Page != null)
+            {
+                await Page.DisplayAlert(
+                    "Text to speech",
+                    $"Video file generated: {outputFileName}",
+                    "OK");
+            }
+
+            UiUtil.OpenFolderFromFileName(outputFileName);
+        }
+        else
+        {
+            UiUtil.OpenFolderFromFileName(mergedAudioFileName);
+        }
     }
 
     private async Task<TtsStepResult[]?> GenerateSpeech(CancellationToken cancellationToken)
@@ -359,8 +445,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         return null;
     }
 
-    private async Task<TtsStepResult[]?> MergeAudioParagraphs(TtsStepResult[] prevoiusStepResult,
-        CancellationToken cancellationToken)
+    private async Task<string?> MergeAudioParagraphs(TtsStepResult[] previousStepResult, CancellationToken cancellationToken)
     {
         var engine = SelectedEngine;
         var voice = SelectedVoice;
@@ -369,16 +454,82 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             return null;
         }
 
-        var resultList = new List<TtsStepResult>();
-        for (var index = 0; index < prevoiusStepResult.Length; index++)
+        var silenceFileName = await GenerateSilenceWaveFile(cancellationToken);
+
+        var outputFileName = string.Empty;
+        var inputFileName = silenceFileName;
+        for (var index = 0; index < previousStepResult.Length; index++)
         {
             ProgressText = $"Merging audio: segment {index + 1} of {_subtitle.Paragraphs.Count}";
             ProgressValue = (double)index / _subtitle.Paragraphs.Count;
 
-            var item = prevoiusStepResult[index];
+            var item = previousStepResult[index];
+            outputFileName = Path.Combine(_waveFolder, $"silence{index}.wav");
+            var mergeProcess = VideoPreviewGenerator.MergeAudioTracks(inputFileName, item.CurrentFileName, outputFileName, (float)item.Paragraph.StartTime.TotalSeconds);
+            inputFileName = outputFileName;
+#pragma warning disable CA1416 // Validate platform compatibility
+            _ = mergeProcess.Start();
+#pragma warning restore CA1416 // Validate platform compatibility
+            await mergeProcess.WaitForExitAsync(cancellationToken);
         }
 
-        return resultList.ToArray();
+        return outputFileName;
+    }
+
+    private async Task<string?> AddAudioToVideoFile(string audioFileName, CancellationToken cancellationToken)
+    {
+        var videoExt = ".mkv";
+        if (_videoFileName.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
+        {
+            videoExt = ".mp4";
+        }
+
+        ProgressText = "Adding audio to video file...";
+        var outputFileName = Path.Combine(_waveFolder, Path.GetFileNameWithoutExtension(audioFileName) + videoExt);
+
+        var audioEncoding = Se.Settings.Video.TextToSpeech.CustomAudioEncoding;
+        if (string.IsNullOrWhiteSpace(audioEncoding) || !UseCustomAudioEncoding)
+        {
+            audioEncoding = string.Empty;
+        }
+
+        bool? stereo = null;
+        if (Se.Settings.Video.TextToSpeech.CustomAudioStereo && UseCustomAudioEncoding)
+        {
+            stereo = true;
+        }
+
+        var addAudioProcess = VideoPreviewGenerator.AddAudioTrack(_videoFileName, audioFileName, outputFileName, audioEncoding, stereo);
+#pragma warning disable CA1416 // Validate platform compatibility
+        var _ = addAudioProcess.Start();
+#pragma warning restore CA1416 // Validate platform compatibility
+        await addAudioProcess.WaitForExitAsync(cancellationToken);
+
+        ProgressText = string.Empty;
+        return outputFileName;
+    }
+
+    private async Task<string> GenerateSilenceWaveFile(CancellationToken cancellationToken)
+    {
+        ProgressText = "Preparing merge...";
+        ProgressValue = 0;
+        var silenceFileName = Path.Combine(_waveFolder, "silence.wav");
+        var durationInSeconds = 10f;
+        if (_mediaInfo != null)
+        {
+            durationInSeconds = (float)_mediaInfo.Duration.TotalSeconds;
+        }
+        else if (_subtitle.Paragraphs.Count > 0)
+        {
+            durationInSeconds = (float)_subtitle.Paragraphs.Max(p => p.EndTime.TotalSeconds);
+        }
+
+        var silenceProcess = VideoPreviewGenerator.GenerateEmptyAudio(silenceFileName, durationInSeconds);
+#pragma warning disable CA1416 // Validate platform compatibility
+        _ = silenceProcess.Start();
+#pragma warning restore CA1416 // Validate platform compatibility
+        await silenceProcess.WaitForExitAsync(cancellationToken);
+        return silenceFileName;
     }
 
     private async Task<bool> IsEngineInstalled(ITtsEngine engine)
