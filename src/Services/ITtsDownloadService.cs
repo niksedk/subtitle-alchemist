@@ -15,7 +15,7 @@ public interface ITtsDownloadService
     Task DownloadElevenLabsVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken);
     Task DownloadAzureVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken);
 
-    Task DownloadElevenLabsVoiceSpeak(
+    Task<bool> DownloadElevenLabsVoiceSpeak(
         string inputText,
         ElevenLabVoice voice,
         string model,

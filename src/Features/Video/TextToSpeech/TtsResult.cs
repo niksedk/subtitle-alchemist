@@ -4,6 +4,7 @@ public record TtsResult
 {
     public string FileName { get; init; }
     public string Text { get; init; }
+    public bool Error { get; init; }
 
     public TtsResult()
     {

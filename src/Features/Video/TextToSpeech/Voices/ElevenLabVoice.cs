@@ -3,6 +3,7 @@
 public class ElevenLabVoice  
 {
     public string Voice { get; set; }
+    public string VoiceId { get; set; }
     public string Language { get; set; }
     public string Gender { get; set; }
     public string Model { get; set; }
@@ -18,5 +19,6 @@ public class ElevenLabVoice
         Language = accent;
         Gender = gender;
         Model = voiceId;
+        VoiceId = voiceId;
     }
 }

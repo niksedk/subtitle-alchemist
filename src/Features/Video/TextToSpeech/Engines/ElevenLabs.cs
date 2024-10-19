@@ -108,9 +108,9 @@ public class ElevenLabs : ITtsEngine
     }
 
     public async Task<TtsResult> Speak(
-        string text, 
-        string outputFolder, 
-        Voice voice, 
+        string text,
+        string outputFolder,
+        Voice voice,
         TtsLanguage? language,
         string? region,
         string? model,
@@ -122,8 +122,13 @@ public class ElevenLabs : ITtsEngine
         }
 
         var ms = new MemoryStream();
-        await _ttsDownloadService.DownloadElevenLabsVoiceSpeak(text, elevenLabVoice, model,  Se.Settings.Video.TextToSpeech.ElevenLabsApiKey, "en", ms, null, cancellationToken);
-        var fileName = Path.Combine(GetSetElevenLabsFolder(), Guid.NewGuid() + ".wav");
+        var ok = await _ttsDownloadService.DownloadElevenLabsVoiceSpeak(text, elevenLabVoice, model, Se.Settings.Video.TextToSpeech.ElevenLabsApiKey, "en", ms, null, cancellationToken);
+        if (!ok)
+        {
+            return new TtsResult { Text = text, FileName = string.Empty, Error = true };
+        }
+
+        var fileName = Path.Combine(GetSetElevenLabsFolder(), Guid.NewGuid() + ".mp3");
         await File.WriteAllBytesAsync(fileName, ms.ToArray(), cancellationToken);
         return new TtsResult { Text = text, FileName = fileName };
     }

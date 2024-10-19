@@ -114,7 +114,7 @@ public class TtsDownloadService : ITtsDownloadService
         await DownloadHelper.DownloadFileAsync(_httpClient, url, stream, progress, cancellationToken);
     }
 
-    public async Task DownloadElevenLabsVoiceSpeak(
+    public async Task<bool> DownloadElevenLabsVoiceSpeak(
         string inputText, 
         ElevenLabVoice voice, 
         string model, 
@@ -124,7 +124,7 @@ public class TtsDownloadService : ITtsDownloadService
         IProgress<float>? progress, 
         CancellationToken cancellationToken)
     {
-        var url = "https://api.elevenlabs.io/v1/text-to-speech/" + voice.Model;
+        var url = "https://api.elevenlabs.io/v1/text-to-speech/" + voice.VoiceId;
         var text = Utilities.UnbreakLine(inputText);
 
         var language = string.Empty;
@@ -134,18 +134,22 @@ public class TtsDownloadService : ITtsDownloadService
         }
 
         var data = "{ \"text\": \"" + Json.EncodeJsonText(text) + $"\", \"model_id\": \"{model}\"{language}, \"voice_settings\": {{ \"stability\": 0.8, \"similarity_boost\": 1.0 }} }}";
-        var content = new StringContent(data, Encoding.UTF8);
-        content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
-        content.Headers.TryAddWithoutValidation("Content-Type", "application/json");
-        content.Headers.TryAddWithoutValidation("accept", "audio/mpeg");
-        content.Headers.TryAddWithoutValidation("xi-api-key", apiKey.Trim()); 
-        var result = await _httpClient.PostAsync(url, content, cancellationToken);
-        await result.Content.CopyToAsync(stream, cancellationToken);
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+        requestMessage.Content = new StringContent(data, Encoding.UTF8);
+        requestMessage.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+        requestMessage.Headers.TryAddWithoutValidation("Content-Type", "application/json");
+        requestMessage.Headers.TryAddWithoutValidation("Accept", "audio/mpeg");
+        requestMessage.Headers.TryAddWithoutValidation("xi-api-key", apiKey.Trim());
 
+        var result = await _httpClient.SendAsync(requestMessage, cancellationToken);
+        await result.Content.CopyToAsync(stream, cancellationToken);
         if (!result.IsSuccessStatusCode)
         {
             var error = Encoding.UTF8.GetString(stream.ToArray()).Trim();
             SeLogger.Error($"ElevenLabs TTS failed calling API as base address {_httpClient.BaseAddress} : Status code={result.StatusCode} {error}" + Environment.NewLine + "Data=" + data);
+            return false;
         }
+
+        return true;
     }
 }
