@@ -11,6 +11,9 @@ public class AllTalk : ITtsEngine
     public string Name => "AllTalk";
     public string Description => "free/fast/good";
     public bool HasLanguageParameter => true;
+    public bool HasApiKey => false;
+    public bool HasRegion => false;
+    public bool HasModel => false;
 
     private bool _isInstalled;
     public async Task<bool> IsInstalled()
@@ -127,19 +130,19 @@ public class AllTalk : ITtsEngine
         return await GetVoices();
     }
 
-    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language)
+    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language, CancellationToken cancellationToken)
     {
         if (voice.EngineVoice is not AllTalkVoice allTalkVoice)
         {
             throw new ArgumentException("Voice is not a AllTalkVoice");
         }
 
-        var fileNameOnly = Guid.NewGuid() + ".wav";
-        var outputFileName = Path.Combine(GetSetAllTalkFolder(), fileNameOnly);
-
         var languageCode = language != null ? language.Code : "en";
-        var allTalkFileNameOutputFileName = await _ttsDownloadService.AllTalkVoiceSpeak(text, allTalkVoice, languageCode, outputFileName);
+        var allTalkFileNameOutputFileName = await _ttsDownloadService.AllTalkVoiceSpeak(text, allTalkVoice, languageCode);
 
-        return new TtsResult { FileName = allTalkFileNameOutputFileName, Text = text };
+        var outputFileName = Path.Combine(GetSetAllTalkFolder(), Guid.NewGuid() + ".wav");
+        File.Move(allTalkFileNameOutputFileName, outputFileName);
+
+        return new TtsResult { FileName = outputFileName, Text = text };
     }
 }

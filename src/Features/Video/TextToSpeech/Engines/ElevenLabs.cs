@@ -11,6 +11,9 @@ public class ElevenLabs : ITtsEngine
     public string Name => "ElevenLabs";
     public string Description => "pay/fast/good";
     public bool HasLanguageParameter => true;
+    public bool HasApiKey => true;
+    public bool HasRegion => false;
+    public bool HasModel => true;
 
     public Task<bool> IsInstalled()
     {
@@ -104,7 +107,7 @@ public class ElevenLabs : ITtsEngine
         return await GetVoices();
     }
 
-    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language)
+    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language, CancellationToken cancellationToken)
     {
         // if (voice.EngineVoice is not PiperVoice piperVoice)
         // {

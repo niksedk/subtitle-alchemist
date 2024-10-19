@@ -10,7 +10,6 @@ using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Engines;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
-using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -57,7 +56,8 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
     private ITtsEngine? _engine;
     private Voice _voice;
-    private CancellationTokenSource _cancellationTokenSource = new();
+    private CancellationTokenSource _cancellationTokenSource;
+    private CancellationToken _cancellationToken;
     private readonly IPopupService _popupService;
     private TtsStepResult[] _stepResults;
     private bool _skipAutoContinue;
@@ -82,6 +82,8 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         _skipAutoContinue = false;
         _wavePeakData = new WavePeakData(1, new List<WavePeak>());
         _waveFolder = Path.GetTempPath();
+        _cancellationTokenSource = new CancellationTokenSource();
+        _cancellationToken = _cancellationTokenSource.Token;
     }
 
     private void PlayEnded(object? sender, EventArgs e)
@@ -199,7 +201,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
             }
         }
 
-        var speakResult = await engine.Speak(line.Text, _waveFolder, voice, SelectedLanguage);
+        var speakResult = await engine.Speak(line.Text, _waveFolder, voice, SelectedLanguage, _cancellationToken);
         line.StepResult.CurrentFileName = speakResult.FileName;
 
         _skipAutoContinue = true;
@@ -265,21 +267,12 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public async Task Done()
     {
+        await _cancellationTokenSource.CancelAsync();
         await Shell.Current.GoToAsync(nameof(TextToSpeechPage), new Dictionary<string, object>
         {
             { "Page", nameof(ReviewSpeechPage) },
             { "StepResult", _stepResults },
         });
-    }
-
-    private void SaveSettings(Type engineType)
-    {
-        Se.SaveSettings();
-    }
-
-    private void LoadSettings(Type engineType)
-    {
-        Se.SaveSettings();
     }
 
     public void CollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)

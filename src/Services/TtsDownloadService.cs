@@ -53,7 +53,7 @@ public class TtsDownloadService : ITtsDownloadService
         await DownloadHelper.DownloadFileAsync(_httpClient, url, stream, progress, cancellationToken);
     }
 
-    public async Task<string> AllTalkVoiceSpeak(string inputText, AllTalkVoice voice, string language, string outputFileName)
+    public async Task<string> AllTalkVoiceSpeak(string inputText, AllTalkVoice voice, string language)
     {
         var multipartContent = new MultipartFormDataContent();
         var text = Utilities.UnbreakLine(inputText);

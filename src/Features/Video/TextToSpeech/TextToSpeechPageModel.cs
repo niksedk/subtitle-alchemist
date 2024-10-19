@@ -12,7 +12,6 @@ using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
-using System;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -38,6 +37,30 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
     [ObservableProperty]
     private TtsLanguage? _selectedLanguage;
+
+    [ObservableProperty]
+    private bool _hasApiKey;
+
+    [ObservableProperty]
+    private string _apiKey;
+
+    [ObservableProperty]
+    private bool _hasRegion;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _regions;
+
+    [ObservableProperty]
+    private string? _selectedRegion;
+
+    [ObservableProperty]
+    private bool _hasModel;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _models;
+
+    [ObservableProperty]
+    private string? _selectedModel;
 
     [ObservableProperty]
     private int _voiceCount;
@@ -113,6 +136,10 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         Player = new MediaElement { IsVisible = false };
         LabelAudioEncodingSettings = new();
         _wavePeakData = new WavePeakData(1, new List<WavePeak>());
+
+        _apiKey = string.Empty;
+        _regions = new ObservableCollection<string>();
+        _models = new ObservableCollection<string>();
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -200,6 +227,15 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         DoReviewAudioClips = Se.Settings.Video.TextToSpeech.ReviewAudioClips;
         DoGenerateVideoFile = Se.Settings.Video.TextToSpeech.GenerateVideoFile;
         UseCustomAudioEncoding = Se.Settings.Video.TextToSpeech.CustomAudio;
+
+        if (SelectedEngine is AzureSpeech)
+        {
+            ApiKey = Se.Settings.Video.TextToSpeech.AzureApiKey;
+        }
+        else if (SelectedEngine is ElevenLabs)
+        {
+            ApiKey = Se.Settings.Video.TextToSpeech.ElevenLabsApiKey;
+        }
     }
 
     private void SaveSettings()
@@ -210,6 +246,16 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         Se.Settings.Video.TextToSpeech.ReviewAudioClips = DoReviewAudioClips;
         Se.Settings.Video.TextToSpeech.GenerateVideoFile = DoGenerateVideoFile;
         Se.Settings.Video.TextToSpeech.CustomAudio = UseCustomAudioEncoding;
+
+        if (SelectedEngine is AzureSpeech)
+        {
+            Se.Settings.Video.TextToSpeech.AzureApiKey = ApiKey;
+        }
+        else if (SelectedEngine is ElevenLabs)
+        {
+            Se.Settings.Video.TextToSpeech.ElevenLabsApiKey = ApiKey;
+        }
+
         Se.SaveSettings();
     }
 
@@ -279,7 +325,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
     private async Task HandleAddToVideo(string mergedAudioFileName, CancellationToken cancellationToken)
     {
-        //TODO: prompt for folder from user
+        //TODO: prompt for save folder from user
 
         if (DoGenerateVideoFile && !string.IsNullOrEmpty(_videoFileName))
         {
@@ -290,9 +336,9 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                     "Text to speech",
                     $"Video file generated: {outputFileName}",
                     "OK");
-            }
 
-            UiUtil.OpenFolderFromFileName(outputFileName);
+                UiUtil.OpenFolderFromFileName(outputFileName);
+            }
         }
         else
         {
@@ -315,7 +361,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             ProgressText = $"Generating speech: segment {index + 1} of {_subtitle.Paragraphs.Count}";
             var paragraph = _subtitle.Paragraphs[index];
-            var speakResult = await engine.Speak(paragraph.Text, _waveFolder, voice, SelectedLanguage);
+            var speakResult = await engine.Speak(paragraph.Text, _waveFolder, voice, SelectedLanguage, _cancellationToken);
             resultList.Add(new TtsStepResult
             {
                 Text = paragraph.Text,
@@ -557,12 +603,12 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
     private async Task<bool> IsEngineInstalled(ITtsEngine engine)
     {
-        if (await engine.IsInstalled())
+        if (await engine.IsInstalled() || Page == null)
         {
             return true;
         }
 
-        if (engine is Piper && Page != null)
+        if (engine is Piper)
         {
             var answer = await Page.DisplayAlert(
                 "Download Piper?",
@@ -578,6 +624,24 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             var result = await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiper(), CancellationToken.None);
             return await engine.IsInstalled();
         }
+
+        if (engine is AllTalk)
+        {
+            var answer = await Page.DisplayAlert(
+                "AllTalk not started?",
+                $"\"AllTalk\" text to speech requires a running local AllTalk web server.{Environment.NewLine}{Environment.NewLine}Read more?",
+                "Yes",
+                "No");
+
+            if (!answer)
+            {
+                return false;
+            }
+
+            await UiUtil.OpenUrlAsync("https://github.com/erew123/alltalk_tts");
+            return await engine.IsInstalled();
+        }
+
 
         return false;
     }
@@ -615,11 +679,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         SaveSettings();
 
-        var result = await engine.Speak(VoiceTestText, _waveFolder, voice, SelectedLanguage);
-
-        //var audioPlayer = _audioManager.CreatePlayer(result.FileName);
-        //audioPlayer.Play();
-
+        var result = await engine.Speak(VoiceTestText, _waveFolder, voice, SelectedLanguage, _cancellationToken);
         if (!File.Exists(result.FileName) && Page != null)
         {
             await Page.DisplayAlert(
@@ -665,6 +725,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                 SelectedVoice = lastVoice ?? Voices.First();
 
                 HasLanguageParameter = SelectedEngine.HasLanguageParameter;
+                HasApiKey = SelectedEngine.HasApiKey;
                 if (HasLanguageParameter)
                 {
                     var languages = await SelectedEngine.GetLanguages(SelectedVoice);

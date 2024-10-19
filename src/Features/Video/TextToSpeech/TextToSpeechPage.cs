@@ -1,4 +1,3 @@
-using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
@@ -38,7 +37,7 @@ public class TextToSpeechPage : ContentPage
         pickerEngine.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Engines));
         pickerEngine.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedEngine));
         pickerEngine.SelectedIndexChanged += vm.SelectedEngineChanged;
-        var engineStack = new StackLayout
+        var stackEngine = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
@@ -77,7 +76,7 @@ public class TextToSpeechPage : ContentPage
             Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicTheme();
         labelVoiceCount.SetBinding(Label.TextProperty, nameof(vm.VoiceCount));
-        var voiceStack = new StackLayout
+        var stackVoice = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
@@ -107,7 +106,7 @@ public class TextToSpeechPage : ContentPage
             Margin = new Thickness(10, 0, 0, 0),
             Command = vm.TestVoiceCommand,
         }.BindDynamicTheme();
-        var voiceTestStack = new StackLayout
+        var stackVoiceTest = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
@@ -136,7 +135,7 @@ public class TextToSpeechPage : ContentPage
         }.BindDynamicTheme();
         pickerLanguage.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Languages));
         pickerLanguage.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedLanguage));
-        var languageStack = new StackLayout
+        var stackLanguage = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
@@ -148,9 +147,40 @@ public class TextToSpeechPage : ContentPage
                 pickerLanguage,
             },
         }.BindDynamicTheme();
-        languageStack.SetBinding(StackLayout.IsVisibleProperty, nameof(vm.HasLanguageParameter));
+        stackLanguage.SetBinding(StackLayout.IsVisibleProperty, nameof(vm.HasLanguageParameter));
 
-        
+        var labelApiKey = new Label
+        {
+            Text = "API Key",
+            FontSize = 16,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 10, 0, 0),
+        }.BindDynamicTheme();
+        var entryApiKey = new Entry
+        {
+            Placeholder = "Enter API Key",
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 10),
+        }.BindDynamicTheme();
+        entryApiKey.SetBinding(Entry.TextProperty, nameof(vm.ApiKey));
+
+        var stackApiKey = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 25),
+            Children =
+            {
+                labelApiKey,
+                entryApiKey,
+            },
+        }.BindDynamicTheme();
+        stackApiKey.SetBinding(StackLayout.IsVisibleProperty, nameof(vm.HasApiKey));
+
+
         var gridSwitch = new Grid
         {
             HorizontalOptions = LayoutOptions.Start,
@@ -269,7 +299,7 @@ public class TextToSpeechPage : ContentPage
         }.BindDynamicTheme();
         vm.Player.WidthRequest = 1;
         vm.Player.HeightRequest = 1;
-        var buttonBar = new StackLayout
+        var stackButtons = new StackLayout
         {
             Margin = new Thickness(0, 25, 0, 0),
             Orientation = StackOrientation.Horizontal,
@@ -323,13 +353,14 @@ public class TextToSpeechPage : ContentPage
             Children =
             {
                 labelTitle,
-                engineStack,
-                voiceStack,
-                voiceTestStack,
-                languageStack,
+                stackEngine,
+                stackVoice,
+                stackVoiceTest,
+                stackLanguage,
+                stackApiKey,
                 gridSwitch,
                 stackProgress,
-                buttonBar,
+                stackButtons,
             },
         }.BindDynamicTheme();
 
@@ -338,10 +369,5 @@ public class TextToSpeechPage : ContentPage
         this.BindDynamicTheme();
 
         vm.Page = this;
-    }
-
-    public void Initialize(Subtitle subtitle, TextToSpeechPageModel vm)
-    {
-
     }
 }

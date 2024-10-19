@@ -13,6 +13,9 @@ public class Piper : ITtsEngine
     public string Name => "Piper";
     public string Description => "free/fast/good";
     public bool HasLanguageParameter => false;
+    public bool HasApiKey => false;
+    public bool HasRegion => false;
+    public bool HasModel => false;
 
     public Task<bool> IsInstalled()
     {
@@ -150,7 +153,7 @@ public class Piper : ITtsEngine
         return await GetVoices();
     }
 
-    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language)
+    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language, CancellationToken cancellationToken)
     {
         if (voice.EngineVoice is not PiperVoice piperVoice)
         {

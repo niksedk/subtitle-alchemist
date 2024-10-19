@@ -11,6 +11,9 @@ public class AzureSpeech : ITtsEngine
     public string Name => "AzureSpeech";
     public string Description => "pay/fast/good";
     public bool HasLanguageParameter => true;
+    public bool HasApiKey => true;
+    public bool HasRegion => true;
+    public bool HasModel => false;
 
     public Task<bool> IsInstalled()
     {
@@ -104,7 +107,7 @@ public class AzureSpeech : ITtsEngine
         return await GetVoices();
     }
 
-    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language)
+    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language, CancellationToken cancellationToken)
     {
         // if (voice.EngineVoice is not PiperVoice piperVoice)
         // {
