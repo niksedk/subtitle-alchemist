@@ -25,7 +25,7 @@ public class TextToSpeechPage : ContentPage
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 10, 0, 10),
+            Margin = new Thickness(0, 0, 0, 0),
             WidthRequest = 100,
         }.BindDynamicTheme();
         var pickerEngine = new Picker
@@ -42,7 +42,7 @@ public class TextToSpeechPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0,0,0,20),
+            Margin = new Thickness(0,0,0,10),
             Children =
             {
                 labelEngine,
@@ -57,7 +57,7 @@ public class TextToSpeechPage : ContentPage
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 10, 0, 10),
+            Margin = new Thickness(0, 0, 0, 00),
             WidthRequest = 100,
         }.BindDynamicTheme();
         var pickerVoice = new Picker
@@ -73,7 +73,7 @@ public class TextToSpeechPage : ContentPage
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(10, 0, 0, 0),
+            Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         labelVoiceCount.SetBinding(Label.TextProperty, nameof(vm.VoiceCount));
         var stackVoice = new StackLayout
@@ -103,7 +103,7 @@ public class TextToSpeechPage : ContentPage
             Text = "Test Voice",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(10, 0, 0, 0),
+            Margin = new Thickness(5, 0, 0, 0),
             Command = vm.TestVoiceCommand,
         }.BindDynamicTheme();
         var stackVoiceTest = new StackLayout
@@ -111,7 +111,7 @@ public class TextToSpeechPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 20),
+            Margin = new Thickness(0, 0, 0, 10),
             Children =
             {
                 entryTestVoice,
@@ -125,13 +125,14 @@ public class TextToSpeechPage : ContentPage
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 10, 0, 0),
+            Margin = new Thickness(0, 0, 5, 0),
+            MinimumWidthRequest = 90,
         }.BindDynamicTheme();
         var pickerLanguage = new Picker
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 10),
+            Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         pickerLanguage.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Languages));
         pickerLanguage.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedLanguage));
@@ -140,7 +141,7 @@ public class TextToSpeechPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 25),
+            Margin = new Thickness(0, 0, 0, 10),
             Children =
             {
                 labelLanguage,
@@ -155,14 +156,15 @@ public class TextToSpeechPage : ContentPage
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 10, 0, 0),
+            Margin = new Thickness(0, 0, 5, 0),
+            MinimumWidthRequest = 90,
         }.BindDynamicTheme();
         var entryApiKey = new Entry
         {
             Placeholder = "Enter API Key",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 10),
+            Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         entryApiKey.SetBinding(Entry.TextProperty, nameof(vm.ApiKey));
 
@@ -171,7 +173,7 @@ public class TextToSpeechPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 0, 25),
+            Margin = new Thickness(0, 0, 0, 10),
             Children =
             {
                 labelApiKey,
@@ -179,6 +181,68 @@ public class TextToSpeechPage : ContentPage
             },
         }.BindDynamicTheme();
         stackApiKey.SetBinding(StackLayout.IsVisibleProperty, nameof(vm.HasApiKey));
+
+        var labelModel = new Label
+        {
+            Text = "Model",
+            FontSize = 16,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 5, 0),
+            MinimumWidthRequest = 90,
+        }.BindDynamicTheme();
+        var pickerModel = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
+        }.BindDynamicTheme();
+        pickerModel.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Models));
+        pickerModel.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedModel));
+        var stackModel = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 10),
+            Children =
+            {
+                labelModel,
+                pickerModel,
+            },
+        }.BindDynamicTheme();
+        stackModel.SetBinding(StackLayout.IsVisibleProperty, nameof(vm.HasModel));
+
+        var labelRegion = new Label
+        {
+            Text = "Region",
+            FontSize = 16,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 5, 0),
+            MinimumWidthRequest = 90,
+        }.BindDynamicTheme();
+        var pickerRegion = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 0),
+        }.BindDynamicTheme();
+        pickerRegion.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Regions));
+        pickerRegion.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedRegion));
+        var stackRegion = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 0, 0, 10),
+            Children =
+            {
+                labelRegion,
+                pickerRegion,
+            },
+        }.BindDynamicTheme();
+        stackRegion.SetBinding(StackLayout.IsVisibleProperty, nameof(vm.HasRegion));
 
 
         var gridSwitch = new Grid
@@ -358,6 +422,8 @@ public class TextToSpeechPage : ContentPage
                 stackVoiceTest,
                 stackLanguage,
                 stackApiKey,
+                stackModel,
+                stackRegion,
                 gridSwitch,
                 stackProgress,
                 stackButtons,

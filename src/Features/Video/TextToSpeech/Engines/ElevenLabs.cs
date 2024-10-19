@@ -10,7 +10,7 @@ public class ElevenLabs : ITtsEngine
 {
     public string Name => "ElevenLabs";
     public string Description => "pay/fast/good";
-    public bool HasLanguageParameter => true;
+    public bool HasLanguageParameter => false;
     public bool HasApiKey => true;
     public bool HasRegion => false;
     public bool HasModel => true;
@@ -48,7 +48,7 @@ public class ElevenLabs : ITtsEngine
         return Map(voiceFileName);
     }
 
-    private Voice[] Map(string voiceFileName)
+    private static Voice[] Map(string voiceFileName)
     {
         if (!File.Exists(voiceFileName))
         {
@@ -68,8 +68,8 @@ public class ElevenLabs : ITtsEngine
             var accent = parser.GetFirstObject(voice, "accent");
             var useCase = parser.GetFirstObject(voice, "use case");
             result.Add(new Voice(new ElevenLabVoice(string.Empty, name, gender, description, useCase, accent, voiceId)));
-        }        
-        
+        }
+
         return result.ToArray();
     }
 
@@ -107,18 +107,32 @@ public class ElevenLabs : ITtsEngine
         return await GetVoices();
     }
 
-    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language, CancellationToken cancellationToken)
+    public async Task<TtsResult> Speak(
+        string text, 
+        string outputFolder, 
+        Voice voice, 
+        TtsLanguage? language, 
+        CancellationToken cancellationToken)
     {
-        // if (voice.EngineVoice is not PiperVoice piperVoice)
-        // {
-        //     throw new ArgumentException("Voice is not a PiperVoice");
-        // }
-        //
-        // var fileNameOnly = Guid.NewGuid() + ".wav";
-        // var process = StartPiperProcess(piperVoice, text, fileNameOnly);
-        // await process.WaitForExitAsync();
-        //
-        // var fileName = Path.Combine(GetSetPiperFolder(), fileNameOnly);
-        return new TtsResult();
+        if (voice.EngineVoice is not ElevenLabVoice elevenLabVoice)
+        {
+            throw new ArgumentException("Voice is not an ElevenLabVoice");
+        }
+
+        var ms = new MemoryStream();
+        await _ttsDownloadService.DownloadElevenLabsVoiceSpeak(text, elevenLabVoice, "model",  Se.Settings.Video.TextToSpeech.ElevenLabsApiKey, "en", ms, null, cancellationToken);
+        var fileName = Path.Combine(GetSetElevenLabsFolder(), Guid.NewGuid() + ".wav");
+        await File.WriteAllBytesAsync(fileName, ms.ToArray(), cancellationToken);
+        return new TtsResult { Text = text, FileName = fileName };
+    }
+
+    public Task<string[]> GetRegions()
+    {
+        return Task.FromResult(Array.Empty<string>());
+    }
+
+    public Task<string[]> GetModels()
+    {
+        return Task.FromResult(new[] { "eleven_turbo_v2_5", "eleven_multilingual_v2" });
     }
 }

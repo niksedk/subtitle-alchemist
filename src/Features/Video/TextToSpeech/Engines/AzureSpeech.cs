@@ -35,20 +35,20 @@ public class AzureSpeech : ITtsEngine
 
     public async Task<Voice[]> GetVoices()
     {
-        var elevenLabsFolder = GetSetAzureFolder();
+        var azureFolder = GetSetAzureFolder();
 
-        var voiceFileName = Path.Combine(elevenLabsFolder, JsonFileName);
+        var voiceFileName = Path.Combine(azureFolder, JsonFileName);
         if (!File.Exists(voiceFileName))
         {
             using var stream = await FileSystem.OpenAppPackageFileAsync("TtsAzureVoices.zip");
             using var reader = new StreamReader(stream);
-            ZipFile.ExtractToDirectory(stream, elevenLabsFolder);
+            ZipFile.ExtractToDirectory(stream, azureFolder);
         }
 
         return Map(voiceFileName);
     }
 
-    private Voice[] Map(string voiceFileName)
+    private static Voice[] Map(string voiceFileName)
     {
         if (!File.Exists(voiceFileName))
         {
@@ -58,18 +58,25 @@ public class AzureSpeech : ITtsEngine
         var result = new List<Voice>();
         var json = File.ReadAllText(voiceFileName);
         var parser = new SeJsonParser();
-        var voices = parser.GetArrayElementsByName(json, "voices");
-        foreach (var voice in voices)
+        var arr = parser.GetArrayElements(json);
+        foreach (var item in arr)
         {
-            var name = parser.GetFirstObject(voice, "name");
-            var voiceId = parser.GetFirstObject(voice, "voice_id");
-            var gender = parser.GetFirstObject(voice, "gender");
-            var description = parser.GetFirstObject(voice, "description");
-            var accent = parser.GetFirstObject(voice, "accent");
-            var useCase = parser.GetFirstObject(voice, "use case");
-            result.Add(new Voice(new ElevenLabVoice(string.Empty, name, gender, description, useCase, accent, voiceId)));
-        }        
-        
+            var displayName = parser.GetFirstObject(item, "DisplayName");
+            var localName = parser.GetFirstObject(item, "LocalName");
+            var shortName = parser.GetFirstObject(item, "ShortName");
+            var gender = parser.GetFirstObject(item, "Gender");
+            var locale = parser.GetFirstObject(item, "Locale");
+
+            result.Add(new Voice(new AzureVoice
+            {
+                DisplayName = displayName,
+                LocalName = localName,
+                ShortName = shortName,
+                Gender = gender,
+                Locale = locale,
+            }));
+        }
+
         return result.ToArray();
     }
 
@@ -120,5 +127,48 @@ public class AzureSpeech : ITtsEngine
         //
         // var fileName = Path.Combine(GetSetPiperFolder(), fileNameOnly);
         return new TtsResult();
+    }
+
+    public Task<string[]> GetRegions()
+    {
+        return Task.FromResult(new[]
+        {
+            "australiaeast",
+            "brazilsouth",
+            "canadacentral",
+            "centralus",
+            "eastasia",
+            "eastus",
+            "eastus2",
+            "francecentral",
+            "germanywestcentral",
+            "centralindia",
+            "japaneast",
+            "japanwest",
+            "jioindiawest",
+            "koreacentral",
+            "northcentralus",
+            "northeurope",
+            "norwayeast",
+            "southcentralus",
+            "southeastasia",
+            "swedencentral",
+            "switzerlandnorth",
+            "switzerlandwest",
+            "uaenorth",
+            "usgovarizona",
+            "usgovvirginia",
+            "uksouth",
+            "westcentralus",
+            "westeurope",
+            "westus",
+            "westus2",
+            "westus3"
+        });
+    }
+
+    public Task<string[]> GetModels()
+    {
+        return Task.FromResult(Array.Empty<string>());
     }
 }

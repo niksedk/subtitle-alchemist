@@ -704,11 +704,12 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
     public void SelectedEngineChanged(object? sender, EventArgs e)
     {
-        if (SelectedEngine != null)
+        var engine = SelectedEngine;
+        if (engine != null)
         {
             MainThread.BeginInvokeOnMainThread(async () =>
             {
-                var voices = await SelectedEngine.GetVoices();
+                var voices = await engine.GetVoices();
                 Voices.Clear();
                 foreach (var vo in voices)
                 {
@@ -724,11 +725,14 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                 }
                 SelectedVoice = lastVoice ?? Voices.First();
 
-                HasLanguageParameter = SelectedEngine.HasLanguageParameter;
-                HasApiKey = SelectedEngine.HasApiKey;
+                HasLanguageParameter = engine.HasLanguageParameter;
+                HasApiKey = engine.HasApiKey;
+                HasRegion = engine.HasRegion;
+                HasModel = engine.HasModel;
+
                 if (HasLanguageParameter)
                 {
-                    var languages = await SelectedEngine.GetLanguages(SelectedVoice);
+                    var languages = await engine.GetLanguages(SelectedVoice);
                     Languages.Clear();
                     foreach (var language in languages)
                     {
@@ -736,6 +740,30 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                     }
 
                     SelectedLanguage = Languages.FirstOrDefault();
+                }
+
+                if (HasRegion)
+                {
+                    var regions = await engine.GetRegions();
+                    Regions.Clear();
+                    foreach (var region in regions)
+                    {
+                        Regions.Add(region);
+                    }
+
+                    SelectedRegion = Regions.FirstOrDefault();
+                }
+
+                if (HasModel)
+                {
+                    var models = await engine.GetModels();
+                    Models.Clear();
+                    foreach (var model in models)
+                    {
+                        Models.Add(model);
+                    }
+
+                    SelectedModel = Models.FirstOrDefault();
                 }
             });
         }

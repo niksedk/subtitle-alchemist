@@ -13,4 +13,15 @@ public interface ITtsDownloadService
     Task<string> AllTalkVoiceSpeak(string text, AllTalkVoice voice, string language);
     Task<bool> AllTalkIsInstalled();
     Task DownloadElevenLabsVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken);
-}
+    Task DownloadAzureVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken);
+
+    Task DownloadElevenLabsVoiceSpeak(
+        string inputText,
+        ElevenLabVoice voice,
+        string model,
+        string apiKey,
+        string languageCode,
+        MemoryStream stream,
+        IProgress<float>? progress,
+        CancellationToken cancellationToken);
+    }

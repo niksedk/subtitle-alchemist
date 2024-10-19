@@ -75,6 +75,16 @@ public class AllTalk : ITtsEngine
         return result.ToArray();
     }
 
+    public Task<string[]> GetRegions()
+    {
+        return Task.FromResult(Array.Empty<string>());
+    }
+
+    public Task<string[]> GetModels()
+    {
+        return Task.FromResult(Array.Empty<string>());
+    }
+
     public static string GetSetAllTalkFolder()
     {
         if (!Directory.Exists(Se.TtsFolder))

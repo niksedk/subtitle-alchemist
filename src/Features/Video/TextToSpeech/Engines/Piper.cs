@@ -199,5 +199,15 @@ public class Piper : ITtsEngine
         streamWriter.Close();
 
         return processPiper;
-    }    
+    }
+
+    public Task<string[]> GetRegions()
+    {
+        return Task.FromResult(Array.Empty<string>());
+    }
+
+    public Task<string[]> GetModels()
+    {
+        return Task.FromResult(Array.Empty<string>());
+    }
 }

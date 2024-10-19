@@ -2,7 +2,7 @@
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Logic.Config;
-using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace SubtitleAlchemist.Services;
@@ -21,7 +21,7 @@ public class TtsDownloadService : ITtsDownloadService
     public async Task DownloadPiper(string destinationFileName, IProgress<float>? progress, CancellationToken cancellationToken)
     {
         var url = OperatingSystem.IsWindows() ? WindowsPiperUrl : MacPiperUrl;
-        await DownloadHelper.DownloadFileAsync(_httpClient, WindowsPiperUrl, destinationFileName, progress, cancellationToken);
+        await DownloadHelper.DownloadFileAsync(_httpClient, url, destinationFileName, progress, cancellationToken);
     }
 
     public async Task DownloadPiper(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken)
@@ -103,4 +103,48 @@ public class TtsDownloadService : ITtsDownloadService
         await DownloadHelper.DownloadFileAsync(_httpClient, url, stream, progress, cancellationToken);
     }
 
+    public async Task DownloadAzureVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken)
+    {
+        //httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Ocp-Apim-Subscription-Key", nikseTextBoxApiKey.Text.Trim());
+        //var url = $"https://{nikseComboBoxRegion.Text.Trim()}.tts.speech.microsoft.com/cognitiveservices/voices/list";
+        //var result = httpClient.GetAsync(new Uri(url)).Result;
+        //var bytes = result.Content.ReadAsByteArrayAsync().Result;
+
+        var url = "https://api.elevenlabs.io/v1/voices";
+        await DownloadHelper.DownloadFileAsync(_httpClient, url, stream, progress, cancellationToken);
+    }
+
+    public async Task DownloadElevenLabsVoiceSpeak(
+        string inputText, 
+        ElevenLabVoice voice, 
+        string model, 
+        string apiKey,
+        string languageCode, 
+        MemoryStream stream, 
+        IProgress<float>? progress, 
+        CancellationToken cancellationToken)
+    {
+        var url = "https://api.elevenlabs.io/v1/text-to-speech/" + voice.Model;
+        var text = Utilities.UnbreakLine(inputText);
+
+        var language = string.Empty;
+        if (model == "eleven_turbo_v2_5")
+        {
+            language = $", \"language_code\": \"{languageCode}\"";
+        }
+
+        var data = "{ \"text\": \"" + Json.EncodeJsonText(text) + $"\", \"model_id\": \"{model}\"{language}, \"voice_settings\": {{ \"stability\": 0.8, \"similarity_boost\": 1.0 }} }}";
+        var content = new StringContent(data, Encoding.UTF8);
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+        content.Headers.TryAddWithoutValidation("Content-Type", "application/json");
+        content.Headers.TryAddWithoutValidation("accept", "audio/mpeg");
+        content.Headers.TryAddWithoutValidation("xi-api-key", apiKey.Trim()); var result = await _httpClient.PostAsync(url, content, cancellationToken);
+        await result.Content.CopyToAsync(stream, cancellationToken);
+
+        if (!result.IsSuccessStatusCode)
+        {
+            var error = Encoding.UTF8.GetString(stream.ToArray()).Trim();
+            SeLogger.Error($"ElevenLabs TTS failed calling API as base address {_httpClient.BaseAddress} : Status code={result.StatusCode} {error}" + Environment.NewLine + "Data=" + data);
+        }
+    }
 }
