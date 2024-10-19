@@ -19,5 +19,12 @@ public interface ITtsEngine
     Task<TtsLanguage[]> GetLanguages(Voice voice);
     bool IsVoiceInstalled(Voice voice);
     Task<Voice[]> RefreshVoices(CancellationToken cancellationToken);
-    Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language, CancellationToken cancellationToken);
+    Task<TtsResult> Speak(
+        string text, 
+        string outputFolder, 
+        Voice voice, 
+        TtsLanguage? language,
+        string? region,
+        string? model,
+        CancellationToken cancellationToken);
 }

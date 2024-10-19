@@ -138,7 +138,8 @@ public class TtsDownloadService : ITtsDownloadService
         content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
         content.Headers.TryAddWithoutValidation("Content-Type", "application/json");
         content.Headers.TryAddWithoutValidation("accept", "audio/mpeg");
-        content.Headers.TryAddWithoutValidation("xi-api-key", apiKey.Trim()); var result = await _httpClient.PostAsync(url, content, cancellationToken);
+        content.Headers.TryAddWithoutValidation("xi-api-key", apiKey.Trim()); 
+        var result = await _httpClient.PostAsync(url, content, cancellationToken);
         await result.Content.CopyToAsync(stream, cancellationToken);
 
         if (!result.IsSuccessStatusCode)

@@ -140,7 +140,14 @@ public class AllTalk : ITtsEngine
         return await GetVoices();
     }
 
-    public async Task<TtsResult> Speak(string text, string outputFolder, Voice voice, TtsLanguage? language, CancellationToken cancellationToken)
+    public async Task<TtsResult> Speak(
+        string text, 
+        string outputFolder, 
+        Voice voice, 
+        TtsLanguage? language,
+        string? region,
+        string? model,
+        CancellationToken cancellationToken)
     {
         if (voice.EngineVoice is not AllTalkVoice allTalkVoice)
         {

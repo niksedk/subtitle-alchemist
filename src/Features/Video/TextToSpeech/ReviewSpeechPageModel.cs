@@ -40,6 +40,12 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     private TtsLanguage? _selectedLanguage;
 
     [ObservableProperty]
+    private string? _selectedRegion;
+
+    [ObservableProperty]
+    private string? _selectedModel;
+
+    [ObservableProperty]
     private ObservableCollection<DisplayParagraph> _paragraphs;
 
     [ObservableProperty]
@@ -201,7 +207,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
             }
         }
 
-        var speakResult = await engine.Speak(line.Text, _waveFolder, voice, SelectedLanguage, _cancellationToken);
+        var speakResult = await engine.Speak(line.Text, _waveFolder, voice, SelectedLanguage, SelectedRegion, SelectedModel, _cancellationToken);
         line.StepResult.CurrentFileName = speakResult.FileName;
 
         _skipAutoContinue = true;

@@ -124,14 +124,14 @@ public class TextToSpeechPage : ContentPage
             Text = "Language",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 5, 0),
             MinimumWidthRequest = 90,
         }.BindDynamicTheme();
         var pickerLanguage = new Picker
         {
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         pickerLanguage.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Languages));
@@ -155,7 +155,7 @@ public class TextToSpeechPage : ContentPage
             Text = "API Key",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 5, 0),
             MinimumWidthRequest = 90,
         }.BindDynamicTheme();
@@ -163,7 +163,7 @@ public class TextToSpeechPage : ContentPage
         {
             Placeholder = "Enter API Key",
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         entryApiKey.SetBinding(Entry.TextProperty, nameof(vm.ApiKey));
@@ -187,14 +187,14 @@ public class TextToSpeechPage : ContentPage
             Text = "Model",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 5, 0),
             MinimumWidthRequest = 90,
         }.BindDynamicTheme();
         var pickerModel = new Picker
         {
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         pickerModel.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Models));
