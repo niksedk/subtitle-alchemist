@@ -12,6 +12,7 @@ using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
+using System;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -120,24 +121,29 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         if (page == nameof(ReviewSpeechPage))
         {
-            if (query.ContainsKey("StepResult") && query["StepResult"] is TtsStepResult[] stepResult)
+            if (query.ContainsKey("StepResult") && query["StepResult"] is TtsStepResult[] stepResult && Page != null)
             {
-                MainThread.BeginInvokeOnMainThread(async () =>
+                Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
                 {
-
-
-                    // Merge audio paragraphs
-                    var mergedAudioFileName = await MergeAudioParagraphs(stepResult, _cancellationToken);
-                    if (mergedAudioFileName == null)
+                    ProgressText = string.Empty;
+                    ProgressValue = 0;
+                    MainThread.BeginInvokeOnMainThread(async () =>
                     {
+                        // Merge audio paragraphs
+                        var mergedAudioFileName = await MergeAudioParagraphs(stepResult, _cancellationToken);
+                        if (mergedAudioFileName == null)
+                        {
+                            IsGenerating = false;
+                            return;
+                        }
+
+                        // Add audio to video file
+                        await HandleAddToVideo(mergedAudioFileName, _cancellationToken);
+
                         IsGenerating = false;
-                        return;
-                    }
+                    });
 
-                    // Add audio to video file
-                    await HandleAddToVideo(mergedAudioFileName, _cancellationToken);
-
-                    IsGenerating = false;
+                    return false;
                 });
             }
 
@@ -304,10 +310,10 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         }
 
         var resultList = new List<TtsStepResult>();
+        ProgressValue = 0;
         for (var index = 0; index < _subtitle.Paragraphs.Count; index++)
         {
             ProgressText = $"Generating speech: segment {index + 1} of {_subtitle.Paragraphs.Count}";
-            ProgressValue = (double)index / _subtitle.Paragraphs.Count;
             var paragraph = _subtitle.Paragraphs[index];
             var speakResult = await engine.Speak(paragraph.Text, voice);
             resultList.Add(new TtsStepResult
@@ -318,7 +324,9 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                 SpeedFactor = 1.0f,
                 Voice = voice,
             });
+            ProgressValue = (double)(index + 1) / _subtitle.Paragraphs.Count;
         }
+        ProgressValue = 1;
 
         return resultList.ToArray();
     }
@@ -333,6 +341,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         }
 
         var resultList = new List<TtsStepResult>();
+        ProgressValue = 0;
         for (var index = 0; index < previousStepResult.Length; index++)
         {
             ProgressText = $"Adjusting speed: segment {index + 1} of {_subtitle.Paragraphs.Count}";
@@ -412,7 +421,10 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             _ = mergeProcess.Start();
 #pragma warning restore CA1416 // Validate platform compatibility
             await mergeProcess.WaitForExitAsync(cancellationToken);
+
+            ProgressValue = (double)(index + 1) / _subtitle.Paragraphs.Count;
         }
+        ProgressValue = 1;
 
         return resultList.ToArray();
     }
@@ -458,10 +470,10 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         var outputFileName = string.Empty;
         var inputFileName = silenceFileName;
+        ProgressValue = 0;
         for (var index = 0; index < previousStepResult.Length; index++)
         {
             ProgressText = $"Merging audio: segment {index + 1} of {_subtitle.Paragraphs.Count}";
-            ProgressValue = (double)index / _subtitle.Paragraphs.Count;
 
             var item = previousStepResult[index];
             outputFileName = Path.Combine(_waveFolder, $"silence{index}.wav");
@@ -471,7 +483,10 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             _ = mergeProcess.Start();
 #pragma warning restore CA1416 // Validate platform compatibility
             await mergeProcess.WaitForExitAsync(cancellationToken);
+
+            ProgressValue = (double)(index + 1) / previousStepResult.Length;
         }
+        ProgressValue = 1;
 
         return outputFileName;
     }
@@ -514,6 +529,13 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         ProgressText = "Preparing merge...";
         ProgressValue = 0;
         var silenceFileName = Path.Combine(_waveFolder, "silence.wav");
+        var silenceIdx = 0;
+        while (File.Exists(silenceFileName))
+        {
+            silenceIdx++;
+            silenceFileName = Path.Combine(_waveFolder, $"silence_{silenceIdx}.wav");
+        }
+
         var durationInSeconds = 10f;
         if (_mediaInfo != null)
         {

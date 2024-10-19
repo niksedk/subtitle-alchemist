@@ -15,11 +15,11 @@ public partial class EditTextPopupModel : ObservableObject
         _text = string.Empty;
     }
 
-    private void Close(string? text)
+    private void Close(EditTextPopupResult? result)
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Popup?.Close(text);
+            Popup?.Close(result);
         });
     }
 
@@ -39,7 +39,13 @@ public partial class EditTextPopupModel : ObservableObject
     [RelayCommand]
     public void Ok()
     {
-        Close(Text);
+        Close(new EditTextPopupResult { Text = Text ?? string.Empty, Regenerate = false });
+    }
+
+    [RelayCommand]
+    public void OkAndRegenerate()
+    {
+        Close(new EditTextPopupResult { Text = Text ?? string.Empty, Regenerate = true });
     }
 
     [RelayCommand]

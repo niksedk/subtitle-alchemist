@@ -30,7 +30,7 @@ public class ReviewSpeechPage : ContentPage
             },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
-                new() { Width = new GridLength(5, GridUnitType.Star) }, 
+                new() { Width = new GridLength(4, GridUnitType.Star) }, 
                 new() { Width = new GridLength(1, GridUnitType.Star) }, // buttons
             },
         }.BindDynamicTheme();
@@ -65,6 +65,36 @@ public class ReviewSpeechPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Command = vm.RegenerateCommand,
         }.BindDynamicTheme();
+        buttonRegenerate.SetBinding(IsEnabledProperty, nameof(vm.IsRegenerateEnabled));
+
+        var labelVoice = new Label
+        {
+            Text = "Voice",
+            Margin = new Thickness(10, 5, 5, 0),
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+
+        var pickerVoice = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        pickerVoice.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Voices));
+        pickerVoice.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedVoice));
+
+        var stackVoice = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(10, 5, 0, 0),
+            Children =
+            {
+                labelVoice,
+                pickerVoice,
+            }
+        };
 
         var buttonPlay = new Button
         {
@@ -125,6 +155,7 @@ public class ReviewSpeechPage : ContentPage
             {
                 buttonEditText,
                 buttonRegenerate,
+                stackVoice,
                 stackPlayStop,
                 labelAutoContinue,
                 switchAutoContinue,
@@ -152,9 +183,25 @@ public class ReviewSpeechPage : ContentPage
 
     private View MakeWaveformView(ReviewSpeechPageModel vm)
     {
+        vm.Player.WidthRequest = 1;
+        vm.Player.HeightRequest = 1;
+        vm.Player.ZIndex = -1000;
+
         vm.AudioVisualizer.HorizontalOptions = LayoutOptions.Fill;
         vm.AudioVisualizer.VerticalOptions = LayoutOptions.Fill;
-        return vm.AudioVisualizer;
+
+        var grid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                vm.Player,
+                vm.AudioVisualizer,
+            }
+        };
+
+        return grid;
     }
 
     private Border MakeAudioSegmentsView(ReviewSpeechPageModel vm)

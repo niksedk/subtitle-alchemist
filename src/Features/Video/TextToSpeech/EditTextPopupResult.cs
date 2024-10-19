@@ -1,0 +1,7 @@
+namespace SubtitleAlchemist.Features.Video.TextToSpeech;
+
+public record EditTextPopupResult
+{
+    public string Text { get; init; }
+    public bool Regenerate { get; init; }
+}

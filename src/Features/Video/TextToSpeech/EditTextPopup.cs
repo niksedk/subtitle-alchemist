@@ -31,8 +31,8 @@ public sealed class EditTextPopup : Popup
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Start, 
             VerticalOptions = LayoutOptions.Start,
-            WidthRequest = 425,
-            HeightRequest = 225,
+            WidthRequest = 740,
+            HeightRequest = 275,
         }.BindDynamicTheme();
 
         var titleLabel = new Label
@@ -49,8 +49,8 @@ public sealed class EditTextPopup : Popup
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
-            WidthRequest = 375,
-            HeightRequest = 75,
+            WidthRequest = 700,
+            HeightRequest = 125,
         };
         editorText.SetBinding(Editor.TextProperty, nameof(vm.Text));
         grid.Add(editorText, 0, 1);
@@ -61,6 +61,15 @@ public sealed class EditTextPopup : Popup
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
             Command = vm.OkCommand,
+            Margin = new Thickness(0, 0, 10, 0),
+        }.BindDynamicTheme();
+
+        var buttonOkAndRegenerate = new Button
+        {
+            Text = "OK and regenerate",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Command = vm.OkAndRegenerateCommand,
             Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
 
@@ -80,6 +89,7 @@ public sealed class EditTextPopup : Popup
             Children =
             {
                 buttonOk,
+                buttonOkAndRegenerate,
                 cancelButton,
             },
         }.BindDynamicTheme();

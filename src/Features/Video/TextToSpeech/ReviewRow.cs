@@ -13,6 +13,8 @@ public partial class ReviewRow : ObservableObject
     [ObservableProperty] private Color  _speedBackgroundColor;
     [ObservableProperty] private string _text;
 
+    public TtsStepResult StepResult { get; set; }
+
     public ReviewRow()
     {
         _include = true;
@@ -22,5 +24,6 @@ public partial class ReviewRow : ObservableObject
         _speed = string.Empty;
         _speedBackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
         _text = string.Empty;
+        StepResult = new TtsStepResult();
     }
 }
