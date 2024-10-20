@@ -220,8 +220,8 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
     private void OnAudioVisualizerOnOnTimeChanged(object sender, ParagraphEventArgs e)
     {
-        var line = SelectedLine;
-        if (line == null || e.Paragraph.Id != line.StepResult.Paragraph.Id)
+        var line = Lines.FirstOrDefault(row => row.StepResult.Paragraph.Id == e.Paragraph.Id);
+        if (line == null)
         {
             return;
         }
@@ -424,6 +424,11 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     public async Task Export()
     {
+        if (Page == null)
+        {
+            return;
+        }
+
         // Choose folder
         var result = await FolderPicker.Default.PickAsync(_cancellationToken);
         if (!result.IsSuccessful)
@@ -433,6 +438,37 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
         var folder = result.Folder.Path;
 
+        var jsonFileName = Path.Combine(folder, "SubtitleEditTts.json");
+
+        // ask if overwrite if jsonFileName exists
+        if (File.Exists(jsonFileName))
+        {
+            var answer = await Page.DisplayAlert(
+                "Overwrite?",
+                $"Do you want overwrite files in \"{folder}?",
+                "Yes",
+                "No");
+
+            if (!answer)
+            {
+                return;
+            }
+
+            try
+            {
+                File.Delete(jsonFileName);
+            }
+            catch (Exception e)
+            {
+                await Page.DisplayAlert(
+                    "Overwrite failed",
+                    $"Could not overwrite the file \"{jsonFileName}" + Environment.NewLine + e.Message,
+                    "OK");
+                return;
+            }
+        }
+
+
         // Copy files
         var index = 0;
         var exportFormat = new TtsImportExport { VideoFileName = _videoFileName };
@@ -441,6 +477,23 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
             index++;
             var sourceFileName = line.StepResult.CurrentFileName;
             var targetFileName = Path.Combine(folder, index.ToString().PadLeft(4, '0') + Path.GetExtension(sourceFileName));
+
+            if (File.Exists(targetFileName))
+            {
+                try
+                {
+                    File.Delete(targetFileName);
+                }
+                catch (Exception e)
+                {
+                    await Page.DisplayAlert(
+                        "Overwrite failed",
+                        $"Could not overwrite the file \"{targetFileName}" + Environment.NewLine + e.Message,
+                        "OK");
+                    return;
+                }
+            }
+
             File.Copy(sourceFileName, targetFileName, true);
 
             exportFormat.Items.Add(new TtsImportExportItem
@@ -457,7 +510,6 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         }
 
         // Export json
-        var jsonFileName = Path.Combine(folder, "SubtitleEditTts.json");
         var json = JsonSerializer.Serialize(exportFormat, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(jsonFileName, json, _cancellationToken);
 
@@ -472,7 +524,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(ReviewSpeechPage) },
-            { "StepResult", _stepResults },
+            { "StepResult", Lines.Where(p=>p.Include).Select(p => p.StepResult).ToArray() },
         });
     }
 
@@ -518,7 +570,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
             if (HasLanguageParameter)
             {
-                var languages = await engine.GetLanguages(SelectedVoice);
+                var languages = await engine.GetLanguages(SelectedVoice, SelectedModel);
                 Languages.Clear();
                 foreach (var language in languages)
                 {

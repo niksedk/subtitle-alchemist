@@ -94,47 +94,80 @@ public class ElevenLabs : ITtsEngine
         return true;
     }
 
-    public Task<TtsLanguage[]> GetLanguages(Voice voice)
+    public Task<TtsLanguage[]> GetLanguages(Voice voice, string? model)
     {
         // see https://help.elevenlabs.io/hc/en-us/articles/17883183930129-What-models-do-you-offer-and-what-is-the-difference-between-them
 
-        var languages = new List<TtsLanguage>
-        {
-            new ("Arabic", "ar"),
-            new ("Bulgarian", "bg"),
-            new ("Chinese", "zh"),
-            new ("Croatian", "hr"),
-            new ("Czech", "cz"),
-            new ("Danish", "da"),
-            new ("Dutch", "nl"),
-            new ("English", "en"),
-            new ("Filipino", "ph"),
-            new ("Finnish", "fi"),
-            new ("French", "fr"),
-            new ("German", "de"),
-            new ("Greek", "el"),
-            new ("Hindi", "hi"),
-            new ("Hungarian", "hu"),
-            new ("Indonesian", "id"),
-            new ("Italian", "it"),
-            new ("Japanese", "ja"),
-            new ("Korean", "kr"),
-            new ("Malay", "ms"),
-            new ("Norwegian", "no"),
-            new ("Polish", "pl"),
-            new ("Portuguese", "pt"),
-            new ("Romanian", "ro"),
-            new ("Russian", "ru"),
-            new ("Slovak", "sk"),
-            new ("Spanish", "es"),
-            new ("Swedish", "sv"),
-            new ("Tamil", "ta"),
-            new ("Turkish", "tr"),
-            new ("Ukrainian", "uk"),
-            new ("Vietnamese", "vi")
-        };
+        var languages = new List<TtsLanguage>();
 
-        return Task.FromResult(languages.ToArray());
+        if (model is "eleven_multilingual_v2" or "eleven_turbo_v2_5")
+        {
+            languages = new List<TtsLanguage>
+            {
+                new("Arabic", "ar"),
+                new("Bulgarian", "bg"),
+                new("Chinese", "zh"),
+                new("Croatian", "hr"),
+                new("Czech", "cz"),
+                new("Danish", "da"),
+                new("Dutch", "nl"),
+                new("English", "en"),
+                new("Filipino", "ph"),
+                new("Finnish", "fi"),
+                new("French", "fr"),
+                new("German", "de"),
+                new("Greek", "el"),
+                new("Hindi", "hi"),
+                new("Indonesian", "id"),
+                new("Italian", "it"),
+                new("Japanese", "ja"),
+                new("Korean", "kr"),
+                new("Malay", "ms"),
+                new("Polish", "pl"),
+                new("Portuguese", "pt"),
+                new("Romanian", "ro"),
+                new("Russian", "ru"),
+                new("Slovak", "sk"),
+                new("Spanish", "es"),
+                new("Swedish", "sv"),
+                new("Tamil", "ta"),
+                new("Turkish", "tr"),
+                new("Ukrainian", "uk"),
+            };
+
+            if (model == "eleven_turbo_v2_5")
+            {
+                languages.Add(new TtsLanguage("Hungarian", "hu"));
+                languages.Add(new TtsLanguage("Norwegian", "no"));
+                languages.Add(new TtsLanguage("Vietnamese", "vi"));
+                return Task.FromResult(languages.ToArray());
+            }
+        }
+
+        if (model == "eleven_turbo_v2)")
+        {
+            languages = new List<TtsLanguage>
+            {
+                new ("English", "en"),
+            };
+        }
+
+        if (model == "eleven_multilingual_v1)")
+        {
+            languages = new List<TtsLanguage>
+            {
+                new ("English", "en"),
+                new ("German", "de"),
+                new ("Polish", "pl"),
+                new ("Spanish", "es"),
+                new ("Italian", "it"),
+                new ("French", "fr"),
+                new ("Hindi", "hi"),
+                new ("Portuguese", "pt"),
+            };
+        }
+
+        return Task.FromResult(languages.OrderBy(p => p.Name).ToArray());
     }
 
     public async Task<Voice[]> RefreshVoices(CancellationToken cancellationToken)

@@ -104,7 +104,7 @@ public class AzureSpeech : ITtsEngine
         return true;
     }
 
-    public Task<TtsLanguage[]> GetLanguages(Voice voice)
+    public Task<TtsLanguage[]> GetLanguages(Voice voice, string? model)
     {
         return Task.FromResult(Array.Empty<TtsLanguage>());
     }

@@ -331,6 +331,8 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         var result = await FolderPicker.Default.PickAsync(_cancellationToken);
         if (!result.IsSuccessful)
         {
+            DoneOrCancelText = "Done";
+            IsGenerating = false;
             return;
         }
         var outputFolder = result.Folder.Path;
@@ -387,9 +389,10 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         }
 
         var stepResults = new List<TtsStepResult>();
-        foreach (var item in importExport.Items)
+        for (var index = 0; index < importExport.Items.Count; index++)
         {
-            var paragraph = new Paragraph(item.Text, item.StartMs, item.EndMs);
+            var item = importExport.Items[index];
+            var paragraph = new Paragraph(item.Text, item.StartMs, item.EndMs) { Number = index + 1 };
             stepResults.Add(new TtsStepResult
             {
                 Text = item.Text,
@@ -714,7 +717,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                 return false;
             }
 
-            var result = await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiper(), CancellationToken.None);
+            await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiper(), CancellationToken.None);
             return await engine.IsInstalled(SelectedRegion);
         }
 
@@ -760,13 +763,13 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             var modelFileName = Path.Combine(Piper.GetSetPiperFolder(), piperVoice.ModelShort);
             if (!File.Exists(modelFileName))
             {
-                var r1 = await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiperVoice(piperVoice), CancellationToken.None);
+                await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiperVoice(piperVoice), CancellationToken.None);
             }
 
             var configFileName = Path.Combine(Piper.GetSetPiperFolder(), piperVoice.ConfigShort);
             if (!File.Exists(configFileName))
             {
-                var r1 = await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiperVoice(piperVoice), CancellationToken.None);
+                await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiperVoice(piperVoice), CancellationToken.None);
             }
         }
 
@@ -835,7 +838,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
             if (HasLanguageParameter)
             {
-                var languages = await engine.GetLanguages(SelectedVoice);
+                var languages = await engine.GetLanguages(SelectedVoice, SelectedModel);
                 Languages.Clear();
                 foreach (var language in languages)
                 {
@@ -887,7 +890,6 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                     SelectedModel = Models.First();
                 }
             }
-
         });
     }
 
@@ -905,7 +907,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     {
         MainThread.BeginInvokeOnMainThread(async () =>
         {
-            var result = await _popupService.ShowPopupAsync<AudioSettingsPopupModel>(CancellationToken.None);
+            await _popupService.ShowPopupAsync<AudioSettingsPopupModel>(CancellationToken.None);
         });
     }
 
@@ -931,5 +933,35 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             // ignored
         }
+    }
+
+    public void SelectedModelChanged(object? sender, EventArgs e)
+    {
+        var engine = SelectedEngine;
+        var voice = SelectedVoice;
+        var model = SelectedModel;
+        if (engine == null || voice == null || model == null)
+        {
+            return;
+        }
+
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            if (engine.HasLanguageParameter)
+            {
+                var languages = await engine.GetLanguages(voice, model);
+                Languages.Clear();
+                foreach (var language in languages)
+                {
+                    Languages.Add(language);
+                }
+
+                SelectedLanguage = Languages.FirstOrDefault(p => p.Name == Se.Settings.Video.TextToSpeech.ElevenLabsLanguage);
+                if (SelectedLanguage == null)
+                {
+                    SelectedLanguage = Languages.FirstOrDefault(p => p.Code == "en");
+                }
+            }
+        });
     }
 }

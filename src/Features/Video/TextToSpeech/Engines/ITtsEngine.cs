@@ -16,7 +16,7 @@ public interface ITtsEngine
     Task<Voice[]> GetVoices();
     Task<string[]> GetRegions();
     Task<string[]> GetModels();
-    Task<TtsLanguage[]> GetLanguages(Voice voice);
+    Task<TtsLanguage[]> GetLanguages(Voice voice, string? model);
     bool IsVoiceInstalled(Voice voice);
     Task<Voice[]> RefreshVoices(CancellationToken cancellationToken);
     Task<TtsResult> Speak(

@@ -199,6 +199,7 @@ public class TextToSpeechPage : ContentPage
         }.BindDynamicTheme();
         pickerModel.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Models));
         pickerModel.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedModel));
+        pickerModel.SelectedIndexChanged += vm.SelectedModelChanged;
         var stackModel = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
