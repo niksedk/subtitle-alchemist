@@ -194,6 +194,36 @@ namespace SubtitleAlchemist.Logic.Media
             return Array.Empty<string>(); ;
         }
 
+        public async Task<string> PickAndShowFile(string title, string extension)
+        {
+            try
+            {
+                var customFileType = new FilePickerFileType(
+                    new Dictionary<DevicePlatform, IEnumerable<string>>
+                    {
+                        { DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // UTType values
+                        { DevicePlatform.Android, new[] { "application/text" } }, // MIME type
+                        { DevicePlatform.WinUI, new[] { extension } }, // file extension
+                        { DevicePlatform.Tizen, new[] { "*/*" } },
+                        { DevicePlatform.macOS, new[] { extension.TrimStart('.') } }, // UTType values
+                    });
+
+                var pickOptions = new PickOptions
+                {
+                    FileTypes = customFileType,
+                    PickerTitle = title,
+                };
+
+                var result = await FilePicker.Default.PickAsync(pickOptions);
+                return result?.FullPath ?? string.Empty;
+            }
+            catch
+            {
+                // The user canceled or something went wrong
+            }
+
+            return string.Empty;
+        }
 
         public async Task<string> SaveSubtitleFileAs(string title, string videoFileName, SubtitleFormat format, Subtitle subtitle, CancellationToken cancellationToken = default)
         {

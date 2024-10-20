@@ -11,6 +11,7 @@ public interface IFileHelper
     Task<string> PickAndShowSubtitleFile(string title, SubtitleFormat format);
     Task<string> PickAndShowVideoFile(string title);
     Task<string[]> PickAndShowVideoFiles(string title);
+    Task<string> PickAndShowFile(string title, string extension);
 
     Task<string> SaveSubtitleFileAs(string title, string videoFileName, SubtitleFormat format, Subtitle subtitle,
         CancellationToken cancellationToken = default);

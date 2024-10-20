@@ -24,4 +24,15 @@ public interface ITtsDownloadService
         MemoryStream stream,
         IProgress<float>? progress,
         CancellationToken cancellationToken);
-    }
+
+    Task<bool> DownloadAzureVoiceSpeak(
+        string inputText,
+        AzureVoice voice,
+        string model,
+        string apiKey,
+        string languageCode,
+        string region,
+        MemoryStream stream,
+        IProgress<float>? progress,
+        CancellationToken cancellationToken);
+}

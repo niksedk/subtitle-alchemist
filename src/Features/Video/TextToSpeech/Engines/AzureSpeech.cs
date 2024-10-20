@@ -10,14 +10,17 @@ public class AzureSpeech : ITtsEngine
 {
     public string Name => "AzureSpeech";
     public string Description => "pay/fast/good";
-    public bool HasLanguageParameter => true;
+    public bool HasLanguageParameter => false;
     public bool HasApiKey => true;
     public bool HasRegion => true;
     public bool HasModel => false;
 
-    public Task<bool> IsInstalled()
+    public Task<bool> IsInstalled(string? region)
     {
-        return Task.FromResult(!string.IsNullOrEmpty(Se.Settings.Video.TextToSpeech.AzureApiKey));
+        var ok = !string.IsNullOrEmpty(Se.Settings.Video.TextToSpeech.AzureApiKey) &&
+                      !string.IsNullOrEmpty(region);
+
+        return Task.FromResult(ok);
     }
 
     private const string JsonFileName = "AzureVoices.json";
@@ -123,17 +126,21 @@ public class AzureSpeech : ITtsEngine
         string? model,
         CancellationToken cancellationToken)
     {
-        // if (voice.EngineVoice is not PiperVoice piperVoice)
-        // {
-        //     throw new ArgumentException("Voice is not a PiperVoice");
-        // }
-        //
-        // var fileNameOnly = Guid.NewGuid() + ".wav";
-        // var process = StartPiperProcess(piperVoice, text, fileNameOnly);
-        // await process.WaitForExitAsync();
-        //
-        // var fileName = Path.Combine(GetSetPiperFolder(), fileNameOnly);
-        return new TtsResult();
+        if (voice.EngineVoice is not AzureVoice azureVoice)
+        {
+            throw new ArgumentException("Voice is not an AzureVoice");
+        }
+
+        var ms = new MemoryStream();
+        var ok = await _ttsDownloadService.DownloadAzureVoiceSpeak(text, azureVoice, model, Se.Settings.Video.TextToSpeech.AzureApiKey, "en", region, ms, null, cancellationToken);
+        if (!ok)
+        {
+            return new TtsResult { Text = text, FileName = string.Empty, Error = true };
+        }
+
+        var fileName = Path.Combine(GetSetAzureFolder(), Guid.NewGuid() + ".mp3");
+        await File.WriteAllBytesAsync(fileName, ms.ToArray(), cancellationToken);
+        return new TtsResult { Text = text, FileName = fileName };
     }
 
     public Task<string[]> GetRegions()

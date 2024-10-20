@@ -347,22 +347,34 @@ public class TextToSpeechPage : ContentPage
 
         var buttonGenerateSpeechFromText = new Button
         {
-            Text = "Generate Speech from Text",
+            Text = "Generate speech from text",
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 0, 15, 10),
+            Margin = new Thickness(0, 0, 10, 10),
             Command = vm.GenerateTtsCommand,
         }.BindDynamicTheme();
-        var buttonCancel = new Button
+        
+        var buttonImport = new Button
         {
-            Text = "Cancel",
+            Text = "Import...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 10, 10),
+            Command = vm.ImportCommand,
+        }.BindDynamicTheme();
+
+        var buttonDoneOrCancel = new Button
+        {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 10),
-            Command = vm.CancelCommand,
+            Command = vm.DoneOrCancelCommand,
         }.BindDynamicTheme();
+        buttonDoneOrCancel.SetBinding(Button.TextProperty, nameof(vm.DoneOrCancelText));
+
         vm.Player.WidthRequest = 1;
         vm.Player.HeightRequest = 1;
+
         var stackButtons = new StackLayout
         {
             Margin = new Thickness(0, 25, 0, 0),
@@ -372,7 +384,8 @@ public class TextToSpeechPage : ContentPage
             Children =
             {
                 buttonGenerateSpeechFromText,
-                buttonCancel,
+                buttonImport,
+                buttonDoneOrCancel,
                 vm.Player,
             },
         }.BindDynamicTheme();

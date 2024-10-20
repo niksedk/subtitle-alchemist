@@ -152,4 +152,41 @@ public class TtsDownloadService : ITtsDownloadService
 
         return true;
     }
+
+    public async Task<bool> DownloadAzureVoiceSpeak(
+        string inputText,
+        AzureVoice voice,
+        string model,
+        string apiKey,
+        string languageCode,
+        string region,
+        MemoryStream stream,
+        IProgress<float>? progress,
+        CancellationToken cancellationToken)
+    {
+        var url = $"https://{region}.tts.speech.microsoft.com/cognitiveservices/v1";
+
+        var text = Utilities.UnbreakLine(inputText);
+
+        var data = $"<speak version='1.0' xml:lang='en-US'><voice xml:lang='en-US' xml:gender='{voice.Gender}' name='{voice.ShortName}'>{System.Net.WebUtility.HtmlEncode(text)}</voice></speak>";
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+        requestMessage.Content = new StringContent(data, Encoding.UTF8);
+
+        requestMessage.Headers.TryAddWithoutValidation("Content-Type", "ssml+xml");
+        requestMessage.Headers.TryAddWithoutValidation("accept", "audio/mpeg");
+        requestMessage.Headers.TryAddWithoutValidation("X-Microsoft-OutputFormat", "audio-16khz-32kbitrate-mono-mp3");
+        requestMessage.Headers.TryAddWithoutValidation("User-Agent", "SubtitleEdit");
+        requestMessage.Headers.TryAddWithoutValidation("Ocp-Apim-Subscription-Key", apiKey.Trim());
+
+        var result = await _httpClient.SendAsync(requestMessage, cancellationToken);
+        await result.Content.CopyToAsync(stream, cancellationToken);
+        if (!result.IsSuccessStatusCode)
+        {
+            var error = Encoding.UTF8.GetString(stream.ToArray()).Trim();
+            SeLogger.Error($"ElevenLabs TTS failed calling API as base address {_httpClient.BaseAddress} : Status code={result.StatusCode} {error}" + Environment.NewLine + "Data=" + data);
+            return false;
+        }
+
+        return true;
+    }
 }

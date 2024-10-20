@@ -3,7 +3,9 @@ using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Engines;
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.Views;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Services;
@@ -86,12 +88,16 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     [ObservableProperty]
     private double _progressValue;
 
+    [ObservableProperty]
+    private string _doneOrCancelText;
+
     public TextToSpeechPage? Page { get; set; }
     public MediaElement Player { get; set; }
     public Label LabelAudioEncodingSettings { get; set; }
 
     private Subtitle _subtitle = new();
     private readonly IPopupService _popupService;
+    private readonly IFileHelper _fileHelper;
     private readonly string _waveFolder;
     private CancellationTokenSource _cancellationTokenSource;
     private CancellationToken _cancellationToken;
@@ -99,9 +105,10 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     private FfmpegMediaInfo2? _mediaInfo;
     private string _videoFileName = string.Empty;
 
-    public TextToSpeechPageModel(ITtsDownloadService ttsDownloadService, IPopupService popupService)
+    public TextToSpeechPageModel(ITtsDownloadService ttsDownloadService, IPopupService popupService, IFileHelper fileHelper)
     {
         _popupService = popupService;
+        _fileHelper = fileHelper;
         _engines = new ObservableCollection<ITtsEngine>
         {
             new Piper(ttsDownloadService),
@@ -140,6 +147,8 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         _apiKey = string.Empty;
         _regions = new ObservableCollection<string>();
         _models = new ObservableCollection<string>();
+
+        _doneOrCancelText = "Done";
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -154,20 +163,10 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                 {
                     ProgressText = string.Empty;
                     ProgressValue = 0;
+                    IsGenerating = true;
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
-                        // Merge audio paragraphs
-                        var mergedAudioFileName = await MergeAudioParagraphs(stepResult, _cancellationToken);
-                        if (mergedAudioFileName == null)
-                        {
-                            IsGenerating = false;
-                            return;
-                        }
-
-                        // Add audio to video file
-                        await HandleAddToVideo(mergedAudioFileName, _cancellationToken);
-
-                        IsGenerating = false;
+                        await MergeAndAddToVideo(stepResult);
                     });
 
                     return false;
@@ -231,10 +230,12 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         if (SelectedEngine is AzureSpeech)
         {
             ApiKey = Se.Settings.Video.TextToSpeech.AzureApiKey;
+            SelectedRegion = Se.Settings.Video.TextToSpeech.AzureRegion;
         }
         else if (SelectedEngine is ElevenLabs)
         {
             ApiKey = Se.Settings.Video.TextToSpeech.ElevenLabsApiKey;
+            SelectedModel = Se.Settings.Video.TextToSpeech.ElevenLabsModel;
         }
     }
 
@@ -250,10 +251,12 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         if (SelectedEngine is AzureSpeech)
         {
             Se.Settings.Video.TextToSpeech.AzureApiKey = ApiKey;
+            Se.Settings.Video.TextToSpeech.AzureRegion = SelectedRegion ?? string.Empty;
         }
         else if (SelectedEngine is ElevenLabs)
         {
             Se.Settings.Video.TextToSpeech.ElevenLabsApiKey = ApiKey;
+            Se.Settings.Video.TextToSpeech.ElevenLabsModel = SelectedModel ?? string.Empty;
         }
 
         Se.SaveSettings();
@@ -279,11 +282,14 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         ProgressValue = 0;
         ProgressText = string.Empty;
         IsGenerating = true;
+        DoneOrCancelText = "Cancel";
+        SaveSettings();
 
         // Generate
         var generateSpeechResult = await GenerateSpeech(_cancellationToken);
         if (generateSpeechResult == null)
         {
+            DoneOrCancelText = "Done";
             IsGenerating = false;
             return;
         }
@@ -292,6 +298,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         var fixSpeedResult = await FixSpeed(generateSpeechResult, _cancellationToken);
         if (fixSpeedResult == null)
         {
+            DoneOrCancelText = "Done";
             IsGenerating = false;
             return;
         }
@@ -302,6 +309,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             var reviewAudioClipsResult = await ReviewAudioClips(fixSpeedResult, _cancellationToken);
             if (reviewAudioClipsResult == null)
             {
+                DoneOrCancelText = "Done";
                 IsGenerating = false;
                 return;
             }
@@ -309,10 +317,16 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
+        await MergeAndAddToVideo(fixSpeedResult);
+    }
+
+    private async Task MergeAndAddToVideo(TtsStepResult[] fixSpeedResult)
+    {
         // Merge audio paragraphs
         var mergedAudioFileName = await MergeAudioParagraphs(fixSpeedResult, _cancellationToken);
         if (mergedAudioFileName == null)
         {
+            DoneOrCancelText = "Done";
             IsGenerating = false;
             return;
         }
@@ -320,13 +334,66 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         // Add audio to video file
         await HandleAddToVideo(mergedAudioFileName, _cancellationToken);
 
+        DoneOrCancelText = "Done";
         IsGenerating = false;
+    }
+
+    [RelayCommand]
+    public async Task Import()
+    {
+        if (Page == null)
+        {
+            return;
+        }
+
+        var fileName = await _fileHelper.PickAndShowFile("Open SubtitleEditTts.json file", "*.json");
+        if (string.IsNullOrEmpty(fileName))
+        {
+            return;
+        }
+
+        var json = await File.ReadAllTextAsync(fileName, _cancellationToken);
+        var importExport = JsonSerializer.Deserialize<TtsImportExport>(json);
+        if (importExport == null)
+        {
+            await Page.DisplayAlert(
+                "Text to speech",
+                "Nothing to import",
+                "OK");
+
+            return;
+        }
+
+        var stepResults = new List<TtsStepResult>();
+        foreach (var item in importExport.Items)
+        {
+            var paragraph = new Paragraph(item.Text, item.StartMs, item.EndMs);
+            stepResults.Add(new TtsStepResult
+            {
+                Text = item.Text,
+                CurrentFileName = item.AudioFileName,
+                Paragraph = paragraph,
+                SpeedFactor = 1.0f,
+                Voice = Voices.FirstOrDefault(v => v.Name == item.VoiceName),
+            });
+        }
+
+        await Shell.Current.GoToAsync(nameof(ReviewSpeechPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(TextToSpeechPage) },
+            { "StepResult", stepResults.ToArray() },
+            { "Engines", Engines.ToArray() },
+            { "Engine", SelectedEngine ?? Engines.First() },
+            { "Voices", Voices.ToArray() },
+            { "Voice", SelectedVoice ?? Voices.First() },
+            { "WavePeaks", _wavePeakData }, // TODO
+            { "WaveFolder", _waveFolder },
+            { "VideoFileName", importExport.VideoFileName },
+        });
     }
 
     private async Task HandleAddToVideo(string mergedAudioFileName, CancellationToken cancellationToken)
     {
-        //TODO: prompt for save folder from user
-
         if (DoGenerateVideoFile && !string.IsNullOrEmpty(_videoFileName))
         {
             var outputFileName = await AddAudioToVideoFile(mergedAudioFileName, cancellationToken);
@@ -499,6 +566,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             { "Voice", voice },
             { "WavePeaks", _wavePeakData },
             { "WaveFolder", _waveFolder },
+            { "VideoFileName", _videoFileName },
         });
 
         return null;
@@ -603,7 +671,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
     private async Task<bool> IsEngineInstalled(ITtsEngine engine)
     {
-        if (await engine.IsInstalled() || Page == null)
+        if (await engine.IsInstalled(SelectedRegion) || Page == null)
         {
             return true;
         }
@@ -622,7 +690,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             }
 
             var result = await _popupService.ShowPopupAsync<DownloadTtsPopupModel>(onPresenting: viewModel => viewModel.StartDownloadPiper(), CancellationToken.None);
-            return await engine.IsInstalled();
+            return await engine.IsInstalled(SelectedRegion);
         }
 
         if (engine is AllTalk)
@@ -639,7 +707,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             }
 
             await UiUtil.OpenUrlAsync("https://github.com/erew123/alltalk_tts");
-            return await engine.IsInstalled();
+            return await engine.IsInstalled(SelectedRegion);
         }
 
 
@@ -696,8 +764,14 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     }
 
     [RelayCommand]
-    public async Task Cancel()
+    public async Task DoneOrCancel()
     {
+        if (IsGenerating)
+        {
+            _cancellationTokenSource.Cancel(false);
+            return;
+        }
+
         SaveSettings();
         await Shell.Current.GoToAsync("..");
     }
@@ -768,6 +842,26 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
                 SelectedModel = Models.FirstOrDefault();
             }
+
+            if (SelectedEngine is AzureSpeech)
+            {
+                ApiKey = Se.Settings.Video.TextToSpeech.AzureApiKey;
+                SelectedRegion = Se.Settings.Video.TextToSpeech.AzureRegion;
+                if (string.IsNullOrEmpty(SelectedRegion))
+                {
+                    SelectedRegion = "westeurope";
+                }
+            }
+            else if (SelectedEngine is ElevenLabs)
+            {
+                ApiKey = Se.Settings.Video.TextToSpeech.ElevenLabsApiKey;
+                SelectedModel = Se.Settings.Video.TextToSpeech.ElevenLabsModel;
+                if (string.IsNullOrEmpty(SelectedModel))
+                {
+                    SelectedModel = Models.First();
+                }
+            }
+
         });
     }
 

@@ -17,7 +17,7 @@ public class Piper : ITtsEngine
     public bool HasRegion => false;
     public bool HasModel => false;
 
-    public Task<bool> IsInstalled()
+    public Task<bool> IsInstalled(string? region)
     {
         return Task.FromResult(File.Exists(GetPiperExecutableFileName()));
     }

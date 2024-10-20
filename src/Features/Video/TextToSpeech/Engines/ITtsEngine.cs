@@ -11,7 +11,7 @@ public interface ITtsEngine
     bool HasApiKey { get; }
     bool HasRegion { get; }
     bool HasModel { get; }
-    Task<bool> IsInstalled();
+    Task<bool> IsInstalled(string? region);
     string ToString();
     Task<Voice[]> GetVoices();
     Task<string[]> GetRegions();

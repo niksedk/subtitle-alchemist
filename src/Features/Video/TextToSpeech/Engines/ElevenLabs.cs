@@ -15,7 +15,7 @@ public class ElevenLabs : ITtsEngine
     public bool HasRegion => false;
     public bool HasModel => true;
 
-    public Task<bool> IsInstalled()
+    public Task<bool> IsInstalled(string? region)
     {
         return Task.FromResult(!string.IsNullOrEmpty(Se.Settings.Video.TextToSpeech.ElevenLabsApiKey));
     }

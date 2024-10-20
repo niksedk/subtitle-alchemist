@@ -238,6 +238,15 @@ public class ReviewSpeechPage : ContentPage
         grid.Add(waveformView, 0, 2);
         Grid.SetColumnSpan(waveformView, 2);
 
+        var buttonExport = new Button
+        {
+            Text = "Export...",
+            Margin = new Thickness(10),
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.ExportCommand,
+        }.BindDynamicTheme();
+
         var buttonDone = new Button
         {
             Text = "Done",
@@ -246,7 +255,20 @@ public class ReviewSpeechPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Command = vm.DoneCommand,
         }.BindDynamicTheme();
-        grid.Add(buttonDone, 0, 3);
+
+        var stackButtons = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                buttonExport,
+                buttonDone,
+            }
+        };
+
+        grid.Add(stackButtons, 0, 3);
 
         Content = grid;
     }
@@ -397,6 +419,7 @@ public class ReviewSpeechPage : ContentPage
 
         var border = new Border
         {
+            Margin = new Thickness(0,10,0,10),
             Content = gridLayout,
             StrokeShape = new RoundRectangle
             {
@@ -405,5 +428,10 @@ public class ReviewSpeechPage : ContentPage
         }.BindDynamicTheme();
 
         return border;
+    }
+
+    protected override void OnDisappearing() {
+        base.OnDisappearing();
+        (BindingContext as ReviewSpeechPageModel)?.OnDisappearing();
     }
 }

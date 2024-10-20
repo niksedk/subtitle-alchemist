@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Text.Json;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -10,7 +11,9 @@ using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Engines;
 using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
+using CommunityToolkit.Maui.Storage;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -84,7 +87,11 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     private TtsStepResult[] _stepResults;
     private bool _skipAutoContinue;
     private WavePeakData _wavePeakData;
+    private readonly System.Timers.Timer _audioVisualizerTimer;
+    private bool _allowUpdatePositionStates = true;
     private string _waveFolder;
+    private string _videoFileName;
+    private double _positionInSeconds;
 
     public ReviewSpeechPageModel(IPopupService popupService)
     {
@@ -108,6 +115,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         _cancellationToken = _cancellationTokenSource.Token;
         _regions = new ObservableCollection<string>();
         _models = new ObservableCollection<string>();
+        _audioVisualizerTimer = new System.Timers.Timer(200);
     }
 
     private void PlayEnded(object? sender, EventArgs e)
@@ -128,6 +136,47 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
+        if (query["Engines"] is ITtsEngine[] engines)
+        {
+            Engines = new ObservableCollection<ITtsEngine>(engines);
+        }
+
+        if (query["Engine"] is ITtsEngine engine)
+        {
+            _engine = engine;
+            SelectedEngine = engine;
+        }
+
+        if (query["Voices"] is Voice[] voices)
+        {
+            Voices = new ObservableCollection<Voice>(voices);
+        }
+
+        if (query["Voice"] is Voice voice)
+        {
+            _voice = voice;
+            SelectedVoice = voice;
+        }
+
+        if (query["VideoFileName"] is string videoFileName && !string.IsNullOrEmpty(videoFileName))
+        {
+            _videoFileName = videoFileName;
+        }
+
+        if (query["WaveFolder"] is string waveFolder && !string.IsNullOrEmpty(waveFolder))
+        {
+            _waveFolder = waveFolder;
+        }
+
+        if (query.ContainsKey("WavePeaks") && query["WavePeaks"] is WavePeakData wavePeakData)
+        {
+            _wavePeakData = wavePeakData;
+            AudioVisualizer.WavePeaks = wavePeakData;
+            AudioVisualizer.AllowMove = true;
+            AudioVisualizer.AllowNewSelection = false;
+            AudioVisualizer.OnTimeChanged += OnAudioVisualizerOnOnTimeChanged;
+        }
+
         if (query["StepResult"] is TtsStepResult[] stepResult)
         {
             _stepResults = stepResult;
@@ -153,42 +202,42 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
                 {
                     SelectedLine = Lines.FirstOrDefault();
                     CollectionView.SelectedItem = SelectedLine;
+                    CollectionView.Focus();
+                    CollectionView.SelectedItem = SelectedLine;
+
+                    if (SelectedLine != null)
+                    {
+                        _positionInSeconds = SelectedLine.StepResult.Paragraph.StartTime.TotalSeconds;
+                    }
+                    SetTimer();
+                    _audioVisualizerTimer.Start();
                 });
                 return false;
             });
         }
+    }
 
-        if (query["Engines"] is ITtsEngine[] engines)
+    private void OnAudioVisualizerOnOnTimeChanged(object sender, ParagraphEventArgs e)
+    {
+        var line = SelectedLine;
+        if (line == null)
         {
-            Engines = new ObservableCollection<ITtsEngine>(engines);
+            return;
         }
 
-        if (query["Engine"] is ITtsEngine engine)
+        var dp = line.StepResult.Paragraph;
+        if (e.MouseDownParagraphType == MouseDownParagraphType.Start)
         {
-            _engine = engine;
-            SelectedEngine = engine;
+            dp.StartTime.TotalMilliseconds = e.Paragraph.StartTime.TotalMilliseconds;
         }
-
-        if (query["Voices"] is Voice[] voices)
+        else if (e.MouseDownParagraphType == MouseDownParagraphType.End)
         {
-            Voices = new ObservableCollection<Voice>(voices);
+            dp.EndTime.TotalMilliseconds = e.Paragraph.EndTime.TotalMilliseconds;
         }
-
-        if (query["Voice"] is Voice voice)
+        else if (e.MouseDownParagraphType == MouseDownParagraphType.Whole)
         {
-            _voice = voice;
-            SelectedVoice = voice;
-        }
-
-        if (query["WaveFolder"] is string waveFolder && !string.IsNullOrEmpty(waveFolder))
-        {
-            _waveFolder = waveFolder;
-        }
-
-        if (query.ContainsKey("WavePeaks") && query["WavePeaks"] is WavePeakData wavePeakData)
-        {
-            _wavePeakData = wavePeakData;
-            AudioVisualizer.WavePeaks = wavePeakData;
+            dp.StartTime.TotalMilliseconds = e.Paragraph.StartTime.TotalMilliseconds;
+            dp.EndTime.TotalMilliseconds = e.Paragraph.EndTime.TotalMilliseconds;
         }
     }
 
@@ -203,7 +252,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
-        var isEngineInstalled = await engine.IsInstalled();
+        var isEngineInstalled = await engine.IsInstalled(SelectedRegion);
         if (!isEngineInstalled)
         {
             return;
@@ -227,6 +276,8 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
         var speakResult = await engine.Speak(line.Text, _waveFolder, voice, SelectedLanguage, SelectedRegion, SelectedModel, _cancellationToken);
         line.StepResult.CurrentFileName = speakResult.FileName;
+        line.StepResult.Voice = voice;
+        //TODO: speed!
 
         _skipAutoContinue = true;
         Play(speakResult.FileName);
@@ -289,10 +340,54 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     }
 
     [RelayCommand]
+    public async Task Export()
+    {
+        // Choose folder
+        var result = await FolderPicker.Default.PickAsync(_cancellationToken);
+        if (!result.IsSuccessful)
+        {
+            return;
+        }
+
+        var folder = result.Folder.Path;
+
+        // Copy files
+        var index = 0;
+        var exportFormat = new TtsImportExport { VideoFileName = _videoFileName };
+        foreach (var line in Lines)
+        {
+            index++;
+            var sourceFileName = line.StepResult.CurrentFileName;
+            var targetFileName = Path.Combine(folder, index.ToString().PadLeft(4,'0') + Path.GetExtension(sourceFileName));
+            File.Copy(sourceFileName, targetFileName, true);
+
+            exportFormat.Items.Add(new TtsImportExportItem
+            {
+                AudioFileName = targetFileName,
+                StartMs = (long)Math.Round(line.StepResult.Paragraph.StartTime.TotalMilliseconds, MidpointRounding.AwayFromZero),
+                EndMs = (long)Math.Round(line.StepResult.Paragraph.EndTime.TotalMilliseconds, MidpointRounding.AwayFromZero),
+                VoiceName = line.StepResult.Voice?.Name ?? string.Empty,
+                EngineName = SelectedEngine != null ? SelectedEngine.ToString() : string.Empty,
+                SpeedFactor = line.StepResult.SpeedFactor,
+                Text = line.Text,
+                Include = line.Include,
+            });
+        }
+
+        // Export json
+        var jsonFileName = Path.Combine(folder, "SubtitleEditTts.json");
+        var json = JsonSerializer.Serialize(exportFormat, new JsonSerializerOptions { WriteIndented = true });
+        await File.WriteAllTextAsync(jsonFileName, json, _cancellationToken);
+
+        // Open folder
+        UiUtil.OpenFolder(folder);
+    }
+
+    [RelayCommand]
     public async Task Done()
     {
-        await _cancellationTokenSource.CancelAsync();
-        await Shell.Current.GoToAsync(nameof(TextToSpeechPage), new Dictionary<string, object>
+        OnDisappearing();
+        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(ReviewSpeechPage) },
             { "StepResult", _stepResults },
@@ -301,6 +396,13 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
     public void CollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
+        var line = SelectedLine;
+        if (line == null)
+        {
+            return;
+        }
+
+        _positionInSeconds = line.StepResult.Paragraph.StartTime.TotalSeconds;
     }
 
     public void PickerEngineSelectedIndexChanged(object? sender, EventArgs e)
@@ -368,5 +470,86 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
                 SelectedModel = Models.FirstOrDefault();
             }
         });
+    }
+
+    public void SetTimer()
+    {
+        _audioVisualizerTimer.Elapsed += (_, _) =>
+        {
+            _audioVisualizerTimer.Stop();
+            if (AudioVisualizer is { WavePeaks: { }, IsVisible: true })
+            {
+                var subtitle = new Subtitle();
+                var selectedIndices = new List<int>();
+                var orderedList = _stepResults.Select(p => p.Paragraph).OrderBy(p => p.StartTime.TotalMilliseconds).ToList();
+                var firstSelectedIndex = -1;
+                for (var i = 0; i < orderedList.Count; i++)
+                {
+                    var dp = orderedList[i];
+                    var p = new Paragraph(dp, false);
+                    p.Text = dp.Text;
+                    p.StartTime.TotalMilliseconds = dp.StartTime.TotalMilliseconds;
+                    p.EndTime.TotalMilliseconds = dp.EndTime.TotalMilliseconds;
+                    subtitle.Paragraphs.Add(p);
+
+                    if (dp.Id == SelectedLine?.StepResult.Paragraph.Id)
+                    {
+                        selectedIndices.Add(i);
+
+                        if (firstSelectedIndex < 0)
+                        {
+                            firstSelectedIndex = i;
+                        }
+                    }
+                }
+
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (_positionInSeconds > AudioVisualizer.EndPositionSeconds ||
+                    _positionInSeconds < AudioVisualizer.StartPositionSeconds)
+                {
+                    AudioVisualizer.SetPosition(
+                        _positionInSeconds,
+                        subtitle,
+                        _positionInSeconds,
+                        firstSelectedIndex,
+                        selectedIndices.ToArray());
+                }
+                else
+                {
+                    AudioVisualizer.SetPosition(
+                        AudioVisualizer.StartPositionSeconds,
+                        subtitle,
+                        _positionInSeconds,
+                        firstSelectedIndex,
+                        selectedIndices.ToArray());
+                }
+            }
+
+            if (_cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            try
+            {
+                AudioVisualizer.InvalidateSurface();
+            }
+            catch
+            {
+                // ignore
+            }
+
+            _audioVisualizerTimer.Start();
+        };
+    }
+
+    public void OnDisappearing()
+    {
+        _audioVisualizerTimer.Stop();
+        _cancellationTokenSource.Cancel();
     }
 }

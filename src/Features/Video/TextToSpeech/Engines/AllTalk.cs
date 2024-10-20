@@ -16,7 +16,7 @@ public class AllTalk : ITtsEngine
     public bool HasModel => false;
 
     private bool _isInstalled;
-    public async Task<bool> IsInstalled()
+    public async Task<bool> IsInstalled(string? region)
     {
         if (_isInstalled)
         {
