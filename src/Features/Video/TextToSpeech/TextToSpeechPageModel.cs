@@ -306,15 +306,11 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         // Review audio clips
         if (DoReviewAudioClips)
         {
-            var reviewAudioClipsResult = await ReviewAudioClips(fixSpeedResult, _cancellationToken);
+            var reviewAudioClipsResult = await ReviewAudioClips(fixSpeedResult);
             if (reviewAudioClipsResult == null)
             {
-                DoneOrCancelText = "Done";
-                IsGenerating = false;
                 return;
             }
-
-            return;
         }
 
         await MergeAndAddToVideo(fixSpeedResult);
@@ -331,11 +327,37 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             return;
         }
 
+        // Choose folder
+        var result = await FolderPicker.Default.PickAsync(_cancellationToken);
+        if (!result.IsSuccessful)
+        {
+            return;
+        }
+        var outputFolder = result.Folder.Path;
+        var audioFileName = Path.Combine(outputFolder, GetBestFileName(".wav"));
+
+        File.Move(mergedAudioFileName, audioFileName);
+
         // Add audio to video file
-        await HandleAddToVideo(mergedAudioFileName, _cancellationToken);
+        await HandleAddToVideo(audioFileName, outputFolder, _cancellationToken);
 
         DoneOrCancelText = "Done";
         IsGenerating = false;
+    }
+
+    private string GetBestFileName(string extension)
+    {
+        if (!string.IsNullOrEmpty(_videoFileName))
+        {
+            return Path.GetFileNameWithoutExtension(_videoFileName) + extension;
+        }
+
+        if (!string.IsNullOrEmpty(_subtitle.FileName))
+        {
+            return Path.GetFileNameWithoutExtension(_subtitle.FileName) + extension;
+        }
+
+        return Guid.NewGuid() + extension;
     }
 
     [RelayCommand]
@@ -392,11 +414,11 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         });
     }
 
-    private async Task HandleAddToVideo(string mergedAudioFileName, CancellationToken cancellationToken)
+    private async Task HandleAddToVideo(string mergedAudioFileName, string outputFolder, CancellationToken cancellationToken)
     {
         if (DoGenerateVideoFile && !string.IsNullOrEmpty(_videoFileName))
         {
-            var outputFileName = await AddAudioToVideoFile(mergedAudioFileName, cancellationToken);
+            var outputFileName = await AddAudioToVideoFile(mergedAudioFileName, outputFolder, cancellationToken);
             if (!string.IsNullOrEmpty(outputFileName) && Page != null)
             {
                 await Page.DisplayAlert(
@@ -542,7 +564,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         return resultList.ToArray();
     }
 
-    private async Task<TtsStepResult[]?> ReviewAudioClips(TtsStepResult[] previousStepResult, CancellationToken cancellationToken)
+    private async Task<TtsStepResult[]?> ReviewAudioClips(TtsStepResult[] previousStepResult)
     {
         if (!DoReviewAudioClips)
         {
@@ -553,7 +575,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         var voice = SelectedVoice;
         if (engine == null || voice == null)
         {
-            return null;
+            return previousStepResult;
         }
 
         await Shell.Current.GoToAsync(nameof(ReviewSpeechPage), new Dictionary<string, object>
@@ -593,6 +615,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             var item = previousStepResult[index];
             outputFileName = Path.Combine(_waveFolder, $"silence{index}.wav");
             var mergeProcess = VideoPreviewGenerator.MergeAudioTracks(inputFileName, item.CurrentFileName, outputFileName, (float)item.Paragraph.StartTime.TotalSeconds);
+            var fileNameToDelete = inputFileName;
             inputFileName = outputFileName;
 #pragma warning disable CA1416 // Validate platform compatibility
             _ = mergeProcess.Start();
@@ -600,13 +623,15 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             await mergeProcess.WaitForExitAsync(cancellationToken);
 
             ProgressValue = (double)(index + 1) / previousStepResult.Length;
+
+            DeleteFileNoError(fileNameToDelete);
         }
         ProgressValue = 1;
 
         return outputFileName;
     }
 
-    private async Task<string?> AddAudioToVideoFile(string audioFileName, CancellationToken cancellationToken)
+    private async Task<string?> AddAudioToVideoFile(string audioFileName, string outputFolder, CancellationToken cancellationToken)
     {
         var videoExt = ".mkv";
         if (_videoFileName.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
@@ -615,7 +640,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         }
 
         ProgressText = "Adding audio to video file...";
-        var outputFileName = Path.Combine(_waveFolder, Path.GetFileNameWithoutExtension(audioFileName) + videoExt);
+        var outputFileName = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(audioFileName) + videoExt);
 
         var audioEncoding = Se.Settings.Video.TextToSpeech.CustomAudioEncoding;
         if (string.IsNullOrWhiteSpace(audioEncoding) || !UseCustomAudioEncoding)
@@ -773,6 +798,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         }
 
         SaveSettings();
+        Cleanup();
         await Shell.Current.GoToAsync("..");
     }
 
@@ -881,5 +907,29 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             var result = await _popupService.ShowPopupAsync<AudioSettingsPopupModel>(CancellationToken.None);
         });
+    }
+
+    public void Cleanup()
+    {
+        Task.Run(() =>
+        {
+            var files = Directory.GetFiles(_waveFolder, "*.*");
+            foreach (var file in files)
+            {
+                DeleteFileNoError(file);
+            }
+        }, _cancellationToken);
+    }
+
+    private static void DeleteFileNoError(string file)
+    {
+        try
+        {
+            File.Delete(file);
+        }
+        catch
+        {
+            // ignored
+        }
     }
 }
