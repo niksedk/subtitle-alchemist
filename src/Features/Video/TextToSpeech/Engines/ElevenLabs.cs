@@ -10,7 +10,7 @@ public class ElevenLabs : ITtsEngine
 {
     public string Name => "ElevenLabs";
     public string Description => "pay/fast/good";
-    public bool HasLanguageParameter => false;
+    public bool HasLanguageParameter => true;
     public bool HasApiKey => true;
     public bool HasRegion => false;
     public bool HasModel => true;
@@ -96,7 +96,45 @@ public class ElevenLabs : ITtsEngine
 
     public Task<TtsLanguage[]> GetLanguages(Voice voice)
     {
-        return Task.FromResult(Array.Empty<TtsLanguage>());
+        // see https://help.elevenlabs.io/hc/en-us/articles/17883183930129-What-models-do-you-offer-and-what-is-the-difference-between-them
+
+        var languages = new List<TtsLanguage>
+        {
+            new ("Arabic", "ar"),
+            new ("Bulgarian", "bg"),
+            new ("Chinese", "zh"),
+            new ("Croatian", "hr"),
+            new ("Czech", "cz"),
+            new ("Danish", "da"),
+            new ("Dutch", "nl"),
+            new ("English", "en"),
+            new ("Filipino", "ph"),
+            new ("Finnish", "fi"),
+            new ("French", "fr"),
+            new ("German", "de"),
+            new ("Greek", "el"),
+            new ("Hindi", "hi"),
+            new ("Hungarian", "hu"),
+            new ("Indonesian", "id"),
+            new ("Italian", "it"),
+            new ("Japanese", "ja"),
+            new ("Korean", "kr"),
+            new ("Malay", "ms"),
+            new ("Norwegian", "no"),
+            new ("Polish", "pl"),
+            new ("Portuguese", "pt"),
+            new ("Romanian", "ro"),
+            new ("Russian", "ru"),
+            new ("Slovak", "sk"),
+            new ("Spanish", "es"),
+            new ("Swedish", "sv"),
+            new ("Tamil", "ta"),
+            new ("Turkish", "tr"),
+            new ("Ukrainian", "uk"),
+            new ("Vietnamese", "vi")
+        };
+
+        return Task.FromResult(languages.ToArray());
     }
 
     public async Task<Voice[]> RefreshVoices(CancellationToken cancellationToken)

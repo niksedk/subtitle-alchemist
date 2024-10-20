@@ -218,14 +218,14 @@ public class TextToSpeechPage : ContentPage
             Text = "Region",
             FontSize = 16,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 5, 0),
             MinimumWidthRequest = 90,
         }.BindDynamicTheme();
         var pickerRegion = new Picker
         {
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
         }.BindDynamicTheme();
         pickerRegion.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Regions));
@@ -433,10 +433,10 @@ public class TextToSpeechPage : ContentPage
                 stackEngine,
                 stackVoice,
                 stackVoiceTest,
-                stackLanguage,
-                stackApiKey,
                 stackModel,
+                stackLanguage,
                 stackRegion,
+                stackApiKey,
                 gridSwitch,
                 stackProgress,
                 stackButtons,

@@ -14,6 +14,7 @@ using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using CommunityToolkit.Maui.Storage;
+using SubtitleAlchemist.Logic.Media;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -81,14 +82,13 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
     private ITtsEngine? _engine;
     private Voice _voice;
-    private CancellationTokenSource _cancellationTokenSource;
-    private CancellationToken _cancellationToken;
+    private readonly CancellationTokenSource _cancellationTokenSource;
+    private readonly CancellationToken _cancellationToken;
     private readonly IPopupService _popupService;
     private TtsStepResult[] _stepResults;
     private bool _skipAutoContinue;
     private WavePeakData _wavePeakData;
     private readonly System.Timers.Timer _audioVisualizerTimer;
-    private bool _allowUpdatePositionStates = true;
     private string _waveFolder;
     private string _videoFileName;
     private double _positionInSeconds;
@@ -115,7 +115,8 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         _cancellationToken = _cancellationTokenSource.Token;
         _regions = new ObservableCollection<string>();
         _models = new ObservableCollection<string>();
-        _audioVisualizerTimer = new System.Timers.Timer(200);
+        _audioVisualizerTimer = new System.Timers.Timer(40);
+        _videoFileName = string.Empty;
     }
 
     private void PlayEnded(object? sender, EventArgs e)
@@ -220,25 +221,27 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     private void OnAudioVisualizerOnOnTimeChanged(object sender, ParagraphEventArgs e)
     {
         var line = SelectedLine;
-        if (line == null)
+        if (line == null || e.Paragraph.Id != line.StepResult.Paragraph.Id)
         {
             return;
         }
 
-        var dp = line.StepResult.Paragraph;
+        var p = line.StepResult.Paragraph;
         if (e.MouseDownParagraphType == MouseDownParagraphType.Start)
         {
-            dp.StartTime.TotalMilliseconds = e.Paragraph.StartTime.TotalMilliseconds;
+            p.StartTime.TotalMilliseconds = e.Paragraph.StartTime.TotalMilliseconds;
         }
         else if (e.MouseDownParagraphType == MouseDownParagraphType.End)
         {
-            dp.EndTime.TotalMilliseconds = e.Paragraph.EndTime.TotalMilliseconds;
+            p.EndTime.TotalMilliseconds = e.Paragraph.EndTime.TotalMilliseconds;
         }
         else if (e.MouseDownParagraphType == MouseDownParagraphType.Whole)
         {
-            dp.StartTime.TotalMilliseconds = e.Paragraph.StartTime.TotalMilliseconds;
-            dp.EndTime.TotalMilliseconds = e.Paragraph.EndTime.TotalMilliseconds;
+            p.StartTime.TotalMilliseconds = e.Paragraph.StartTime.TotalMilliseconds;
+            p.EndTime.TotalMilliseconds = e.Paragraph.EndTime.TotalMilliseconds;
         }
+
+        line.Cps = Math.Round(p.GetCharactersPerSecond(), 2).ToString(CultureInfo.CurrentCulture);
     }
 
     [RelayCommand]
@@ -277,12 +280,91 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         var speakResult = await engine.Speak(line.Text, _waveFolder, voice, SelectedLanguage, SelectedRegion, SelectedModel, _cancellationToken);
         line.StepResult.CurrentFileName = speakResult.FileName;
         line.StepResult.Voice = voice;
-        //TODO: speed!
+
+        var adjustSpeedStepResult = await TrimAndAdjustSpeed(line.StepResult);
+        line.Speed = Math.Round(adjustSpeedStepResult.SpeedFactor, 2).ToString(CultureInfo.CurrentCulture);
+        line.Cps = Math.Round(adjustSpeedStepResult.Paragraph.GetCharactersPerSecond(), 2).ToString(CultureInfo.CurrentCulture);
+        line.StepResult = adjustSpeedStepResult;
+        line.Voice = voice.ToString();
 
         _skipAutoContinue = true;
-        Play(speakResult.FileName);
+        Play(line.StepResult.CurrentFileName);
 
         IsRegenerateEnabled = true;
+    }
+
+    private async Task<TtsStepResult> TrimAndAdjustSpeed(TtsStepResult item)
+    {
+        var p = item.Paragraph;
+        var index = _stepResults.ToList().IndexOf(item);
+        var next = index + 1 < _stepResults.Length ? _stepResults[index + 1] : null;
+        var outputFileNameTrim = Path.Combine(_waveFolder, Guid.NewGuid() + ".wav");
+        var trimProcess = VideoPreviewGenerator.TrimSilenceStartAndEnd(item.CurrentFileName, outputFileNameTrim);
+#pragma warning disable CA1416 // Validate platform compatibility
+        _ = trimProcess.Start();
+#pragma warning restore CA1416 // Validate platform compatibility
+        await trimProcess.WaitForExitAsync(_cancellationToken);
+
+        var addDuration = 0d;
+        if (next != null && p.EndTime.TotalMilliseconds < next.Paragraph.StartTime.TotalMilliseconds)
+        {
+            var diff = next.Paragraph.StartTime.TotalMilliseconds - p.EndTime.TotalMilliseconds;
+            addDuration = Math.Min(1000, diff);
+            if (addDuration < 0)
+            {
+                addDuration = 0;
+            }
+        }
+
+        var mediaInfo = FfmpegMediaInfo2.Parse(outputFileNameTrim);
+        if (mediaInfo.Duration.TotalMilliseconds <= p.DurationTotalMilliseconds + addDuration)
+        {
+            return new TtsStepResult
+            {
+                Paragraph = p,
+                Text = item.Text,
+                CurrentFileName = outputFileNameTrim,
+                SpeedFactor = 1.0f,
+                Voice = item.Voice,
+            };
+        }
+
+        var divisor = (decimal)(p.DurationTotalMilliseconds + addDuration);
+        if (divisor <= 0)
+        {
+            return new TtsStepResult
+            {
+                Paragraph = p,
+                Text = item.Text,
+                CurrentFileName = item.CurrentFileName,
+                SpeedFactor = 1.0f,
+                Voice = item.Voice,
+            };
+        }
+
+        var ext = ".wav";
+        var factor = (decimal)mediaInfo.Duration.TotalMilliseconds / divisor;
+        var outputFileName2 = Path.Combine(_waveFolder, $"{index}_{Guid.NewGuid()}{ext}");
+        var overrideFileName = string.Empty;
+        if (!string.IsNullOrEmpty(overrideFileName) && File.Exists(Path.Combine(_waveFolder, overrideFileName)))
+        {
+            outputFileName2 = Path.Combine(_waveFolder, $"{Path.GetFileNameWithoutExtension(overrideFileName)}_{Guid.NewGuid()}{ext}");
+        }
+
+        var mergeProcess = VideoPreviewGenerator.ChangeSpeed(outputFileNameTrim, outputFileName2, (float)factor);
+#pragma warning disable CA1416 // Validate platform compatibility
+        _ = mergeProcess.Start();
+#pragma warning restore CA1416 // Validate platform compatibility
+        await mergeProcess.WaitForExitAsync(_cancellationToken);
+
+        return new TtsStepResult
+        {
+            Paragraph = p,
+            Text = item.Text,
+            CurrentFileName = outputFileName2,
+            SpeedFactor = (float)factor,
+            Voice = item.Voice,
+        };
     }
 
     private void Play(string audioFileName)
@@ -358,7 +440,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             index++;
             var sourceFileName = line.StepResult.CurrentFileName;
-            var targetFileName = Path.Combine(folder, index.ToString().PadLeft(4,'0') + Path.GetExtension(sourceFileName));
+            var targetFileName = Path.Combine(folder, index.ToString().PadLeft(4, '0') + Path.GetExtension(sourceFileName));
             File.Copy(sourceFileName, targetFileName, true);
 
             exportFormat.Items.Add(new TtsImportExportItem
