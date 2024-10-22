@@ -101,8 +101,8 @@ internal static class InitLayout
         };
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)Row.ListViewAndVideo);
 
         grid.Add(viewModel.VideoPlayer, (int)Column.Right, (int)Row.ListViewAndVideo);
@@ -143,8 +143,8 @@ internal static class InitLayout
         grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)Row.ListViewAndVideo);
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Right, (int)Row.ListViewAndVideo);
 
         grid.Add(viewModel.AudioVisualizer, (int)Column.Left, (int)Row.WaveForm);
@@ -180,8 +180,8 @@ internal static class InitLayout
         };
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)Row.ListViewAndVideo);
 
         grid.Add(viewModel.VideoPlayer, (int)Column.Right, (int)Row.ListViewAndVideo);
@@ -219,8 +219,8 @@ internal static class InitLayout
         };
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Right, (int)Row.ListViewAndVideo);
 
         grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)Row.ListViewAndVideo);
@@ -262,8 +262,8 @@ internal static class InitLayout
         grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout4.Video);
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout4.ListView);
 
         grid.Add(viewModel.AudioVisualizer, (int)Column.Left, (int)RowLayout4.WaveForm);
@@ -296,8 +296,8 @@ internal static class InitLayout
         };
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout5.ListView);
 
         grid.Add(viewModel.AudioVisualizer, (int)Column.Left, (int)RowLayout5.WaveForm);
@@ -330,8 +330,8 @@ internal static class InitLayout
         };
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout6.ListViewAndVideo);
 
         grid.Add(viewModel.VideoPlayer, (int)Column.Right, (int)RowLayout6.ListViewAndVideo);
@@ -366,8 +366,8 @@ internal static class InitLayout
         };
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout7.ListView);
 
         grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout7.Video);
@@ -402,8 +402,8 @@ internal static class InitLayout
         grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout8.Video);
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout8.ListView);
 
         var statusBar = MakeStatusBar(viewModel);
@@ -437,8 +437,8 @@ internal static class InitLayout
         grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout9.VideoAndWaveformAndText);
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout9.ListView);
 
         grid.SetColumnSpan(viewModel.ListViewAndEditBox, 2);
@@ -476,8 +476,8 @@ internal static class InitLayout
         grid.Add(viewModel.AudioVisualizer, (int)Column.Left, (int)RowLayout10.WaveForm);
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout10.ListView);
 
         var statusBar = MakeStatusBar(viewModel);
@@ -507,8 +507,8 @@ internal static class InitLayout
         };
 
         viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleList, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleList, 3);
+        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
+        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
         grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout11.ListView);
 
         var statusBar = MakeStatusBar(viewModel);

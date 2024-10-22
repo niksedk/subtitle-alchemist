@@ -47,7 +47,7 @@ public class MainPage : ContentPage
             Margin = new Thickness(10),
         }.BindDynamicTheme();
 
-        _viewModel.SubtitleList = InitSubtitleListView.MakeSubtitleListView(_viewModel);
+        _viewModel.SubtitleListBorder = InitSubtitleListView.MakeSubtitleListView(_viewModel);
         _viewModel.ListViewAndEditBox = new Grid();
 
         MakeLayout(Se.Settings.General.LayoutNumber); 

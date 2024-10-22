@@ -44,7 +44,7 @@ namespace SubtitleAlchemist.Logic
 
         public static async Task RunAsync()
         {
-            return; //TODO: Remove
+          //  return; //TODO: Remove
 
             if (_loaded)
             {
@@ -61,6 +61,14 @@ namespace SubtitleAlchemist.Logic
             Hook.KeyPressed += (s, e) =>
             {
                 foreach (var handler in CurrentKeyPressedEventHandlers)
+                {
+                    handler?.Invoke(s, e);
+                }
+            };
+
+            Hook.KeyReleased += (s, e) =>
+            {
+                foreach (var handler in CurrentKeyReleasedEventHandlers)
                 {
                     handler?.Invoke(s, e);
                 }

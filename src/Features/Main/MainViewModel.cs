@@ -40,11 +40,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Timers;
+using SharpHook.Native;
 using SubtitleAlchemist.Features.Main.LayoutPicker;
 using LayoutPickerModel = SubtitleAlchemist.Features.Main.LayoutPicker.LayoutPickerModel;
 using Path = System.IO.Path;
 using SpellCheckDictionary = SubtitleAlchemist.Features.SpellCheck.SpellCheckDictionary;
 using SubtitleAlchemist.Features.Video.TransparentSubtitles;
+using SubtitleAlchemist.Logic.Constants;
+using Microsoft.Maui.Controls;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -65,6 +68,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     public AudioVisualizer AudioVisualizer => _audioVisualizer;
     private readonly AudioVisualizer _audioVisualizer;
 
+    public Border SubtitleListBorder { get; set; }
     public CollectionView SubtitleList { get; set; }
     public Grid ListViewAndEditBox { get; set; }
     public static IList SubtitleFormatNames => SubtitleFormat.AllSubtitleFormats.Select(p => p.Name).ToList();
@@ -95,12 +99,16 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private TimeSpan _currentEnd;
 
-    private DisplayParagraph? _currentParagraph;
+    [ObservableProperty]
+    private DisplayParagraph? _selectedParagraph;
 
     private bool _loading = true;
 
     private Subtitle _subtitle;
 
+    private bool _isControlKeyDown;
+    private bool _isAltKeyDown;
+    private bool _isShiftKeyDown;
     private string _subtitleFileName;
     private string _videoFileName;
     private readonly System.Timers.Timer _timer;
@@ -117,22 +125,26 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private readonly IUndoRedoManager _undoRedoManager;
     private readonly IFindService _findService;
     private readonly IInsertManager _insertManager;
+    private readonly IShortcutManager _shortcutManager;
 
     public MainViewModel(
         IPopupService popupService,
         IAutoBackup autoBackup,
         IUndoRedoManager undoRedoManager,
         IFindService findService,
-        IInsertManager insertManager)
+        IInsertManager insertManager,
+        IShortcutManager shortcutManager)
     {
         _popupService = popupService;
         _autoBackup = autoBackup;
         _undoRedoManager = undoRedoManager;
         _findService = findService;
         _insertManager = insertManager;
+        _shortcutManager = shortcutManager;
 
         VideoPlayer = new MediaElement { ZIndex = -10000 };
         SubtitleList = new CollectionView();
+        SubtitleListBorder = new Border();
         _timer = new System.Timers.Timer(19);
         _timerAutoBackup = new System.Timers.Timer(60_0 * 5); //TODO: use settings
         _statusText = string.Empty;
@@ -561,7 +573,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             dp.Start = TimeSpan.FromMilliseconds(e.Paragraph.StartTime.TotalMilliseconds);
             dp.Duration = dp.End - dp.Start;
-            if (dp == _currentParagraph)
+            if (dp == _selectedParagraph)
             {
                 CurrentStart = dp.Start;
                 CurrentDuration = dp.Duration;
@@ -572,7 +584,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             dp.End = TimeSpan.FromMilliseconds(e.Paragraph.EndTime.TotalMilliseconds);
             dp.Duration = dp.End - dp.Start;
 
-            if (dp == _currentParagraph)
+            if (dp == _selectedParagraph)
             {
                 CurrentDuration = dp.Duration;
             }
@@ -583,7 +595,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             dp.End = TimeSpan.FromMilliseconds(e.Paragraph.EndTime.TotalMilliseconds);
             dp.Duration = dp.End - dp.Start;
 
-            if (dp == _currentParagraph)
+            if (dp == _selectedParagraph)
             {
                 CurrentStart = dp.Start;
                 CurrentDuration = dp.Duration;
@@ -780,11 +792,19 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         foreach (var item in Paragraphs)
         {
-            item.IsSelected = false;
+            if (item == paragraph)
+            {
+                item.IsSelected = true;
+                item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
+            }
+            else
+            {
+                item.IsSelected = false;
+                item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+            }
         }
 
-        paragraph.IsSelected = true;
-        _currentParagraph = paragraph;
+        _selectedParagraph = paragraph;
         CurrentText = paragraph.Text;
         CurrentStart = paragraph.Start;
         CurrentEnd = paragraph.End;
@@ -826,9 +846,38 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     public void Start()
     {
         _stopping = false;
+
         _timer.Start();
         _audioVisualizer.OnVideoPositionChanged += AudioVisualizer_OnVideoPositionChanged;
         SharpHookHandler.AddKeyPressed(KeyPressed);
+        SharpHookHandler.AddKeyReleased(KeyReleased);
+
+        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcRightAlt, KeyCode.VcUp }, null, SubtitleListUp);
+        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftAlt, KeyCode.VcUp }, null, SubtitleListUp);
+        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcRightAlt, KeyCode.VcUp }, null, SubtitleListDown);
+        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftAlt, KeyCode.VcDown }, null, SubtitleListDown);
+    }
+
+    private void SubtitleListUp()
+    {
+        var idx = GetFirstSelectedIndex();
+        if (idx <= 0)
+        {
+            return;
+        }
+
+        SelectParagraph(idx - 1);
+    }
+
+    private void SubtitleListDown()
+    {
+        var idx = GetFirstSelectedIndex();
+        if (idx < 0 || idx >= Paragraphs.Count - 1)
+        {
+            return;
+        }
+
+        SelectParagraph(idx + 1);
     }
 
     public void Loaded(MainPage mainPage)
@@ -1170,7 +1219,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _videoFileName = string.Empty;
         _subtitle = new Subtitle();
         Paragraphs = new ObservableCollection<DisplayParagraph>();
-        _currentParagraph = null;
+        _selectedParagraph = null;
         CurrentText = string.Empty;
         CurrentStart = new TimeSpan();
         CurrentEnd = new TimeSpan();
@@ -1274,9 +1323,12 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     private void ShowStatus(string statusText)
     {
-        LabelStatusText.Opacity = 0;
-        StatusText = statusText;
-        LabelStatusText.FadeTo(1, 200);
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            LabelStatusText.Opacity = 0;
+            StatusText = statusText;
+            LabelStatusText.FadeTo(1, 200);
+        });
 
         MainPage?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(6_000), () =>
         {
@@ -1433,14 +1485,120 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         }
     }
 
+    public void SubtitleListSingleTapped(object? sender, TappedEventArgs e)
+    {
+        var point = e.GetPosition(sender as Element);
+        if (point.HasValue && e.Parameter is DisplayParagraph dp)
+        {
+            if (_isControlKeyDown)
+            {
+                var selectedCount = Paragraphs.Count(p => p.IsSelected);
+                foreach (var item in Paragraphs)
+                {
+                    if (dp != item)
+                    {
+                        continue;
+                    }
+
+                    if (item.IsSelected)
+                    {
+                        if (selectedCount > 1)
+                        {
+                            item.IsSelected = false;
+                            item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+                        }
+                    }
+                    else
+                    {
+                        item.IsSelected = true;
+                        item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
+                    }
+                }
+            }
+            else
+            {
+                foreach (var item in Paragraphs)
+                {
+                    if (dp == item)
+                    {
+                        item.IsSelected = true;
+                        item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
+                    }
+                    else if (item.IsSelected)
+                    {
+                        item.IsSelected = false;
+                        item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+                    }
+                }
+            }
+        }
+
+        var selectedParagraphs = Paragraphs.Where(p => p.IsSelected).ToList();
+        if (selectedParagraphs.Count == 1)
+        {
+            SelectParagraph(selectedParagraphs.First());
+        }
+        else if (selectedParagraphs.Count > 1)
+        {
+            _updating = true;
+            ShowStatus("Lines selected: " + selectedParagraphs.Count);
+            SelectedParagraph = null;
+            CurrentText = string.Empty;
+            CurrentStart = new TimeSpan();
+            CurrentEnd = new TimeSpan();
+            CurrentDuration = new TimeSpan(); 
+            _updating = false;
+        }
+    }
+
 
     public void OnCollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        _updating = true;
-        foreach (var item in Paragraphs)
-        {
-            item.IsSelected = false;
-        }
+        //_updating = true;
+
+        //if (_controlKeyIsDown)
+        //{
+        //    foreach (var item in Paragraphs)
+        //    {
+        //        if (e.CurrentSelection.Contains(item))
+        //        {
+        //            if (item.IsSelected)
+        //            {
+        //                item.IsSelected = false;
+        //                item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+        //            }
+        //            else
+        //            {
+        //                item.IsSelected = true;
+        //                item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
+        //            }
+        //        }
+        //    }
+        //}
+        //else
+        //{
+        //    foreach (var item in Paragraphs)
+        //    {
+        //        if (e.CurrentSelection.Contains(item) && (!e.PreviousSelection.Contains(item) || e.CurrentSelection.Count == 1))
+        //        {
+        //            item.IsSelected = true;
+        //            item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
+        //        }
+        //        else if (item.IsSelected)
+        //        {
+        //            item.IsSelected = false;
+        //            item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+        //        }
+        //    }
+        //}
+
+        //_updating = false;
+
+        //var selectedIndexes = string.Join(',', Paragraphs.Where(p => p.IsSelected).Select(p => p.Number));
+        //var x = string.Join(',', Paragraphs.Where(p => e.CurrentSelection.Contains(p)).Select(p => p.Number));
+        //ShowStatus($"IsSelected items: {selectedIndexes}, e.CurrentSelection={x}, Ctrl=" + _controlKeyIsDown);
+
+        return;
 
         var current = e.CurrentSelection;
         var first = true;
@@ -1454,7 +1612,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                     CurrentStart = paragraph.Start;
                     CurrentEnd = paragraph.End;
                     CurrentDuration = paragraph.End - paragraph.Start;
-                    _currentParagraph = paragraph;
+                    _selectedParagraph = paragraph;
                     first = false;
                 }
 
@@ -1816,23 +1974,23 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
-        if (_currentParagraph != null && e.NewTextValue != _currentParagraph.Text)
+        if (_selectedParagraph != null && e.NewTextValue != _selectedParagraph.Text)
         {
-            _currentParagraph.Text = e.NewTextValue;
-            _currentParagraph.P.Text = e.NewTextValue;
+            _selectedParagraph.Text = e.NewTextValue;
+            _selectedParagraph.P.Text = e.NewTextValue;
         }
     }
 
     public void CurrentStartChanged(object? sender, ValueChangedEventArgs e)
     {
-        if (_updating || _currentParagraph == null)
+        if (_updating || _selectedParagraph == null)
         {
             return;
         }
 
-        _currentParagraph.P.StartTime = new TimeCode(e.NewValue);
+        _selectedParagraph.P.StartTime = new TimeCode(e.NewValue);
         CurrentStart = TimeSpan.FromMilliseconds(e.NewValue);
-        var idx = Paragraphs.IndexOf(_currentParagraph);
+        var idx = Paragraphs.IndexOf(_selectedParagraph);
         if (idx >= 0)
         {
             Paragraphs[idx].Start = CurrentStart;
@@ -1841,18 +1999,18 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     public void CurrentDurationChanged(object? sender, ValueChangedEventArgs e)
     {
-        if (_updating || _currentParagraph == null)
+        if (_updating || _selectedParagraph == null)
         {
             return;
         }
 
-        var idx = Paragraphs.IndexOf(_currentParagraph);
+        var idx = Paragraphs.IndexOf(_selectedParagraph);
         if (idx < 0)
         {
             return;
         }
 
-        _currentParagraph.P.EndTime = new TimeCode(_currentParagraph.Start.TotalMilliseconds + e.NewValue);
+        _selectedParagraph.P.EndTime = new TimeCode(_selectedParagraph.Start.TotalMilliseconds + e.NewValue);
         CurrentEnd = TimeSpan.FromMilliseconds(CurrentStart.TotalMilliseconds + e.NewValue);
         CurrentDuration = TimeSpan.FromMilliseconds(e.NewValue);
         Paragraphs[idx].Duration = CurrentDuration;
@@ -1909,7 +2067,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             Paragraphs[firstIdx].IsSelected = true;
 
-            _currentParagraph = Paragraphs[firstIdx];
+            _selectedParagraph = Paragraphs[firstIdx];
         }
 
         Renumber();
@@ -1946,12 +2104,12 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private void InsertBefore()
     {
-        if (_currentParagraph == null)
+        if (_selectedParagraph == null)
         {
             return;
         }
 
-        var p = Paragraphs.FirstOrDefault(p => p.P == _currentParagraph.P);
+        var p = Paragraphs.FirstOrDefault(p => p.P == _selectedParagraph.P);
         if (p == null)
         {
             return;
@@ -1967,7 +2125,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         Paragraphs = new ObservableCollection<DisplayParagraph>(list);
         Renumber();
 
-        _currentParagraph = newParagraph;
+        _selectedParagraph = newParagraph;
 
         SubtitleList.BatchCommit();
 
@@ -1976,18 +2134,18 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         SubtitleList.ScrollTo(idx, 1, ScrollToPosition.Center);
         SubtitleList.ScrollTo(idx, 1, ScrollToPosition.Center);
 
-        SubtitleList.SelectedItem = _currentParagraph;
+        SubtitleList.SelectedItem = _selectedParagraph;
     }
 
     [RelayCommand]
     private void InsertAfter()
     {
-        if (_currentParagraph == null)
+        if (_selectedParagraph == null)
         {
             return;
         }
 
-        var p = Paragraphs.FirstOrDefault(p => p.P == _currentParagraph.P);
+        var p = Paragraphs.FirstOrDefault(p => p.P == _selectedParagraph.P);
         if (p == null)
         {
             return;
@@ -2004,14 +2162,14 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         Renumber();
         SubtitleList.BatchCommit();
 
-        _currentParagraph = newParagraph;
+        _selectedParagraph = newParagraph;
 
         SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
         SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
         SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
         SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
 
-        SubtitleList.SelectedItem = _currentParagraph;
+        SubtitleList.SelectedItem = _selectedParagraph;
     }
 
     [RelayCommand]
@@ -2038,7 +2196,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             {
                 if (first)
                 {
-                    _currentParagraph = displayParagraph;
+                    _selectedParagraph = displayParagraph;
                     toggleOn = !HtmlUtil.IsTagOn(displayParagraph.Text, tag, true, isAssa);
                     first = false;
                 }
@@ -2052,7 +2210,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                     displayParagraph.Text = HtmlUtil.TagOff(displayParagraph.Text, tag, true, isAssa);
                 }
 
-                if (_currentParagraph == displayParagraph)
+                if (_selectedParagraph == displayParagraph)
                 {
                     CurrentText = displayParagraph.Text;
                 }
@@ -2062,9 +2220,90 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         SubtitleList.BatchCommit();
     }
 
+    private object _keyLock = new object();
+
     public void KeyPressed(object? sender, KeyboardHookEventArgs e)
     {
-        ShowStatus(e.Data.ToString());
+        lock (_keyLock)
+        {
+            _shortcutManager.OnKeyPressed(sender, e);
+        }
+
+        object? focusedControl = null;
+
+        var action = _shortcutManager.CheckShortcuts(focusedControl);
+        if (action != null)
+        {
+            MainThread.BeginInvokeOnMainThread(async () => { action.Invoke(); });
+        }
+
+        ShowStatus(e.Data.ToString() + " " + e.Data.KeyCode.ToString());
+        if (e.Data.KeyCode is KeyCode.VcLeftControl or KeyCode.VcRightControl)
+        {
+            _isControlKeyDown = true;
+        }
+        else if (e.Data.KeyCode is KeyCode.VcLeftAlt or KeyCode.VcRightAlt)
+        {
+            _isAltKeyDown = true;
+        }
+        else if (e.Data.KeyCode is KeyCode.VcLeftShift or KeyCode.VcRightShift)
+        {
+            _isShiftKeyDown = true;
+        }
+        else if (e.Data.KeyCode is KeyCode.VcUp && SubtitleList.IsFocused)
+        {
+            e.SuppressEvent = true;
+            var selectedParagraph = Paragraphs.FirstOrDefault(p => p.IsSelected);
+            if (selectedParagraph != null)
+            {
+                var idx = Paragraphs.IndexOf(selectedParagraph);
+                if (idx >= 1)
+                {
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        SelectParagraph(idx - 1);
+                    });
+                }
+            }
+        }
+        else if (e.Data.KeyCode is KeyCode.VcDown && SubtitleList.IsFocused)
+        {
+            e.SuppressEvent = true;
+            var selectedParagraph = Paragraphs.FirstOrDefault(p => p.IsSelected);
+            if (selectedParagraph != null)
+            {
+                var idx = Paragraphs.IndexOf(selectedParagraph);
+                if (idx < Paragraphs.Count - 1)
+                {
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        SelectParagraph(idx + 1);
+                    });
+                }
+            }
+        }
+    }
+
+    private void KeyReleased(object? sender, KeyboardHookEventArgs e)
+    {
+        lock (_keyLock)
+        {
+            _shortcutManager.OnKeyReleased(sender, e);
+        }
+
+        // save all keys in dictionary???
+        if (e.Data.KeyCode is KeyCode.VcLeftControl or KeyCode.VcRightControl)
+        {
+            _isControlKeyDown = false;
+        }
+        else if (e.Data.KeyCode is KeyCode.VcLeftAlt or KeyCode.VcRightAlt)
+        {
+            _isAltKeyDown = false;
+        }
+        else if (e.Data.KeyCode is KeyCode.VcLeftShift or KeyCode.VcRightShift)
+        {
+            _isShiftKeyDown = false;
+        }
     }
 
     public void ListViewDoubleTapped(object? sender, TappedEventArgs e)

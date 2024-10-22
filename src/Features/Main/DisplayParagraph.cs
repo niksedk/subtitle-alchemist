@@ -21,6 +21,9 @@ public partial class DisplayParagraph : ObservableObject
     private bool _isSelected;
 
     [ObservableProperty]
+    private Color _backgroundColor;
+
+    [ObservableProperty]
     private int _number;
 
     public Paragraph P { get; set; }
