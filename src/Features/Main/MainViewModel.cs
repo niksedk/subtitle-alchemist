@@ -856,6 +856,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftAlt, KeyCode.VcUp }, null, SubtitleListUp);
         _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcRightAlt, KeyCode.VcUp }, null, SubtitleListDown);
         _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftAlt, KeyCode.VcDown }, null, SubtitleListDown);
+        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftControl, KeyCode.VcA }, null, SubtitleListSelectAll);
+        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftControl, KeyCode.VcHome }, null, SubtitleListSelectFirst);
+        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftControl, KeyCode.VcEnd }, null, SubtitleListSelectLast);
     }
 
     private void SubtitleListUp()
@@ -878,6 +881,27 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         }
 
         SelectParagraph(idx + 1);
+    }
+
+    private void SubtitleListSelectAll()
+    {
+        foreach (var displayParagraph in Paragraphs)
+        {
+            displayParagraph.IsSelected = true;
+        }
+
+        //TODO: update selected paragraph to none
+        SelectedParagraph = null;
+    }
+
+    private void SubtitleListSelectFirst()
+    {
+        SelectParagraph(Paragraphs.FirstOrDefault());
+    }
+
+    private void SubtitleListSelectLast()
+    {
+        SelectParagraph(Paragraphs.LastOrDefault());
     }
 
     public void Loaded(MainPage mainPage)

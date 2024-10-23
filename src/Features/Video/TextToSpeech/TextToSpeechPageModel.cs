@@ -83,6 +83,9 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     private bool _isGenerating;
 
     [ObservableProperty]
+    private bool _isEngineSettingsVisible;
+
+    [ObservableProperty]
     private string _progressText;
 
     [ObservableProperty]
@@ -94,6 +97,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     public TextToSpeechPage? Page { get; set; }
     public MediaElement Player { get; set; }
     public Label LabelAudioEncodingSettings { get; set; }
+    public Label LabelEngineSettings { get; set; }
 
     private Subtitle _subtitle = new();
     private readonly IPopupService _popupService;
@@ -142,6 +146,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         Player = new MediaElement { IsVisible = false };
         LabelAudioEncodingSettings = new();
+        LabelEngineSettings = new();
         _wavePeakData = new WavePeakData(1, new List<WavePeak>());
 
         _apiKey = string.Empty;
@@ -193,6 +198,13 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                 _videoFileName = videoFileName;
                 Task.Run(() => { _mediaInfo = FfmpegMediaInfo2.Parse(videoFileName); }, _cancellationToken);
             }
+        }
+
+        if (_wavePeakData.Peaks.Count <= 0 && _subtitle.Paragraphs.Count > 0)
+        {
+            var totalSeconds = (int)_subtitle.Paragraphs.Max(p => p.EndTime.TotalSeconds) + 5;
+            var temporaryPeakFileName = Path.Combine(_waveFolder, "peaks.wav");
+            _wavePeakData = WavePeakGenerator.GenerateEmptyPeaks(temporaryPeakFileName, totalSeconds);
         }
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
@@ -792,6 +804,25 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     }
 
     [RelayCommand]
+    public async Task ShowEngineSettings()
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await _popupService.ShowPopupAsync<ElevenLabSettingsPopupModel>(CancellationToken.None);
+        });
+    }
+
+    public void LabelEngineSettingsMouseEntered(object? sender, PointerEventArgs e)
+    {
+        LabelEngineSettings.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
+    }
+
+    public void LabelEngineSettingsMouseExited(object? sender, PointerEventArgs e)
+    {
+        LabelEngineSettings.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+    }
+
+    [RelayCommand]
     public async Task DoneOrCancel()
     {
         if (IsGenerating)
@@ -815,6 +846,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
 
         MainThread.BeginInvokeOnMainThread(async () =>
         {
+            IsEngineSettingsVisible = false;
             var voices = await engine.GetVoices();
             Voices.Clear();
             foreach (var vo in voices)
@@ -889,6 +921,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                 {
                     SelectedModel = Models.First();
                 }
+                IsEngineSettingsVisible = true;
             }
         });
     }

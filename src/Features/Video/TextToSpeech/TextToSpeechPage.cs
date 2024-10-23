@@ -28,6 +28,21 @@ public class TextToSpeechPage : ContentPage
             Margin = new Thickness(0, 0, 0, 0),
             WidthRequest = 100,
         }.BindDynamicTheme();
+        var labelEngineSettings = new Label
+        {
+            Text = "Settings",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+            TextDecorations = TextDecorations.Underline,
+        }.BindDynamicTheme();
+        labelEngineSettings.GestureRecognizers.Add(new TapGestureRecognizer { Command = vm.ShowEngineSettingsCommand });
+        vm.LabelEngineSettings = labelEngineSettings;
+        var engineSettingsPointerGesture = new PointerGestureRecognizer();
+        engineSettingsPointerGesture.PointerEntered += vm.LabelEngineSettingsMouseEntered;
+        engineSettingsPointerGesture.PointerExited += vm.LabelEngineSettingsMouseExited;
+        labelEngineSettings.GestureRecognizers.Add(engineSettingsPointerGesture);
+        labelEngineSettings.SetBinding(Label.IsVisibleProperty, nameof(vm.IsEngineSettingsVisible));
         var pickerEngine = new Picker
         {
             HorizontalOptions = LayoutOptions.Fill,
@@ -47,6 +62,7 @@ public class TextToSpeechPage : ContentPage
             {
                 labelEngine,
                 pickerEngine,
+                labelEngineSettings,
             },
         }.BindDynamicTheme();
 

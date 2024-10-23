@@ -16,6 +16,8 @@ public class SeVideoTextToSpeech
     public string ElevenLabsApiKey { get; set; }
     public string ElevenLabsModel { get; set; }
     public string ElevenLabsLanguage { get; set; }
+    public double ElevenLabsStability { get; set; }
+    public double ElevenLabsSimilarity { get; set; }
 
     public SeVideoTextToSpeech()
     {
@@ -26,6 +28,8 @@ public class SeVideoTextToSpeech
         AzureRegion = string.Empty;
         ElevenLabsModel = string.Empty;
         ElevenLabsLanguage = string.Empty;
+        ElevenLabsStability = 0.5;
+        ElevenLabsSimilarity = 0.5;
         ReviewAudioClips = true;
         CustomAudio = false;
         CustomAudioStereo = true;
