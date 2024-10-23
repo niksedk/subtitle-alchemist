@@ -82,6 +82,24 @@ public class ReviewSpeechPage : ContentPage
         pickerEngine.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Engines));
         pickerEngine.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedEngine));
         pickerEngine.SelectedIndexChanged += vm.PickerEngineSelectedIndexChanged;
+
+        var labelEngineSettings = new Label
+        {
+            Text = "Settings",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+            TextDecorations = TextDecorations.Underline,
+        }.BindDynamicTheme();
+        labelEngineSettings.GestureRecognizers.Add(new TapGestureRecognizer { Command = vm.ShowEngineSettingsCommand });
+        vm.LabelEngineSettings = labelEngineSettings;
+        var engineSettingsPointerGesture = new PointerGestureRecognizer();
+        engineSettingsPointerGesture.PointerEntered += vm.LabelEngineSettingsMouseEntered;
+        engineSettingsPointerGesture.PointerExited += vm.LabelEngineSettingsMouseExited;
+        labelEngineSettings.GestureRecognizers.Add(engineSettingsPointerGesture);
+        labelEngineSettings.SetBinding(Label.IsVisibleProperty, nameof(vm.IsEngineSettingsVisible));
+
+
         var stackEngine = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -92,6 +110,7 @@ public class ReviewSpeechPage : ContentPage
             {
                 labelEngine,
                 pickerEngine,
+                labelEngineSettings,
             }
         };
 

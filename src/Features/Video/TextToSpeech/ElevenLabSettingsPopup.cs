@@ -110,6 +110,39 @@ public sealed class ElevenLabSettingsPopup : Popup
         grid.Add(imageSimilarity, 2, 2);
 
 
+        var labelSpeakerBoost = new Label
+        {
+            Text = "Speaker Boost",
+            FontAttributes = FontAttributes.Bold,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+
+        grid.Add(labelSpeakerBoost, 0, 3);
+
+        var sliderSpeakerBoost = new Slider
+        {
+            Minimum = 0.0,
+            Maximum = 1.0,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            WidthRequest = 150,
+        };
+        sliderSpeakerBoost.SetBinding(Slider.ValueProperty, nameof(vm.SpeakerBoost));
+        grid.Add(sliderSpeakerBoost, 1, 3);
+
+        var imageSpeakerBoost = new Image
+        {
+            Source = "theme_dark_question.png",
+            WidthRequest = 25,
+            HeightRequest = 25,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+        };
+        ToolTipProperties.SetText(imageSpeakerBoost, "The speaker boost slider determines how much the AI should try to boost the voice of the speaker. This can be useful if the original audio is of poor quality or if the speaker's voice is too quiet. However, setting this slider too high can lead to the AI boosting background noise or artifacts present in the original recording.");
+        grid.Add(imageSpeakerBoost, 2, 3);
+
+
+
         var buttonOk = new Button
         {
             Text = "OK",

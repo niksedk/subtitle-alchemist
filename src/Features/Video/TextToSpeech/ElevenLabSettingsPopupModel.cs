@@ -14,10 +14,14 @@ public partial class ElevenLabSettingsPopupModel : ObservableObject
     [ObservableProperty]
     private double _similarity;
 
+    [ObservableProperty]
+    private double _speakerBoost;
+
     public ElevenLabSettingsPopupModel()
     {
         _stability = Se.Settings.Video.TextToSpeech.ElevenLabsStability;
         _similarity = Se.Settings.Video.TextToSpeech.ElevenLabsSimilarity;
+        _speakerBoost = Se.Settings.Video.TextToSpeech.ElevenLabsSpeakerBoost;
     }
 
     private void Close()
@@ -33,6 +37,7 @@ public partial class ElevenLabSettingsPopupModel : ObservableObject
     {
         Se.Settings.Video.TextToSpeech.ElevenLabsStability = Stability;
         Se.Settings.Video.TextToSpeech.ElevenLabsSimilarity = Similarity;
+        Se.Settings.Video.TextToSpeech.ElevenLabsSpeakerBoost = SpeakerBoost;
 
         Close();
     }

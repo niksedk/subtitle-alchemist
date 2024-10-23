@@ -14,6 +14,7 @@ using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using CommunityToolkit.Maui.Storage;
+using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
@@ -25,6 +26,9 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
     [ObservableProperty]
     private ITtsEngine? _selectedEngine;
+
+    [ObservableProperty]
+    private bool _isEngineSettingsVisible;
 
     [ObservableProperty]
     private ObservableCollection<Voice> _voices;
@@ -78,6 +82,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     public CollectionView CollectionView { get; set; }
     public AudioVisualizer AudioVisualizer { get; set; }
     public MediaElement Player { get; set; }
+    public Label LabelEngineSettings { get; set; }
 
 
     private ITtsEngine? _engine;
@@ -108,6 +113,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         AudioVisualizer = new AudioVisualizer();
         Player = new MediaElement();
         Player.MediaEnded += PlayEnded;
+        LabelEngineSettings = new();
         _skipAutoContinue = false;
         _wavePeakData = new WavePeakData(1, new List<WavePeak>());
         _waveFolder = Path.GetTempPath();
@@ -568,6 +574,18 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
             HasRegion = engine.HasRegion;
             HasModel = engine.HasModel;
 
+            if (engine is ElevenLabs)
+            {
+                IsEngineSettingsVisible = true;
+                if (string.IsNullOrEmpty(Se.Settings.Video.TextToSpeech.ElevenLabsModel))
+                {
+                    Se.Settings.Video.TextToSpeech.ElevenLabsModel = (await engine.GetModels()).First();
+                }
+
+                SelectedModel = Se.Settings.Video.TextToSpeech.ElevenLabsModel;
+
+            }
+
             if (HasLanguageParameter)
             {
                 var languages = await engine.GetLanguages(SelectedVoice, SelectedModel);
@@ -686,4 +704,24 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         _audioVisualizerTimer.Stop();
         _cancellationTokenSource.Cancel();
     }
+
+    [RelayCommand]
+    public async Task ShowEngineSettings()
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await _popupService.ShowPopupAsync<ElevenLabSettingsPopupModel>(CancellationToken.None);
+        });
+    }
+
+    public void LabelEngineSettingsMouseEntered(object? sender, PointerEventArgs e)
+    {
+        LabelEngineSettings.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
+    }
+
+    public void LabelEngineSettingsMouseExited(object? sender, PointerEventArgs e)
+    {
+        LabelEngineSettings.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+    }
+
 }
