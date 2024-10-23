@@ -108,6 +108,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     private WavePeakData _wavePeakData;
     private FfmpegMediaInfo2? _mediaInfo;
     private string _videoFileName = string.Empty;
+    private bool _isMerging;
 
     public TextToSpeechPageModel(ITtsDownloadService ttsDownloadService, IPopupService popupService, IFileHelper fileHelper)
     {
@@ -166,6 +167,12 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             {
                 Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
                 {
+                    if (_isMerging)
+                    {
+                        return false;
+                    }
+
+                    _isMerging = true;
                     ProgressText = string.Empty;
                     ProgressValue = 0;
                     IsGenerating = true;
@@ -295,6 +302,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         ProgressText = string.Empty;
         IsGenerating = true;
         DoneOrCancelText = "Cancel";
+        _isMerging = false;
         SaveSettings();
 
         // Generate
@@ -340,7 +348,9 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         }
 
         // Choose folder
+#pragma warning disable CA1416 // Validate platform compatibility
         var result = await FolderPicker.Default.PickAsync(_cancellationToken);
+#pragma warning restore CA1416 // Validate platform compatibility
         if (!result.IsSuccessful)
         {
             DoneOrCancelText = "Done";
@@ -348,7 +358,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             return;
         }
         var outputFolder = result.Folder.Path;
-        var audioFileName = Path.Combine(outputFolder, GetBestFileName(".wav"));
+        var audioFileName = Path.Combine(outputFolder, GetBestFileName(outputFolder, ".wav"));
 
         File.Move(mergedAudioFileName, audioFileName);
 
@@ -359,16 +369,25 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         IsGenerating = false;
     }
 
-    private string GetBestFileName(string extension)
+    private string GetBestFileName(string folder, string extension)
     {
+        var returnFileName = string.Empty;
         if (!string.IsNullOrEmpty(_videoFileName))
         {
-            return Path.GetFileNameWithoutExtension(_videoFileName) + extension;
+            returnFileName =  Path.GetFileNameWithoutExtension(_videoFileName) + extension;
+        }
+        if (!string.IsNullOrEmpty(returnFileName) && !File.Exists(Path.Combine(folder, returnFileName)))
+        {
+            return returnFileName;
         }
 
         if (!string.IsNullOrEmpty(_subtitle.FileName))
         {
-            return Path.GetFileNameWithoutExtension(_subtitle.FileName) + extension;
+            returnFileName = Path.GetFileNameWithoutExtension(_subtitle.FileName) + extension;
+        }
+        if (!string.IsNullOrEmpty(returnFileName) && !File.Exists(Path.Combine(folder, returnFileName)))
+        {
+            return returnFileName;
         }
 
         return Guid.NewGuid() + extension;
