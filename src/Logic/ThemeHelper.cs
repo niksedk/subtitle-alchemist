@@ -4,6 +4,7 @@ using SubtitleAlchemist.Controls.NumberUpDownControl;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Controls.UpDownControl;
 using SubtitleAlchemist.Logic.Constants;
+using System.Windows.Input;
 using static Microsoft.Maui.Controls.VisualStateManager;
 
 namespace SubtitleAlchemist.Logic
@@ -35,6 +36,30 @@ namespace SubtitleAlchemist.Logic
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
             control.SetDynamicResource(Label.TextColorProperty, ThemeNames.TextColor);
             return control;
+        }
+
+        public static Label WithLinkLabel(this Label control)
+        {
+            control.TextDecorations = TextDecorations.Underline;
+
+            var pointerGesture = new PointerGestureRecognizer();
+            pointerGesture.PointerEntered += (s, e) =>
+            {
+                control.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
+            };
+            pointerGesture.PointerExited += (s, e) =>
+            {
+                control.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+            };
+            control.GestureRecognizers.Add(pointerGesture);
+
+            return control;
+        }
+
+        public static Label WithLinkLabel(this Label control, ICommand command)
+        {
+            control.GestureRecognizers.Add(new TapGestureRecognizer { Command = command });
+            return control.WithLinkLabel();
         }
 
         public static CheckBox BindDynamicTheme(this CheckBox control)

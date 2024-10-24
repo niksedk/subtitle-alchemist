@@ -706,22 +706,11 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
     }
 
     [RelayCommand]
-    public async Task ShowEngineSettings()
+    public void ShowEngineSettings()
     {
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             await _popupService.ShowPopupAsync<ElevenLabSettingsPopupModel>(CancellationToken.None);
         });
     }
-
-    public void LabelEngineSettingsMouseEntered(object? sender, PointerEventArgs e)
-    {
-        LabelEngineSettings.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
-    }
-
-    public void LabelEngineSettingsMouseExited(object? sender, PointerEventArgs e)
-    {
-        LabelEngineSettings.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
-    }
-
 }

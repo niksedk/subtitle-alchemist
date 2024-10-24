@@ -98,15 +98,13 @@ public sealed class AboutPopup : Popup
 
         var labelSourceCodeLink = new Label()
             .Text("C# source code is available on GitHub")
-            .Margin(new Thickness(0, 0, 0, 15)).BindDynamicTheme();
-        labelSourceCodeLink.TextDecorations = TextDecorations.Underline;
+            .Margin(new Thickness(0, 0, 0, 15)).BindDynamicTheme().WithLinkLabel(vm.OpenSourceLinkCommand);
         grid.Add(labelSourceCodeLink, 0, 8);
 
         var labelDonateLink = new Label()
             .Text("Donate to support the development of Subtitle Alchemist")
             .BindDynamicTheme()
-            .Margin(new Thickness(0, 0, 0, 15)).BindDynamicTheme();
-        labelDonateLink.TextDecorations = TextDecorations.Underline;
+            .Margin(new Thickness(0, 0, 0, 15)).BindDynamicTheme().WithLinkLabel(vm.OpenDonateLinkCommand);
         grid.Add(labelDonateLink, 0, 9);
 
         var buttonClose = new Button()
@@ -129,26 +127,6 @@ public sealed class AboutPopup : Popup
             Content = grid,
         }.BindDynamicTheme();
 
-        var pointerGesture = new PointerGestureRecognizer();
-        pointerGesture.PointerEntered += vm.SourceLinkMouseEntered;
-        pointerGesture.PointerExited += vm.SourceLinkMouseExited;
-        labelSourceCodeLink.GestureRecognizers.Add(pointerGesture);
-        var tapGesture = new TapGestureRecognizer();
-        tapGesture.Tapped += vm.SourceLinkMouseClicked;
-        labelSourceCodeLink.GestureRecognizers.Add(tapGesture);
-        vm.LabelSourceCodeLink = labelSourceCodeLink;
-
-        var pointerGestureDonate = new PointerGestureRecognizer();
-        pointerGestureDonate.PointerEntered += vm.DonateLinkMouseEntered;
-        pointerGestureDonate.PointerExited += vm.DonateLinkMouseExited;
-        labelDonateLink.GestureRecognizers.Add(pointerGestureDonate);
-        var tapGestureDonate = new TapGestureRecognizer();
-        tapGestureDonate.Tapped += vm.DonateLinkMouseClicked;
-        labelDonateLink.GestureRecognizers.Add(tapGestureDonate);
-        vm.LabelDonateLink = labelDonateLink;
-
         Content = windowBorder;
     }
 }
-
-

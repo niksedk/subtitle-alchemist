@@ -217,7 +217,6 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 
     public BurnInPage? Page { get; set; }
     public MediaElement VideoPlayer { get; set; }
-    public Label LabelHelp { get; set; }
     public Button ButtonGenerate { get; set; }
     public Button ButtonOk { get; set; }
     public Button ButtonMode { get; internal set; }
@@ -270,7 +269,6 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         _outputSourceFolder = string.Empty;
         _progressText = string.Empty;
         VideoPlayer = new();
-        LabelHelp = new();
         ButtonGenerate = new();
         ButtonOk = new();
         ButtonMode = new();
@@ -1572,7 +1570,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         }
     }
 
-    public void HelpTapped(object? sender, TappedEventArgs e)
+    [RelayCommand]
+    public void ShowHelp()
     {
         var codec = SelectedVideoEncoding.Codec;
 
@@ -1596,16 +1595,6 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         {
             UiUtil.OpenUrl("http://trac.ffmpeg.org/wiki/Encode/H.264");
         }
-    }
-
-    public void LabelHelpMouseEntered(object? sender, PointerEventArgs e)
-    {
-        LabelHelp.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
-    }
-
-    public void LabelHelpMouseExited(object? sender, PointerEventArgs e)
-    {
-        LabelHelp.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
     }
 
     public static int CalculateFontSize(int videoWidth, int videoHeight, double factor, int minSize = 8, int maxSize = 2000)

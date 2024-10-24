@@ -89,14 +89,8 @@ public class ReviewSpeechPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
-            TextDecorations = TextDecorations.Underline,
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().WithLinkLabel();
         labelEngineSettings.GestureRecognizers.Add(new TapGestureRecognizer { Command = vm.ShowEngineSettingsCommand });
-        vm.LabelEngineSettings = labelEngineSettings;
-        var engineSettingsPointerGesture = new PointerGestureRecognizer();
-        engineSettingsPointerGesture.PointerEntered += vm.LabelEngineSettingsMouseEntered;
-        engineSettingsPointerGesture.PointerExited += vm.LabelEngineSettingsMouseExited;
-        labelEngineSettings.GestureRecognizers.Add(engineSettingsPointerGesture);
         labelEngineSettings.SetBinding(Label.IsVisibleProperty, nameof(vm.IsEngineSettingsVisible));
 
 

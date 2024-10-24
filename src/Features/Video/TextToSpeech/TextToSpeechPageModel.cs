@@ -442,7 +442,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             { "Engine", SelectedEngine ?? Engines.First() },
             { "Voices", Voices.ToArray() },
             { "Voice", SelectedVoice ?? Voices.First() },
-            { "WavePeaks", _wavePeakData }, // TODO
+            { "WavePeaks", _wavePeakData },
             { "WaveFolder", _waveFolder },
             { "VideoFileName", importExport.VideoFileName },
         });
@@ -484,7 +484,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             ProgressText = $"Generating speech: segment {index + 1} of {_subtitle.Paragraphs.Count}";
             var paragraph = _subtitle.Paragraphs[index];
-            var speakResult = await engine.Speak(paragraph.Text, _waveFolder, voice, SelectedLanguage, SelectedRegion, SelectedModel, _cancellationToken);
+            var speakResult = await engine.Speak(paragraph.Text, _waveFolder, voice, SelectedLanguage, SelectedRegion, SelectedModel, cancellationToken);
             resultList.Add(new TtsStepResult
             {
                 Text = paragraph.Text,

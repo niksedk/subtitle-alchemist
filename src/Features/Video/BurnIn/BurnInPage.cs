@@ -79,20 +79,10 @@ public class BurnInPage : ContentPage
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
-            FontSize = 16,
-            TextDecorations = TextDecorations.Underline,
-        }.BindDynamicThemeTextColorOnly();
-        var tapGestureRecognizerHelp = new TapGestureRecognizer();
-        tapGestureRecognizerHelp.Tapped += vm.HelpTapped;
-        labelHelp.GestureRecognizers.Add(tapGestureRecognizerHelp);
-        var pointerGestureHelp = new PointerGestureRecognizer();
-        pointerGestureHelp.PointerEntered += vm.LabelHelpMouseEntered;
-        pointerGestureHelp.PointerExited += vm.LabelHelpMouseExited;
-        labelHelp.GestureRecognizers.Add(pointerGestureHelp);
-        vm.LabelHelp = labelHelp;
+        }.BindDynamicThemeTextColorOnly().WithLinkLabel(vm.ShowHelpCommand);
 
         pageGrid.Add(labelHelp, 0, 5);
-        pageGrid.SetColumnSpan(labelHelp, 3);
+        pageGrid.SetColumnSpan(labelHelp, 2);
 
         var progressBar = new ProgressBar
         {

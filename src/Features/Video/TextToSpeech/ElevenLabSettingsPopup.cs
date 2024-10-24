@@ -21,6 +21,7 @@ public sealed class ElevenLabSettingsPopup : Popup
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
             {
@@ -35,7 +36,7 @@ public sealed class ElevenLabSettingsPopup : Popup
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
             WidthRequest = 350,
-            HeightRequest = 300,
+            HeightRequest = 330,
         }.BindDynamicTheme();
 
         var titleLabel = new Label
@@ -138,7 +139,7 @@ public sealed class ElevenLabSettingsPopup : Popup
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
         };
-        ToolTipProperties.SetText(imageSpeakerBoost, "The speaker boost slider determines how much the AI should try to boost the voice of the speaker. This can be useful if the original audio is of poor quality or if the speaker's voice is too quiet. However, setting this slider too high can lead to the AI boosting background noise or artifacts present in the original recording.");
+        ToolTipProperties.SetText(imageSpeakerBoost, "Boosts the similarity to the original speaker. However, using this setting requires a slightly higher computational load, which in turn increases latency. The differences introduced by this setting are generally rather subtle.");
         grid.Add(imageSpeakerBoost, 2, 3);
 
 
@@ -158,6 +159,13 @@ public sealed class ElevenLabSettingsPopup : Popup
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
 
+        var labelMoreInfo = new Label
+        {
+            VerticalTextAlignment = TextAlignment.End,
+            Text = "More info...",
+            Margin = new Thickness(20, 0, 0, 5),
+        }.BindDynamicTheme().WithLinkLabel(vm.MoreInfoCommand);
+
         var buttonBar = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -167,9 +175,10 @@ public sealed class ElevenLabSettingsPopup : Popup
             {
                 buttonOk,
                 cancelButton,
+                labelMoreInfo,
             },
         }.BindDynamicTheme();
-        grid.Add(buttonBar, 0, 3);
+        grid.Add(buttonBar, 0, 4);
         grid.SetColumnSpan(buttonBar, 3);
 
 

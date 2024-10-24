@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
@@ -46,5 +47,11 @@ public partial class ElevenLabSettingsPopupModel : ObservableObject
     public void Cancel()
     {
         Close();
+    }
+
+    [RelayCommand]
+    public void MoreInfo()
+    {
+        UiUtil.OpenUrl("https://elevenlabs.io/docs/speech-synthesis/voice-settings");
     }
 }
