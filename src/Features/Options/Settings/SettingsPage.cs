@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Markup;
 using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
@@ -25,10 +23,9 @@ public class SettingsPage : ContentPage
     public SettingsPage(SettingsViewModel vm)
     {
         _vm = vm;
-        vm.SettingsPage = this;
+        vm.Page = this;
         this.BindDynamicTheme();
         vm.Theme = Preferences.Get("Theme", "Dark");
-        BindingContext = vm;
 
         var grid = new Grid
         {
@@ -59,7 +56,7 @@ public class SettingsPage : ContentPage
         searchBar.SetBinding(Entry.TextProperty, nameof(vm.SearchText));
         searchBar.SearchButtonPressed += vm.SearchButtonPressed;
         searchBar.TextChanged += vm.SearchBarTextChanged;
-        grid.Add(searchBar, 1, 0);
+        grid.Add(searchBar, 1);
 
         vm.LeftMenu = new VerticalStackLayout
         {
@@ -85,6 +82,8 @@ public class SettingsPage : ContentPage
         grid.Add(settings, 1, 1);
 
         Content = grid;
+        BindingContext = vm;
+        this.BindingContext = vm;
     }
 
     protected override void OnDisappearing()
@@ -119,63 +118,6 @@ public class SettingsPage : ContentPage
         label.GestureRecognizers.Add(tapGesture);
 
         return label;
-    }
-
-    private static View MakeToolsPage(SettingsViewModel vm)
-    {
-        var grid = new Grid
-        {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
-            HorizontalOptions = LayoutOptions.Fill,
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Auto }
-            }
-        }.BindDynamicTheme();
-
-        var titleLabel = new Label
-        {
-            Text = "Tools settings",
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-        }.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
-        Grid.SetColumnSpan(titleLabel, 2);
-
-        var autoBreakLabel = new Label
-        {
-            Text = "Auto break settings",
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 16,
-        }.BindDynamicTheme();
-        grid.Add(autoBreakLabel, 0, 1);
-        Grid.SetColumnSpan(autoBreakLabel, 2);
-
-        var labelBreakEarly = new Label
-        {
-            Text = "Break early for dialogs:",
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme();
-        grid.Add(labelBreakEarly, 0, 2);
-
-        var switchBreakEarly = new Switch
-        {
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-
-        grid.Add(switchBreakEarly, 1, 2);
-
-        return grid;
     }
 
     private static View MakeSettingItems(SettingsViewModel vm)
@@ -357,7 +299,9 @@ public class SettingsPage : ContentPage
         {
             ItemsSource = new List<string> { "Light", "Dark", "Custom" },
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
         }.BindDynamicTheme();
+        pickerTheme.SetBinding(Picker.SelectedItemProperty, nameof(vm.Theme));
         vm.AllSettings.Add(new SettingItem("Theme", textWidth, string.Empty, pickerTheme));
 
         vm.AllSettings.Add(new SettingItem("Font", SectionName.Appearance));
@@ -366,6 +310,7 @@ public class SettingsPage : ContentPage
         {
             ItemsSource = new List<string> { "Arial", "Courier New", "Times New Roman" },
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Font name", textWidth, string.Empty, pickerFontName));
 
@@ -373,6 +318,7 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter subtitle list view font size",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Subtitle list view font size", textWidth, string.Empty, entrySubtitleListViewFontSize));
     }
@@ -399,92 +345,138 @@ public class SettingsPage : ContentPage
         vm.AllSettings.Add(new SettingItem("Rules"));
 
         var ruleTextWidth = 200;
+        var controlWidth = 200;
 
         var entrySingleLineMaxWidth = new Entry
         {
             Placeholder = "Enter single line max width",
             HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
+        entrySingleLineMaxWidth.SetBinding(Entry.TextProperty, nameof(vm.SubtitleLineMaximumLength), BindingMode.TwoWay);
+
         vm.AllSettings.Add(new SettingItem("Single line max length", ruleTextWidth, string.Empty, entrySingleLineMaxWidth));
 
         var entryOptimalCharsSec = new Entry
         {
             Placeholder = "Enter optimal chars/sec",
             HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
+        entryOptimalCharsSec.SetBinding(Entry.TextProperty, nameof(vm.SubtitleOptimalCharactersPerSeconds), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Optimal chars/sec", ruleTextWidth, string.Empty, entryOptimalCharsSec));
 
         var entryMaxCharsSec = new Entry
         {
             Placeholder = "Enter max chars/sec",
             HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
+        entryMaxCharsSec.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumCharactersPerSeconds), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Max chars/sec", ruleTextWidth, string.Empty, entryMaxCharsSec));
 
         var entryMaxWordsMin = new Entry
         {
             Placeholder = "Enter max words/min",
             HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
+        entryMaxWordsMin.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumWordsPerMinute), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Max words/min", ruleTextWidth, string.Empty, entryMaxWordsMin));
 
         var entryMinDuration = new Entry
         {
             Placeholder = "Enter min duration in milliseconds",
             HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
+        entryMinDuration.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMinimumDisplayMilliseconds), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Min duration in milliseconds", ruleTextWidth, string.Empty, entryMinDuration));
 
         var entryMaxDuration = new Entry
         {
             Placeholder = "Enter max duration in milliseconds",
             HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
+        entryMaxDuration.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumDisplayMilliseconds), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Max duration in milliseconds", ruleTextWidth, string.Empty, entryMaxDuration));
 
         var entryMinGap = new Entry
         {
             Placeholder = "Enter min gap between subtitles in milliseconds",
             HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
+        entryMinGap.SetBinding(Entry.TextProperty, nameof(vm.MinimumMillisecondsBetweenLines), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Min gap between subtitles in milliseconds", ruleTextWidth, string.Empty,
             entryMinGap));
 
-        var entryMaxLines = new Entry
+        var pickerMaxLines = new Picker
         {
-            Placeholder = "Enter max number of lines",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Max number of lines", ruleTextWidth, string.Empty, entryMaxLines));
+        pickerMaxLines.SetBinding(Picker.ItemsSourceProperty, nameof(vm.MaxNumberOfLines));
+        pickerMaxLines.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedMaxNumberOfLines));
+        vm.AllSettings.Add(new SettingItem("Max number of lines", ruleTextWidth, string.Empty, pickerMaxLines));
 
         var entryUnbreakShorterThan = new Entry
         {
             Placeholder = "Enter unbreak subtitles shorter than",
             HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
+        entryUnbreakShorterThan.SetBinding(Entry.TextProperty, nameof(vm.MergeLinesShorterThan), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Unbreak subtitles shorter than", ruleTextWidth, string.Empty,
             entryUnbreakShorterThan));
 
-        var entryDialogStyle = new Entry
+        var pickerDialogStyle = new Picker
         {
-            Placeholder = "Enter dialog style",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
         }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Dialog style", ruleTextWidth, string.Empty, entryDialogStyle));
+        pickerDialogStyle.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DialogStyles));
+        pickerDialogStyle.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDialogStyle));
+        vm.AllSettings.Add(new SettingItem("Dialog style", ruleTextWidth, string.Empty, pickerDialogStyle));
 
-        var entryContinuationStyle = new Entry
+        var pickerContinuationStyle = new Picker
         {
-            Placeholder = "Enter continuation style",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
         }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Continuation style", ruleTextWidth, string.Empty, entryContinuationStyle));
+        pickerContinuationStyle.SetBinding(Picker.ItemsSourceProperty, nameof(vm.ContinuationStyles));
+        pickerContinuationStyle.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedContinuationStyle));
+        vm.AllSettings.Add(new SettingItem("Continuation style", ruleTextWidth, string.Empty, pickerContinuationStyle));
 
-        var entryCpsLineLength = new Entry
+        var pickerCpsLineLength = new Picker
         {
-            Placeholder = "Enter cps/line-length",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
         }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("cps/line-length", ruleTextWidth, string.Empty, entryCpsLineLength));
+        pickerCpsLineLength.SetBinding(Picker.ItemsSourceProperty, nameof(vm.CpsLineLengthStrategies));
+        pickerCpsLineLength.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedCpsLineLengthStrategy));
+        vm.AllSettings.Add(new SettingItem("cps/line-length", ruleTextWidth, string.Empty, pickerCpsLineLength));
 
 
         vm.AllSettings.Add(new SettingItem("Misc."));
@@ -493,6 +485,8 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter default frame rate",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Default frame rate", ruleTextWidth, string.Empty, entryDefaultFrameRate));
 
@@ -500,6 +494,8 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter default file encoding",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Default file encoding", ruleTextWidth, string.Empty, entryDefaultFileEncoding));
 
@@ -507,6 +503,8 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter language filter",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Language filter", ruleTextWidth, string.Empty, entryLanguageFilter));
 
@@ -514,6 +512,8 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter auto detect ANSI encoding",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Auto detect ANSI encoding", ruleTextWidth, string.Empty,
             entryAutoDetectAnsiEncoding));
@@ -522,6 +522,8 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter prompt for delete lines",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Prompt for delete lines", ruleTextWidth, string.Empty,
             entryPromptForDeleteLines));
@@ -530,6 +532,8 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter time code mode",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Time code mode", ruleTextWidth, string.Empty, entryTimeCodeMode));
 
@@ -537,6 +541,8 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter split behavior",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Split behavior", ruleTextWidth, string.Empty, entrySplitBehavior));
 
@@ -544,6 +550,8 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter subtitle list double click action",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Subtitle list double click action", ruleTextWidth, string.Empty,
             entrySubtitleListDoubleClickAction));
@@ -552,6 +560,8 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter save as behavior",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Save as behavior", ruleTextWidth, string.Empty, entrySaveAsBehavior));
 
@@ -559,6 +569,8 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter translation file auto suffix",
             HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Translation file auto suffix", ruleTextWidth, string.Empty,
             entryTranslationFileAutoSuffix));
@@ -567,6 +579,7 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter auto-backup",
             HorizontalOptions = LayoutOptions.Start,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Auto-backup", ruleTextWidth, string.Empty, entryAutoBackup));
 
@@ -574,6 +587,7 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter auto-backup delete",
             HorizontalOptions = LayoutOptions.Start,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Auto-backup delete", ruleTextWidth, string.Empty, entryAutoBackupDelete));
 
@@ -581,6 +595,7 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter auto-save",
             HorizontalOptions = LayoutOptions.Start,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Auto-save", ruleTextWidth, string.Empty, entryAutoSave));
 
@@ -588,47 +603,9 @@ public class SettingsPage : ContentPage
         {
             Placeholder = "Enter check for updates",
             HorizontalOptions = LayoutOptions.Start,
+            WidthRequest = controlWidth,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Check for updates", ruleTextWidth, string.Empty, entryCheckForUpdates));
-    }
-
-    private static IView MakeGeneralRight(SettingsViewModel vm)
-    {
-        var stackLayout = new StackLayout
-        {
-            Padding = new Thickness(20),
-            Spacing = 20,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Orientation = StackOrientation.Vertical,
-        }.BindDynamicTheme();
-
-        // Remember Recent Files
-        var labelRecentFiles = new Label
-        {
-            Text = "Remember Recent Files:",
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme();
-
-        var switchRecentFiles = new Switch
-        {
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme().Bind(Switch.IsToggledProperty, nameof(vm.ShowRecentFiles));
-        // switchRecentFiles.SetBinding(Switch.IsToggledProperty, nameof(vm.ShowRecentFiles));
-
-        var stackRecentFiles = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            Children =
-            {
-                labelRecentFiles,
-                switchRecentFiles,
-            }
-        };
-
-        stackLayout.Children.Add(stackRecentFiles);
-
-        return stackLayout;
     }
 
     private static void MakeSubtitleFormatSettings(SettingsViewModel vm)
@@ -747,304 +724,5 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Color if gap too short", textWidth, string.Empty, switchColorGapTooShort));
-    }
-
-    private View MakeVideoPlayerPage(SettingsViewModel vm)
-    {
-        var grid = new Grid
-        {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
-            HorizontalOptions = LayoutOptions.Fill,
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Star },
-                new ColumnDefinition { Width = GridLength.Auto }
-            }
-        }.BindDynamicTheme();
-
-        var titleLabel = new Label
-        {
-            Text = "Video player",
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-        }.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
-        Grid.SetColumnSpan(titleLabel, 2);
-
-        grid.Add(new Label
-        {
-            Text = "Video player",
-        }.BindDynamicTheme(), 0, 1);
-        grid.Add(new Picker
-        {
-            ItemsSource = new List<string> { "mpv", "vlc", "System Default" },
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme(), 1, 1);
-
-        return grid;
-    }
-
-    private View MakeWaveformSpectrogramPage(SettingsViewModel vm)
-    {
-        var grid = new Grid
-        {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
-            HorizontalOptions = LayoutOptions.Fill,
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star },
-                new ColumnDefinition { Width = GridLength.Auto },
-            }
-        }.BindDynamicTheme();
-
-        var titleLabel = new Label
-        {
-            Text = "Waveform/spectrogram",
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-        }.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
-        Grid.SetColumnSpan(titleLabel, 2);
-
-        // FFmpeg Location
-        grid.Add(new Label
-        {
-            Text = "FFmpeg Location:",
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme(), 0, 1);
-        grid.Add(new Entry
-        {
-            Placeholder = "Enter FFmpeg path",
-            HorizontalOptions = LayoutOptions.Start,
-            WidthRequest = 500,
-            BindingContext = vm,
-        }.Bind(nameof(vm.FfmpegPath)).BindDynamicTheme(), 1, 1);
-
-        var ffmpegBrowse = new ImageButton
-        {
-            Source = "open.png",
-            HorizontalOptions = LayoutOptions.Start,
-            WidthRequest = 30,
-            HeightRequest = 30,
-            Padding = new Thickness(10, 5, 5, 5),
-        }.BindDynamicTheme();
-        ffmpegBrowse.Clicked += async (sender, e) => await vm.BrowseForFfmpeg(sender, e);
-        ToolTipProperties.SetText(ffmpegBrowse, "Browse for ffmpeg executable");
-        grid.Add(ffmpegBrowse, 2, 1);
-
-        var ffmpegDownloadButton = new ImageButton
-        {
-            Source = "download.png",
-            HorizontalOptions = LayoutOptions.Start,
-            WidthRequest = 30,
-            HeightRequest = 30,
-            Padding = new Thickness(5, 5, 5, 5),
-        }.BindDynamicTheme();
-        ffmpegDownloadButton.Clicked += async (sender, e) => await vm.DownloadFfmpeg(sender, e);
-        ToolTipProperties.SetText(ffmpegDownloadButton, "Click to download ffmpeg");
-        grid.Add(ffmpegDownloadButton, 3, 1);
-
-        return grid;
-    }
-
-    private View MakeToolbarPage(SettingsViewModel vm)
-    {
-        var grid = new Grid
-        {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
-            HorizontalOptions = LayoutOptions.Fill,
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star }
-            }
-        }.BindDynamicTheme();
-
-        var titleLabel = new Label
-        {
-            Text = "Toolbar",
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-        };
-        titleLabel.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
-        Grid.SetColumnSpan(titleLabel, 2);
-
-        grid.Add(new Label
-        {
-            Text = "Show \"File new\" icon",
-        }.BindDynamicTheme(), 0, 1);
-        _shortDurationSwitch = new Switch
-        {
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        grid.Add(_shortDurationSwitch, 1, 1);
-
-        grid.Add(new Label
-        {
-            Text = "Show \"File Save\" icon",
-        }.BindDynamicTheme(), 0, 2);
-        _longDurationSwitch = new Switch
-        {
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        grid.Add(_longDurationSwitch, 1, 2);
-
-        grid.Add(new Label
-        {
-            Text = "Show \"File Save as...\" icon",
-        }.BindDynamicTheme(), 0, 3);
-        _longDurationSwitch = new Switch
-        {
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        grid.Add(_longDurationSwitch, 1, 3);
-
-        return grid;
-    }
-
-    private View MakeAppearancePage(SettingsViewModel vm)
-    {
-        var grid = new Grid
-        {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
-            HorizontalOptions = LayoutOptions.Fill,
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star }
-            }
-        }.BindDynamicTheme();
-
-        var titleLabel = new Label
-        {
-            Text = "Appearance",
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-        }.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
-        Grid.SetColumnSpan(titleLabel, 2);
-
-        // Theme
-        var themeLabel = new Label
-        {
-            Text = "Theme:",
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme();
-
-        grid.Add(themeLabel, 0, 1);
-        var picker = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        picker.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Themes));
-        picker.SetBinding(Picker.SelectedItemProperty, nameof(vm.Theme));
-        picker.SelectedItem = vm.Theme;
-
-        picker.SelectedIndexChanged += vm.ThemeChanged;
-        grid.Add(picker, 1, 1);
-
-        return grid;
-    }
-
-    private View MakeFileTypeAssociationsPage(SettingsViewModel vm)
-    {
-        var grid = new Grid
-        {
-            Padding = new Thickness(20),
-            RowSpacing = 20,
-            ColumnSpacing = 10,
-            HorizontalOptions = LayoutOptions.Fill,
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Star }
-            }
-        }.BindDynamicTheme();
-
-        var titleLabel = new Label
-        {
-            Text = "File type associations",
-            FontAttributes = FontAttributes.Bold,
-            FontSize = 18,
-        }.BindDynamicTheme();
-        grid.Add(titleLabel, 0, 0);
-        Grid.SetColumnSpan(titleLabel, 2);
-
-        grid.Add(new Label
-        {
-            Text = "SubRip (.srt)",
-        }.BindDynamicTheme(), 0, 1);
-        _shortDurationSwitch = new Switch
-        {
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        grid.Add(_shortDurationSwitch, 1, 1);
-
-        grid.Add(new Label
-        {
-            Text = "Advanced Sub Station Alpha (.ass)",
-        }.BindDynamicTheme(), 0, 2);
-        _longDurationSwitch = new Switch
-        {
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        grid.Add(_longDurationSwitch, 1, 2);
-
-        grid.Add(new Label
-        {
-            Text = "EBU STL (.stl)",
-        }.BindDynamicTheme(), 0, 3);
-        _longDurationSwitch = new Switch
-        {
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        grid.Add(_longDurationSwitch, 1, 3);
-
-        return grid;
     }
 }

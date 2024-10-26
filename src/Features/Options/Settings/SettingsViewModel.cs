@@ -14,23 +14,81 @@ namespace SubtitleAlchemist.Features.Options.Settings;
 
 public partial class SettingsViewModel : ObservableObject
 {
-    public List<SettingItem> AllSettings { get; init; } = new();
+    [ObservableProperty]
+    private ObservableCollection<SettingItem> _allSettings;
 
     [ObservableProperty]
     private string _searchText;
 
     public VerticalStackLayout LeftMenu { get; set; }
     public CollectionView SettingList { get; set; }
-    public SettingsPage? SettingsPage { get; set; }
+    public SettingsPage? Page { get; set; }
     public BoxView SyntaxErrorColorBox { get; set; }
 
-    [ObservableProperty] private string _ffmpegPath = string.Empty;
+    [ObservableProperty] 
+    private string _ffmpegPath = string.Empty;
 
-    [ObservableProperty] private string _theme = "Dark";
-    [ObservableProperty] private bool _showRecentFiles;
+    [ObservableProperty] 
+    private bool _showRecentFiles;
 
     [ObservableProperty]
     private ObservableCollection<string> _themes = new() { "Light", "Dark", "Custom" };
+
+    [ObservableProperty] 
+    private string _theme = "Dark";
+
+    [ObservableProperty]
+    private int _subtitleLineMaximumLength;
+
+    [ObservableProperty]
+    private ObservableCollection<int> _maxNumberOfLines;
+
+    [ObservableProperty]
+    private int _selectedMaxNumberOfLines;
+
+    [ObservableProperty]
+    private int _maxNumberOfLinesPlusAbort;
+
+    [ObservableProperty]
+    private int _mergeLinesShorterThan;
+
+    [ObservableProperty]
+    private int _subtitleMinimumDisplayMilliseconds;
+
+    [ObservableProperty]
+    private int _subtitleMaximumDisplayMilliseconds;
+
+    [ObservableProperty]
+    private int _minimumMillisecondsBetweenLines;
+
+    [ObservableProperty]
+    private double _subtitleMaximumCharactersPerSeconds;
+
+    [ObservableProperty]
+    private double _subtitleOptimalCharactersPerSeconds;
+
+    [ObservableProperty]
+    private double _subtitleMaximumWordsPerMinute;
+
+    [ObservableProperty]
+    private ObservableCollection<DialogStyleDisplay> _dialogStyles;
+
+    [ObservableProperty]
+    private DialogStyleDisplay _selectedDialogStyle;
+
+    [ObservableProperty]
+    private ObservableCollection<ContinuationStyleDisplay> _continuationStyles;
+
+    [ObservableProperty]
+    private ContinuationStyleDisplay _selectedContinuationStyle;
+
+    [ObservableProperty]
+    private ObservableCollection<CpsLineLengthDisplay> _cpsLineLengthStrategies;
+
+    [ObservableProperty]
+    private CpsLineLengthDisplay _selectedCpsLineLengthStrategy;
+
+
 
     private readonly IPopupService _popupService;
     private SectionName _sectionName = SectionName.General;
@@ -44,9 +102,19 @@ public partial class SettingsViewModel : ObservableObject
         SyntaxErrorColorBox = new BoxView();
         SettingList = new CollectionView();
 
-        AllSettings = new List<SettingItem>();
+        _allSettings = new ObservableCollection<SettingItem>();
 
-        LoadSettings();
+        _maxNumberOfLines = new ObservableCollection<int>(Enumerable.Range(1, 5));
+        _selectedMaxNumberOfLines = 2;
+
+        _dialogStyles = new ObservableCollection<DialogStyleDisplay>(DialogStyleDisplay.GetDialogStyles());
+        _selectedDialogStyle = _dialogStyles.First();
+
+        _continuationStyles = new ObservableCollection<ContinuationStyleDisplay>(ContinuationStyleDisplay.GetDialogStyles());
+        _selectedContinuationStyle = _continuationStyles.First();
+
+        _cpsLineLengthStrategies = new ObservableCollection<CpsLineLengthDisplay>(CpsLineLengthDisplay.GetCpsLineLengthStrategies());
+        _selectedCpsLineLengthStrategy = _cpsLineLengthStrategies.First();
     }
 
     public void LeftMenuTapped(object? sender, TappedEventArgs e, SectionName sectionName)
@@ -90,6 +158,17 @@ public partial class SettingsViewModel : ObservableObject
     {
         Theme = Se.Settings.General.Theme;
         FfmpegPath = Se.Settings.General.FfmpegPath;
+        SubtitleLineMaximumLength = Se.Settings.General.SubtitleLineMaximumLength;
+        SelectedMaxNumberOfLines = Se.Settings.General.MaxNumberOfLines;
+        MaxNumberOfLinesPlusAbort = Se.Settings.General.MaxNumberOfLinesPlusAbort;
+        MergeLinesShorterThan = Se.Settings.General.MergeLinesShorterThan;
+        SubtitleMinimumDisplayMilliseconds = Se.Settings.General.SubtitleMinimumDisplayMilliseconds;
+        SubtitleMaximumDisplayMilliseconds = Se.Settings.General.SubtitleMaximumDisplayMilliseconds;
+        MinimumMillisecondsBetweenLines = Se.Settings.General.MinimumMillisecondsBetweenLines;
+        SubtitleMaximumCharactersPerSeconds = Se.Settings.General.SubtitleMaximumCharactersPerSeconds;
+        SubtitleOptimalCharactersPerSeconds = Se.Settings.General.SubtitleOptimalCharactersPerSeconds;
+        SubtitleMaximumWordsPerMinute = Se.Settings.General.SubtitleMaximumWordsPerMinute;
+
         ShowRecentFiles = Se.Settings.File.ShowRecentFiles;
     }
 
@@ -98,6 +177,16 @@ public partial class SettingsViewModel : ObservableObject
         Se.Settings.General.FfmpegPath = FfmpegPath;
         Se.Settings.General.Theme = Theme;
         Se.Settings.File.ShowRecentFiles = ShowRecentFiles;
+        Se.Settings.General.SubtitleLineMaximumLength = SubtitleLineMaximumLength;
+        Se.Settings.General.MaxNumberOfLines = SelectedMaxNumberOfLines;
+        Se.Settings.General.MaxNumberOfLinesPlusAbort = MaxNumberOfLinesPlusAbort;
+        Se.Settings.General.MergeLinesShorterThan = MergeLinesShorterThan;
+        Se.Settings.General.SubtitleMinimumDisplayMilliseconds = SubtitleMinimumDisplayMilliseconds;
+        Se.Settings.General.SubtitleMaximumDisplayMilliseconds = SubtitleMaximumDisplayMilliseconds;
+        Se.Settings.General.MinimumMillisecondsBetweenLines = MinimumMillisecondsBetweenLines;
+        Se.Settings.General.SubtitleMaximumCharactersPerSeconds = SubtitleMaximumCharactersPerSeconds;
+        Se.Settings.General.SubtitleOptimalCharactersPerSeconds = SubtitleOptimalCharactersPerSeconds;
+        Se.Settings.General.SubtitleMaximumWordsPerMinute = SubtitleMaximumWordsPerMinute;
 
         Se.SaveSettings();
     }
@@ -116,7 +205,7 @@ public partial class SettingsViewModel : ObservableObject
 
     public async Task DownloadFfmpeg(object? sender, EventArgs eventArgs)
     {
-        var answer = await SettingsPage!.DisplayAlert(
+        var answer = await Page!.DisplayAlert(
             "Download ffmpeg?",
             "Download and use ffmpeg?",
             "Yes",
@@ -158,20 +247,26 @@ public partial class SettingsViewModel : ObservableObject
 
     public void OnAppearing()
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
-            LeftMenuTapped(null, new TappedEventArgs(null), SectionName.General);
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                LeftMenuTapped(null, new TappedEventArgs(null), SectionName.General);
+                LoadSettings();
+            });
+
+            return false;
         });
     }
 
     public void SearchButtonPressed(object? sender, EventArgs e)
     {
-        if (SettingsPage == null)
+        if (Page == null)
         {
             return;
         }
 
-        SettingsPage.BatchBegin();
+        Page.BatchBegin();
 
         SettingItem? lastCategory = null;
         SettingItem? lastSubCategory = null;
@@ -210,7 +305,7 @@ public partial class SettingsViewModel : ObservableObject
             }
         }
 
-        SettingsPage.BatchCommit();
+        Page.BatchCommit();
     }
 
     public void SearchBarTextChanged(object? sender, TextChangedEventArgs e)

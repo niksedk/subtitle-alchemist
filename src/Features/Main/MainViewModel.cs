@@ -47,7 +47,6 @@ using Path = System.IO.Path;
 using SpellCheckDictionary = SubtitleAlchemist.Features.SpellCheck.SpellCheckDictionary;
 using SubtitleAlchemist.Features.Video.TransparentSubtitles;
 using SubtitleAlchemist.Logic.Constants;
-using Microsoft.Maui.Controls;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -125,6 +124,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private readonly IUndoRedoManager _undoRedoManager;
     private readonly IFindService _findService;
     private readonly IInsertManager _insertManager;
+    private readonly IMergeManager _mergeManager;
     private readonly IShortcutManager _shortcutManager;
 
     public MainViewModel(
@@ -133,7 +133,8 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         IUndoRedoManager undoRedoManager,
         IFindService findService,
         IInsertManager insertManager,
-        IShortcutManager shortcutManager)
+        IShortcutManager shortcutManager, 
+        IMergeManager mergeManager)
     {
         _popupService = popupService;
         _autoBackup = autoBackup;
@@ -141,6 +142,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _findService = findService;
         _insertManager = insertManager;
         _shortcutManager = shortcutManager;
+        _mergeManager = mergeManager;
 
         VideoPlayer = new MediaElement { ZIndex = -10000 };
         SubtitleList = new CollectionView();
@@ -166,7 +168,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _audioVisualizer.OnTimeChanged += OnAudioVisualizerOnOnTimeChanged;
         _audioVisualizer.OnNewSelectionInsert += AudioVisualizerOnNewSelectionInsert;
         _audioVisualizer.OnPlayToggle += AudioVisualizerOnPlayToggle;
-        _audioVisualizer.SetContextMenu(MakeAudioVisualizerContextMenu());
+        _audioVisualizer.SetContextMenu(MakeAudioVisualizerContextMenu(new List<DisplayParagraph>()));
         _audioVisualizer.OnStatus += (sender, args) =>
         {
             ShowStatus(args.Paragraph.Text);
@@ -508,39 +510,81 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         });
     }
 
-    public MenuFlyout MakeAudioVisualizerContextMenu()
+    public MenuFlyout MakeAudioVisualizerContextMenu(List<DisplayParagraph> selectedParagraphs)
     {
-        var imagePath = Path.Combine("Resources", "Images", "Menu");
-
-        var menuFlyout = new MenuFlyout();
-        var items = new List<MenuFlyoutItem>
+        if (selectedParagraphs.Count == 0)
         {
-            new MenuFlyoutItem
+            return new MenuFlyout();
+        }
+
+        var imagePath = Path.Combine("Resources", "Images", "Menu");
+        var menuFlyout = new MenuFlyout();
+        var items = new List<MenuFlyoutItem>();
+        var count = selectedParagraphs.Count;
+
+        //TODO: check visible position + show actions where are relevant, e.g. new selection
+
+        if (count == 1)
+        {
+            items.Add(new MenuFlyoutItem
             {
-                Text = "Delete x lines?",
+                Text = "Delete one line?",
                 Command = DeleteSelectedLinesCommand,
-                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath,"Delete.png")),
-                IsEnabled = false,
-            },
-            new MenuFlyoutItem
+                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Delete.png")),
+            });
+        }
+        else if (count > 1)
+        {
+            items.Add(new MenuFlyoutItem
+            {
+                Text = $"Delete {count} lines?",
+                Command = DeleteSelectedLinesCommand,
+                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Delete.png")),
+            });
+        }
+
+        if (count == 1)
+        {
+            items.Add(new MenuFlyoutItem
             {
                 Text = "Insert line before",
                 Command = InsertBeforeCommand,
                 IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Add.png")),
-                IsEnabled = false,
-            },
-            new MenuFlyoutItem
+            });
+
+            items.Add(new MenuFlyoutItem
             {
                 Text = "Insert line after",
                 Command = InsertAfterCommand,
                 IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Add.png")),
-                IsEnabled = false,
-            },
-            new MenuFlyoutSeparator(),
-            new MenuFlyoutItem
+            });
+        }
+
+        if (count is > 1 and <= 100)
+        {
+            items.Add(new MenuFlyoutItem
+            {
+                Text = "Merge selected lines",
+                Command = MergeSelectedLinesCommand,
+                KeyboardAccelerators =
+                {
+                    new KeyboardAccelerator
+                    {
+                        Modifiers = KeyboardAcceleratorModifiers.Ctrl,
+                        Key = "M",
+                    }
+                },
+                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Italic.png")),
+            });
+        }
+
+        if (count > 1)
+        {
+            items.Add(new MenuFlyoutItem
             {
                 Text = "Italic",
-                Command = ItalicCommand, KeyboardAccelerators =
+                Command = ItalicCommand,
+                KeyboardAccelerators =
                 {
                     new KeyboardAccelerator
                     {
@@ -549,9 +593,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                     }
                 },
                 IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Italic.png")),
-                IsEnabled = false,
-            },
-        };
+            });
+        }
+
 
         foreach (var item in items)
         {
@@ -1570,99 +1614,102 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             CurrentText = string.Empty;
             CurrentStart = new TimeSpan();
             CurrentEnd = new TimeSpan();
-            CurrentDuration = new TimeSpan(); 
+            CurrentDuration = new TimeSpan();
             _updating = false;
         }
+
+        _audioVisualizer.SetContextMenu(MakeAudioVisualizerContextMenu(selectedParagraphs));
+        MakeSubtitleListContextMenu(selectedParagraphs);
     }
 
 
-    public void OnCollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    public void MakeSubtitleListContextMenu(List<DisplayParagraph> selectedParagraphs)
     {
-        //_updating = true;
+        var imagePath = Path.Combine("Resources", "Images", "Menu");
 
-        //if (_controlKeyIsDown)
-        //{
-        //    foreach (var item in Paragraphs)
-        //    {
-        //        if (e.CurrentSelection.Contains(item))
-        //        {
-        //            if (item.IsSelected)
-        //            {
-        //                item.IsSelected = false;
-        //                item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
-        //            }
-        //            else
-        //            {
-        //                item.IsSelected = true;
-        //                item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
-        //            }
-        //        }
-        //    }
-        //}
-        //else
-        //{
-        //    foreach (var item in Paragraphs)
-        //    {
-        //        if (e.CurrentSelection.Contains(item) && (!e.PreviousSelection.Contains(item) || e.CurrentSelection.Count == 1))
-        //        {
-        //            item.IsSelected = true;
-        //            item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
-        //        }
-        //        else if (item.IsSelected)
-        //        {
-        //            item.IsSelected = false;
-        //            item.BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
-        //        }
-        //    }
-        //}
+        SubtitleListViewContextMenu = new MenuFlyout();
+        SubtitleListViewContextMenuItems = new List<MenuFlyoutItem>();
 
-        //_updating = false;
+        var count = selectedParagraphs.Count;
 
-        //var selectedIndexes = string.Join(',', Paragraphs.Where(p => p.IsSelected).Select(p => p.Number));
-        //var x = string.Join(',', Paragraphs.Where(p => e.CurrentSelection.Contains(p)).Select(p => p.Number));
-        //ShowStatus($"IsSelected items: {selectedIndexes}, e.CurrentSelection={x}, Ctrl=" + _controlKeyIsDown);
-
-        return;
-
-        var current = e.CurrentSelection;
-        var first = true;
-        foreach (var item in current)
+        if (count == 1)
         {
-            if (item is DisplayParagraph paragraph)
+            SubtitleListViewContextMenuItems.Add(new MenuFlyoutItem
             {
-                if (first)
+                Text = "Delete one line?",
+                Command = DeleteSelectedLinesCommand,
+                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Delete.png")),
+            });
+        }
+        else if (count > 1)
+        {
+            SubtitleListViewContextMenuItems.Add(new MenuFlyoutItem
+            {
+                Text = $"Delete {count} lines?",
+                Command = DeleteSelectedLinesCommand,
+                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Delete.png")),
+            });
+        }
+
+        if (count == 1)
+        {
+            SubtitleListViewContextMenuItems.Add(new MenuFlyoutItem
+            {
+                Text = "Insert line before",
+                Command = InsertBeforeCommand,
+                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Add.png")),
+            });
+
+            SubtitleListViewContextMenuItems.Add(new MenuFlyoutItem
+            {
+                Text = "Insert line after",
+                Command = InsertAfterCommand,
+                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Add.png")),
+            });
+        }
+
+        if (count is > 1 and <= 100)
+        {
+            SubtitleListViewContextMenuItems.Add(new MenuFlyoutItem
+            {
+                Text = "Merge selected lines",
+                Command = MergeSelectedLinesCommand,
+                KeyboardAccelerators =
                 {
-                    CurrentText = paragraph.Text;
-                    CurrentStart = paragraph.Start;
-                    CurrentEnd = paragraph.End;
-                    CurrentDuration = paragraph.End - paragraph.Start;
-                    _selectedParagraph = paragraph;
-                    first = false;
-                }
-
-                paragraph.IsSelected = true;
-            }
+                    new KeyboardAccelerator
+                    {
+                        Modifiers = KeyboardAcceleratorModifiers.Ctrl,
+                        Key = "M",
+                    }
+                },
+                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Italic.png")),
+            });
         }
 
-        _updating = false;
-        //ShowStatus("Selecting " + current.Count + " paragraphs: " + string.Join(',', paragraphs.Select(p => p.Number)));
-
-        const int contextMenuDeleteOneLine = 0;
-        const int contextMenuInsertBefore = 1;
-        const int contextMenuInsertAfter = 2;
-        const int contextMenuItalic = 4;
-        if (current.Count == 1)
+        if (count > 1)
         {
-            SubtitleListViewContextMenuItems[contextMenuDeleteOneLine].Text = "Delete one line";
+            SubtitleListViewContextMenuItems.Add(new MenuFlyoutItem
+            {
+                Text = "Italic",
+                Command = ItalicCommand,
+                KeyboardAccelerators =
+                {
+                    new KeyboardAccelerator
+                    {
+                        Modifiers = KeyboardAcceleratorModifiers.Ctrl,
+                        Key = "I",
+                    }
+                },
+                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Italic.png")),
+            });
         }
-        else if (current.Count > 1)
+
+        foreach (var item in SubtitleListViewContextMenuItems)
         {
-            SubtitleListViewContextMenuItems[contextMenuDeleteOneLine].Text = "Delete selected lines";
+            SubtitleListViewContextMenu.Add(item);
         }
-        SubtitleListViewContextMenuItems[contextMenuDeleteOneLine].IsEnabled = current.Count == 1;
-        SubtitleListViewContextMenuItems[contextMenuInsertBefore].IsEnabled = current.Count == 1;
-        SubtitleListViewContextMenuItems[contextMenuInsertAfter].IsEnabled = current.Count == 1;
-        SubtitleListViewContextMenuItems[contextMenuItalic].IsEnabled = current.Count == 1;
+
+        FlyoutBase.SetContextFlyout(SubtitleList, SubtitleListViewContextMenu);
     }
 
     [RelayCommand]
@@ -2103,17 +2150,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         {
             statusText = $"{selectedParagraphs.Count} lines deleted.";
         }
+
         ShowStatus(statusText);
-
-        if (firstIdx >= 0)
-        {
-            SubtitleList.ScrollTo(firstIdx, 1, ScrollToPosition.Center, false);
-            SubtitleList.ScrollTo(firstIdx, 1, ScrollToPosition.Center, false);
-            SubtitleList.ScrollTo(firstIdx, 1, ScrollToPosition.Center, false);
-            SubtitleList.ScrollTo(firstIdx, 1, ScrollToPosition.Center, false);
-
-            SubtitleList.SelectedItem = Paragraphs[firstIdx];
-        }
+        SelectParagraph(firstIdx);
     }
 
     private void Renumber()
@@ -2128,72 +2167,78 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private void InsertBefore()
     {
-        if (_selectedParagraph == null)
+        var indices = GetSelectedIndexes();
+        if (indices.Length != 1)
         {
             return;
         }
 
-        var p = Paragraphs.FirstOrDefault(p => p.P == _selectedParagraph.P);
-        if (p == null)
-        {
-            return;
-        }
+        var p = Paragraphs[indices[0]];
 
-        MakeHistoryForUndo($"Before \"Insert before\"");
-
-        var idx = Paragraphs.IndexOf(p);
+        MakeHistoryForUndo("Before \"Insert before\"");
 
         SubtitleList.BatchBegin();
         var list = Paragraphs.ToList();
-        var newParagraph = _insertManager.InsertBefore(list, GetSelectedIndexes(), string.Empty, Configuration.Settings.General.MinimumMillisecondsBetweenLines);
+        var newParagraph = _insertManager.InsertBefore(list, indices, string.Empty, Configuration.Settings.General.MinimumMillisecondsBetweenLines);
         Paragraphs = new ObservableCollection<DisplayParagraph>(list);
         Renumber();
 
-        _selectedParagraph = newParagraph;
+        SelectedParagraph = newParagraph;
 
         SubtitleList.BatchCommit();
 
-        SubtitleList.ScrollTo(idx, 1, ScrollToPosition.Center);
-        SubtitleList.ScrollTo(idx, 1, ScrollToPosition.Center);
-        SubtitleList.ScrollTo(idx, 1, ScrollToPosition.Center);
-        SubtitleList.ScrollTo(idx, 1, ScrollToPosition.Center);
-
-        SubtitleList.SelectedItem = _selectedParagraph;
+        SelectParagraph(newParagraph);
     }
 
     [RelayCommand]
     private void InsertAfter()
     {
-        if (_selectedParagraph == null)
+        var indices = GetSelectedIndexes();
+        if (indices.Length != 1)
         {
             return;
         }
 
-        var p = Paragraphs.FirstOrDefault(p => p.P == _selectedParagraph.P);
-        if (p == null)
-        {
-            return;
-        }
+        var p = Paragraphs[indices[0]];
 
         MakeHistoryForUndo($"Before \"Insert after\"");
 
-        var idx = Paragraphs.IndexOf(p);
-
         SubtitleList.BatchBegin();
         var list = Paragraphs.ToList();
-        var newParagraph = _insertManager.InsertAfter(list, GetSelectedIndexes(), string.Empty, Configuration.Settings.General.MinimumMillisecondsBetweenLines);
+        var newParagraph = _insertManager.InsertAfter(list, indices, string.Empty, Configuration.Settings.General.MinimumMillisecondsBetweenLines);
         Paragraphs = new ObservableCollection<DisplayParagraph>(list);
         Renumber();
         SubtitleList.BatchCommit();
 
-        _selectedParagraph = newParagraph;
+        SelectedParagraph = newParagraph;
+        SelectParagraph(newParagraph);
+    }
 
-        SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
-        SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
-        SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
-        SubtitleList.ScrollTo(idx + 1, 1, ScrollToPosition.Center);
+    [RelayCommand]
+    private void MergeSelectedLines()
+    {
+        var indices = GetSelectedIndexes();
+        if (indices.Length is <= 0)
+        {
+            return;
+        }
 
-        SubtitleList.SelectedItem = _selectedParagraph;
+        var mergedSubtitle = _mergeManager.MergeSelectedLines(UpdatedSubtitle, indices, MergeManager.BreakMode.Normal);
+
+        if (mergedSubtitle.Paragraphs.Count == Paragraphs.Count)
+        {
+            return;
+        }
+
+        MakeHistoryForUndo("Before \"Merge selected lines\"");
+
+        SubtitleList.BatchBegin();
+        var list = Paragraphs.ToList();
+        Paragraphs = new ObservableCollection<DisplayParagraph>(mergedSubtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+
+        SubtitleList.BatchCommit();
+
+        SelectParagraph(indices[0]);
     }
 
     [RelayCommand]

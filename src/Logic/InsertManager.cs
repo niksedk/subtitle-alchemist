@@ -17,7 +17,7 @@ namespace SubtitleAlchemist.Logic
 
             //SetStyleForNewParagraph(newParagraph, firstSelectedIndex);
 
-            var prev = firstSelectedIndex > 0 ? paragraphs[firstSelectedIndex-1] : null;
+            var prev = firstSelectedIndex >= 0 ? paragraphs[firstSelectedIndex] : null;
             var next = firstSelectedIndex +1 < paragraphs.Count ? paragraphs[firstSelectedIndex + 1] : null;
 
             var addMilliseconds = minGapBetweenLines;
@@ -121,7 +121,7 @@ namespace SubtitleAlchemist.Logic
             //SetStyleForNewParagraph(newParagraph, firstSelectedIndex);
 
             var prev = firstSelectedIndex > 0 ? paragraphs[firstSelectedIndex - 1] : null;
-            var next = firstSelectedIndex + 1 < paragraphs.Count ? paragraphs[firstSelectedIndex + 1] : null;
+            var next = firstSelectedIndex < paragraphs.Count ? paragraphs[firstSelectedIndex] : null;
             if (prev != null && next != null)
             {
                 newParagraph.EndTime.TotalMilliseconds = next.Start.TotalMilliseconds - addMilliseconds;
@@ -190,7 +190,7 @@ namespace SubtitleAlchemist.Logic
             }
 
             var dp = new DisplayParagraph(newParagraph);
-            var insertIndex = firstSelectedIndex + 1;
+            var insertIndex = firstSelectedIndex;
             if (insertIndex >= paragraphs.Count)
             {
                 paragraphs.Add(dp);

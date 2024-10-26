@@ -176,10 +176,10 @@ public static class InitSubtitleListView
         collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Paragraphs), BindingMode.TwoWay);
        // collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedParagraph));
       //  collectionView.SetBinding(SelectableItemsView.SelectedItemsProperty, nameof(vm.SelectedParagraph));
-        collectionView.SelectionChanged += vm.OnCollectionViewSelectionChanged;
+        //collectionView.SelectionChanged += vm.OnCollectionViewSelectionChanged;
         collectionView.BindingContext = vm;
         vm.SubtitleList = collectionView;
-        MakeContextMenu(vm, collectionView);
+        //MakeContextMenu(vm, collectionView);
 
         grid.Add(collectionView, 0, 1);
 
@@ -278,58 +278,6 @@ public static class InitSubtitleListView
         return grid;
     }
 
-    private static void MakeContextMenu(MainViewModel vm, CollectionView view)
-    {
-        var imagePath = Path.Combine("Resources", "Images", "Menu");
-
-        vm.SubtitleListViewContextMenu = new MenuFlyout();
-        vm.SubtitleListViewContextMenuItems = new List<MenuFlyoutItem>
-        {
-            new MenuFlyoutItem
-            {
-                Text = "Delete x lines?",
-                Command = vm.DeleteSelectedLinesCommand,
-                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath,"Delete.png")),
-                IsEnabled = false,
-            },
-            new MenuFlyoutItem
-            {
-                Text = "Insert line before",
-                Command = vm.InsertBeforeCommand,
-                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Add.png")),
-                IsEnabled = false,
-            },
-            new MenuFlyoutItem
-            {
-                Text = "Insert line after",
-                Command = vm.InsertAfterCommand,
-                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Add.png")),
-                IsEnabled = false,
-            },
-            new MenuFlyoutSeparator(),
-            new MenuFlyoutItem
-            {
-                Text = "Italic",
-                Command = vm.ItalicCommand, KeyboardAccelerators =
-                {
-                    new KeyboardAccelerator
-                    {
-                        Modifiers = KeyboardAcceleratorModifiers.Ctrl,
-                        Key = "I",
-                    }
-                },
-                IconImageSource = ImageSource.FromFile(Path.Combine(imagePath, "Italic.png")),
-                IsEnabled = false,
-            },
-        };
-
-        foreach (var item in vm.SubtitleListViewContextMenuItems)
-        {
-            vm.SubtitleListViewContextMenu.Add(item);
-        }
-
-        FlyoutBase.SetContextFlyout(view, vm.SubtitleListViewContextMenu);
-    }
 
     private static ImageSource ConvertSvgToImageSource(byte[] svgData)
     {

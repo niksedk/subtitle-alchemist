@@ -25,6 +25,17 @@ public class LanguageSettings
     public string ContinuationStyleLeadingTrailingDashDots { get; set; }
     public string ContinuationStyleCustom { get; set; }
 
+    public string CpsLineLengthStyle { get; set; }
+    public string CpsLineLengthStyleCalcAll { get; set; }
+    public string CpsLineLengthStyleCalcNoSpaceCpsOnly { get; set; }
+    public string CpsLineLengthStyleCalcNoSpace { get; set; }
+    public string CpsLineLengthStyleCalcCjk { get; set; }
+    public string CpsLineLengthStyleCalcCjkNoSpace { get; set; }
+    public string CpsLineLengthStyleCalcIncludeCompositionCharacters { get; set; }
+    public string CpsLineLengthStyleCalcIncludeCompositionCharactersNotSpace { get; set; }
+    public string CpsLineLengthStyleCalcNoSpaceOrPunctuation { get; set; }
+    public string CpsLineLengthStyleCalcNoSpaceOrPunctuationCpsOnly { get; set; }
+
 
     public LanguageSettings()
     {
@@ -47,6 +58,17 @@ public class LanguageSettings
         ContinuationStyleLeadingTrailingDash = "Dash";
         ContinuationStyleLeadingTrailingDashDots = "Dash, but dots for pauses";
         ContinuationStyleCustom = "Custom";
+
+        CpsLineLengthStyle = "Cps/line-length";
+        CpsLineLengthStyleCalcAll = "Count all characters";
+        CpsLineLengthStyleCalcNoSpaceCpsOnly = "Count all except space, cps only";
+        CpsLineLengthStyleCalcNoSpace = "Count all except space";
+        CpsLineLengthStyleCalcCjk = "CJK 1, Latin 0.5";
+        CpsLineLengthStyleCalcCjkNoSpace = "CJK 1, Latin 0.5, space 0";
+        CpsLineLengthStyleCalcIncludeCompositionCharacters = "Include composition characters";
+        CpsLineLengthStyleCalcIncludeCompositionCharactersNotSpace = "Include composition characters, not space";
+        CpsLineLengthStyleCalcNoSpaceOrPunctuation = "No space or punctuation ()[]-:;,.!?";
+        CpsLineLengthStyleCalcNoSpaceOrPunctuationCpsOnly = "No space or punctuation, CPS only";
     }
 
     public string GetContinuationStyleName(ContinuationStyle continuationStyle)
