@@ -1,6 +1,7 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Logic;
@@ -126,8 +127,30 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private SubtitleListDoubleClickActionDisplay _selectedSubtitleListDoubleClickAction;
 
-    
+    [ObservableProperty]
+    private ObservableCollection<AutoBackupIntervalDisplay> _autoBackupIntervals;
 
+    [ObservableProperty]
+    private AutoBackupIntervalDisplay _selectedAutoBackupInterval;
+
+    [ObservableProperty]
+    private ObservableCollection<AutoBackupDeleteDisplay> _autoBackupDeleteOptions;
+
+    [ObservableProperty]
+    private AutoBackupDeleteDisplay _selectedAutoBackupDeleteOption;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _subtitleFormats;
+
+    [ObservableProperty]
+    private string _selectedDefaultSubtitleFormat;
+
+
+    [ObservableProperty]
+    private ObservableCollection<string> _subtitleSaveAsSubtitleFormats;
+
+    [ObservableProperty]
+    private string _selectedDefaultSaveAsSubtitleFormat;
 
     private readonly IPopupService _popupService;
     private SettingsPage.SectionName _sectionName = SettingsPage.SectionName.General;
@@ -171,6 +194,21 @@ public partial class SettingsViewModel : ObservableObject
 
         _subtitleListDoubleClickActions = new ObservableCollection<SubtitleListDoubleClickActionDisplay>(SubtitleListDoubleClickActionDisplay.GetSubtitleListDoubleClickActions());
         _selectedSubtitleListDoubleClickAction = _subtitleListDoubleClickActions.First();
+
+        _autoBackupIntervals = new ObservableCollection<AutoBackupIntervalDisplay>(AutoBackupIntervalDisplay.GetAutoBackupIntervals());
+        _selectedAutoBackupInterval = _autoBackupIntervals.First();
+
+        _autoBackupDeleteOptions = new ObservableCollection<AutoBackupDeleteDisplay>(AutoBackupDeleteDisplay.GetAutoBackupDeleteOptions());
+        _selectedAutoBackupDeleteOption = _autoBackupDeleteOptions.First();
+
+        var allSubtitleFormats = SubtitleFormat.AllSubtitleFormats.Select(p => p.Name).ToList();
+        _subtitleFormats = new ObservableCollection<string>(allSubtitleFormats);
+        _selectedDefaultSubtitleFormat = _subtitleFormats.First();
+
+        var allSaveAsSubtitleFormats = allSubtitleFormats;
+        allSaveAsSubtitleFormats.Insert(0, "- Auto - ");
+        _subtitleSaveAsSubtitleFormats = new ObservableCollection<string>(allSaveAsSubtitleFormats);
+        _selectedDefaultSaveAsSubtitleFormat = _subtitleSaveAsSubtitleFormats.First();
     }
 
     public void LeftMenuTapped(object? sender, TappedEventArgs e, SettingsPage.SectionName sectionName)

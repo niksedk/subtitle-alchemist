@@ -127,6 +127,8 @@ public class SettingsPage : ContentPage
             Margin = new Thickness(0, 0, 0, 0),
             ItemsLayout = new GridItemsLayout(1, ItemsLayoutOrientation.Vertical),
             SelectionMode = SelectionMode.None,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Default,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Always,
             VerticalOptions = LayoutOptions.Start,
             ItemTemplate = new DataTemplate(() =>
             {
@@ -154,6 +156,294 @@ public class SettingsPage : ContentPage
 
         return collectionView;
     }
+
+    private static void MakeGeneralSettings(SettingsViewModel vm)
+    {
+        vm.AllSettings.Add(new SettingItem("General", SectionName.General));
+        vm.AllSettings.Add(new SettingItem("Rules"));
+
+        var ruleTextWidth = 200;
+        var controlWidth = 200;
+
+        // Rules
+        var entrySingleLineMaxWidth = new Entry
+        {
+            Placeholder = "Enter single line max width",
+            HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        entrySingleLineMaxWidth.SetBinding(Entry.TextProperty, nameof(vm.SubtitleLineMaximumLength), BindingMode.TwoWay);
+
+        vm.AllSettings.Add(new SettingItem("Single line max length", ruleTextWidth, string.Empty, entrySingleLineMaxWidth));
+
+        var entryOptimalCharsSec = new Entry
+        {
+            Placeholder = "Enter optimal chars/sec",
+            HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        entryOptimalCharsSec.SetBinding(Entry.TextProperty, nameof(vm.SubtitleOptimalCharactersPerSeconds), BindingMode.TwoWay);
+        vm.AllSettings.Add(new SettingItem("Optimal chars/sec", ruleTextWidth, string.Empty, entryOptimalCharsSec));
+
+        var entryMaxCharsSec = new Entry
+        {
+            Placeholder = "Enter max chars/sec",
+            HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        entryMaxCharsSec.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumCharactersPerSeconds), BindingMode.TwoWay);
+        vm.AllSettings.Add(new SettingItem("Max chars/sec", ruleTextWidth, string.Empty, entryMaxCharsSec));
+
+        var entryMaxWordsMin = new Entry
+        {
+            Placeholder = "Enter max words/min",
+            HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        entryMaxWordsMin.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumWordsPerMinute), BindingMode.TwoWay);
+        vm.AllSettings.Add(new SettingItem("Max words/min", ruleTextWidth, string.Empty, entryMaxWordsMin));
+
+        var entryMinDuration = new Entry
+        {
+            Placeholder = "Enter min duration in milliseconds",
+            HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        entryMinDuration.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMinimumDisplayMilliseconds), BindingMode.TwoWay);
+        vm.AllSettings.Add(new SettingItem("Min duration in milliseconds", ruleTextWidth, string.Empty, entryMinDuration));
+
+        var entryMaxDuration = new Entry
+        {
+            Placeholder = "Enter max duration in milliseconds",
+            HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        entryMaxDuration.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumDisplayMilliseconds), BindingMode.TwoWay);
+        vm.AllSettings.Add(new SettingItem("Max duration in milliseconds", ruleTextWidth, string.Empty, entryMaxDuration));
+
+        var entryMinGap = new Entry
+        {
+            Placeholder = "Enter min gap between subtitles in milliseconds",
+            HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        entryMinGap.SetBinding(Entry.TextProperty, nameof(vm.MinimumMillisecondsBetweenLines), BindingMode.TwoWay);
+        vm.AllSettings.Add(new SettingItem("Min gap between subtitles in milliseconds", ruleTextWidth, string.Empty,
+            entryMinGap));
+
+        var pickerMaxLines = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerMaxLines.SetBinding(Picker.ItemsSourceProperty, nameof(vm.MaxNumberOfLines));
+        pickerMaxLines.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedMaxNumberOfLines));
+        vm.AllSettings.Add(new SettingItem("Max number of lines", ruleTextWidth, string.Empty, pickerMaxLines));
+
+        var entryUnbreakShorterThan = new Entry
+        {
+            Placeholder = "Enter unbreak subtitles shorter than",
+            HorizontalOptions = LayoutOptions.Start,
+            Keyboard = Keyboard.Numeric,
+            BindingContext = vm,
+            WidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        entryUnbreakShorterThan.SetBinding(Entry.TextProperty, nameof(vm.MergeLinesShorterThan), BindingMode.TwoWay);
+        vm.AllSettings.Add(new SettingItem("Unbreak subtitles shorter than", ruleTextWidth, string.Empty,
+            entryUnbreakShorterThan));
+
+        var pickerDialogStyle = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerDialogStyle.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DialogStyles));
+        pickerDialogStyle.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDialogStyle));
+        vm.AllSettings.Add(new SettingItem("Dialog style", ruleTextWidth, string.Empty, pickerDialogStyle));
+
+        var pickerContinuationStyle = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerContinuationStyle.SetBinding(Picker.ItemsSourceProperty, nameof(vm.ContinuationStyles));
+        pickerContinuationStyle.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedContinuationStyle));
+        vm.AllSettings.Add(new SettingItem("Continuation style", ruleTextWidth, string.Empty, pickerContinuationStyle));
+
+        var pickerCpsLineLength = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerCpsLineLength.SetBinding(Picker.ItemsSourceProperty, nameof(vm.CpsLineLengthStrategies));
+        pickerCpsLineLength.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedCpsLineLengthStrategy));
+        vm.AllSettings.Add(new SettingItem("CPS/line-length", ruleTextWidth, string.Empty, pickerCpsLineLength));
+
+        // Misc.
+        vm.AllSettings.Add(new SettingItem("Misc."));
+
+        var pickerDefaultFrameRate = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerDefaultFrameRate.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DefaultFrameRates));
+        pickerDefaultFrameRate.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultFrameRate));
+        vm.AllSettings.Add(new SettingItem("Default frame rate", ruleTextWidth, string.Empty, pickerDefaultFrameRate));
+
+
+        var pickerDefaultFileEncoding = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerDefaultFileEncoding.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DefaultFileEncodings));
+        pickerDefaultFileEncoding.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultFileEncoding));
+        vm.AllSettings.Add(new SettingItem("Default file encoding", ruleTextWidth, string.Empty, pickerDefaultFileEncoding));
+
+
+        var switchAutoDetectAnsiEncoding = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+        }.BindDynamicTheme();
+        switchAutoDetectAnsiEncoding.SetBinding(Switch.IsToggledProperty, nameof(vm.AutodetectAnsiEncoding));
+        vm.AllSettings.Add(new SettingItem("Auto detect ANSI encoding", ruleTextWidth, string.Empty, switchAutoDetectAnsiEncoding));
+
+        var labelLanguageFilter = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 10, 0),
+            BindingContext = vm,
+        }.BindDynamicTheme();
+        labelLanguageFilter.SetBinding(Label.TextProperty, nameof(vm.LanguageFiltersDisplay));
+        var buttonLanguageFilter = new Button
+        {
+            Text = "Edit",
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+        }.BindDynamicTheme();
+        var stackLanguageFilter = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            Children =
+            {
+                labelLanguageFilter,
+                buttonLanguageFilter,
+            }
+        };
+        vm.AllSettings.Add(new SettingItem("Language filter", ruleTextWidth, string.Empty, stackLanguageFilter));
+
+        var switchPromptForDeleteLines = new Switch
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+        }.BindDynamicTheme();
+        switchPromptForDeleteLines.SetBinding(Switch.IsToggledProperty, nameof(vm.PromptForDeleteLines));
+        vm.AllSettings.Add(new SettingItem("Prompt for delete lines", ruleTextWidth, string.Empty, switchPromptForDeleteLines));
+
+        var pickerTimeCodeMode = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerTimeCodeMode.SetBinding(Picker.ItemsSourceProperty, nameof(vm.TimeCodeModes));
+        pickerTimeCodeMode.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedTimeCodeMode));
+        vm.AllSettings.Add(new SettingItem("Time code mode", ruleTextWidth, string.Empty, pickerTimeCodeMode));
+
+
+        var pickerSplitBehavior = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerSplitBehavior.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SplitBehaviors));
+        pickerSplitBehavior.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedSplitBehavior));
+        vm.AllSettings.Add(new SettingItem("Split behavior", ruleTextWidth, string.Empty, pickerSplitBehavior));
+
+        var pickerSubtitleListDoubleClickAction = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerSubtitleListDoubleClickAction.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SubtitleListDoubleClickActions));
+        pickerSubtitleListDoubleClickAction.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedSubtitleListDoubleClickAction));
+        vm.AllSettings.Add(new SettingItem("Subtitle list double click action", ruleTextWidth, string.Empty,
+            pickerSubtitleListDoubleClickAction));
+
+        var pickerAutoBackupInterval = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerAutoBackupInterval.SetBinding(Picker.ItemsSourceProperty, nameof(vm.AutoBackupIntervals));
+        pickerAutoBackupInterval.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedAutoBackupInterval));
+        vm.AllSettings.Add(new SettingItem("Auto-backup", ruleTextWidth, string.Empty, pickerAutoBackupInterval));
+
+        var pickerAutoBackupDeletAfter = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerAutoBackupDeletAfter.SetBinding(Picker.ItemsSourceProperty, nameof(vm.AutoBackupDeleteOptions));
+        pickerAutoBackupDeletAfter.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedAutoBackupDeleteOption));
+        vm.AllSettings.Add(new SettingItem("Auto-backup delete", ruleTextWidth, string.Empty, pickerAutoBackupDeletAfter));
+    }
+
+    private static void MakeSubtitleFormatSettings(SettingsViewModel vm)
+    {
+        vm.AllSettings.Add(new SettingItem("Subtitle formats", SectionName.SubtitleFormats));
+
+        var textWidth = 200;
+        var pickerDefaultSubtitleFormat = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = textWidth,
+        }.BindDynamicTheme();
+        pickerDefaultSubtitleFormat.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SubtitleFormats));
+        pickerDefaultSubtitleFormat.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultSubtitleFormat));
+        vm.AllSettings.Add(new SettingItem("Single line max length", textWidth, string.Empty, pickerDefaultSubtitleFormat));
+
+        var pickerDefaultSaveAsFormat = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = textWidth,
+        }.BindDynamicTheme();
+        pickerDefaultSaveAsFormat.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SubtitleSaveAsSubtitleFormats));
+        pickerDefaultSaveAsFormat.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultSaveAsSubtitleFormat));
+        vm.AllSettings.Add(new SettingItem("Default save as format", textWidth, string.Empty, pickerDefaultSaveAsFormat));
+
+        vm.AllSettings.Add(new SettingItem("Favorites"));
+    }
+
 
     private static void MakeFileTypeAssociationsSettings(SettingsViewModel vm)
     {
@@ -337,318 +627,6 @@ public class SettingsPage : ContentPage
     {
         vm.AllSettings.Add(new SettingItem("Video player", SectionName.VideoPlayer));
         vm.AllSettings.Add(new SettingItem("Video engine"));
-    }
-
-    private static void MakeGeneralSettings(SettingsViewModel vm)
-    {
-        vm.AllSettings.Add(new SettingItem("General", SectionName.General));
-        vm.AllSettings.Add(new SettingItem("Rules"));
-
-        var ruleTextWidth = 200;
-        var controlWidth = 200;
-
-        // Rules
-        var entrySingleLineMaxWidth = new Entry
-        {
-            Placeholder = "Enter single line max width",
-            HorizontalOptions = LayoutOptions.Start,
-            Keyboard = Keyboard.Numeric,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        entrySingleLineMaxWidth.SetBinding(Entry.TextProperty, nameof(vm.SubtitleLineMaximumLength), BindingMode.TwoWay);
-
-        vm.AllSettings.Add(new SettingItem("Single line max length", ruleTextWidth, string.Empty, entrySingleLineMaxWidth));
-
-        var entryOptimalCharsSec = new Entry
-        {
-            Placeholder = "Enter optimal chars/sec",
-            HorizontalOptions = LayoutOptions.Start,
-            Keyboard = Keyboard.Numeric,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        entryOptimalCharsSec.SetBinding(Entry.TextProperty, nameof(vm.SubtitleOptimalCharactersPerSeconds), BindingMode.TwoWay);
-        vm.AllSettings.Add(new SettingItem("Optimal chars/sec", ruleTextWidth, string.Empty, entryOptimalCharsSec));
-
-        var entryMaxCharsSec = new Entry
-        {
-            Placeholder = "Enter max chars/sec",
-            HorizontalOptions = LayoutOptions.Start,
-            Keyboard = Keyboard.Numeric,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        entryMaxCharsSec.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumCharactersPerSeconds), BindingMode.TwoWay);
-        vm.AllSettings.Add(new SettingItem("Max chars/sec", ruleTextWidth, string.Empty, entryMaxCharsSec));
-
-        var entryMaxWordsMin = new Entry
-        {
-            Placeholder = "Enter max words/min",
-            HorizontalOptions = LayoutOptions.Start,
-            Keyboard = Keyboard.Numeric,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        entryMaxWordsMin.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumWordsPerMinute), BindingMode.TwoWay);
-        vm.AllSettings.Add(new SettingItem("Max words/min", ruleTextWidth, string.Empty, entryMaxWordsMin));
-
-        var entryMinDuration = new Entry
-        {
-            Placeholder = "Enter min duration in milliseconds",
-            HorizontalOptions = LayoutOptions.Start,
-            Keyboard = Keyboard.Numeric,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        entryMinDuration.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMinimumDisplayMilliseconds), BindingMode.TwoWay);
-        vm.AllSettings.Add(new SettingItem("Min duration in milliseconds", ruleTextWidth, string.Empty, entryMinDuration));
-
-        var entryMaxDuration = new Entry
-        {
-            Placeholder = "Enter max duration in milliseconds",
-            HorizontalOptions = LayoutOptions.Start,
-            Keyboard = Keyboard.Numeric,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        entryMaxDuration.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumDisplayMilliseconds), BindingMode.TwoWay);
-        vm.AllSettings.Add(new SettingItem("Max duration in milliseconds", ruleTextWidth, string.Empty, entryMaxDuration));
-
-        var entryMinGap = new Entry
-        {
-            Placeholder = "Enter min gap between subtitles in milliseconds",
-            HorizontalOptions = LayoutOptions.Start,
-            Keyboard = Keyboard.Numeric,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        entryMinGap.SetBinding(Entry.TextProperty, nameof(vm.MinimumMillisecondsBetweenLines), BindingMode.TwoWay);
-        vm.AllSettings.Add(new SettingItem("Min gap between subtitles in milliseconds", ruleTextWidth, string.Empty,
-            entryMinGap));
-
-        var pickerMaxLines = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        pickerMaxLines.SetBinding(Picker.ItemsSourceProperty, nameof(vm.MaxNumberOfLines));
-        pickerMaxLines.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedMaxNumberOfLines));
-        vm.AllSettings.Add(new SettingItem("Max number of lines", ruleTextWidth, string.Empty, pickerMaxLines));
-
-        var entryUnbreakShorterThan = new Entry
-        {
-            Placeholder = "Enter unbreak subtitles shorter than",
-            HorizontalOptions = LayoutOptions.Start,
-            Keyboard = Keyboard.Numeric,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        entryUnbreakShorterThan.SetBinding(Entry.TextProperty, nameof(vm.MergeLinesShorterThan), BindingMode.TwoWay);
-        vm.AllSettings.Add(new SettingItem("Unbreak subtitles shorter than", ruleTextWidth, string.Empty,
-            entryUnbreakShorterThan));
-
-        var pickerDialogStyle = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            MinimumWidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        pickerDialogStyle.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DialogStyles));
-        pickerDialogStyle.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDialogStyle));
-        vm.AllSettings.Add(new SettingItem("Dialog style", ruleTextWidth, string.Empty, pickerDialogStyle));
-
-        var pickerContinuationStyle = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            MinimumWidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        pickerContinuationStyle.SetBinding(Picker.ItemsSourceProperty, nameof(vm.ContinuationStyles));
-        pickerContinuationStyle.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedContinuationStyle));
-        vm.AllSettings.Add(new SettingItem("Continuation style", ruleTextWidth, string.Empty, pickerContinuationStyle));
-
-        var pickerCpsLineLength = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            MinimumWidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        pickerCpsLineLength.SetBinding(Picker.ItemsSourceProperty, nameof(vm.CpsLineLengthStrategies));
-        pickerCpsLineLength.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedCpsLineLengthStrategy));
-        vm.AllSettings.Add(new SettingItem("CPS/line-length", ruleTextWidth, string.Empty, pickerCpsLineLength));
-
-        // Misc.
-        vm.AllSettings.Add(new SettingItem("Misc."));
-
-        var pickerDefaultFrameRate = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            MinimumWidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        pickerDefaultFrameRate.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DefaultFrameRates));
-        pickerDefaultFrameRate.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultFrameRate));
-        vm.AllSettings.Add(new SettingItem("Default frame rate", ruleTextWidth, string.Empty, pickerDefaultFrameRate));
-        
-        
-        var pickerDefaultFileEncoding = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            MinimumWidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        pickerDefaultFileEncoding.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DefaultFileEncodings));
-        pickerDefaultFileEncoding.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultFileEncoding));
-        vm.AllSettings.Add(new SettingItem("Default file encoding", ruleTextWidth, string.Empty, pickerDefaultFileEncoding));
-
-
-        var switchAutoDetectAnsiEncoding = new Switch
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-        }.BindDynamicTheme();
-        switchAutoDetectAnsiEncoding.SetBinding(Switch.IsToggledProperty, nameof(vm.AutodetectAnsiEncoding));
-        vm.AllSettings.Add(new SettingItem("Auto detect ANSI encoding", ruleTextWidth, string.Empty, switchAutoDetectAnsiEncoding));
-
-        var labelLanguageFilter = new Label
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 10, 0),
-            BindingContext = vm,
-        }.BindDynamicTheme();
-        labelLanguageFilter.SetBinding(Label.TextProperty, nameof(vm.LanguageFiltersDisplay));
-        var buttonLanguageFilter = new Button
-        {
-            Text = "Edit",
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-        }.BindDynamicTheme();
-        var stackLanguageFilter = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            Children =
-            {
-                labelLanguageFilter,
-                buttonLanguageFilter,
-            }
-        };
-        vm.AllSettings.Add(new SettingItem("Language filter", ruleTextWidth, string.Empty, stackLanguageFilter));
-
-        var switchPromptForDeleteLines = new Switch
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-        }.BindDynamicTheme();
-        switchPromptForDeleteLines.SetBinding(Switch.IsToggledProperty, nameof(vm.PromptForDeleteLines));
-        vm.AllSettings.Add(new SettingItem("Prompt for delete lines", ruleTextWidth, string.Empty, switchPromptForDeleteLines));
-
-        var pickerTimeCodeMode = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            MinimumWidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        pickerTimeCodeMode.SetBinding(Picker.ItemsSourceProperty, nameof(vm.TimeCodeModes));
-        pickerTimeCodeMode.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedTimeCodeMode));
-        vm.AllSettings.Add(new SettingItem("Time code mode", ruleTextWidth, string.Empty, pickerTimeCodeMode));
-
-
-        var pickerSplitBehavior = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            MinimumWidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        pickerSplitBehavior.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SplitBehaviors));
-        pickerSplitBehavior.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedSplitBehavior));
-        vm.AllSettings.Add(new SettingItem("Split behavior", ruleTextWidth, string.Empty, pickerSplitBehavior));
-
-        var pickerSubtitleListDoubleClickAction = new Picker
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            MinimumWidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        pickerSubtitleListDoubleClickAction.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SubtitleListDoubleClickActions));
-        pickerSubtitleListDoubleClickAction.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedSubtitleListDoubleClickAction));
-        vm.AllSettings.Add(new SettingItem("Subtitle list double click action", ruleTextWidth, string.Empty,
-            pickerSubtitleListDoubleClickAction));
-
-        var entrySaveAsBehavior = new Entry
-        {
-            Placeholder = "Enter save as behavior",
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Save as behavior", ruleTextWidth, string.Empty, entrySaveAsBehavior));
-
-        var entryTranslationFileAutoSuffix = new Entry
-        {
-            Placeholder = "Enter translation file auto suffix",
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Translation file auto suffix", ruleTextWidth, string.Empty,
-            entryTranslationFileAutoSuffix));
-
-        var entryAutoBackup = new Entry
-        {
-            Placeholder = "Enter auto-backup",
-            HorizontalOptions = LayoutOptions.Start,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Auto-backup", ruleTextWidth, string.Empty, entryAutoBackup));
-
-        var entryAutoBackupDelete = new Entry
-        {
-            Placeholder = "Enter auto-backup delete",
-            HorizontalOptions = LayoutOptions.Start,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Auto-backup delete", ruleTextWidth, string.Empty, entryAutoBackupDelete));
-
-        var entryAutoSave = new Entry
-        {
-            Placeholder = "Enter auto-save",
-            HorizontalOptions = LayoutOptions.Start,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Auto-save", ruleTextWidth, string.Empty, entryAutoSave));
-
-        var entryCheckForUpdates = new Entry
-        {
-            Placeholder = "Enter check for updates",
-            HorizontalOptions = LayoutOptions.Start,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Check for updates", ruleTextWidth, string.Empty, entryCheckForUpdates));
-    }
-
-    private static void MakeSubtitleFormatSettings(SettingsViewModel vm)
-    {
-        vm.AllSettings.Add(new SettingItem("Subtitle formats", SectionName.SubtitleFormats));
-
-        var textWidth = 200;
-        var pickerDefaultSubtitleFormat = new Picker
-        {
-            ItemsSource = new List<string> { "SubRip", "Advanced Sub Station Alpha", "EBU STL" },
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Single line max length", textWidth, string.Empty, pickerDefaultSubtitleFormat));
-
-        var pickerDefaultSaveAsFormat = new Picker
-        {
-            ItemsSource = new List<string> { "SubRip", "Advanced Sub Station Alpha", "EBU STL" },
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Optimal chars/sec", textWidth, string.Empty, pickerDefaultSaveAsFormat));
-
-        vm.AllSettings.Add(new SettingItem("Favorites"));
     }
 
     private static void MakeShortcutsSettings(SettingsViewModel vm)

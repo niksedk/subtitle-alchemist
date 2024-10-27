@@ -53,6 +53,11 @@ public class LanguageSettings
     public string SubtitleListActionVideoGoToPositionMinus1SecAndPlay { get; set; }
     public string SubtitleListActionEditTextAndPause { get; set; }
 
+    public string AutoBackupEveryMinute { get; set; }
+    public string AutoBackupEveryXthMinute { get; set; }
+
+    public string AutoBackupDeleteAfterXMonths { get; set; }
+
     public LanguageSettings()
     {
         DialogStyle = "Dialog style";
@@ -102,6 +107,11 @@ public class LanguageSettings
         SubtitleListActionVideoGoToPositionMinusHalfSecAndPause = "Go to video position - 0.5 s and pause";
         SubtitleListActionVideoGoToPositionMinus1SecAndPlay = "Go to video position - 1 s and play";
         SubtitleListActionEditTextAndPause = "Go to edit text box, and pause at video position";
+
+        AutoBackupEveryMinute = "Every minute";
+        AutoBackupEveryXthMinute = "Every {0}th minute";
+
+        AutoBackupDeleteAfterXMonths = "Delete auto-backups after {0} months";
     }
 
     public string GetContinuationStyleName(ContinuationStyle continuationStyle)
