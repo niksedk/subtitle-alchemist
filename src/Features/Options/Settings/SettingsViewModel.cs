@@ -8,7 +8,6 @@ using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections.ObjectModel;
-using static SubtitleAlchemist.Features.Options.Settings.SettingsPage;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
 
@@ -88,10 +87,50 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private CpsLineLengthDisplay _selectedCpsLineLengthStrategy;
 
+    [ObservableProperty]
+    private ObservableCollection<string> _defaultFrameRates;
+
+    [ObservableProperty]
+    private string _selectedDefaultFrameRate;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _defaultFileEncodings;
+
+    [ObservableProperty]
+    private string _selectedDefaultFileEncoding;
+
+    [ObservableProperty]
+    private bool _autodetectAnsiEncoding;
+
+    [ObservableProperty]
+    private string _languageFiltersDisplay;
+
+    [ObservableProperty]
+    private bool _promptForDeleteLines;
+
+    [ObservableProperty]
+    private ObservableCollection<TimeCodeModeDisplay> _timeCodeModes;
+
+    [ObservableProperty]
+    private TimeCodeModeDisplay _selectedTimeCodeMode;
+
+    [ObservableProperty]
+    private ObservableCollection<SplitBehaviorDisplay> _splitBehaviors;
+
+    [ObservableProperty]
+    private SplitBehaviorDisplay _selectedSplitBehavior;
+
+    [ObservableProperty]
+    private ObservableCollection<SubtitleListDoubleClickActionDisplay> _subtitleListDoubleClickActions;
+
+    [ObservableProperty]
+    private SubtitleListDoubleClickActionDisplay _selectedSubtitleListDoubleClickAction;
+
+    
 
 
     private readonly IPopupService _popupService;
-    private SectionName _sectionName = SectionName.General;
+    private SettingsPage.SectionName _sectionName = SettingsPage.SectionName.General;
 
     public SettingsViewModel(IPopupService popupService)
     {
@@ -115,9 +154,26 @@ public partial class SettingsViewModel : ObservableObject
 
         _cpsLineLengthStrategies = new ObservableCollection<CpsLineLengthDisplay>(CpsLineLengthDisplay.GetCpsLineLengthStrategies());
         _selectedCpsLineLengthStrategy = _cpsLineLengthStrategies.First();
+
+        _defaultFrameRates = new ObservableCollection<string>(new List<string> { "23.976", "24", "25", "29.97", "30", "50", "59.94", "60" });
+        _selectedDefaultFrameRate = DefaultFrameRates.First();
+
+        _languageFiltersDisplay = "All";
+
+        _defaultFileEncodings = new ObservableCollection<string>(EncodingHelper.GetEncodings().Select(p => p.DisplayName).ToList());
+        _selectedDefaultFileEncoding = _defaultFileEncodings.First();
+
+        _timeCodeModes = new ObservableCollection<TimeCodeModeDisplay>(TimeCodeModeDisplay.GetTimeCodeModes());
+        _selectedTimeCodeMode = _timeCodeModes.First();
+
+        _splitBehaviors = new ObservableCollection<SplitBehaviorDisplay>(SplitBehaviorDisplay.GetSplitBehaviors());
+        _selectedSplitBehavior = _splitBehaviors.First();
+
+        _subtitleListDoubleClickActions = new ObservableCollection<SubtitleListDoubleClickActionDisplay>(SubtitleListDoubleClickActionDisplay.GetSubtitleListDoubleClickActions());
+        _selectedSubtitleListDoubleClickAction = _subtitleListDoubleClickActions.First();
     }
 
-    public void LeftMenuTapped(object? sender, TappedEventArgs e, SectionName sectionName)
+    public void LeftMenuTapped(object? sender, TappedEventArgs e, SettingsPage.SectionName sectionName)
     {
         _sectionName = sectionName;
 
@@ -251,7 +307,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                LeftMenuTapped(null, new TappedEventArgs(null), SectionName.General);
+                LeftMenuTapped(null, new TappedEventArgs(null), SettingsPage.SectionName.General);
                 LoadSettings();
             });
 

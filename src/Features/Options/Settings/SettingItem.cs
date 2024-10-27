@@ -96,10 +96,3 @@ public class SettingItem
         WholeView.Margin = new Thickness(0, 15, 0,0);
     }
 }
-
-public enum SettingItemType
-{
-    Category,
-    SubCategory,
-    Setting,
-}

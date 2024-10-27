@@ -347,6 +347,7 @@ public class SettingsPage : ContentPage
         var ruleTextWidth = 200;
         var controlWidth = 200;
 
+        // Rules
         var entrySingleLineMaxWidth = new Entry
         {
             Placeholder = "Enter single line max width",
@@ -476,85 +477,105 @@ public class SettingsPage : ContentPage
         }.BindDynamicTheme();
         pickerCpsLineLength.SetBinding(Picker.ItemsSourceProperty, nameof(vm.CpsLineLengthStrategies));
         pickerCpsLineLength.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedCpsLineLengthStrategy));
-        vm.AllSettings.Add(new SettingItem("cps/line-length", ruleTextWidth, string.Empty, pickerCpsLineLength));
+        vm.AllSettings.Add(new SettingItem("CPS/line-length", ruleTextWidth, string.Empty, pickerCpsLineLength));
 
-
+        // Misc.
         vm.AllSettings.Add(new SettingItem("Misc."));
 
-        var entryDefaultFrameRate = new Entry
+        var pickerDefaultFrameRate = new Picker
         {
-            Placeholder = "Enter default frame rate",
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
-            WidthRequest = controlWidth,
+            MinimumWidthRequest = controlWidth,
         }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Default frame rate", ruleTextWidth, string.Empty, entryDefaultFrameRate));
+        pickerDefaultFrameRate.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DefaultFrameRates));
+        pickerDefaultFrameRate.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultFrameRate));
+        vm.AllSettings.Add(new SettingItem("Default frame rate", ruleTextWidth, string.Empty, pickerDefaultFrameRate));
+        
+        
+        var pickerDefaultFileEncoding = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerDefaultFileEncoding.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DefaultFileEncodings));
+        pickerDefaultFileEncoding.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultFileEncoding));
+        vm.AllSettings.Add(new SettingItem("Default file encoding", ruleTextWidth, string.Empty, pickerDefaultFileEncoding));
 
-        var entryDefaultFileEncoding = new Entry
-        {
-            Placeholder = "Enter default file encoding",
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Default file encoding", ruleTextWidth, string.Empty, entryDefaultFileEncoding));
 
-        var entryLanguageFilter = new Entry
+        var switchAutoDetectAnsiEncoding = new Switch
         {
-            Placeholder = "Enter language filter",
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
-            WidthRequest = controlWidth,
         }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Language filter", ruleTextWidth, string.Empty, entryLanguageFilter));
+        switchAutoDetectAnsiEncoding.SetBinding(Switch.IsToggledProperty, nameof(vm.AutodetectAnsiEncoding));
+        vm.AllSettings.Add(new SettingItem("Auto detect ANSI encoding", ruleTextWidth, string.Empty, switchAutoDetectAnsiEncoding));
 
-        var entryAutoDetectAnsiEncoding = new Entry
+        var labelLanguageFilter = new Label
         {
-            Placeholder = "Enter auto detect ANSI encoding",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 10, 0),
+            BindingContext = vm,
+        }.BindDynamicTheme();
+        labelLanguageFilter.SetBinding(Label.TextProperty, nameof(vm.LanguageFiltersDisplay));
+        var buttonLanguageFilter = new Button
+        {
+            Text = "Edit",
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
-            WidthRequest = controlWidth,
         }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Auto detect ANSI encoding", ruleTextWidth, string.Empty,
-            entryAutoDetectAnsiEncoding));
+        var stackLanguageFilter = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            Children =
+            {
+                labelLanguageFilter,
+                buttonLanguageFilter,
+            }
+        };
+        vm.AllSettings.Add(new SettingItem("Language filter", ruleTextWidth, string.Empty, stackLanguageFilter));
 
-        var entryPromptForDeleteLines = new Entry
+        var switchPromptForDeleteLines = new Switch
         {
-            Placeholder = "Enter prompt for delete lines",
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
-            WidthRequest = controlWidth,
         }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Prompt for delete lines", ruleTextWidth, string.Empty,
-            entryPromptForDeleteLines));
+        switchPromptForDeleteLines.SetBinding(Switch.IsToggledProperty, nameof(vm.PromptForDeleteLines));
+        vm.AllSettings.Add(new SettingItem("Prompt for delete lines", ruleTextWidth, string.Empty, switchPromptForDeleteLines));
 
-        var entryTimeCodeMode = new Entry
+        var pickerTimeCodeMode = new Picker
         {
-            Placeholder = "Enter time code mode",
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
-            WidthRequest = controlWidth,
+            MinimumWidthRequest = controlWidth,
         }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Time code mode", ruleTextWidth, string.Empty, entryTimeCodeMode));
+        pickerTimeCodeMode.SetBinding(Picker.ItemsSourceProperty, nameof(vm.TimeCodeModes));
+        pickerTimeCodeMode.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedTimeCodeMode));
+        vm.AllSettings.Add(new SettingItem("Time code mode", ruleTextWidth, string.Empty, pickerTimeCodeMode));
 
-        var entrySplitBehavior = new Entry
-        {
-            Placeholder = "Enter split behavior",
-            HorizontalOptions = LayoutOptions.Start,
-            BindingContext = vm,
-            WidthRequest = controlWidth,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Split behavior", ruleTextWidth, string.Empty, entrySplitBehavior));
 
-        var entrySubtitleListDoubleClickAction = new Entry
+        var pickerSplitBehavior = new Picker
         {
-            Placeholder = "Enter subtitle list double click action",
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
-            WidthRequest = controlWidth,
+            MinimumWidthRequest = controlWidth,
         }.BindDynamicTheme();
+        pickerSplitBehavior.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SplitBehaviors));
+        pickerSplitBehavior.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedSplitBehavior));
+        vm.AllSettings.Add(new SettingItem("Split behavior", ruleTextWidth, string.Empty, pickerSplitBehavior));
+
+        var pickerSubtitleListDoubleClickAction = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+            MinimumWidthRequest = controlWidth,
+        }.BindDynamicTheme();
+        pickerSubtitleListDoubleClickAction.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SubtitleListDoubleClickActions));
+        pickerSubtitleListDoubleClickAction.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedSubtitleListDoubleClickAction));
         vm.AllSettings.Add(new SettingItem("Subtitle list double click action", ruleTextWidth, string.Empty,
-            entrySubtitleListDoubleClickAction));
+            pickerSubtitleListDoubleClickAction));
 
         var entrySaveAsBehavior = new Entry
         {

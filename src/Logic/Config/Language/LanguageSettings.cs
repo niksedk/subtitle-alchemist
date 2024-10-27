@@ -36,6 +36,22 @@ public class LanguageSettings
     public string CpsLineLengthStyleCalcNoSpaceOrPunctuation { get; set; }
     public string CpsLineLengthStyleCalcNoSpaceOrPunctuationCpsOnly { get; set; }
 
+    public string TimeCodeModeHhMmSsMs { get; set; }
+    public string TimeCodeModeHhMmSsFf { get; set; }
+
+    public string SplitBehaviorPrevious { get; set; }
+    public string SplitBehaviorHalf { get; set; }
+    public string SplitBehaviorNext { get; set; }
+
+    public string SubtitleListActionNothing { get; set; }
+    public string SubtitleListActionVideoGoToPositionAndPause { get; set; }
+    public string SubtitleListActionVideoGoToPositionAndPlay { get; set; }
+    public string SubtitleListActionVideoGoToPositionAndPlayCurrentAndPause { get; set; }
+    public string SubtitleListActionEditText { get; set; }
+    public string SubtitleListActionVideoGoToPositionMinus1SecAndPause { get; set; }
+    public string SubtitleListActionVideoGoToPositionMinusHalfSecAndPause { get; set; }
+    public string SubtitleListActionVideoGoToPositionMinus1SecAndPlay { get; set; }
+    public string SubtitleListActionEditTextAndPause { get; set; }
 
     public LanguageSettings()
     {
@@ -69,6 +85,23 @@ public class LanguageSettings
         CpsLineLengthStyleCalcIncludeCompositionCharactersNotSpace = "Include composition characters, not space";
         CpsLineLengthStyleCalcNoSpaceOrPunctuation = "No space or punctuation ()[]-:;,.!?";
         CpsLineLengthStyleCalcNoSpaceOrPunctuationCpsOnly = "No space or punctuation, CPS only";
+
+        TimeCodeModeHhMmSsMs = "HH:MM:SS:MS";
+        TimeCodeModeHhMmSsFf = "HH:MM:SS:FF";
+
+        SplitBehaviorPrevious = "Add gap to the left of split point (focus right)";
+        SplitBehaviorHalf = "Add gap in the center of split point (focus left)";
+        SplitBehaviorNext = "Add gap to the right of split point (focus left)";
+
+        SubtitleListActionNothing = "Nothing";
+        SubtitleListActionVideoGoToPositionAndPause = "Go to video position and pause";
+        SubtitleListActionVideoGoToPositionAndPlay = "Go to video position and play";
+        SubtitleListActionVideoGoToPositionAndPlayCurrentAndPause = "Go to video position, play current, and pause";
+        SubtitleListActionEditText = "Go to edit text box";
+        SubtitleListActionVideoGoToPositionMinus1SecAndPause = "Go to video position - 1 s and pause";
+        SubtitleListActionVideoGoToPositionMinusHalfSecAndPause = "Go to video position - 0.5 s and pause";
+        SubtitleListActionVideoGoToPositionMinus1SecAndPlay = "Go to video position - 1 s and play";
+        SubtitleListActionEditTextAndPause = "Go to edit text box, and pause at video position";
     }
 
     public string GetContinuationStyleName(ContinuationStyle continuationStyle)
