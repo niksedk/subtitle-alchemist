@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
@@ -442,8 +443,215 @@ public class SettingsPage : ContentPage
         vm.AllSettings.Add(new SettingItem("Default save as format", textWidth, string.Empty, pickerDefaultSaveAsFormat));
 
         vm.AllSettings.Add(new SettingItem("Favorites"));
+        MakeFavorites(vm);
+        //var stackFavorites = new StackLayout
+        //{
+        //    Orientation = StackOrientation.Vertical,
+        //    HorizontalOptions = LayoutOptions.Start,
+        //    VerticalOptions = LayoutOptions.Start,
+        //}.BindDynamicTheme();
+        //var favorites = MakeFavorites(vm);
+        //foreach (var favorite in favorites)
+        //{
+        //    stackFavorites.Children.Add(favorite);
+        //}
+        //var favoriteBorder = new Border
+        //{
+        //    StrokeThickness = 1,
+        //    Padding = new Thickness(10),
+        //    Margin = new Thickness(2),
+        //    StrokeShape = new RoundRectangle
+        //    {
+        //        CornerRadius = new CornerRadius(5)
+        //    },
+        //    Content = stackFavorites,
+        //}.BindDynamicTheme();
+        //vm.AllSettings.Add(new SettingItem(string.Empty, textWidth, string.Empty, stackFavorites));
+
+        var buttonAdd = new Button
+        {
+            Text = "Add",
+            HorizontalOptions = LayoutOptions.Start,
+            BindingContext = vm,
+        }.BindDynamicTheme();
+        //buttonAdd.Clicked += vm.AddFavoriteSubtitleFormat;
+        vm.AllSettings.Add(new SettingItem(string.Empty, textWidth, string.Empty, buttonAdd));
     }
 
+    private static void MakeShortcutsSettings(SettingsViewModel vm)
+    {
+        vm.AllSettings.Add(new SettingItem("Shortcuts", SectionName.Shortcuts));
+
+        var textWidth = 200;
+
+       var gridShortcuts = new Grid
+       {
+           RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+            },
+           ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            },
+           Padding = new Thickness(0, 0, 0, 0),
+           RowSpacing = 0,
+           ColumnSpacing = 5,
+           HorizontalOptions = LayoutOptions.Start,
+           VerticalOptions = LayoutOptions.Start,
+           Margin = new Thickness(textWidth, 0, 0, 0),
+       }.BindDynamicTheme();
+
+        var labelHeaderArea = new Label
+        {
+            Text = "Area",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+            WidthRequest = 200,
+        }.BindDynamicTheme();
+        gridShortcuts.Add(labelHeaderArea, 0, 0);
+
+        var labelHeaderDescription = new Label
+        {
+            Text = "Description",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+            WidthRequest = 200,
+        }.BindDynamicTheme();
+        gridShortcuts.Add(labelHeaderDescription, 1, 0);
+
+        var labelHeaderShortcut = new Label
+        {
+            Text = "Shortcut",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+            WidthRequest = 200,
+        }.BindDynamicTheme();
+        gridShortcuts.Add(labelHeaderShortcut, 2, 0);
+
+
+        var row = 0;
+        foreach (var shortcut in vm.Shortcuts)
+        {
+            row++;
+
+            var labelArea = new Label
+            {
+                Text = shortcut.Area,
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Center,
+                WidthRequest = 200,
+            }.BindDynamicTheme();
+            gridShortcuts.Add(labelArea, 0, row);
+
+            var labelDescription = new Label
+            {
+                Text = shortcut.Name,
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Center,
+                WidthRequest = 200,
+            }.BindDynamicTheme();
+            gridShortcuts.Add(labelDescription, 1, row);
+
+            var labelShortcut = new Label
+            {
+                Text = shortcut.Keys.ToString(),
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Center,
+                WidthRequest = 200,
+            }.BindDynamicTheme();
+            gridShortcuts.Add(labelShortcut, 2, row);
+        }
+
+        vm.AllSettings.Add(new SettingItem(string.Empty, gridShortcuts));
+    }
+
+    public static void MakeFavorites(SettingsViewModel vm)
+    {
+        var favorites = new List<StackLayout>();
+
+        // header
+        var labelHeader = new Label
+        {
+            Text = "Subtitle format",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+            WidthRequest = 200,
+        }.BindDynamicTheme();
+
+        var labelRemove = new Label
+        {
+            Text = "Action",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+            WidthRequest = 200,
+        }.BindDynamicTheme();
+
+        var stackHeader = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            HeightRequest = 30,
+            Margin = new Thickness(5),
+            Children =
+            {
+                labelHeader,
+                labelRemove,
+            }
+        };
+
+        vm.AllSettings.Add(new SettingItem(string.Empty, 200, string.Empty, stackHeader));
+
+        // items
+        foreach (var favorite in vm.FavoriteSubtitleFormats)
+        {
+            var labelName = new Label
+            {
+                Text = favorite,
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Center,
+                WidthRequest = 200,
+            }.BindDynamicTheme();
+            var button = new Button
+            {
+                Text = "Remove",
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Start,
+                BindingContext = vm,
+            }.BindDynamicTheme();
+            //button.Clicked += vm.RemoveFavoriteSubtitleFormat;
+            var stack = new StackLayout
+            {
+                Orientation = StackOrientation.Horizontal,
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Start,
+                HeightRequest = 50,
+                Margin = new Thickness(5),
+                Children =
+                {
+                    labelName,
+                    button,
+                }
+            };
+            //favorites.Add(stack);
+            vm.AllSettings.Add(new SettingItem(string.Empty, 200, string.Empty, stack));
+        }
+    }
 
     private static void MakeFileTypeAssociationsSettings(SettingsViewModel vm)
     {
@@ -627,20 +835,6 @@ public class SettingsPage : ContentPage
     {
         vm.AllSettings.Add(new SettingItem("Video player", SectionName.VideoPlayer));
         vm.AllSettings.Add(new SettingItem("Video engine"));
-    }
-
-    private static void MakeShortcutsSettings(SettingsViewModel vm)
-    {
-        vm.AllSettings.Add(new SettingItem("Shortcuts", SectionName.Shortcuts));
-
-        var textWidth = 200;
-
-        var pickerDefaultSubtitleFormat = new Picker
-        {
-            ItemsSource = new List<string> { "SubRip", "Advanced Sub Station Alpha", "EBU STL" },
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("TODO", textWidth, string.Empty, pickerDefaultSubtitleFormat));
     }
 
     private Switch? _shortDurationSwitch;

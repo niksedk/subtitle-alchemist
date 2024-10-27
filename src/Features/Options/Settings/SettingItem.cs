@@ -43,6 +43,15 @@ public class SettingItem
         };
     }
 
+    public SettingItem(string hint, View view)
+    {
+        Text = string.Empty;
+        TextWidth = 0;
+        Hint = hint;
+        Type = SettingItemType.Setting;
+        WholeView = view;
+    }
+
     public SettingItem(string text, SettingsPage.SectionName sectionName)
     {
         Text = text;

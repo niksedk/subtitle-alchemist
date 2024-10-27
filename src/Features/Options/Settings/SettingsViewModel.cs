@@ -25,16 +25,16 @@ public partial class SettingsViewModel : ObservableObject
     public SettingsPage? Page { get; set; }
     public BoxView SyntaxErrorColorBox { get; set; }
 
-    [ObservableProperty] 
+    [ObservableProperty]
     private string _ffmpegPath = string.Empty;
 
-    [ObservableProperty] 
+    [ObservableProperty]
     private bool _showRecentFiles;
 
     [ObservableProperty]
     private ObservableCollection<string> _themes = new() { "Light", "Dark", "Custom" };
 
-    [ObservableProperty] 
+    [ObservableProperty]
     private string _theme = "Dark";
 
     [ObservableProperty]
@@ -152,6 +152,12 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _selectedDefaultSaveAsSubtitleFormat;
 
+    [ObservableProperty]
+    private ObservableCollection<string> _favoriteSubtitleFormats;
+
+    public List<ShortcutDisplay> Shortcuts;
+
+
     private readonly IPopupService _popupService;
     private SettingsPage.SectionName _sectionName = SettingsPage.SectionName.General;
 
@@ -205,10 +211,14 @@ public partial class SettingsViewModel : ObservableObject
         _subtitleFormats = new ObservableCollection<string>(allSubtitleFormats);
         _selectedDefaultSubtitleFormat = _subtitleFormats.First();
 
-        var allSaveAsSubtitleFormats = allSubtitleFormats;
+        var allSaveAsSubtitleFormats = new List<string>(allSubtitleFormats);
         allSaveAsSubtitleFormats.Insert(0, "- Auto - ");
         _subtitleSaveAsSubtitleFormats = new ObservableCollection<string>(allSaveAsSubtitleFormats);
         _selectedDefaultSaveAsSubtitleFormat = _subtitleSaveAsSubtitleFormats.First();
+
+        _favoriteSubtitleFormats = new ObservableCollection<string>( allSubtitleFormats.Take(5));
+
+        Shortcuts = ShortcutDisplay.GetShortcuts();
     }
 
     public void LeftMenuTapped(object? sender, TappedEventArgs e, SettingsPage.SectionName sectionName)
