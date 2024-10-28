@@ -123,6 +123,25 @@ public class SettingsPage : ContentPage
 
     private static View MakeSettingItems(SettingsViewModel vm)
     {
+        var grid = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star }
+            },
+            Padding = new Thickness(20),
+            RowSpacing = 0,
+            ColumnSpacing = 5,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+        }.BindDynamicTheme();
+        
         var collectionView = new CollectionView
         {
             Margin = new Thickness(0, 0, 0, 0),
@@ -153,9 +172,34 @@ public class SettingsPage : ContentPage
         MakeFileTypeAssociationsSettings(vm);
 
         collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.AllSettings));
-        vm.SettingList = collectionView;
+        vm.SettingList = grid;
 
-        return collectionView;
+        var row = 0;
+        foreach (var setting in vm.AllSettings)
+        {
+            if (!string.IsNullOrEmpty(setting.Text))
+            {
+                var label = new Label { Text = setting.Text, WidthRequest = setting.TextWidth };
+                if (setting.TextWidth > 0)
+                {
+                    label.WidthRequest = setting.TextWidth;
+                }
+                grid.Add(label, 0, row);
+            }
+
+            grid.Add(setting.WholeView, 1, row);
+
+            row++;
+        }
+        
+        var scrollView = new ScrollView()
+        {
+            Content = grid,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        };
+
+        return scrollView;
     }
 
     private static void MakeGeneralSettings(SettingsViewModel vm)

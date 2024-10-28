@@ -21,7 +21,7 @@ public partial class SettingsViewModel : ObservableObject
     private string _searchText;
 
     public VerticalStackLayout LeftMenu { get; set; }
-    public CollectionView SettingList { get; set; }
+    public Grid SettingList { get; set; }
     public SettingsPage? Page { get; set; }
     public BoxView SyntaxErrorColorBox { get; set; }
 
@@ -168,7 +168,7 @@ public partial class SettingsViewModel : ObservableObject
         _searchText = string.Empty;
         LeftMenu = new VerticalStackLayout();
         SyntaxErrorColorBox = new BoxView();
-        SettingList = new CollectionView();
+        SettingList = new Grid();
 
         _allSettings = new ObservableCollection<SettingItem>();
 
@@ -241,7 +241,7 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         var settingItem = AllSettings.FirstOrDefault(x => x.SectionName == sectionName);
-        SettingList.ScrollTo(settingItem, null, ScrollToPosition.Start);
+        //TODO:await (SettingList.Parent as ScrollView).ScrollToAsync(settingItem.WholeView, ScrollToPosition.Start, true);
 
     }
 
