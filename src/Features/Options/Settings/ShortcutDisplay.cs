@@ -6,9 +6,9 @@ public class ShortcutDisplay
 {
     public string Name { get; set; }
     public ShortcutType Keys { get; set; }
-    public string Area { get; set; }
+    public ShortcutArea Area { get; set; }
 
-    public ShortcutDisplay(string area, string name, ShortcutType keys)
+    public ShortcutDisplay(ShortcutArea area, string name, ShortcutType keys)
     {
         Area = area;
         Name = name;
@@ -25,12 +25,12 @@ public class ShortcutDisplay
         var l = Se.Language.Settings;
         return new List<ShortcutDisplay>
         {
-            new ("General",l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcControl" })),
-            new ("General",l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcUp" })),
-            new ("General",l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcDown" })),
-            new ("General",l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcHome" })),
-            new ("General",l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcEnd" })),
-            new ("General",l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcEnter" })),
+            new (ShortcutArea.General, l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.General, l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcUp" })),
+            new (ShortcutArea.General, l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcDown" })),
+            new (ShortcutArea.General, l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcHome" })),
+            new (ShortcutArea.General, l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcEnd" })),
+            new (ShortcutArea.General, l.DialogStyle, new ShortcutType(() => { }, new List<string> { "VcEnter" })),
         };
     }
 }

@@ -24,6 +24,7 @@ public partial class SettingsViewModel : ObservableObject
     public Grid SettingList { get; set; }
     public SettingsPage? Page { get; set; }
     public BoxView SyntaxErrorColorBox { get; set; }
+    public ScrollView SettingListScrollView { get; set; }
 
     [ObservableProperty]
     private string _ffmpegPath = string.Empty;
@@ -169,6 +170,7 @@ public partial class SettingsViewModel : ObservableObject
         LeftMenu = new VerticalStackLayout();
         SyntaxErrorColorBox = new BoxView();
         SettingList = new Grid();
+        SettingListScrollView = new ScrollView();
 
         _allSettings = new ObservableCollection<SettingItem>();
 
@@ -240,9 +242,14 @@ public partial class SettingsViewModel : ObservableObject
             }
         }
 
-        var settingItem = AllSettings.FirstOrDefault(x => x.SectionName == sectionName);
-        //TODO:await (SettingList.Parent as ScrollView).ScrollToAsync(settingItem.WholeView, ScrollToPosition.Start, true);
-
+        MainThread.BeginInvokeOnMainThread(async() =>
+        {
+            var settingItem = AllSettings.FirstOrDefault(x => x.SectionName == sectionName);
+            if (settingItem != null)
+            {
+                await SettingListScrollView.ScrollToAsync(settingItem.WholeView, ScrollToPosition.Start, true);
+            }
+        });
     }
 
     [RelayCommand]
@@ -388,11 +395,11 @@ public partial class SettingsViewModel : ObservableObject
 
             if (string.IsNullOrWhiteSpace(SearchText))
             {
-                setting.WholeView.IsVisible = true;
+                setting.Show();
             }
             else if (setting.Text.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
             {
-                setting.WholeView.IsVisible = true;
+                setting.Show();
 
                 if (lastCategory != null)
                 {
@@ -405,7 +412,7 @@ public partial class SettingsViewModel : ObservableObject
             }
             else
             {
-                setting.WholeView.IsVisible = false;
+                setting.Hide();
             }
         }
 

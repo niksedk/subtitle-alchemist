@@ -1,4 +1,3 @@
-using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
@@ -61,7 +60,7 @@ public class SettingsPage : ContentPage
 
         vm.LeftMenu = new VerticalStackLayout
         {
-            Margin = new Thickness(0,0,50,0),
+            Margin = new Thickness(0, 0, 50, 0),
             Children =
             {
                 MakeLeftMenuItem(vm, SectionName.General, "General"),
@@ -141,7 +140,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
-        
+
         var collectionView = new CollectionView
         {
             Margin = new Thickness(0, 0, 0, 0),
@@ -155,7 +154,7 @@ public class SettingsPage : ContentPage
                 var contentView = new ContentView();
                 contentView.Margin = new Thickness(0, 0, 0, 0);
                 contentView.Padding = new Thickness(0, 0, 0, 0);
-                contentView.SetBinding(ContentView.ContentProperty,  nameof(SettingItem.WholeView));
+                contentView.SetBinding(ContentView.ContentProperty, nameof(SettingItem.WholeView));
                 return contentView;
             }),
         }.BindDynamicTheme();
@@ -172,32 +171,42 @@ public class SettingsPage : ContentPage
         MakeFileTypeAssociationsSettings(vm);
 
         collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.AllSettings));
-        vm.SettingList = grid;
 
         var row = 0;
         foreach (var setting in vm.AllSettings)
         {
-            if (!string.IsNullOrEmpty(setting.Text))
+            if (setting.Type is SettingItemType.Category or SettingItemType.SubCategory)
             {
-                var label = new Label { Text = setting.Text, WidthRequest = setting.TextWidth };
-                if (setting.TextWidth > 0)
-                {
-                    label.WidthRequest = setting.TextWidth;
-                }
-                grid.Add(label, 0, row);
+                grid.Add(setting.WholeView, 0, row);
+                grid.SetColumnSpan(setting.WholeView, 3);
             }
-
-            grid.Add(setting.WholeView, 1, row);
+            else if (setting.Label != null)
+            {
+                grid.Add(setting.Label, 0, row);
+                grid.Add(setting.WholeView, 1, row);
+            }
+            else
+            {
+                grid.Add(setting.WholeView, 1, row);
+                grid.SetColumnSpan(setting.WholeView, 2);
+            }
 
             row++;
         }
-        
-        var scrollView = new ScrollView()
+
+        var scrollView = new ScrollView
         {
             Content = grid,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Always,
+            //Margin = new Thickness(0,10,0,10),
+            //BackgroundColor = Colors.Red, //TODO: we need to manually resize the scrollview
+            //Padding = new Thickness(5),
         };
+
+        vm.SettingList = grid;
+        vm.SettingListScrollView = scrollView;
 
         return scrollView;
     }
@@ -526,44 +535,44 @@ public class SettingsPage : ContentPage
     {
         vm.AllSettings.Add(new SettingItem("Shortcuts", SectionName.Shortcuts));
 
+        AddShortcutSection(vm, ShortcutArea.General);
+        AddShortcutSection(vm, ShortcutArea.File);
+        AddShortcutSection(vm, ShortcutArea.Edit);
+        AddShortcutSection(vm, ShortcutArea.Tools);
+        AddShortcutSection(vm, ShortcutArea.SpellCheck);
+        AddShortcutSection(vm, ShortcutArea.Video);
+        AddShortcutSection(vm, ShortcutArea.Synchronization);
+        AddShortcutSection(vm, ShortcutArea.Options);
+        AddShortcutSection(vm, ShortcutArea.Translate);
+        AddShortcutSection(vm, ShortcutArea.SubtitleListViewAndTextBox);
+        AddShortcutSection(vm, ShortcutArea.SubtitleListView);
+        AddShortcutSection(vm, ShortcutArea.SubtitleTextBox);
+        AddShortcutSection(vm, ShortcutArea.WaveformAndSpectrogram);
+    }
+
+    private static void AddShortcutSection(SettingsViewModel vm, ShortcutArea area)
+    {
         var textWidth = 200;
+        
+        vm.AllSettings.Add(new SettingItem(area.ToString()));
 
-       var gridShortcuts = new Grid
-       {
-           RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-            },
-           ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Auto },
-            },
-           Padding = new Thickness(0, 0, 0, 0),
-           RowSpacing = 0,
-           ColumnSpacing = 5,
-           HorizontalOptions = LayoutOptions.Start,
-           VerticalOptions = LayoutOptions.Start,
-           Margin = new Thickness(textWidth, 0, 0, 0),
-       }.BindDynamicTheme();
-
-        var labelHeaderArea = new Label
+        var gridShortcuts = new Grid
         {
-            Text = "Area",
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            },
+            Padding = new Thickness(0, 0, 0, 0),
+            RowSpacing = 0,
+            ColumnSpacing = 5,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            FontAttributes = FontAttributes.Bold,
-            WidthRequest = 200,
+            VerticalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
-        gridShortcuts.Add(labelHeaderArea, 0, 0);
 
         var labelHeaderDescription = new Label
         {
@@ -571,9 +580,9 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             FontAttributes = FontAttributes.Bold,
-            WidthRequest = 200,
+            WidthRequest = textWidth,
         }.BindDynamicTheme();
-        gridShortcuts.Add(labelHeaderDescription, 1, 0);
+        gridShortcuts.Add(labelHeaderDescription, 0, 0);
 
         var labelHeaderShortcut = new Label
         {
@@ -581,42 +590,32 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             FontAttributes = FontAttributes.Bold,
-            WidthRequest = 200,
+            WidthRequest = textWidth,
         }.BindDynamicTheme();
-        gridShortcuts.Add(labelHeaderShortcut, 2, 0);
-
+        gridShortcuts.Add(labelHeaderShortcut, 1, 0);
 
         var row = 0;
-        foreach (var shortcut in vm.Shortcuts)
+        foreach (var shortcut in vm.Shortcuts.Where(p => p.Area == area))
         {
             row++;
-
-            var labelArea = new Label
-            {
-                Text = shortcut.Area,
-                HorizontalOptions = LayoutOptions.Start,
-                VerticalOptions = LayoutOptions.Center,
-                WidthRequest = 200,
-            }.BindDynamicTheme();
-            gridShortcuts.Add(labelArea, 0, row);
 
             var labelDescription = new Label
             {
                 Text = shortcut.Name,
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
-                WidthRequest = 200,
+                WidthRequest = textWidth,
             }.BindDynamicTheme();
-            gridShortcuts.Add(labelDescription, 1, row);
+            gridShortcuts.Add(labelDescription, 0, row);
 
             var labelShortcut = new Label
             {
                 Text = shortcut.Keys.ToString(),
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
-                WidthRequest = 200,
+                WidthRequest = textWidth,
             }.BindDynamicTheme();
-            gridShortcuts.Add(labelShortcut, 2, row);
+            gridShortcuts.Add(labelShortcut, 1, row);
         }
 
         vm.AllSettings.Add(new SettingItem(string.Empty, gridShortcuts));

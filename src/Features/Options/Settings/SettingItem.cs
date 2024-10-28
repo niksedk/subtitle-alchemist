@@ -7,6 +7,7 @@ public class SettingItem
     public string Hint { get; set; }
     public SettingItemType Type { get; set; }
     public View WholeView { get; set; }
+    public Label? Label { get; set; }
     public SettingsPage.SectionName? SectionName { get; set; }
 
     public SettingItem(View wholeView, string text, int textWidth, string hint)
@@ -16,6 +17,20 @@ public class SettingItem
         Hint = hint;
         Type = SettingItemType.Setting;
         WholeView = wholeView;
+
+        SetLabel(text, textWidth);
+    }
+
+    private void SetLabel(string text, int textWidth)
+    {
+        if (!string.IsNullOrEmpty(text))
+        {
+            Label = new Label { Text = Text };
+            if (textWidth > 0)
+            {
+                Label.WidthRequest = textWidth;
+            }
+        }
     }
 
     public SettingItem(string text, int textWidth, string hint, View view)
@@ -24,23 +39,8 @@ public class SettingItem
         TextWidth = textWidth;
         Hint = hint;
         Type = SettingItemType.Setting;
-
-        WholeView = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Fill,
-            Children =
-            {
-                new Label
-                {
-                    Text = text,
-                    WidthRequest = textWidth,
-                    VerticalOptions = LayoutOptions.Center,
-                    HorizontalOptions = LayoutOptions.Start,
-                },
-                view,
-            },
-        };
+        WholeView = view;
+        SetLabel(text, textWidth);
     }
 
     public SettingItem(string hint, View view)
@@ -58,25 +58,16 @@ public class SettingItem
         TextWidth = 0;
         Hint = string.Empty;
         Type = SettingItemType.Category;
-
-        var label = new Label
-        {
-            Text = text,
-            VerticalOptions = LayoutOptions.Center,
-            HorizontalOptions = LayoutOptions.Start,
-        };
-        label.FontSize = 20;
-        label.FontAttributes = FontAttributes.Bold;
-
-        WholeView = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Fill,
-            Children = { label }
-        };
-        WholeView.Margin = new Thickness(0, 25, 0, 0);
-
         SectionName = sectionName;
+
+        WholeView = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            Text = text,
+            FontSize = 21,
+            Margin = new Thickness(0, 30, 0, 0),
+            FontAttributes = FontAttributes.Bold,
+        };
     }
 
     public SettingItem(string text)
@@ -86,22 +77,31 @@ public class SettingItem
         Hint = string.Empty;
         Type = SettingItemType.SubCategory;
 
-        var label = new Label
+        WholeView = new Label
         {
-            Text = text,
-            VerticalOptions = LayoutOptions.Center,
             HorizontalOptions = LayoutOptions.Start,
+            Text = text,
+            FontSize = 18,
+            Margin = new Thickness(0, 20, 0, 0),
+            FontAttributes = FontAttributes.Bold,
         };
+    }
 
-        label.FontSize = 18;
-        label.FontAttributes = FontAttributes.Bold;
-
-        WholeView = new StackLayout
+    public void Hide()
+    {
+        WholeView.IsVisible = false;
+        if (Label != null)
         {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Fill,
-            Children = { label }
-        };
-        WholeView.Margin = new Thickness(0, 15, 0,0);
+            Label.IsVisible = false;
+        }
+    }
+
+    public void Show()
+    {
+        WholeView.IsVisible = true;
+        if (Label != null)
+        {
+            Label.IsVisible = true;
+        }
     }
 }
