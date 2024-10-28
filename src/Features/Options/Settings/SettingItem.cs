@@ -25,7 +25,7 @@ public class SettingItem
     {
         if (!string.IsNullOrEmpty(text))
         {
-            Label = new Label { Text = Text };
+            Label = new Label { Text = Text, VerticalOptions = LayoutOptions.Center };
             if (textWidth > 0)
             {
                 Label.WidthRequest = textWidth;

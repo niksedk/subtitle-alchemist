@@ -1,9 +1,12 @@
 ﻿using Nikse.SubtitleEdit.Core.Enums;
+using Nikse.SubtitleEdit.Core.Settings;
 
 namespace SubtitleAlchemist.Logic.Config.Language;
 
 public class LanguageSettings
 {
+    public LanguageSettingsShortcuts Shortcuts { get; set; }
+
     public string DialogStyle { get; set; }
 
     public string DialogStyleDashSecondLineWithoutSpace { get; set; }
@@ -60,6 +63,8 @@ public class LanguageSettings
 
     public LanguageSettings()
     {
+        Shortcuts = new LanguageSettingsShortcuts();
+
         DialogStyle = "Dialog style";
         DialogStyleDashBothLinesWithSpace = "Dash both lines with space";
         DialogStyleDashBothLinesWithoutSpace = "Dash both lines without space";

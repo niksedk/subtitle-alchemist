@@ -483,7 +483,7 @@ public class SettingsPage : ContentPage
         }.BindDynamicTheme();
         pickerDefaultSubtitleFormat.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SubtitleFormats));
         pickerDefaultSubtitleFormat.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultSubtitleFormat));
-        vm.AllSettings.Add(new SettingItem("Single line max length", textWidth, string.Empty, pickerDefaultSubtitleFormat));
+        vm.AllSettings.Add(new SettingItem("Default subtitle format", textWidth, string.Empty, pickerDefaultSubtitleFormat));
 
         var pickerDefaultSaveAsFormat = new Picker
         {
@@ -497,35 +497,13 @@ public class SettingsPage : ContentPage
 
         vm.AllSettings.Add(new SettingItem("Favorites"));
         MakeFavorites(vm);
-        //var stackFavorites = new StackLayout
-        //{
-        //    Orientation = StackOrientation.Vertical,
-        //    HorizontalOptions = LayoutOptions.Start,
-        //    VerticalOptions = LayoutOptions.Start,
-        //}.BindDynamicTheme();
-        //var favorites = MakeFavorites(vm);
-        //foreach (var favorite in favorites)
-        //{
-        //    stackFavorites.Children.Add(favorite);
-        //}
-        //var favoriteBorder = new Border
-        //{
-        //    StrokeThickness = 1,
-        //    Padding = new Thickness(10),
-        //    Margin = new Thickness(2),
-        //    StrokeShape = new RoundRectangle
-        //    {
-        //        CornerRadius = new CornerRadius(5)
-        //    },
-        //    Content = stackFavorites,
-        //}.BindDynamicTheme();
-        //vm.AllSettings.Add(new SettingItem(string.Empty, textWidth, string.Empty, stackFavorites));
 
         var buttonAdd = new Button
         {
             Text = "Add",
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
+            Margin = new Thickness(0, 5, 0, 0),
         }.BindDynamicTheme();
         //buttonAdd.Clicked += vm.AddFavoriteSubtitleFormat;
         vm.AllSettings.Add(new SettingItem(string.Empty, textWidth, string.Empty, buttonAdd));
@@ -553,7 +531,7 @@ public class SettingsPage : ContentPage
     private static void AddShortcutSection(SettingsViewModel vm, ShortcutArea area)
     {
         var textWidth = 200;
-        
+
         vm.AllSettings.Add(new SettingItem(area.ToString()));
 
         var gridShortcuts = new Grid
@@ -635,7 +613,7 @@ public class SettingsPage : ContentPage
             WidthRequest = 200,
         }.BindDynamicTheme();
 
-        var labelRemove = new Label
+        var labelAction = new Label
         {
             Text = "Action",
             HorizontalOptions = LayoutOptions.Start,
@@ -649,12 +627,11 @@ public class SettingsPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
-            HeightRequest = 30,
             Margin = new Thickness(5),
             Children =
             {
                 labelHeader,
-                labelRemove,
+                labelAction,
             }
         };
 
@@ -670,28 +647,51 @@ public class SettingsPage : ContentPage
                 VerticalOptions = LayoutOptions.Center,
                 WidthRequest = 200,
             }.BindDynamicTheme();
-            var button = new Button
+            var labelLinkRemove = new Label
             {
                 Text = "Remove",
                 HorizontalOptions = LayoutOptions.Start,
-                VerticalOptions = LayoutOptions.Start,
-                BindingContext = vm,
-            }.BindDynamicTheme();
-            //button.Clicked += vm.RemoveFavoriteSubtitleFormat;
+                VerticalOptions = LayoutOptions.Center,
+                Margin = new Thickness(0, 0, 10, 0),
+            }.WithLinkLabel(new Command(() =>
+            {
+                vm.RemoveFavoriteSubtitleFormat(favorite);
+            }));
+            var labelLinkUp = new Label
+            {
+                Text = "Up",
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Center,
+                Margin = new Thickness(0, 0, 10, 0),
+            }.WithLinkLabel(new Command(() =>
+            {
+                vm.MoveFavoriteSubtitleFormatUp(favorite);
+            }));
+
+            var labelLinkDown = new Label
+            {
+                Text = "Down",
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Center,
+                Margin = new Thickness(0, 0, 10, 0),
+            }.WithLinkLabel(new Command(() =>
+            {
+                vm.MoveFavoriteSubtitleFormatDown(favorite);
+            }));
             var stack = new StackLayout
             {
                 Orientation = StackOrientation.Horizontal,
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Start,
-                HeightRequest = 50,
                 Margin = new Thickness(5),
                 Children =
                 {
                     labelName,
-                    button,
+                    labelLinkRemove,
+                    labelLinkUp,
+                    labelLinkDown,
                 }
             };
-            //favorites.Add(stack);
             vm.AllSettings.Add(new SettingItem(string.Empty, 200, string.Empty, stack));
         }
     }

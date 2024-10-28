@@ -423,4 +423,18 @@ public partial class SettingsViewModel : ObservableObject
     {
         SearchButtonPressed(sender, e);
     }
+
+    public void RemoveFavoriteSubtitleFormat(string favorite)
+    {
+        
+    }
+
+    public void MoveFavoriteSubtitleFormatUp(string favorite)
+    {
+        
+    }
+
+    public void MoveFavoriteSubtitleFormatDown(string favorite)
+    {
+    }
 }
