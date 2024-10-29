@@ -530,7 +530,8 @@ public class SettingsPage : ContentPage
 
     private static void AddShortcutSection(SettingsViewModel vm, ShortcutArea area)
     {
-        var textWidth = 200;
+        var descriptionWidth = 220;
+        var shortcutWidth = 120;
 
         vm.AllSettings.Add(new SettingItem(area.ToString()));
 
@@ -544,10 +545,10 @@ public class SettingsPage : ContentPage
             {
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
             },
-            Padding = new Thickness(0, 0, 0, 0),
-            RowSpacing = 0,
-            ColumnSpacing = 5,
+            RowSpacing = 5,
+            ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
@@ -558,7 +559,8 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             FontAttributes = FontAttributes.Bold,
-            WidthRequest = textWidth,
+            WidthRequest = descriptionWidth,
+
         }.BindDynamicTheme();
         gridShortcuts.Add(labelHeaderDescription, 0, 0);
 
@@ -568,9 +570,18 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             FontAttributes = FontAttributes.Bold,
-            WidthRequest = textWidth,
+            WidthRequest = shortcutWidth,
         }.BindDynamicTheme();
         gridShortcuts.Add(labelHeaderShortcut, 1, 0);
+
+        var labelActions = new Label
+        {
+            Text = "Action",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+        }.BindDynamicTheme();
+        gridShortcuts.Add(labelActions, 2, 0);
 
         var row = 0;
         foreach (var shortcut in vm.Shortcuts.Where(p => p.Area == area))
@@ -582,7 +593,7 @@ public class SettingsPage : ContentPage
                 Text = shortcut.Name,
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
-                WidthRequest = textWidth,
+                WidthRequest = descriptionWidth,
             }.BindDynamicTheme();
             gridShortcuts.Add(labelDescription, 0, row);
 
@@ -591,9 +602,20 @@ public class SettingsPage : ContentPage
                 Text = shortcut.Keys.ToString(),
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
-                WidthRequest = textWidth,
+                WidthRequest = shortcutWidth,
             }.BindDynamicTheme();
             gridShortcuts.Add(labelShortcut, 1, row);
+
+            var labelLinkEdit = new Label
+            {
+                Text = "Edit",
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Center,
+            }.WithLinkLabel(new Command(() =>
+            {
+                vm.EditShortcut(shortcut);
+            }));
+            gridShortcuts.Add(labelLinkEdit, 2, row);
         }
 
         vm.AllSettings.Add(new SettingItem(string.Empty, gridShortcuts));
@@ -615,7 +637,7 @@ public class SettingsPage : ContentPage
 
         var labelAction = new Label
         {
-            Text = "Action",
+            Text = "Actions",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             FontAttributes = FontAttributes.Bold,

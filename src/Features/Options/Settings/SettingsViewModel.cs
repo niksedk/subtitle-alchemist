@@ -437,4 +437,8 @@ public partial class SettingsViewModel : ObservableObject
     public void MoveFavoriteSubtitleFormatDown(string favorite)
     {
     }
+
+    public void EditShortcut(ShortcutDisplay shortcut)
+    {
+    }
 }

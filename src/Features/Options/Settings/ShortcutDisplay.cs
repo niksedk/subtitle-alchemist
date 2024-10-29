@@ -39,6 +39,33 @@ public class ShortcutDisplay
             new (ShortcutArea.File, l.FileSave, new ShortcutType(ShortcutAction.FileSave, () => { }, new List<string> { "VcControl" })),
             new (ShortcutArea.File, l.FileSaveAs, new ShortcutType(ShortcutAction.FileSaveAs, () => { }, new List<string> { "VcControl" })),
             new (ShortcutArea.File, l.FileSaveAll, new ShortcutType(ShortcutAction.FileSaveAll, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileSaveOriginal, new ShortcutType(ShortcutAction.FileSaveOriginal, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileSaveOriginalAs, new ShortcutType(ShortcutAction.FileSaveOriginalAs, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileOpenOriginalSubtitle, new ShortcutType(ShortcutAction.FileOpenOriginalSubtitle, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileCloseOriginalSubtitle, new ShortcutType(ShortcutAction.FileCloseOriginalSubtitle, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileTranslatedSubtitle, new ShortcutType(ShortcutAction.FileTranslatedSubtitle, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileCompare, new ShortcutType(ShortcutAction.FileCompare, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileImportPlainText, new ShortcutType(ShortcutAction.FileImportPlainText, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileImportBluRaySupForOcr, new ShortcutType(ShortcutAction.FileImportBluRaySupForOcr, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileImportBluRaySupForEdit, new ShortcutType(ShortcutAction.FileImportBluRaySupForEdit, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileImportTimeCodes, new ShortcutType(ShortcutAction.FileImportTimeCodes, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileExportEbuStl, new ShortcutType(ShortcutAction.FileExportEbuStl, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileExportPac, new ShortcutType(ShortcutAction.FileExportPac, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileExportEdlClipName, new ShortcutType(ShortcutAction.FileExportEdlClipName, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileExportPlainText, new ShortcutType(ShortcutAction.FileExportPlainText, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileExportCustomTextFormat1, new ShortcutType(ShortcutAction.FileExportCustomTextFormat1, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileExportCustomTextFormat2, new ShortcutType(ShortcutAction.FileExportCustomTextFormat2, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileExportCustomTextFormat3, new ShortcutType(ShortcutAction.FileExportCustomTextFormat3, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileExit, new ShortcutType(ShortcutAction.FileExit, () => { }, new List<string> { "VcControl" })),
+
+            new (ShortcutArea.Edit, l.EditFind, new ShortcutType(ShortcutAction.EditFind, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.Edit, l.EditFindNext, new ShortcutType(ShortcutAction.EditFindNext, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.Edit, l.EditReplace, new ShortcutType(ShortcutAction.EditReplace, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.Edit, l.EditMultipleReplace, new ShortcutType(ShortcutAction.EditMultipleReplace, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.Edit, l.EditModifySelection, new ShortcutType(ShortcutAction.EditModifySelection, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.Edit, l.EditGoToSubtitleNumber, new ShortcutType(ShortcutAction.EditGoToSubtitleNumber, () => { }, new List<string> { "VcControl" })),
+
+
 
         };
     }
