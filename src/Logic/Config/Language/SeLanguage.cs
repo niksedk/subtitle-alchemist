@@ -8,4 +8,5 @@ public class SeLanguage
     public LanguageEbuSaveOptions EbuSaveOptions { get; set; } = new();
     public LanguageBurnIn VideoBurnIn { get; set; } = new();
     public LanguageTransparentVideo VideoTransparent { get; set; } = new();
+    public LanguageGeneral General { get; set; } = new();
 }

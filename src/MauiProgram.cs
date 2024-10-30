@@ -40,6 +40,7 @@ using SubtitleAlchemist.Logic.Dictionaries;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Services;
 using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
+using EditShortcutPopupModel = SubtitleAlchemist.Features.Options.Settings.EditShortcutPopupModel;
 
 namespace SubtitleAlchemist
 {

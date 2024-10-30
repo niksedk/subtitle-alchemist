@@ -220,7 +220,7 @@ public partial class SettingsViewModel : ObservableObject
         _subtitleSaveAsSubtitleFormats = new ObservableCollection<string>(allSaveAsSubtitleFormats);
         _selectedDefaultSaveAsSubtitleFormat = _subtitleSaveAsSubtitleFormats.First();
 
-        _favoriteSubtitleFormats = new ObservableCollection<string>( allSubtitleFormats.Take(5));
+        _favoriteSubtitleFormats = new ObservableCollection<string>(allSubtitleFormats.Take(5));
 
         Shortcuts = ShortcutDisplay.GetShortcuts();
     }
@@ -244,7 +244,7 @@ public partial class SettingsViewModel : ObservableObject
             }
         }
 
-        MainThread.BeginInvokeOnMainThread(async() =>
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
             var settingItem = AllSettings.FirstOrDefault(x => x.SectionName == sectionName);
             if (settingItem != null)
@@ -428,12 +428,12 @@ public partial class SettingsViewModel : ObservableObject
 
     public void RemoveFavoriteSubtitleFormat(string favorite)
     {
-        
+
     }
 
     public void MoveFavoriteSubtitleFormatUp(string favorite)
     {
-        
+
     }
 
     public void MoveFavoriteSubtitleFormatDown(string favorite)
@@ -443,11 +443,29 @@ public partial class SettingsViewModel : ObservableObject
 
     public async Task EditShortcut(ShortcutDisplay shortcut)
     {
-        var result = await _popupService.ShowPopupAsync<EditShortcutPopupModel>(onPresenting: viewModel => viewModel.Initialize("Edit shortcut: " + shortcut.Name, shortcut), CancellationToken.None);
+        var result = await _popupService.ShowPopupAsync<EditShortcutPopupModel>(onPresenting: viewModel => 
+            viewModel.Initialize("Edit shortcut: " + shortcut.Name, shortcut), CancellationToken.None);
 
         if (result is ShortcutDisplay shortcutDisplay)
         {
-            // update shortcut
+            var existing = Se.Settings.Shortcuts.FirstOrDefault(p => p.ActionName == shortcut.Type.ActionName);
+            if (existing != null)
+            {
+                if (existing.Keys.Count == 0)
+                {
+                    Se.Settings.Shortcuts.RemoveAll(p => p.ActionName == shortcut.Type.ActionName);
+                }
+                else
+                {
+                    existing.Keys = shortcutDisplay.Type.Keys;
+                }
+            }
+            else
+            {
+                Se.Settings.Shortcuts.Add(new SeShortCut(shortcut.Type.ActionName, shortcutDisplay.Type.Keys));
+            }
+
+            Se.SaveSettings();
         }
     }
 }

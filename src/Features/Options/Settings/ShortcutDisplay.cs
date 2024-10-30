@@ -15,6 +15,23 @@ public class ShortcutDisplay
         Type = keys;
     }
 
+    public ShortcutDisplay(ShortcutArea area, string name, ShortcutAction action)
+    {
+        Area = area;
+        Name = name;
+
+        var keys = Se.Settings.Shortcuts.FirstOrDefault(p => p.ActionName == action);
+        if (keys != null)
+        {
+            Type = new ShortcutType(action, keys.Keys);
+        }
+        else
+        {
+            Type = new ShortcutType(action, new List<string>());
+        }
+
+    }
+
     public override string ToString()
     {
         return Name;
@@ -25,48 +42,45 @@ public class ShortcutDisplay
         var l = Se.Language.Settings.Shortcuts;
         return new List<ShortcutDisplay>
         {
-            new (ShortcutArea.General, l.GeneralMergeSelectedLines, new ShortcutType(ShortcutAction.GeneralMergeSelectedLines, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.General, l.GeneralMergeWithPrevious, new ShortcutType(ShortcutAction.GeneralMergeWithPrevious, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.General, l.GeneralMergeWithNext, new ShortcutType(ShortcutAction.GeneralMergeWithNext, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.General, l.GeneralMergeWithPreviousAndUnbreak, new ShortcutType(ShortcutAction.GeneralMergeWithPreviousAndUnbreak, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.General, l.GeneralMergeWithNextAndUnbreak, new ShortcutType(ShortcutAction.GeneralMergeWithNextAndUnbreak, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.General, l.GeneralMergeWithPreviousAndAutoBreak, new ShortcutType(ShortcutAction.GeneralMergeWithPreviousAndAutoBreak, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.General, l.GeneralMergeWithNextAndAutoBreak, new ShortcutType(ShortcutAction.GeneralMergeWithNextAndAutoBreak, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.General, l.GeneralMergeSelectedLines, ShortcutAction.GeneralMergeSelectedLines),
+            new (ShortcutArea.General, l.GeneralMergeWithPrevious, ShortcutAction.GeneralMergeWithPrevious),
+            new (ShortcutArea.General, l.GeneralMergeWithNext, ShortcutAction.GeneralMergeWithNext),
+            new (ShortcutArea.General, l.GeneralMergeWithPreviousAndUnbreak, ShortcutAction.GeneralMergeWithPreviousAndUnbreak),
+            new (ShortcutArea.General, l.GeneralMergeWithNextAndUnbreak, ShortcutAction.GeneralMergeWithNextAndUnbreak),
+            new (ShortcutArea.General, l.GeneralMergeWithPreviousAndAutoBreak, ShortcutAction.GeneralMergeWithPreviousAndAutoBreak),
+            new (ShortcutArea.General, l.GeneralMergeWithNextAndAutoBreak, ShortcutAction.GeneralMergeWithNextAndAutoBreak),
 
-            new (ShortcutArea.File, l.FileNew, new ShortcutType(ShortcutAction.FileNew, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileOpen, new ShortcutType(ShortcutAction.FileOpen, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileOpenKeepVideo, new ShortcutType(ShortcutAction.FileOpenKeepVideo, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileSave, new ShortcutType(ShortcutAction.FileSave, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileSaveAs, new ShortcutType(ShortcutAction.FileSaveAs, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileSaveAll, new ShortcutType(ShortcutAction.FileSaveAll, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileSaveOriginal, new ShortcutType(ShortcutAction.FileSaveOriginal, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileSaveOriginalAs, new ShortcutType(ShortcutAction.FileSaveOriginalAs, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileOpenOriginalSubtitle, new ShortcutType(ShortcutAction.FileOpenOriginalSubtitle, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileCloseOriginalSubtitle, new ShortcutType(ShortcutAction.FileCloseOriginalSubtitle, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileTranslatedSubtitle, new ShortcutType(ShortcutAction.FileTranslatedSubtitle, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileCompare, new ShortcutType(ShortcutAction.FileCompare, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileImportPlainText, new ShortcutType(ShortcutAction.FileImportPlainText, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileImportBluRaySupForOcr, new ShortcutType(ShortcutAction.FileImportBluRaySupForOcr, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileImportBluRaySupForEdit, new ShortcutType(ShortcutAction.FileImportBluRaySupForEdit, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileImportTimeCodes, new ShortcutType(ShortcutAction.FileImportTimeCodes, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileExportEbuStl, new ShortcutType(ShortcutAction.FileExportEbuStl, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileExportPac, new ShortcutType(ShortcutAction.FileExportPac, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileExportEdlClipName, new ShortcutType(ShortcutAction.FileExportEdlClipName, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileExportPlainText, new ShortcutType(ShortcutAction.FileExportPlainText, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileExportCustomTextFormat1, new ShortcutType(ShortcutAction.FileExportCustomTextFormat1, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileExportCustomTextFormat2, new ShortcutType(ShortcutAction.FileExportCustomTextFormat2, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileExportCustomTextFormat3, new ShortcutType(ShortcutAction.FileExportCustomTextFormat3, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.File, l.FileExit, new ShortcutType(ShortcutAction.FileExit, () => { }, new List<string> { "VcControl" })),
+            new (ShortcutArea.File, l.FileNew, ShortcutAction.FileNew),
+            new (ShortcutArea.File, l.FileOpen, ShortcutAction.FileOpen),
+            new (ShortcutArea.File, l.FileOpenKeepVideo, ShortcutAction.FileOpenKeepVideo),
+            new (ShortcutArea.File, l.FileSave, ShortcutAction.FileSave),
+            new (ShortcutArea.File, l.FileSaveAs, ShortcutAction.FileSaveAs),
+            new (ShortcutArea.File, l.FileSaveAll, ShortcutAction.FileSaveAll),
+            new (ShortcutArea.File, l.FileSaveOriginal, ShortcutAction.FileSaveOriginal),
+            new (ShortcutArea.File, l.FileSaveOriginalAs, ShortcutAction.FileSaveOriginalAs),
+            new (ShortcutArea.File, l.FileOpenOriginalSubtitle, ShortcutAction.FileOpenOriginalSubtitle),
+            new (ShortcutArea.File, l.FileCloseOriginalSubtitle, ShortcutAction.FileCloseOriginalSubtitle),
+            new (ShortcutArea.File, l.FileTranslatedSubtitle, ShortcutAction.FileTranslatedSubtitle),
+            new (ShortcutArea.File, l.FileCompare, ShortcutAction.FileCompare),
+            new (ShortcutArea.File, l.FileImportPlainText, ShortcutAction.FileImportPlainText),
+            new (ShortcutArea.File, l.FileImportBluRaySupForOcr, ShortcutAction.FileImportBluRaySupForOcr),
+            new (ShortcutArea.File, l.FileImportBluRaySupForEdit, ShortcutAction.FileImportBluRaySupForEdit),
+            new (ShortcutArea.File, l.FileImportTimeCodes, ShortcutAction.FileImportTimeCodes),
+            new (ShortcutArea.File, l.FileExportEbuStl, ShortcutAction.FileExportEbuStl),
+            new (ShortcutArea.File, l.FileExportPac, ShortcutAction.FileExportPac),
+            new (ShortcutArea.File, l.FileExportEdlClipName, ShortcutAction.FileExportEdlClipName),
+            new (ShortcutArea.File, l.FileExportPlainText, ShortcutAction.FileExportPlainText),
+            new (ShortcutArea.File, l.FileExportCustomTextFormat1, ShortcutAction.FileExportCustomTextFormat1),
+            new (ShortcutArea.File, l.FileExportCustomTextFormat2, ShortcutAction.FileExportCustomTextFormat2),
+            new (ShortcutArea.File, l.FileExportCustomTextFormat3, ShortcutAction.FileExportCustomTextFormat3),
+            new (ShortcutArea.File, l.FileExit, ShortcutAction.FileExit),
 
-            new (ShortcutArea.Edit, l.EditFind, new ShortcutType(ShortcutAction.EditFind, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.Edit, l.EditFindNext, new ShortcutType(ShortcutAction.EditFindNext, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.Edit, l.EditReplace, new ShortcutType(ShortcutAction.EditReplace, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.Edit, l.EditMultipleReplace, new ShortcutType(ShortcutAction.EditMultipleReplace, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.Edit, l.EditModifySelection, new ShortcutType(ShortcutAction.EditModifySelection, () => { }, new List<string> { "VcControl" })),
-            new (ShortcutArea.Edit, l.EditGoToSubtitleNumber, new ShortcutType(ShortcutAction.EditGoToSubtitleNumber, () => { }, new List<string> { "VcControl" })),
-
-
-
+            new (ShortcutArea.Edit, l.EditFind, ShortcutAction.EditFind),
+            new (ShortcutArea.Edit, l.EditFindNext, ShortcutAction.EditFindNext),
+            new (ShortcutArea.Edit, l.EditReplace, ShortcutAction.EditReplace),
+            new (ShortcutArea.Edit, l.EditMultipleReplace, ShortcutAction.EditMultipleReplace),
+            new (ShortcutArea.Edit, l.EditModifySelection, ShortcutAction.EditModifySelection),
+            new (ShortcutArea.Edit, l.EditGoToSubtitleNumber, ShortcutAction.EditGoToSubtitleNumber),
         };
     }
 }
@@ -74,13 +88,11 @@ public class ShortcutDisplay
 public class ShortcutType
 {
     public ShortcutAction ActionName { get; set; }
-    public Action Action { get; set; }
     public List<string> Keys { get; set; }
 
-    public ShortcutType(ShortcutAction actionName, Action action, List<string> keys)
+    public ShortcutType(ShortcutAction actionName, List<string> keys)
     {
         ActionName = actionName;
-        Action = action;
         Keys = keys;
     }
 

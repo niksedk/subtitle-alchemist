@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
 
-namespace SubtitleAlchemist.Features.Shared.PickSubtitleLine;
+namespace SubtitleAlchemist.Features.Options.Settings;
 
 public sealed class EditShortcutPopup : Popup
 {
@@ -35,7 +35,7 @@ public sealed class EditShortcutPopup : Popup
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             WidthRequest = 500,
-            HeightRequest = 520,
+            HeightRequest = 480,
         }.BindDynamicTheme();
 
         var labelTitle = new Label
@@ -139,6 +139,7 @@ public sealed class EditShortcutPopup : Popup
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = 200,
+            Margin = new Thickness(0, 0, 0, 5),
         }.BindDynamicTheme();
         pickerKey.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Keys));
         pickerKey.SetBinding(Picker.SelectedItemProperty, nameof(vm.Key1));
@@ -157,6 +158,7 @@ public sealed class EditShortcutPopup : Popup
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = 200,
+            Margin = new Thickness(0, 0, 0, 5),
         }.BindDynamicTheme();
         pickerKey2.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Keys));
         pickerKey2.SetBinding(Picker.SelectedItemProperty, nameof(vm.Key2));
@@ -175,6 +177,7 @@ public sealed class EditShortcutPopup : Popup
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             WidthRequest = 200,
+            Margin = new Thickness(0, 0, 0, 5),
         }.BindDynamicTheme();
         pickerKey3.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Keys));
         pickerKey3.SetBinding(Picker.SelectedItemProperty, nameof(vm.Key3));
@@ -203,7 +206,7 @@ public sealed class EditShortcutPopup : Popup
             Orientation = StackOrientation.Horizontal,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 15, 0, 0),
+            Margin = new Thickness(0, 35, 0, 0),
             Children =
             {
                 buttonOk,

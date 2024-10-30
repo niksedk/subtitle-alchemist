@@ -1,9 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SubtitleAlchemist.Features.Options.Settings;
-using System.Collections.ObjectModel;
+using SubtitleAlchemist.Logic.Config;
 
-namespace SubtitleAlchemist.Features.Shared.PickSubtitleLine;
+namespace SubtitleAlchemist.Features.Options.Settings;
 
 public partial class EditShortcutPopupModel : ObservableObject
 {
@@ -33,12 +33,18 @@ public partial class EditShortcutPopupModel : ObservableObject
     [ObservableProperty]
     private string _title;
 
-    private ShortcutDisplay _shortcut;
+    private readonly ShortcutDisplay _shortcut;
+    private readonly string _none; 
+    private const string KeyUndefined = "Undefined"; 
+    private const string KeyControl = "Control"; 
+    private const string KeyShift = "Shift"; 
+    private const string KeyAlt = "Alt"; 
 
     public EditShortcutPopupModel()
     {
         _title = string.Empty;
-        _shortcut = new ShortcutDisplay(ShortcutArea.General, string.Empty, new ShortcutType(ShortcutAction.GeneralMergeSelectedLines, () => { }, new List<string>()));
+        _none = $"- {Se.Language.General.None} -";
+        _shortcut = new ShortcutDisplay(ShortcutArea.General, string.Empty, ShortcutAction.GeneralMergeSelectedLines);
         _keys = new ObservableCollection<string>(GetShortcutKeys());
         _key1 = string.Empty;
         _key2 = string.Empty;
@@ -54,14 +60,14 @@ public partial class EditShortcutPopupModel : ObservableObject
 
         foreach (var keyName in keyNames)
         {
-            if (keyName != "Undefined")
+            if (keyName != KeyUndefined && keyName.Trim().Length > 0)
             {
                 result.Add(keyName);
             }
         }
 
         var orderedResult = result.OrderBy(p => p).ToList();
-        orderedResult.Insert(0, "- None -");
+        orderedResult.Insert(0, _none);
 
         return orderedResult;
     }
@@ -69,8 +75,13 @@ public partial class EditShortcutPopupModel : ObservableObject
     public static bool IsObsolete(Type type, string name)
     {
         var fi = type.GetField(name);
+        if (fi == null)
+        {
+            return false;
+        }
+
         var attributes = (ObsoleteAttribute[])fi.GetCustomAttributes(typeof(ObsoleteAttribute), false);
-        return attributes != null && attributes.Length > 0;
+        return attributes is { Length: > 0 };
     }
 
     [RelayCommand]
@@ -78,7 +89,40 @@ public partial class EditShortcutPopupModel : ObservableObject
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Popup?.Close(_shortcut);
+            var keys = new List<string>();
+            if (ModifierCtrl)
+            {
+                keys.Add(KeyControl);
+            }
+
+            if (ModifierAlt)
+            {
+                keys.Add(KeyAlt);
+            }
+
+            if (ModifierShift)
+            {
+                keys.Add(KeyShift);
+            }
+
+            if (!string.IsNullOrEmpty(Key1) && Key1 != _none)
+            {
+                keys.Add(Key1);
+            }
+
+            if (!string.IsNullOrEmpty(Key2) && Key2 != _none)
+            {
+                keys.Add(Key2);
+            }
+
+            if (!string.IsNullOrEmpty(Key3) && Key3 != _none)
+            {
+                keys.Add(Key3);
+            }
+
+            var shortCut = new ShortcutDisplay(_shortcut.Area, _shortcut.Name, new ShortcutType(_shortcut.Type.ActionName, keys));
+
+            Popup?.Close(shortCut);
         });
     }
 
@@ -98,39 +142,36 @@ public partial class EditShortcutPopupModel : ObservableObject
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 var keys = shortcut.Type.Keys ?? new List<string>();
-                ModifierCtrl = keys.Contains(SharpHook.Native.KeyCode.VcLeftControl.ToString()) &&
-                               keys.Contains(SharpHook.Native.KeyCode.VcRightControl.ToString());
-                ModifierAlt = keys.Contains(SharpHook.Native.KeyCode.VcLeftAlt.ToString()) &&
-                              keys.Contains(SharpHook.Native.KeyCode.VcRightAlt.ToString());
-                ModifierShift = keys.Contains(SharpHook.Native.KeyCode.VcLeftShift.ToString()) &&
-                                keys.Contains(SharpHook.Native.KeyCode.VcRightShift.ToString());
+                ModifierCtrl = keys.Contains(KeyControl);
+                ModifierAlt = keys.Contains(KeyAlt);
+                ModifierShift = keys.Contains(KeyShift);
 
-                Key1 = keys.First();
-                Key2 = keys.First();
-                Key3 = keys.First();
+                Key1 = Keys.First();
+                Key2 = Keys.First();
+                Key3 = Keys.First();
 
                 foreach (var key in keys)
                 {
-                    if (ModifierCtrl && key.Contains("Control"))
+                    if (ModifierCtrl && key.Contains(KeyControl))
                     {
                         continue;
                     }
 
-                    if (ModifierAlt && key.Contains("Alt"))
+                    if (ModifierAlt && key.Contains(KeyAlt))
                     {
                         continue;
                     }
 
-                    if (ModifierShift && key.Contains("Shift"))
+                    if (ModifierShift && key.Contains(KeyShift))
                     {
                         continue;
                     }
 
-                    if (Key1 == keys.First())
+                    if (Key1 == _none)
                     {
                         Key1 = key;
                     }
-                    else if (Key2 == keys.First())
+                    else if (Key2 == _none)
                     {
                         Key2 = key;
                     }

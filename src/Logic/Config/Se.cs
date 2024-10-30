@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Forms.FixCommonErrors;
+using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Logic.Config.Language;
 
 namespace SubtitleAlchemist.Logic.Config;
@@ -10,6 +11,7 @@ namespace SubtitleAlchemist.Logic.Config;
 public class Se
 {
     public SeGeneral General { get; set; } = new();
+    public List<SeShortCut> Shortcuts { get; set; } = new();
     public SeFile File { get; set; } = new();
     public SeTools Tools { get; set; } = new();
     public SeSync Synchronization { get; set; } = new();
@@ -17,12 +19,17 @@ public class Se
     public SeVideo Video { get; set; } = new();
     public static SeLanguage Language { get; set; } = new();
     public static Se Settings { get; set; } = new();
+    
     public static string DictionariesFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "Dictionaries");
     public static string AutoBackupFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "AutoBackup");
     public static string TtsFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "TTS");
 
     public Se()
     {
+        Shortcuts = new List<SeShortCut>()
+        {
+            new(ShortcutAction.GeneralMergeSelectedLines, new List<string> { "Control", "M" }),
+        };
     }
 
     public static void SaveSettings()
