@@ -9,6 +9,43 @@ public class LanguageSettingsShortcuts
     public string GeneralMergeWithNextAndUnbreak { get; set; }
     public string GeneralMergeWithPreviousAndAutoBreak { get; set; }
     public string GeneralMergeWithNextAndAutoBreak { get; set; }
+    public string GeneralMergeSelectedLinesAndAutoBreak { get; set; }
+    public string GeneralMergeSelectedLinesAndUnbreak { get; set; }
+    public string GeneralMergeSelectedLinesAndUnbreakCjk { get; set; }
+    public string GeneralMergeSelectedLinesOnlyFirstText { get; set; }
+    public string GeneralMergeSelectedLinesBilingual { get; set; }
+    public string GeneralMergeWithPreviousBilingual { get; set; }
+    public string GeneralMergeWithNextBilingual { get; set; }
+    public string GeneralMergeOriginalAndTranslation { get; set; }
+    public string GeneralToggleTranslationMode { get; set; }
+    public string GeneralSwitchOriginalAndTranslation { get; set; }
+    public string GeneralSwitchOriginalAndTranslationTextBoxes { get; set; }
+    public string GeneralChooseLayout { get; set; }
+    public string GeneralLayoutChooseX { get; set; }
+    public string GeneralPlayFirstSelected { get; set; }
+    public string GeneralGoToFirstSelectedLine { get; set; }
+    public string GeneralGoToNextEmptyLine { get; set; }
+    public string GeneralGoToNextSubtitle { get; set; }
+    public string GeneralGoToNextSubtitlePlayTranslate { get; set; }
+    public string GeneralGoToNextSubtitleCursorAtEnd { get; set; }
+    public string GeneralGoToPrevSubtitle { get; set; }
+    public string GeneralGoToPrevSubtitlePlayTranslate { get; set; }
+    public string GeneralGoToStartOfCurrentSubtitle { get; set; }
+    public string GeneralGoToEndOfCurrentSubtitle { get; set; }
+    public string GeneralGoToPreviousSubtitleAndFocusVideo { get; set; }
+    public string GeneralGoToNextSubtitleAndFocusVideo { get; set; }
+    public string GeneralGoToPrevSubtitleAndPlay { get; set; }
+    public string GeneralGoToNextSubtitleAndPlay { get; set; }
+    public string GeneralGoToPreviousSubtitleAndFocusWaveform { get; set; }
+    public string GeneralGoToNextSubtitleAndFocusWaveform { get; set; }
+    public string GeneralGoToLineNumber { get; set; }
+    public string GeneralToggleBookmarks { get; set; }
+    public string GeneralFocusTextBox { get; set; }
+    public string GeneralToggleBookmarksWithText { get; set; }
+    public string GeneralEditBookmarks { get; set; }
+
+
+
     public string FileNew { get; set; }
     public string FileOpen { get; set; }
     public string FileOpenKeepVideo { get; set; }
@@ -38,7 +75,6 @@ public class LanguageSettingsShortcuts
     public string EditReplace { get; set; }
     public string EditMultipleReplace { get; set; }
     public string EditModifySelection { get; set; }
-    public string EditGoToSubtitleNumber { get; set; }
 
     public LanguageSettingsShortcuts()
     {
@@ -49,6 +85,40 @@ public class LanguageSettingsShortcuts
         GeneralMergeWithNextAndUnbreak = "Merge with next and unbreak";
         GeneralMergeWithPreviousAndAutoBreak = "Merge with previous and auto-break";
         GeneralMergeWithNextAndAutoBreak = "Merge with next and auto-break";
+        GeneralMergeSelectedLinesAndAutoBreak = "Merge selected lines and auto-break";
+        GeneralMergeSelectedLinesAndUnbreak = "Merge selected lines and unbreak";
+        GeneralMergeSelectedLinesAndUnbreakCjk = "Merge selected lines and unbreak CJK";
+        GeneralMergeSelectedLinesOnlyFirstText = "Merge selected lines only first text";
+        GeneralMergeSelectedLinesBilingual = "Merge selected lines bilingual";
+        GeneralMergeWithPreviousBilingual = "Merge with previous bilingual";
+        GeneralMergeWithNextBilingual = "Merge with next bilingual";
+        GeneralMergeOriginalAndTranslation = "Merge original and translation";
+        GeneralToggleTranslationMode = "Toggle translation mode";
+        GeneralSwitchOriginalAndTranslation = "Switch original and translation";
+        GeneralSwitchOriginalAndTranslationTextBoxes = "Switch original and translation text boxes";
+        GeneralChooseLayout = "Choose layout";
+        GeneralLayoutChooseX = "Layout {0}";
+        GeneralPlayFirstSelected = "Play first selected";
+        GeneralGoToFirstSelectedLine = "Go to first selected line";
+        GeneralGoToNextEmptyLine = "Go to next empty line";
+        GeneralGoToNextSubtitle = "Go to next subtitle";
+        GeneralGoToNextSubtitlePlayTranslate = "Go to next subtitle (play translate)";
+        GeneralGoToNextSubtitleCursorAtEnd = "Go to next subtitle (cursor at end)";
+        GeneralGoToPrevSubtitle = "Go to prev subtitle";
+        GeneralGoToPrevSubtitlePlayTranslate = "Go to prev subtitle (play translate)";
+        GeneralGoToStartOfCurrentSubtitle = "Go to start of current subtitle";
+        GeneralGoToEndOfCurrentSubtitle = "Go to end of current subtitle";
+        GeneralGoToPreviousSubtitleAndFocusVideo = "Go to previous subtitle and focus video";
+        GeneralGoToNextSubtitleAndFocusVideo = "Go to next subtitle and focus video";
+        GeneralGoToPrevSubtitleAndPlay = "Go to prev subtitle and play";
+        GeneralGoToNextSubtitleAndPlay = "Go to next subtitle and play";
+        GeneralGoToPreviousSubtitleAndFocusWaveform = "Go to previous subtitle and focus waveform";
+        GeneralGoToNextSubtitleAndFocusWaveform = "Go to next subtitle and focus waveform";
+        GeneralGoToLineNumber = "Go to line number";
+        GeneralToggleBookmarks = "Toggle bookmarks";
+        GeneralFocusTextBox = "Focus text box";
+        GeneralToggleBookmarksWithText = "Toggle bookmarks with text";
+        GeneralEditBookmarks = "Edit bookmarks";
 
         FileNew = "New";
         FileOpen = "Open";
@@ -80,7 +150,6 @@ public class LanguageSettingsShortcuts
         EditReplace = "Replace";
         EditMultipleReplace = "Multiple replace";
         EditModifySelection = "Modify selection";
-        EditGoToSubtitleNumber = "Go to subtitle number";
 
     }
 }

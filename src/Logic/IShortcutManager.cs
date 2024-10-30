@@ -1,5 +1,5 @@
 ﻿using SharpHook;
-using SharpHook.Native;
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Logic;
 
@@ -7,6 +7,6 @@ public interface IShortcutManager
 {
     void OnKeyPressed(object? sender, KeyboardHookEventArgs e);
     void OnKeyReleased(object? sender, KeyboardHookEventArgs e);
-    void RegisterShortcut(List<KeyCode> keys, object control, Action action);
+    void RegisterShortcut(SeShortCut shortcut, Action action);
     Action? CheckShortcuts(object? control);
 }

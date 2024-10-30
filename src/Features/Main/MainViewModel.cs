@@ -896,14 +896,35 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         SharpHookHandler.AddKeyPressed(KeyPressed);
         SharpHookHandler.AddKeyReleased(KeyReleased);
 
-        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcRightAlt, KeyCode.VcUp }, null, SubtitleListUp);
-        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftAlt, KeyCode.VcUp }, null, SubtitleListUp);
-        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcRightAlt, KeyCode.VcUp }, null, SubtitleListDown);
-        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftAlt, KeyCode.VcDown }, null, SubtitleListDown);
-        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftControl, KeyCode.VcA }, null, SubtitleListSelectAll);
-        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftControl, KeyCode.VcHome }, null, SubtitleListSelectFirst);
-        _shortcutManager.RegisterShortcut(new List<KeyCode> { KeyCode.VcLeftControl, KeyCode.VcEnd }, null, SubtitleListSelectLast);
+        foreach (var shortcut in Se.Settings.Shortcuts)
+        {
+            var action = GetShortcutAction(shortcut.ActionName);
+            if (action != null)
+            {
+                _shortcutManager.RegisterShortcut(shortcut, action);
+            }
+        }
     }
+
+    private Action? GetShortcutAction(ShortcutAction shortcutActionName)
+    {
+        switch (shortcutActionName)
+        {
+            case ShortcutAction.GeneralChooseLayout: return ChooseLayout;
+            case ShortcutAction.GeneralGoToLineNumber: return GoToLineNumber;
+        }
+
+        return null;
+    }
+
+    private void GoToLineNumber()
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await ShowGoToLineNumber();
+        });
+    }
+
 
     private void SubtitleListUp()
     {
@@ -915,6 +936,15 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         SelectParagraph(idx - 1);
     }
+
+    private void ChooseLayout()
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await ShowLayoutPicker();
+        });
+    }
+
 
     private void SubtitleListDown()
     {

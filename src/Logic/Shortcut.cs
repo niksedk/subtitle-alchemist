@@ -4,12 +4,12 @@ namespace SubtitleAlchemist.Logic;
 
 public class ShortCut
 {
-    public List<KeyCode> Keys { get; set; }
+    public List<string> Keys { get; set; }
     public object? Control { get; set; }
     public Action Action { get; set; }
     public int HashCode { get; set; }
 
-    public ShortCut(List<KeyCode> keys, object? control, Action action)
+    public ShortCut(List<string> keys, object? control, Action action)
     {
         Keys = keys;
         Control = control;

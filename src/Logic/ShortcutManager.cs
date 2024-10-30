@@ -1,5 +1,6 @@
 ﻿using SharpHook;
 using SharpHook.Native;
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Logic;
 
@@ -24,18 +25,24 @@ public class ShortcutManager : IShortcutManager
         _activeKeys.Remove(e.Data.KeyCode);
     }
 
-    public void RegisterShortcut(List<KeyCode> keys, object? control, Action action)
+    public void RegisterShortcut(SeShortCut shortcut, Action action)
     {
-        _shortcuts.Add(new ShortCut(keys, control, action));
+        _shortcuts.Add(new ShortCut(shortcut.Keys, null, action));
     }
 
     public Action? CheckShortcuts(object? control)
     {
-        var input = new ShortCut(_activeKeys.ToList(), control, () => { });
+        var input = new ShortCut(_activeKeys.Select(p => p.ToString().Remove(0, 2)).ToList(), control, () => { });
+        var inputWithNormalizedModifiers = NormalizeModifiers(input);
+
+        if (_activeKeys.Count < 2)
+        {
+            return null; //TODO: remove
+        }
 
         foreach (var shortcut in _shortcuts)
         {
-            if (input.HashCode == shortcut.HashCode)
+            if (input.HashCode == shortcut.HashCode || inputWithNormalizedModifiers.HashCode == shortcut.HashCode)
             {
                 return shortcut.Action;
             }
@@ -43,4 +50,31 @@ public class ShortcutManager : IShortcutManager
 
         return null;
     }
+
+    private static ShortCut NormalizeModifiers(ShortCut input)
+    {
+        var keys = new List<string>();
+        foreach (var key in input.Keys)
+        {
+            if (key is "LeftControl" or "RightControl")
+            {
+                keys.Add("Control");
+            }
+            else if (key is "LeftShift" or "RightShift")
+            {
+                keys.Add("Shift");
+            }
+            else if (key is "LeftAlt" or "RightAlt")
+            {
+                keys.Add("Alt");
+            }
+            else
+            {
+                keys.Add(key);
+            }
+        }
+
+        return new ShortCut(keys, input.Control, input.Action);
+    }
+
 }
