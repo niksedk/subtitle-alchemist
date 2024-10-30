@@ -599,7 +599,7 @@ public class SettingsPage : ContentPage
 
             var labelShortcut = new Label
             {
-                Text = shortcut.Keys.ToString(),
+                Text = shortcut.Type.ToString(),
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
                 WidthRequest = shortcutWidth,
@@ -611,9 +611,9 @@ public class SettingsPage : ContentPage
                 Text = "Edit",
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
-            }.WithLinkLabel(new Command(() =>
+            }.WithLinkLabel(new Command(async() =>
             {
-                vm.EditShortcut(shortcut);
+                await vm.EditShortcut(shortcut);
             }));
             gridShortcuts.Add(labelLinkEdit, 2, row);
         }

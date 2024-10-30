@@ -53,5 +53,9 @@ public class SeGeneral
         SubtitleMaximumCharactersPerSeconds = 25.0;
         SubtitleOptimalCharactersPerSeconds = 15.0;
         SubtitleMaximumWordsPerMinute = 400;
+        DefaultSaveAsFormat = "SubRip";
+        FavoriteSubtitleFormats = "SubRip";
+        CpsLineLengthStrategy = "";//TODO: Add default value
+
     }
 }

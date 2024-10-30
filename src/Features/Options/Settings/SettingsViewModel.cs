@@ -1,9 +1,11 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Nikse.SubtitleEdit.Core.Cea708.Commands;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
+using SubtitleAlchemist.Features.Shared.PickSubtitleLine;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
@@ -436,9 +438,16 @@ public partial class SettingsViewModel : ObservableObject
 
     public void MoveFavoriteSubtitleFormatDown(string favorite)
     {
+
     }
 
-    public void EditShortcut(ShortcutDisplay shortcut)
+    public async Task EditShortcut(ShortcutDisplay shortcut)
     {
+        var result = await _popupService.ShowPopupAsync<EditShortcutPopupModel>(onPresenting: viewModel => viewModel.Initialize("Edit shortcut: " + shortcut.Name, shortcut), CancellationToken.None);
+
+        if (result is ShortcutDisplay shortcutDisplay)
+        {
+            // update shortcut
+        }
     }
 }

@@ -5,14 +5,14 @@ namespace SubtitleAlchemist.Features.Options.Settings;
 public class ShortcutDisplay
 {
     public string Name { get; set; }
-    public ShortcutType Keys { get; set; }
+    public ShortcutType Type { get; set; }
     public ShortcutArea Area { get; set; }
 
     public ShortcutDisplay(ShortcutArea area, string name, ShortcutType keys)
     {
         Area = area;
         Name = name;
-        Keys = keys;
+        Type = keys;
     }
 
     public override string ToString()

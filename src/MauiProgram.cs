@@ -139,6 +139,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<AudioSettingsPopup, AudioSettingsPopupModel>();
             builder.Services.AddTransientPopup<EditTextPopup, EditTextPopupModel>();
             builder.Services.AddTransientPopup<ElevenLabSettingsPopup, ElevenLabSettingsPopupModel>();
+            builder.Services.AddTransientPopup<EditShortcutPopup, EditShortcutPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();
