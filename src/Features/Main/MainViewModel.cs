@@ -105,9 +105,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     private Subtitle _subtitle;
 
-    private bool _isControlKeyDown;
-    private bool _isAltKeyDown;
-    private bool _isShiftKeyDown;
     private string _subtitleFileName;
     private string _videoFileName;
     private readonly System.Timers.Timer _timer;
@@ -126,6 +123,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private readonly IInsertManager _insertManager;
     private readonly IMergeManager _mergeManager;
     private readonly IShortcutManager _shortcutManager;
+    private readonly IMainShortcutActions _mainShortcutActions;
 
     public MainViewModel(
         IPopupService popupService,
@@ -133,8 +131,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         IUndoRedoManager undoRedoManager,
         IFindService findService,
         IInsertManager insertManager,
-        IShortcutManager shortcutManager, 
-        IMergeManager mergeManager)
+        IShortcutManager shortcutManager,
+        IMergeManager mergeManager,
+        IMainShortcutActions mainShortcutActions)
     {
         _popupService = popupService;
         _autoBackup = autoBackup;
@@ -143,6 +142,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _insertManager = insertManager;
         _shortcutManager = shortcutManager;
         _mergeManager = mergeManager;
+        _mainShortcutActions = mainShortcutActions;
 
         VideoPlayer = new MediaElement { ZIndex = -10000 };
         SubtitleList = new CollectionView();
@@ -754,7 +754,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         };
     }
 
-    private int GetFirstSelectedIndex()
+    public int GetFirstSelectedIndex()
     {
         for (var index = 0; index < Paragraphs.Count; index++)
         {
@@ -816,7 +816,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         });
     }
 
-    private void SelectParagraph(int index)
+    public void SelectParagraph(int index)
     {
         if (index < 0 || index >= Paragraphs.Count)
         {
@@ -827,7 +827,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         SelectParagraph(paragraph);
     }
 
-    private void SelectParagraph(DisplayParagraph? paragraph)
+    public void SelectParagraph(DisplayParagraph? paragraph)
     {
         if (paragraph == null)
         {
@@ -893,89 +893,10 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
         _timer.Start();
         _audioVisualizer.OnVideoPositionChanged += AudioVisualizer_OnVideoPositionChanged;
+
         SharpHookHandler.AddKeyPressed(KeyPressed);
         SharpHookHandler.AddKeyReleased(KeyReleased);
-
-        foreach (var shortcut in Se.Settings.Shortcuts)
-        {
-            var action = GetShortcutAction(shortcut.ActionName);
-            if (action != null)
-            {
-                _shortcutManager.RegisterShortcut(shortcut, action);
-            }
-        }
-    }
-
-    private Action? GetShortcutAction(ShortcutAction shortcutActionName)
-    {
-        switch (shortcutActionName)
-        {
-            case ShortcutAction.GeneralChooseLayout: return ChooseLayout;
-            case ShortcutAction.GeneralGoToLineNumber: return GoToLineNumber;
-        }
-
-        return null;
-    }
-
-    private void GoToLineNumber()
-    {
-        MainThread.BeginInvokeOnMainThread(async () =>
-        {
-            await ShowGoToLineNumber();
-        });
-    }
-
-
-    private void SubtitleListUp()
-    {
-        var idx = GetFirstSelectedIndex();
-        if (idx <= 0)
-        {
-            return;
-        }
-
-        SelectParagraph(idx - 1);
-    }
-
-    private void ChooseLayout()
-    {
-        MainThread.BeginInvokeOnMainThread(async () =>
-        {
-            await ShowLayoutPicker();
-        });
-    }
-
-
-    private void SubtitleListDown()
-    {
-        var idx = GetFirstSelectedIndex();
-        if (idx < 0 || idx >= Paragraphs.Count - 1)
-        {
-            return;
-        }
-
-        SelectParagraph(idx + 1);
-    }
-
-    private void SubtitleListSelectAll()
-    {
-        foreach (var displayParagraph in Paragraphs)
-        {
-            displayParagraph.IsSelected = true;
-        }
-
-        //TODO: update selected paragraph to none
-        SelectedParagraph = null;
-    }
-
-    private void SubtitleListSelectFirst()
-    {
-        SelectParagraph(Paragraphs.FirstOrDefault());
-    }
-
-    private void SubtitleListSelectLast()
-    {
-        SelectParagraph(Paragraphs.LastOrDefault());
+        _mainShortcutActions.Initialize(_shortcutManager, this, MainPage!);
     }
 
     public void Loaded(MainPage mainPage)
@@ -1585,10 +1506,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     public void SubtitleListSingleTapped(object? sender, TappedEventArgs e)
     {
+        var isControlKeyDown = _shortcutManager.IsControlDown;
         var point = e.GetPosition(sender as Element);
         if (point.HasValue && e.Parameter is DisplayParagraph dp)
         {
-            if (_isControlKeyDown)
+            if (isControlKeyDown)
             {
                 var selectedCount = Paragraphs.Count(p => p.IsSelected);
                 foreach (var item in Paragraphs)
@@ -2328,58 +2250,11 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             _shortcutManager.OnKeyPressed(sender, e);
         }
 
-        object? focusedControl = null;
-
+        string? focusedControl = null; //TODO: make global variable
         var action = _shortcutManager.CheckShortcuts(focusedControl);
         if (action != null)
         {
             MainThread.BeginInvokeOnMainThread(async () => { action.Invoke(); });
-        }
-
-        ShowStatus(e.Data.ToString() + " " + e.Data.KeyCode.ToString());
-        if (e.Data.KeyCode is KeyCode.VcLeftControl or KeyCode.VcRightControl)
-        {
-            _isControlKeyDown = true;
-        }
-        else if (e.Data.KeyCode is KeyCode.VcLeftAlt or KeyCode.VcRightAlt)
-        {
-            _isAltKeyDown = true;
-        }
-        else if (e.Data.KeyCode is KeyCode.VcLeftShift or KeyCode.VcRightShift)
-        {
-            _isShiftKeyDown = true;
-        }
-        else if (e.Data.KeyCode is KeyCode.VcUp && SubtitleList.IsFocused)
-        {
-            e.SuppressEvent = true;
-            var selectedParagraph = Paragraphs.FirstOrDefault(p => p.IsSelected);
-            if (selectedParagraph != null)
-            {
-                var idx = Paragraphs.IndexOf(selectedParagraph);
-                if (idx >= 1)
-                {
-                    MainThread.BeginInvokeOnMainThread(async () =>
-                    {
-                        SelectParagraph(idx - 1);
-                    });
-                }
-            }
-        }
-        else if (e.Data.KeyCode is KeyCode.VcDown && SubtitleList.IsFocused)
-        {
-            e.SuppressEvent = true;
-            var selectedParagraph = Paragraphs.FirstOrDefault(p => p.IsSelected);
-            if (selectedParagraph != null)
-            {
-                var idx = Paragraphs.IndexOf(selectedParagraph);
-                if (idx < Paragraphs.Count - 1)
-                {
-                    MainThread.BeginInvokeOnMainThread(async () =>
-                    {
-                        SelectParagraph(idx + 1);
-                    });
-                }
-            }
         }
     }
 
@@ -2388,20 +2263,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         lock (_keyLock)
         {
             _shortcutManager.OnKeyReleased(sender, e);
-        }
-
-        // save all keys in dictionary???
-        if (e.Data.KeyCode is KeyCode.VcLeftControl or KeyCode.VcRightControl)
-        {
-            _isControlKeyDown = false;
-        }
-        else if (e.Data.KeyCode is KeyCode.VcLeftAlt or KeyCode.VcRightAlt)
-        {
-            _isAltKeyDown = false;
-        }
-        else if (e.Data.KeyCode is KeyCode.VcLeftShift or KeyCode.VcRightShift)
-        {
-            _isShiftKeyDown = false;
         }
     }
 

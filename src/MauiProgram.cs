@@ -109,6 +109,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<IInsertManager, InsertManager>();
             builder.Services.AddTransient<IMergeManager, MergeManager>();
             builder.Services.AddTransient<IShortcutManager, ShortcutManager>();
+            builder.Services.AddTransient<IMainShortcutActions, MainShortcutActions>();
 
             builder.Services.AddTransientPopup<AboutPopup, AboutPopupModel>();
             builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerModel>();

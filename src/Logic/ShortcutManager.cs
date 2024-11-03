@@ -15,12 +15,16 @@ public class ShortcutManager : IShortcutManager
         _shortcuts = new List<ShortCut>();
     }
 
-    public void OnKeyPressed(object sender, KeyboardHookEventArgs e)
+    public bool IsControlDown => _activeKeys.Contains(KeyCode.VcLeftControl) || _activeKeys.Contains(KeyCode.VcRightControl);
+    public bool IsAltDown => _activeKeys.Contains(KeyCode.VcLeftAlt) || _activeKeys.Contains(KeyCode.VcRightAlt);
+    public bool IsShiftDown => _activeKeys.Contains(KeyCode.VcLeftShift) || _activeKeys.Contains(KeyCode.VcRightShift);
+
+    public void OnKeyPressed(object? sender, KeyboardHookEventArgs e)
     {
         _activeKeys.Add(e.Data.KeyCode);
     }
 
-    public void OnKeyReleased(object sender, KeyboardHookEventArgs e)
+    public void OnKeyReleased(object? sender, KeyboardHookEventArgs e)
     {
         _activeKeys.Remove(e.Data.KeyCode);
     }
@@ -30,7 +34,12 @@ public class ShortcutManager : IShortcutManager
         _shortcuts.Add(new ShortCut(shortcut.Keys, null, action));
     }
 
-    public Action? CheckShortcuts(object? control)
+    public void RegisterShortcut(SeShortCut shortcut, Action action, string control)
+    {
+        _shortcuts.Add(new ShortCut(shortcut.Keys, control, action));
+    }
+
+    public Action? CheckShortcuts(string? control)
     {
         var input = new ShortCut(_activeKeys.Select(p => p.ToString().Remove(0, 2)).ToList(), control, () => { });
         var inputWithNormalizedModifiers = NormalizeModifiers(input);
@@ -49,6 +58,11 @@ public class ShortcutManager : IShortcutManager
         }
 
         return null;
+    }
+
+    public void ClearShortcuts()
+    {
+        _shortcuts.Clear();
     }
 
     private static ShortCut NormalizeModifiers(ShortCut input)
