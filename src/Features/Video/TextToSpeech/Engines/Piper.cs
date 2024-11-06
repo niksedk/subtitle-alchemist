@@ -34,7 +34,7 @@ public class Piper : ITtsEngine
         return $"{Name}";
     }
 
-    public async Task<Voice[]> GetVoices()
+    public async Task<Voice[]> GetVoices(string language)
     {
         var piperFolder = GetSetPiperFolder();
 
@@ -145,12 +145,12 @@ public class Piper : ITtsEngine
         return result.ToArray();
     }
 
-    public async Task<Voice[]> RefreshVoices(CancellationToken cancellationToken)
+    public async Task<Voice[]> RefreshVoices(string language, CancellationToken cancellationToken)
     {
         var ms = new MemoryStream();
         await  _ttsDownloadService.DownloadPiperVoiceList(ms, null, cancellationToken);
         await File.WriteAllBytesAsync(Path.Combine(GetSetPiperFolder(), "voices.json"), ms.ToArray(), cancellationToken);
-        return await GetVoices();
+        return await GetVoices(language);
     }
 
     public async Task<TtsResult> Speak(

@@ -875,7 +875,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             IsEngineSettingsVisible = false;
-            var voices = await engine.GetVoices();
+            var voices = await engine.GetVoices(SelectedLanguage?.Code ?? string.Empty);
             Voices.Clear();
             foreach (var vo in voices)
             {
@@ -1024,5 +1024,23 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
                 }
             }
         });
+    }
+
+    public void SelectedLanguageChanged(object? sender, EventArgs e)
+    {
+        var engine = SelectedEngine;
+        if (engine == null)
+        {
+            return;
+        }
+
+        if (engine is Murf murf)
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                var voices = await murf.GetVoices(SelectedLanguage?.Code ?? string.Empty);
+                Voices = new ObservableCollection<Voice>(voices);
+            });
+        }
     }
 }

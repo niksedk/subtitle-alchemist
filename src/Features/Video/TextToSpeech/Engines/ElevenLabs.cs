@@ -33,7 +33,7 @@ public class ElevenLabs : ITtsEngine
         return $"{Name}";
     }
 
-    public async Task<Voice[]> GetVoices()
+    public async Task<Voice[]> GetVoices(string language)
     {
         var elevenLabsFolder = GetSetElevenLabsFolder();
 
@@ -170,12 +170,12 @@ public class ElevenLabs : ITtsEngine
         return Task.FromResult(languages.OrderBy(p => p.Name).ToArray());
     }
 
-    public async Task<Voice[]> RefreshVoices(CancellationToken cancellationToken)
+    public async Task<Voice[]> RefreshVoices(string language,CancellationToken cancellationToken)
     {
         var ms = new MemoryStream();
         await _ttsDownloadService.DownloadElevenLabsVoiceList(ms, null, cancellationToken);
         await File.WriteAllBytesAsync(Path.Combine(GetSetElevenLabsFolder(), JsonFileName), ms.ToArray(), cancellationToken);
-        return await GetVoices();
+        return await GetVoices(language);
     }
 
     public async Task<TtsResult> Speak(

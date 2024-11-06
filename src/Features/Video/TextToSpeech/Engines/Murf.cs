@@ -33,8 +33,13 @@ public class Murf : ITtsEngine
         return $"{Name}";
     }
 
-    public async Task<Voice[]> GetVoices()
+    public async Task<Voice[]> GetVoices(string languageCode)
     {
+        if (string.IsNullOrEmpty(languageCode))
+        {
+            languageCode = "en-US";
+        }
+
         // https://murf.ai/api/reference/endpoints/list-voices
         var murfFolder = GetSetMurfFolder();
 
@@ -46,7 +51,8 @@ public class Murf : ITtsEngine
             ZipFile.ExtractToDirectory(stream, murfFolder);
         }
 
-        return Map(voiceFileName);
+        var voices = Map(voiceFileName);
+        return voices.Where(p => (p.EngineVoice as MurfVoice)?.Locale == languageCode).ToArray();   
     }
 
     private static Voice[] Map(string voiceFileName)
@@ -116,12 +122,12 @@ public class Murf : ITtsEngine
         return Task.FromResult(languages.OrderBy(p => p.Name).ToArray());
     }
 
-    public async Task<Voice[]> RefreshVoices(CancellationToken cancellationToken)
+    public async Task<Voice[]> RefreshVoices(string language, CancellationToken cancellationToken)
     {
         var ms = new MemoryStream();
         await _ttsDownloadService.DownloadMurfVoiceList(ms, null, cancellationToken);
         await File.WriteAllBytesAsync(Path.Combine(GetSetMurfFolder(), JsonFileName), ms.ToArray(), cancellationToken);
-        return await GetVoices();
+        return await GetVoices(language);
     }
 
     public async Task<TtsResult> Speak(

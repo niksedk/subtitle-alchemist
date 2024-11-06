@@ -13,12 +13,12 @@ public interface ITtsEngine
     bool HasModel { get; }
     Task<bool> IsInstalled(string? region);
     string ToString();
-    Task<Voice[]> GetVoices();
+    Task<Voice[]> GetVoices(string languageCode);
     Task<string[]> GetRegions();
     Task<string[]> GetModels();
     Task<TtsLanguage[]> GetLanguages(Voice voice, string? model);
     bool IsVoiceInstalled(Voice voice);
-    Task<Voice[]> RefreshVoices(CancellationToken cancellationToken);
+    Task<Voice[]> RefreshVoices(string language, CancellationToken cancellationToken);
     Task<TtsResult> Speak(
         string text, 
         string outputFolder, 

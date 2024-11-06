@@ -36,7 +36,7 @@ public class AzureSpeech : ITtsEngine
         return $"{Name}";
     }
 
-    public async Task<Voice[]> GetVoices()
+    public async Task<Voice[]> GetVoices(string language)
     {
         var azureFolder = GetSetAzureFolder();
 
@@ -109,12 +109,12 @@ public class AzureSpeech : ITtsEngine
         return Task.FromResult(Array.Empty<TtsLanguage>());
     }
 
-    public async Task<Voice[]> RefreshVoices(CancellationToken cancellationToken)
+    public async Task<Voice[]> RefreshVoices(string language, CancellationToken cancellationToken)
     {
         var ms = new MemoryStream();
         await _ttsDownloadService.DownloadElevenLabsVoiceList(ms, null, cancellationToken);
         await File.WriteAllBytesAsync(Path.Combine(GetSetAzureFolder(), JsonFileName), ms.ToArray(), cancellationToken);
-        return await GetVoices();
+        return await GetVoices(language);
     }
 
     public async Task<TtsResult> Speak(

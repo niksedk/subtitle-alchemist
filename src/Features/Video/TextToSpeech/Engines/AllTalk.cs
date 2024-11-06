@@ -48,7 +48,7 @@ public class AllTalk : ITtsEngine
         _ttsDownloadService = ttsDownloadService;
     }
 
-    public async Task<Voice[]> GetVoices()
+    public async Task<Voice[]> GetVoices(string language)
     {
         var allTalkFolder = GetSetAllTalkFolder();
         var jsonFileName = Path.Combine(allTalkFolder, JsonFileName);
@@ -132,12 +132,12 @@ public class AllTalk : ITtsEngine
         return Task.FromResult(languagePairs.ToArray());
     }
 
-    public async Task<Voice[]> RefreshVoices(CancellationToken cancellationToken)
+    public async Task<Voice[]> RefreshVoices(string language,CancellationToken cancellationToken)
     {
         var ms = new MemoryStream();
         await _ttsDownloadService.DownloadAllTalkVoiceList(ms, null, cancellationToken);
         await File.WriteAllBytesAsync(Path.Combine(GetSetAllTalkFolder(), JsonFileName), ms.ToArray(), cancellationToken);
-        return await GetVoices();
+        return await GetVoices(language);
     }
 
     public async Task<TtsResult> Speak(

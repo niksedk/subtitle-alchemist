@@ -5,6 +5,7 @@ using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Logic.Config;
 using System.Net.Http.Headers;
 using System.Text;
+using static Nikse.SubtitleEdit.Core.VobSub.Ocr.Service.GoogleCloudVisionApi.RequestBody;
 
 namespace SubtitleAlchemist.Services;
 
@@ -231,11 +232,13 @@ public class TtsDownloadService : ITtsDownloadService
             encodeAsBase64 = false,
             modelVersion = "GEN2"
         };
+        var json = System.Text.Json.JsonSerializer.Serialize(body);
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
-        requestMessage.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(body), Encoding.UTF8);
+
+        requestMessage.Content = new StringContent(json, Encoding.UTF8, MediaTypeHeaderValue.Parse("application/json"));
         requestMessage.Headers.TryAddWithoutValidation("Content-Type", "application/json");
-        requestMessage.Headers.TryAddWithoutValidation("Accept", "audio/mpeg");
+        requestMessage.Headers.TryAddWithoutValidation("Accept", "application/json");
         requestMessage.Headers.TryAddWithoutValidation("api-key", murfApiKey);
 
         var result = await _httpClient.SendAsync(requestMessage, cancellationToken);

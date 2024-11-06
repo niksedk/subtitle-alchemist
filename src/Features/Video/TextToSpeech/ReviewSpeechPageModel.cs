@@ -555,7 +555,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
         MainThread.BeginInvokeOnMainThread(async () =>
         {
-            var voices = await engine.GetVoices();
+            var voices = await engine.GetVoices(SelectedLanguage?.Code ?? string.Empty);
             Voices.Clear();
             foreach (var vo in voices)
             {

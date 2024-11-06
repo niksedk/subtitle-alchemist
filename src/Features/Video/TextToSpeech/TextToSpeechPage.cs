@@ -152,6 +152,7 @@ public class TextToSpeechPage : ContentPage
         }.BindDynamicTheme();
         pickerLanguage.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Languages));
         pickerLanguage.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedLanguage));
+        pickerLanguage.SelectedIndexChanged += vm.SelectedLanguageChanged;
         var stackLanguage = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
