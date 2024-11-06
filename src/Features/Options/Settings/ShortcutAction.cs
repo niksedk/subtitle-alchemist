@@ -210,6 +210,9 @@ public enum ShortcutAction
     ListSortByWpm,
     ListSortByNumberOfLines,
     ListSortByStyle,
+    ListSelectAll,
+    ListSelectFirst,
+    ListSelectLast,
 
     TextBoxSplitAtCursor,
     TextBoxSplitAtCursorAndAutoBr,

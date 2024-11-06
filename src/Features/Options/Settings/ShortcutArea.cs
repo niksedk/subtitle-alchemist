@@ -12,7 +12,7 @@ public enum ShortcutArea
     Options,
     Translate,
     SubtitleListViewAndTextBox,
-    SubtitleListView,
+    List,
     SubtitleTextBox,
     WaveformAndSpectrogram,
 }

@@ -1506,11 +1506,10 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
 
     public void SubtitleListSingleTapped(object? sender, TappedEventArgs e)
     {
-        var isControlKeyDown = _shortcutManager.IsControlDown;
         var point = e.GetPosition(sender as Element);
         if (point.HasValue && e.Parameter is DisplayParagraph dp)
         {
-            if (isControlKeyDown)
+            if (_shortcutManager.IsControlDown)
             {
                 var selectedCount = Paragraphs.Count(p => p.IsSelected);
                 foreach (var item in Paragraphs)
@@ -1573,7 +1572,6 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
         _audioVisualizer.SetContextMenu(MakeAudioVisualizerContextMenu(selectedParagraphs));
         MakeSubtitleListContextMenu(selectedParagraphs);
     }
-
 
     public void MakeSubtitleListContextMenu(List<DisplayParagraph> selectedParagraphs)
     {

@@ -170,8 +170,31 @@ public class SettingsPage : ContentPage
         MakeAppearanceSettings(vm);
         MakeFileTypeAssociationsSettings(vm);
 
-        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.AllSettings));
+        //collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.AllSettings), BindingMode.TwoWay);
 
+        BuildGrid(vm, grid);
+
+        var scrollView = new ScrollView
+        {
+            Content = grid,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Always,
+            //Margin = new Thickness(0,10,0,10),
+            //BackgroundColor = Colors.Red, //TODO: we need to manually resize the ScrollView
+            //Padding = new Thickness(5),
+        };
+        scrollView.Scrolled += vm.Scrolled;
+
+        vm.SettingList = grid;
+        vm.SettingListScrollView = scrollView;
+
+        return scrollView;
+    }
+
+    public static void BuildGrid(SettingsViewModel vm, Grid grid)
+    {
+        grid.Children.Clear();
         var row = 0;
         foreach (var setting in vm.AllSettings)
         {
@@ -193,22 +216,6 @@ public class SettingsPage : ContentPage
 
             row++;
         }
-
-        var scrollView = new ScrollView
-        {
-            Content = grid,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Always,
-            //Margin = new Thickness(0,10,0,10),
-            //BackgroundColor = Colors.Red, //TODO: we need to manually resize the scrollview
-            //Padding = new Thickness(5),
-        };
-
-        vm.SettingList = grid;
-        vm.SettingListScrollView = scrollView;
-
-        return scrollView;
     }
 
     private static void MakeGeneralSettings(SettingsViewModel vm)
@@ -513,7 +520,8 @@ public class SettingsPage : ContentPage
     {
         vm.AllSettings.Add(new SettingItem("Shortcuts", SectionName.Shortcuts));
 
-        AddShortcutSection(vm, ShortcutArea.General);
+        vm.GridShortcutsGeneral = AddShortcutSection(vm, ShortcutArea.General);
+        vm.SettingsItemShortcutsGeneral = vm.AllSettings.Last();
         AddShortcutSection(vm, ShortcutArea.File);
         AddShortcutSection(vm, ShortcutArea.Edit);
         AddShortcutSection(vm, ShortcutArea.Tools);
@@ -523,16 +531,39 @@ public class SettingsPage : ContentPage
         AddShortcutSection(vm, ShortcutArea.Options);
         AddShortcutSection(vm, ShortcutArea.Translate);
         AddShortcutSection(vm, ShortcutArea.SubtitleListViewAndTextBox);
-        AddShortcutSection(vm, ShortcutArea.SubtitleListView);
+        AddShortcutSection(vm, ShortcutArea.List);
         AddShortcutSection(vm, ShortcutArea.SubtitleTextBox);
         AddShortcutSection(vm, ShortcutArea.WaveformAndSpectrogram);
     }
 
-    private static void AddShortcutSection(SettingsViewModel vm, ShortcutArea area)
+    public static SettingItem UpdateShortcutsSection(SettingsViewModel vm, ShortcutArea area)
     {
-        var descriptionWidth = 220;
-        var shortcutWidth = 120;
+        var gridShortcuts = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            },
+            RowSpacing = 5,
+            ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+        }.BindDynamicTheme();
 
+        AddShortcuts(vm, area, gridShortcuts);
+
+        var settingsItem = new SettingItem(area.ToString()) {  WholeView = gridShortcuts };
+        return settingsItem;
+    }
+
+    public static Grid AddShortcutSection(SettingsViewModel vm, ShortcutArea area)
+    {
         vm.AllSettings.Add(new SettingItem(area.ToString()));
 
         var gridShortcuts = new Grid
@@ -553,6 +584,18 @@ public class SettingsPage : ContentPage
             VerticalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
 
+        AddShortcuts(vm, area, gridShortcuts);
+
+        vm.AllSettings.Add(new SettingItem(string.Empty, gridShortcuts));
+
+        return gridShortcuts;
+    }
+
+    private static void AddShortcuts(SettingsViewModel vm, ShortcutArea area, Grid gridShortcuts)
+    {
+        var descriptionWidth = 220;
+        var shortcutWidth = 120;
+
         var labelHeaderDescription = new Label
         {
             Text = "Description",
@@ -560,7 +603,6 @@ public class SettingsPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             FontAttributes = FontAttributes.Bold,
             WidthRequest = descriptionWidth,
-
         }.BindDynamicTheme();
         gridShortcuts.Add(labelHeaderDescription, 0, 0);
 
@@ -611,14 +653,9 @@ public class SettingsPage : ContentPage
                 Text = "Edit",
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
-            }.WithLinkLabel(new Command(async() =>
-            {
-                await vm.EditShortcut(shortcut);
-            }));
+            }.WithLinkLabel(new Command(async () => { await vm.EditShortcut(shortcut); }));
             gridShortcuts.Add(labelLinkEdit, 2, row);
         }
-
-        vm.AllSettings.Add(new SettingItem(string.Empty, gridShortcuts));
     }
 
     public static void MakeFavorites(SettingsViewModel vm)

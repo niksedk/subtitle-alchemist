@@ -42,16 +42,16 @@ namespace SubtitleAlchemist.Logic
         {
             control.TextDecorations = TextDecorations.Underline;
 
-            var pointerGesture = new PointerGestureRecognizer();
-            pointerGesture.PointerEntered += (s, e) =>
-            {
-                control.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
-            };
-            pointerGesture.PointerExited += (s, e) =>
-            {
-                control.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
-            };
-            control.GestureRecognizers.Add(pointerGesture);
+            //var pointerGesture = new PointerGestureRecognizer();
+            //pointerGesture.PointerEntered += (s, e) =>
+            //{
+            //    control.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
+            //};
+            //pointerGesture.PointerExited += (s, e) =>
+            //{
+            //    control.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+            //};
+            //control.GestureRecognizers.Add(pointerGesture);
 
             return control;
         }

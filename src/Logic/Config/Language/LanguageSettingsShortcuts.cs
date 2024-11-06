@@ -70,11 +70,16 @@ public class LanguageSettingsShortcuts
     public string FileExportCustomTextFormat2 { get; set; }
     public string FileExportCustomTextFormat3 { get; set; }
     public string FileExit { get; set; }
+
     public string EditFind { get; set; }
     public string EditFindNext { get; set; }
     public string EditReplace { get; set; }
     public string EditMultipleReplace { get; set; }
     public string EditModifySelection { get; set; }
+
+    public string ListSelectAll { get; set; }
+    public string ListSelectFirst { get; set; }
+    public string ListSelectLast { get; set; }
 
     public LanguageSettingsShortcuts()
     {
@@ -151,5 +156,8 @@ public class LanguageSettingsShortcuts
         EditMultipleReplace = "Multiple replace";
         EditModifySelection = "Modify selection";
 
+        ListSelectAll = "Select all";
+        ListSelectFirst = "Select first";
+        ListSelectLast = "Select last";
     }
 }

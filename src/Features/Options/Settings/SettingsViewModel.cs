@@ -1,11 +1,9 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Nikse.SubtitleEdit.Core.Cea708.Commands;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Controls.ColorPickerControl;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
-using SubtitleAlchemist.Features.Shared.PickSubtitleLine;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
@@ -27,6 +25,8 @@ public partial class SettingsViewModel : ObservableObject
     public SettingsPage? Page { get; set; }
     public BoxView SyntaxErrorColorBox { get; set; }
     public ScrollView SettingListScrollView { get; set; }
+    public Grid GridShortcutsGeneral { get; set; }
+    public SettingItem SettingsItemShortcutsGeneral { get; set; }
 
     [ObservableProperty]
     private string _ffmpegPath = string.Empty;
@@ -163,6 +163,8 @@ public partial class SettingsViewModel : ObservableObject
 
     private readonly IPopupService _popupService;
     private SettingsPage.SectionName _sectionName = SettingsPage.SectionName.General;
+
+    private bool _loaded;
 
     public SettingsViewModel(IPopupService popupService)
     {
@@ -362,12 +364,18 @@ public partial class SettingsViewModel : ObservableObject
     {
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
+            if (_loaded)
+            {
+                return false;
+            }
+
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 LeftMenuTapped(null, new TappedEventArgs(null), SettingsPage.SectionName.General);
                 LoadSettings();
             });
 
+            _loaded = true;
             return false;
         });
     }
@@ -465,7 +473,39 @@ public partial class SettingsViewModel : ObservableObject
                 Se.Settings.Shortcuts.Add(new SeShortCut(shortcut.Type.ActionName, shortcutDisplay.Type.Keys));
             }
 
+            Shortcuts = ShortcutDisplay.GetShortcuts();
+
+            var idx = AllSettings.IndexOf(SettingsItemShortcutsGeneral);
+            AllSettings.RemoveAt(idx);
+            var item = SettingsPage.UpdateShortcutsSection(this, ShortcutArea.General);
+            AllSettings.Insert(idx, item);
+            SettingsItemShortcutsGeneral = item;
+            SettingsPage.BuildGrid(this, SettingList);
             Se.SaveSettings();
+
+            //MainThread.BeginInvokeOnMainThread(async () =>
+            //{
+            //    await SettingListScrollView.ScrollToAsync(item.WholeView, ScrollToPosition.MakeVisible, false);
+            //    await SettingListScrollView.ScrollToAsync(item.WholeView, ScrollToPosition.Start, true);
+            //    await SettingListScrollView.ScrollToAsync(item.WholeView, ScrollToPosition.MakeVisible, false);
+            //    await SettingListScrollView.ScrollToAsync(item.WholeView, ScrollToPosition.MakeVisible, false);
+            //});
+
+            Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    LeftMenuTapped(null, new TappedEventArgs(null), SettingsPage.SectionName.Shortcuts);
+                 //   await SettingListScrollView.ScrollToAsync(item.WholeView, ScrollToPosition.MakeVisible, false);
+                });
+                return false;
+            });
+
         }
+    }
+
+    public void Scrolled(object? sender, ScrolledEventArgs e)
+    {
+        
     }
 }

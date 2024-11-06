@@ -120,6 +120,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             new AllTalk(ttsDownloadService),
             new ElevenLabs(ttsDownloadService),
             new AzureSpeech(ttsDownloadService),
+            new Murf(ttsDownloadService),
         };
         _selectedEngine = _engines.FirstOrDefault();
 
@@ -256,6 +257,10 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             ApiKey = Se.Settings.Video.TextToSpeech.ElevenLabsApiKey;
             SelectedModel = Se.Settings.Video.TextToSpeech.ElevenLabsModel;
         }
+        else if (SelectedEngine is Murf)
+        {
+            ApiKey = Se.Settings.Video.TextToSpeech.MurfApiKey;
+        }
     }
 
     private void SaveSettings()
@@ -276,6 +281,10 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         {
             Se.Settings.Video.TextToSpeech.ElevenLabsApiKey = ApiKey;
             Se.Settings.Video.TextToSpeech.ElevenLabsModel = SelectedModel ?? string.Empty;
+        }
+        else if (SelectedEngine is Murf)
+        {
+            Se.Settings.Video.TextToSpeech.MurfApiKey = ApiKey;
         }
 
         Se.SaveSettings();
@@ -374,7 +383,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         var returnFileName = string.Empty;
         if (!string.IsNullOrEmpty(_videoFileName))
         {
-            returnFileName =  Path.GetFileNameWithoutExtension(_videoFileName) + extension;
+            returnFileName = Path.GetFileNameWithoutExtension(_videoFileName) + extension;
         }
         if (!string.IsNullOrEmpty(returnFileName) && !File.Exists(Path.Combine(folder, returnFileName)))
         {

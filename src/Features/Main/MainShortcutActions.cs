@@ -1,4 +1,5 @@
-﻿using SubtitleAlchemist.Features.Options.Settings;
+﻿using CommunityToolkit.Maui.Markup;
+using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 
@@ -33,9 +34,21 @@ public class MainShortcutActions : IMainShortcutActions
             case ShortcutAction.GeneralGoToLineNumber: return GoToLineNumber;
             case ShortcutAction.GeneralGoToPrevSubtitle: return SubtitleListUp;
             case ShortcutAction.GeneralGoToNextSubtitle: return SubtitleListDown;
+            case ShortcutAction.ListSelectAll: return SubtitleListSelectAll;
+            case ShortcutAction.ListSelectFirst: return SubtitleListSelectFirst;
+            case ShortcutAction.ListSelectLast: return SubtitleListSelectLast;
+            case ShortcutAction.GeneralMergeSelectedLines: return MergeSelectedLines;
         }
 
         return null;
+    }
+
+    private void MergeSelectedLines()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            _vm.MergeSelectedLinesCommand.Execute(_vm);
+        });
     }
 
     private void GoToLineNumber()
@@ -45,7 +58,6 @@ public class MainShortcutActions : IMainShortcutActions
             await _vm.ShowGoToLineNumber();
         });
     }
-
 
     private void SubtitleListUp()
     {
@@ -83,9 +95,6 @@ public class MainShortcutActions : IMainShortcutActions
         {
             displayParagraph.IsSelected = true;
         }
-
-        //TODO: update selected paragraph to none
-        _vm.SelectedParagraph = null;
     }
 
     private void SubtitleListSelectFirst()

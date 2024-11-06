@@ -14,6 +14,7 @@ public interface ITtsDownloadService
     Task<bool> AllTalkIsInstalled();
     Task DownloadElevenLabsVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken);
     Task DownloadAzureVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken);
+    Task DownloadMurfVoiceList(MemoryStream stream, IProgress<float>? progress, CancellationToken cancellationToken);
 
     Task<bool> DownloadElevenLabsVoiceSpeak(
         string inputText,
@@ -34,5 +35,13 @@ public interface ITtsDownloadService
         string region,
         MemoryStream stream,
         IProgress<float>? progress,
+        CancellationToken cancellationToken);
+
+    Task<bool> DownloadMurfSpeak(
+        string text,
+        MurfVoice murfVoice,
+        string? model,
+        string murfApiKey,
+        MemoryStream ms,
         CancellationToken cancellationToken);
 }

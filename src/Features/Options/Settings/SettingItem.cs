@@ -1,12 +1,16 @@
-﻿namespace SubtitleAlchemist.Features.Options.Settings;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class SettingItem
+namespace SubtitleAlchemist.Features.Options.Settings;
+
+public partial class SettingItem : ObservableObject
 {
     public string Text { get; set; }
     public int TextWidth { get; set; }
     public string Hint { get; set; }
     public SettingItemType Type { get; set; }
-    public View WholeView { get; set; }
+
+    [ObservableProperty] private View _wholeView;
+
     public Label? Label { get; set; }
     public SettingsPage.SectionName? SectionName { get; set; }
 

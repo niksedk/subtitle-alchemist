@@ -104,25 +104,39 @@ public class TtsDownloadService : ITtsDownloadService
         await DownloadHelper.DownloadFileAsync(_httpClient, url, stream, progress, cancellationToken);
     }
 
+    public async Task DownloadMurfVoiceList(MemoryStream ms, IProgress<float>? progress, CancellationToken cancellationToken)
+    {
+        var url = "https://api.murf.ai/v1/speech/voices";
+
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+        requestMessage.Headers.TryAddWithoutValidation("Content-Type", "application/json");
+        requestMessage.Headers.TryAddWithoutValidation("Accept", "audio/mpeg");
+        requestMessage.Headers.TryAddWithoutValidation("api-key", Se.Settings.Video.TextToSpeech.MurfApiKey);
+
+        var result = await _httpClient.SendAsync(requestMessage, cancellationToken);
+        await result.Content.CopyToAsync(ms, cancellationToken);
+
+        if (!result.IsSuccessStatusCode)
+        {
+            var error = Encoding.UTF8.GetString(ms.ToArray()).Trim();
+            SeLogger.Error($"Murf TTS failed calling API address {url} : Status code={result.StatusCode} {error}");
+        }
+    }
+
     public async Task DownloadAzureVoiceList(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken)
     {
-        //httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Ocp-Apim-Subscription-Key", nikseTextBoxApiKey.Text.Trim());
-        //var url = $"https://{nikseComboBoxRegion.Text.Trim()}.tts.speech.microsoft.com/cognitiveservices/voices/list";
-        //var result = httpClient.GetAsync(new Uri(url)).Result;
-        //var bytes = result.Content.ReadAsByteArrayAsync().Result;
-
         var url = "https://api.elevenlabs.io/v1/voices";
         await DownloadHelper.DownloadFileAsync(_httpClient, url, stream, progress, cancellationToken);
     }
 
     public async Task<bool> DownloadElevenLabsVoiceSpeak(
-        string inputText, 
-        ElevenLabVoice voice, 
-        string model, 
+        string inputText,
+        ElevenLabVoice voice,
+        string model,
         string apiKey,
-        string languageCode, 
-        MemoryStream stream, 
-        IProgress<float>? progress, 
+        string languageCode,
+        MemoryStream stream,
+        IProgress<float>? progress,
         CancellationToken cancellationToken)
     {
         var url = "https://api.elevenlabs.io/v1/text-to-speech/" + voice.VoiceId;
@@ -187,6 +201,50 @@ public class TtsDownloadService : ITtsDownloadService
         {
             var error = Encoding.UTF8.GetString(stream.ToArray()).Trim();
             SeLogger.Error($"ElevenLabs TTS failed calling API as base address {_httpClient.BaseAddress} : Status code={result.StatusCode} {error}" + Environment.NewLine + "Data=" + data);
+            return false;
+        }
+
+        return true;
+    }
+
+    public async Task<bool> DownloadMurfSpeak(
+        string text,
+        MurfVoice voice,
+        string? model,
+        string murfApiKey,
+        MemoryStream ms,
+        CancellationToken cancellationToken)
+    {
+        var url = "https://api.murf.ai/v1/speech/generate";
+
+        var body = new
+        {
+            voiceId = voice.VoiceId,
+            style = "Conversational",
+            text,
+            rate = 0,
+            pitch = 0,
+            sampleRate = 48000,
+            format = "MP3",
+            channelType = "MONO",
+            pronunciationDictionary = new { },
+            encodeAsBase64 = false,
+            modelVersion = "GEN2"
+        };
+
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+        requestMessage.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(body), Encoding.UTF8);
+        requestMessage.Headers.TryAddWithoutValidation("Content-Type", "application/json");
+        requestMessage.Headers.TryAddWithoutValidation("Accept", "audio/mpeg");
+        requestMessage.Headers.TryAddWithoutValidation("api-key", murfApiKey);
+
+        var result = await _httpClient.SendAsync(requestMessage, cancellationToken);
+        await result.Content.CopyToAsync(ms, cancellationToken);
+
+        if (!result.IsSuccessStatusCode)
+        {
+            var error = Encoding.UTF8.GetString(ms.ToArray()).Trim();
+            SeLogger.Error($"Murf TTS failed calling API as base address {_httpClient.BaseAddress} : Status code={result.StatusCode} {error}" + Environment.NewLine + "Data=" + body);
             return false;
         }
 

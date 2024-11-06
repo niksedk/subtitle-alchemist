@@ -26,9 +26,16 @@ public class Se
 
     public Se()
     {
-        Shortcuts = new List<SeShortCut>()
+        Shortcuts = new List<SeShortCut>
         {
             new(ShortcutAction.GeneralMergeSelectedLines, new List<string> { "Control", "M" }),
+            new(ShortcutAction.GeneralGoToPrevSubtitle, new List<string> { "Alt", "Up" }),
+            new(ShortcutAction.GeneralGoToNextSubtitle, new List<string> { "Alt", "Down" }),
+            new(ShortcutAction.GeneralDuplicateLine, new List<string> { "Control", "D" }),
+            new(ShortcutAction.ListSelectAll, new List<string> { "Control", "A" }),
+            new(ShortcutAction.ListSelectFirst, new List<string> { "Control", "Home" }),
+            new(ShortcutAction.ListSelectLast, new List<string> { "Control", "End" }),
+
         };
     }
 

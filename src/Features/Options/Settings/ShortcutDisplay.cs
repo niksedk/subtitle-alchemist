@@ -125,6 +125,10 @@ public class ShortcutDisplay
             new (ShortcutArea.Edit, l.EditReplace, ShortcutAction.EditReplace),
             new (ShortcutArea.Edit, l.EditMultipleReplace, ShortcutAction.EditMultipleReplace),
             new (ShortcutArea.Edit, l.EditModifySelection, ShortcutAction.EditModifySelection),
+
+            new (ShortcutArea.List, l.ListSelectAll, ShortcutAction.ListSelectAll),
+            new (ShortcutArea.List, l.ListSelectFirst, ShortcutAction.ListSelectFirst),
+            new (ShortcutArea.List, l.ListSelectLast, ShortcutAction.ListSelectLast),
         };
     }
 }
