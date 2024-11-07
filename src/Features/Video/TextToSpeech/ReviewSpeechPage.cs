@@ -164,6 +164,34 @@ public class ReviewSpeechPage : ContentPage
         };
         stackLanguage.SetBinding(IsVisibleProperty, nameof(vm.HasLanguageParameter));
 
+        var labelStyle = new Label
+        {
+            Text = "Style",
+            Margin = new Thickness(10, 5, 5, 0),
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        var pickerStyle = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme();
+        pickerStyle.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Styles));
+        pickerStyle.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedStyle));
+        var stackStyle = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(10, 5, 0, 0),
+            Children =
+            {
+                labelStyle,
+                pickerStyle,
+            }
+        };
+        stackStyle.SetBinding(IsVisibleProperty, nameof(vm.HasStyleParameter));
+
         var buttonPlay = new Button
         {
             Text = "Play",
@@ -239,6 +267,7 @@ public class ReviewSpeechPage : ContentPage
                 stackEngine,
                 stackVoice,
                 stackLanguage,
+                stackStyle,
                 stackPlayStop,
                 stackAutoContinue,
             }

@@ -52,7 +52,13 @@ public class Murf : ITtsEngine
         }
 
         var voices = Map(voiceFileName);
-        return voices.Where(p => (p.EngineVoice as MurfVoice)?.Locale == languageCode).ToArray();   
+        var resultVoices = voices.Where(p => (p.EngineVoice as MurfVoice)?.Locale == languageCode).ToArray();
+        if (resultVoices.Length == 0)
+        {
+            resultVoices = voices.Where(p => (p.EngineVoice as MurfVoice)?.Locale == "en-US").ToArray();
+        }
+
+        return resultVoices;
     }
 
     private static Voice[] Map(string voiceFileName)
@@ -149,7 +155,7 @@ public class Murf : ITtsEngine
             .DownloadMurfSpeak(
                 text,
                 murfVoice,
-                model,
+                Se.Settings.Video.TextToSpeech.MurfStyle,
                 Se.Settings.Video.TextToSpeech.MurfApiKey,
                 ms,
                 cancellationToken);

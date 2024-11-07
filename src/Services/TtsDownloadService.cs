@@ -5,7 +5,6 @@ using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Logic.Config;
 using System.Net.Http.Headers;
 using System.Text;
-using static Nikse.SubtitleEdit.Core.VobSub.Ocr.Service.GoogleCloudVisionApi.RequestBody;
 
 namespace SubtitleAlchemist.Services;
 
@@ -211,17 +210,24 @@ public class TtsDownloadService : ITtsDownloadService
     public async Task<bool> DownloadMurfSpeak(
         string text,
         MurfVoice voice,
-        string? model,
+        string? overrideStyle,
         string murfApiKey,
         MemoryStream ms,
         CancellationToken cancellationToken)
     {
         var url = "https://api.murf.ai/v1/speech/generate";
 
+        if (string.IsNullOrEmpty(overrideStyle))
+        {
+            overrideStyle = "Conversational";
+        }
+
         var body = new
         {
             voiceId = voice.VoiceId,
-            style = "Conversational",
+            style = voice.AvailableStyles.Contains(overrideStyle) 
+                ? overrideStyle
+                : voice.AvailableStyles.FirstOrDefault(),
             text,
             rate = 0,
             pitch = 0,
@@ -243,13 +249,22 @@ public class TtsDownloadService : ITtsDownloadService
 
         var result = await _httpClient.SendAsync(requestMessage, cancellationToken);
         await result.Content.CopyToAsync(ms, cancellationToken);
-
         if (!result.IsSuccessStatusCode)
         {
             var error = Encoding.UTF8.GetString(ms.ToArray()).Trim();
             SeLogger.Error($"Murf TTS failed calling API as base address {_httpClient.BaseAddress} : Status code={result.StatusCode} {error}" + Environment.NewLine + "Data=" + body);
             return false;
         }
+
+        var parser = new SeJsonParser();
+        var fileUrl = parser.GetFirstObject(Encoding.UTF8.GetString(ms.ToArray()), "audioFile");
+        var audioResult = await _httpClient.GetAsync(fileUrl, cancellationToken);
+        if (!audioResult.IsSuccessStatusCode)
+        {
+            SeLogger.Error($"Murf TTS failed calling API as base address {fileUrl} : Status code={audioResult.StatusCode}");
+            return false;
+        }
+        await audioResult.Content.CopyToAsync(ms, cancellationToken);
 
         return true;
     }

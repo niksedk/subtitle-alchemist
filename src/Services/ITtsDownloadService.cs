@@ -40,7 +40,7 @@ public interface ITtsDownloadService
     Task<bool> DownloadMurfSpeak(
         string text,
         MurfVoice murfVoice,
-        string? model,
+        string? overrideStyle,
         string murfApiKey,
         MemoryStream ms,
         CancellationToken cancellationToken);

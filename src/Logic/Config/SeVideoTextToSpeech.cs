@@ -20,6 +20,7 @@ public class SeVideoTextToSpeech
     public double ElevenLabsSimilarity { get; set; }
     public double ElevenLabsSpeakerBoost { get; set; }
     public string MurfApiKey { get; set; }
+    public string MurfStyle { get; set; }
 
     public SeVideoTextToSpeech()
     {
@@ -41,5 +42,6 @@ public class SeVideoTextToSpeech
         VoiceTestText = "Hello, how are you doing?";
         AllTalkUrl = "http://127.0.0.1:7851";
         MurfApiKey = string.Empty;
+        MurfStyle = "Conversational";
     }
 }

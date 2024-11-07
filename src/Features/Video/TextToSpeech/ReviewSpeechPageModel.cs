@@ -14,7 +14,6 @@ using SubtitleAlchemist.Features.Video.TextToSpeech.Voices;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using CommunityToolkit.Maui.Storage;
-using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
@@ -50,6 +49,15 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
     [ObservableProperty]
     private TtsLanguage? _selectedLanguage;
+
+    [ObservableProperty]
+    private bool _hasStyleParameter;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _styles;
+
+    [ObservableProperty]
+    private string? _selectedStyle;
 
     [ObservableProperty]
     private bool _hasRegion;
@@ -283,6 +291,12 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
             }
         }
 
+        var oldStyle = SelectedStyle;
+        if (engine is Murf && !string.IsNullOrEmpty(SelectedStyle))
+        {
+            Se.Settings.Video.TextToSpeech.MurfStyle = SelectedStyle;
+        }
+
         var speakResult = await engine.Speak(line.Text, _waveFolder, voice, SelectedLanguage, SelectedRegion, SelectedModel, _cancellationToken);
         line.StepResult.CurrentFileName = speakResult.FileName;
         line.StepResult.Voice = voice;
@@ -297,6 +311,11 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         Play(line.StepResult.CurrentFileName);
 
         IsRegenerateEnabled = true;
+
+        if (engine is Murf && oldStyle != null)
+        {
+            Se.Settings.Video.TextToSpeech.MurfStyle = oldStyle;
+        }
     }
 
     private async Task<TtsStepResult> TrimAndAdjustSpeed(TtsStepResult item)
@@ -583,7 +602,17 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
                 }
 
                 SelectedModel = Se.Settings.Video.TextToSpeech.ElevenLabsModel;
+            }
 
+            HasStyleParameter = engine is Murf;
+            if (engine is Murf && SelectedVoice?.EngineVoice is MurfVoice mv)
+            {
+                Styles = new ObservableCollection<string>(mv.AvailableStyles);
+                SelectedStyle = Styles.FirstOrDefault(p => p == Se.Settings.Video.TextToSpeech.MurfStyle);
+                if (SelectedStyle == null)
+                {
+                    SelectedStyle = Styles.FirstOrDefault();
+                }
             }
 
             if (HasLanguageParameter)
