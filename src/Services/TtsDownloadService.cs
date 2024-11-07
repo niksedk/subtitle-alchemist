@@ -225,7 +225,7 @@ public class TtsDownloadService : ITtsDownloadService
         var body = new
         {
             voiceId = voice.VoiceId,
-            style = voice.AvailableStyles.Contains(overrideStyle) 
+            style = voice.AvailableStyles.Contains(overrideStyle)
                 ? overrideStyle
                 : voice.AvailableStyles.FirstOrDefault(),
             text,
