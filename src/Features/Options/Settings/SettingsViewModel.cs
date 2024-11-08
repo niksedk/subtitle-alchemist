@@ -158,7 +158,67 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<string> _favoriteSubtitleFormats;
 
+
+    // Shortcuts
     public List<ShortcutDisplay> Shortcuts;
+
+
+    // Syntax coloring
+    [ObservableProperty]
+    private bool _colorDurationTooShort;
+
+    [ObservableProperty]
+    private bool _colorDurationTooLong;
+
+    [ObservableProperty]
+    private bool _colorTextTooLong;
+
+    [ObservableProperty]
+    private bool _colorTextTooWide;
+
+    [ObservableProperty]
+    private bool _colorTextTooManyLines;
+
+    [ObservableProperty]
+    private bool _colorTimeCodeOverlap;
+
+    [ObservableProperty]
+    private bool _colorGapTooShort;
+
+    [ObservableProperty]
+    private Color _colorErrorColor;
+
+
+    // Toolbar
+    [ObservableProperty]
+    private bool _toolbarShowFileNew;
+
+    [ObservableProperty]
+    private bool _toolbarShowFileOpen;
+
+    [ObservableProperty]
+    private bool _toolbarShowVideoFileOpen;
+
+    [ObservableProperty]
+    private bool _toolbarShowSave;
+
+    [ObservableProperty]
+    private bool _toolbarShowSaveAs;
+
+    [ObservableProperty]
+    private bool _toolbarShowFind;
+
+    [ObservableProperty]
+    private bool _toolbarShowReplace;
+
+    [ObservableProperty]
+    private bool _toolbarShowFixCommonErrors;
+
+    [ObservableProperty]
+    private bool _toolbarShowSpellCheck;
+
+    [ObservableProperty]
+    private bool _toolbarShowHelp;
 
 
     private readonly IPopupService _popupService;
@@ -271,7 +331,7 @@ public partial class SettingsViewModel : ObservableObject
 
     public void LoadSettings()
     {
-        Theme = Se.Settings.General.Theme;
+        Theme = Se.Settings.Appearance.Theme;
         FfmpegPath = Se.Settings.General.FfmpegPath;
         SubtitleLineMaximumLength = Se.Settings.General.SubtitleLineMaximumLength;
         SelectedMaxNumberOfLines = Se.Settings.General.MaxNumberOfLines;
@@ -284,13 +344,23 @@ public partial class SettingsViewModel : ObservableObject
         SubtitleOptimalCharactersPerSeconds = Se.Settings.General.SubtitleOptimalCharactersPerSeconds;
         SubtitleMaximumWordsPerMinute = Se.Settings.General.SubtitleMaximumWordsPerMinute;
 
+        ToolbarShowFileNew = Se.Settings.Appearance.ToolbarShowFileNew;
+        ToolbarShowFileOpen = Se.Settings.Appearance.ToolbarShowFileOpen;
+        ToolbarShowVideoFileOpen = Se.Settings.Appearance.ToolbarShowVideoFileOpen;
+        ToolbarShowSave = Se.Settings.Appearance.ToolbarShowSave;
+        ToolbarShowSaveAs = Se.Settings.Appearance.ToolbarShowSaveAs;
+        ToolbarShowFind = Se.Settings.Appearance.ToolbarShowFind;
+        ToolbarShowReplace = Se.Settings.Appearance.ToolbarShowReplace;
+        ToolbarShowFixCommonErrors = Se.Settings.Appearance.ToolbarShowFixCommonErrors;
+        ToolbarShowSpellCheck = Se.Settings.Appearance.ToolbarShowSpellCheck;
+        ToolbarShowHelp = Se.Settings.Appearance.ToolbarShowHelp;
+
         ShowRecentFiles = Se.Settings.File.ShowRecentFiles;
     }
 
     public void SaveSettings()
     {
         Se.Settings.General.FfmpegPath = FfmpegPath;
-        Se.Settings.General.Theme = Theme;
         Se.Settings.File.ShowRecentFiles = ShowRecentFiles;
         Se.Settings.General.SubtitleLineMaximumLength = SubtitleLineMaximumLength;
         Se.Settings.General.MaxNumberOfLines = SelectedMaxNumberOfLines;
@@ -302,6 +372,25 @@ public partial class SettingsViewModel : ObservableObject
         Se.Settings.General.SubtitleMaximumCharactersPerSeconds = SubtitleMaximumCharactersPerSeconds;
         Se.Settings.General.SubtitleOptimalCharactersPerSeconds = SubtitleOptimalCharactersPerSeconds;
         Se.Settings.General.SubtitleMaximumWordsPerMinute = SubtitleMaximumWordsPerMinute;
+        Se.Settings.General.ColorDurationTooShort = ColorDurationTooShort;
+        Se.Settings.General.ColorDurationTooLong = ColorDurationTooLong;
+        Se.Settings.General.ColorTextTooLong = ColorTextTooLong;
+        Se.Settings.General.ColorTextTooWide = ColorTextTooWide;
+        Se.Settings.General.ColorTextTooManyLines = ColorTextTooManyLines;
+        Se.Settings.General.ColorTimeCodeOverlap = ColorTimeCodeOverlap;
+        Se.Settings.General.ColorGapTooShort = ColorGapTooShort;
+
+        Se.Settings.Appearance.Theme = Theme;
+        Se.Settings.Appearance.ToolbarShowFileNew = ToolbarShowFileNew;
+        Se.Settings.Appearance.ToolbarShowFileOpen = ToolbarShowFileOpen;
+        Se.Settings.Appearance.ToolbarShowVideoFileOpen = ToolbarShowVideoFileOpen;
+        Se.Settings.Appearance.ToolbarShowSave = ToolbarShowSave;
+        Se.Settings.Appearance.ToolbarShowSaveAs = ToolbarShowSaveAs;
+        Se.Settings.Appearance.ToolbarShowFind = ToolbarShowFind;
+        Se.Settings.Appearance.ToolbarShowReplace = ToolbarShowReplace;
+        Se.Settings.Appearance.ToolbarShowFixCommonErrors = ToolbarShowFixCommonErrors;
+        Se.Settings.Appearance.ToolbarShowSpellCheck = ToolbarShowSpellCheck;
+        Se.Settings.Appearance.ToolbarShowHelp = ToolbarShowHelp;
 
         Se.SaveSettings();
     }
@@ -491,15 +580,15 @@ public partial class SettingsViewModel : ObservableObject
             //    await SettingListScrollView.ScrollToAsync(item.WholeView, ScrollToPosition.MakeVisible, false);
             //});
 
-            Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
-            {
-                MainThread.BeginInvokeOnMainThread(async () =>
-                {
-                    LeftMenuTapped(null, new TappedEventArgs(null), SettingsPage.SectionName.Shortcuts);
-                 //   await SettingListScrollView.ScrollToAsync(item.WholeView, ScrollToPosition.MakeVisible, false);
-                });
-                return false;
-            });
+            //Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
+            //{
+            //    MainThread.BeginInvokeOnMainThread(async () =>
+            //    {
+            //        LeftMenuTapped(null, new TappedEventArgs(null), SettingsPage.SectionName.Shortcuts);
+            //     //   await SettingListScrollView.ScrollToAsync(item.WholeView, ScrollToPosition.MakeVisible, false);
+            //    });
+            //    return false;
+            //});
 
         }
     }

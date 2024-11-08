@@ -13,7 +13,6 @@ public class SettingsPage : ContentPage
         VideoPlayer,
         WaveformSpectrogram,
         Tools,
-        Toolbar,
         Appearance,
         FileTypeAssociations,
     }
@@ -70,7 +69,6 @@ public class SettingsPage : ContentPage
                 MakeLeftMenuItem(vm, SectionName.VideoPlayer, "Video player"),
                 MakeLeftMenuItem(vm, SectionName.WaveformSpectrogram, "Waveform/spectrogram"),
                 MakeLeftMenuItem(vm, SectionName.Tools, "Tools"),
-                MakeLeftMenuItem(vm, SectionName.Toolbar, "Toolbar"),
                 MakeLeftMenuItem(vm, SectionName.Appearance, "Appearance"),
                 MakeLeftMenuItem(vm, SectionName.FileTypeAssociations, "File type associations"),
             }
@@ -141,24 +139,6 @@ public class SettingsPage : ContentPage
             VerticalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
 
-        var collectionView = new CollectionView
-        {
-            Margin = new Thickness(0, 0, 0, 0),
-            ItemsLayout = new GridItemsLayout(1, ItemsLayoutOrientation.Vertical),
-            SelectionMode = SelectionMode.None,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Default,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Always,
-            VerticalOptions = LayoutOptions.Start,
-            ItemTemplate = new DataTemplate(() =>
-            {
-                var contentView = new ContentView();
-                contentView.Margin = new Thickness(0, 0, 0, 0);
-                contentView.Padding = new Thickness(0, 0, 0, 0);
-                contentView.SetBinding(ContentView.ContentProperty, nameof(SettingItem.WholeView));
-                return contentView;
-            }),
-        }.BindDynamicTheme();
-
         MakeGeneralSettings(vm);
         MakeSubtitleFormatSettings(vm);
         MakeShortcutsSettings(vm);
@@ -166,11 +146,8 @@ public class SettingsPage : ContentPage
         MakeVideoPlayerSettings(vm);
         MakeWaveformSpectrogramSettings(vm);
         MakeToolsSettings(vm);
-        MakeToolbarSettings(vm);
         MakeAppearanceSettings(vm);
         MakeFileTypeAssociationsSettings(vm);
-
-        //collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.AllSettings), BindingMode.TwoWay);
 
         BuildGrid(vm, grid);
 
@@ -558,7 +535,7 @@ public class SettingsPage : ContentPage
 
         AddShortcuts(vm, area, gridShortcuts);
 
-        var settingsItem = new SettingItem(area.ToString()) {  WholeView = gridShortcuts };
+        var settingsItem = new SettingItem(area.ToString()) { WholeView = gridShortcuts };
         return settingsItem;
     }
 
@@ -819,66 +796,76 @@ public class SettingsPage : ContentPage
     {
         var textWidth = 200;
 
-        vm.AllSettings.Add(new SettingItem("Toolbar", SectionName.Toolbar));
+        vm.AllSettings.Add(new SettingItem("Toolbar"));
 
         var switchFileNew = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchFileNew.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowFileNew));
         vm.AllSettings.Add(new SettingItem("File new", textWidth, string.Empty, switchFileNew));
 
         var switchFileOpen = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchFileOpen.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowFileOpen));
         vm.AllSettings.Add(new SettingItem("File open", textWidth, string.Empty, switchFileOpen));
 
         var switchVideoFileOpen = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchVideoFileOpen.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowVideoFileOpen));
         vm.AllSettings.Add(new SettingItem("Video file open", textWidth, string.Empty, switchVideoFileOpen));
 
         var switchSave = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchSave.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowSave));
         vm.AllSettings.Add(new SettingItem("Save", textWidth, string.Empty, switchSave));
 
         var switchSaveAs = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchSaveAs.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowSaveAs));
         vm.AllSettings.Add(new SettingItem("Save as", textWidth, string.Empty, switchSaveAs));
 
         var switchFind = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchFind.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowFind));
         vm.AllSettings.Add(new SettingItem("Find", textWidth, string.Empty, switchFind));
 
         var switchReplace = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchReplace.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowReplace));
         vm.AllSettings.Add(new SettingItem("Replace", textWidth, string.Empty, switchReplace));
 
         var switchFixCommonErrors = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchFixCommonErrors.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowFixCommonErrors));
         vm.AllSettings.Add(new SettingItem("Fix common errors", textWidth, string.Empty, switchFixCommonErrors));
 
         var switchSpellCheck = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchSpellCheck.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowSpellCheck));
         vm.AllSettings.Add(new SettingItem("Spell check", textWidth, string.Empty, switchSpellCheck));
 
         var switchHelp = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchHelp.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowHelp));
         vm.AllSettings.Add(new SettingItem("Help", textWidth, string.Empty, switchHelp));
 
 
@@ -892,6 +879,8 @@ public class SettingsPage : ContentPage
         var textWidth = 200;
 
         vm.AllSettings.Add(new SettingItem("Appearance (UI)", SectionName.Appearance));
+
+        MakeToolbarSettings(vm);
 
         vm.AllSettings.Add(new SettingItem("Theme", SectionName.Appearance));
 
@@ -939,11 +928,6 @@ public class SettingsPage : ContentPage
         vm.AllSettings.Add(new SettingItem("Video engine"));
     }
 
-    private Switch? _shortDurationSwitch;
-    private Switch? _longDurationSwitch;
-    private Button? _textTooLongColorButton;
-    private readonly Color _textTooLongColor = Colors.LightBlue;
-
     private static void MakeSyntaxColoringSettings(SettingsViewModel vm)
     {
         var textWidth = 200;
@@ -956,12 +940,14 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchColorDurationTooShort.SetBinding(Switch.IsToggledProperty, nameof(vm.ColorDurationTooShort));
         vm.AllSettings.Add(new SettingItem("Color if duration is too short", textWidth, string.Empty, switchColorDurationTooShort));
 
         var switchColorDurationTooLong = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchColorDurationTooLong.SetBinding(Switch.IsToggledProperty, nameof(vm.ColorDurationTooLong));
         vm.AllSettings.Add(new SettingItem("Color if duration is too long", textWidth, string.Empty, switchColorDurationTooLong));
 
         vm.AllSettings.Add(new SettingItem("Text"));
@@ -970,40 +956,22 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchColorTextTooLong.SetBinding(Switch.IsToggledProperty, nameof(vm.ColorTextTooLong));
         vm.AllSettings.Add(new SettingItem("Color text if too long", textWidth, string.Empty, switchColorTextTooLong));
-
-        var entryTextTooLong = new Entry
-        {
-            Placeholder = "Enter text too long threshold",
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Text too long threshold", textWidth, string.Empty, entryTextTooLong));
 
         var switchColorTextTooWide = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchColorTextTooWide.SetBinding(Switch.IsToggledProperty, nameof(vm.ColorTextTooWide));
         vm.AllSettings.Add(new SettingItem("Color if text is too wide", textWidth, string.Empty, switchColorTextTooWide));
-
-        var entryTextTooWide = new Entry
-        {
-            Placeholder = "Enter text too wide threshold",
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Text too wide threshold", textWidth, string.Empty, entryTextTooWide));
 
         var switchColorTextTooManyLines = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
+        switchColorTextTooManyLines.SetBinding(Switch.IsToggledProperty, nameof(vm.ColorTextTooManyLines));
         vm.AllSettings.Add(new SettingItem("Color text if more than x lines", textWidth, string.Empty, switchColorTextTooManyLines));
-
-        var entryTextTooManyLines = new Entry
-        {
-            Placeholder = "Enter text too many lines threshold",
-            HorizontalOptions = LayoutOptions.Start,
-        }.BindDynamicTheme();
-        vm.AllSettings.Add(new SettingItem("Text too many lines threshold", textWidth, string.Empty, entryTextTooManyLines));
 
 
         vm.AllSettings.Add(new SettingItem("Misc."));

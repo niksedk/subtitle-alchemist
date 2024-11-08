@@ -1,4 +1,5 @@
-﻿using Nikse.SubtitleEdit.Core.Common;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Nikse.SubtitleEdit.Core.Common;
 
 namespace SubtitleAlchemist.Logic.Config;
 
@@ -6,7 +7,6 @@ public class SeGeneral
 {
     public int LayoutNumber { get; set; } = 0;
     public string FfmpegPath { get; set; } = string.Empty;
-    public string Theme { get; set; } = "Dark";
     public bool UseTimeFormatHhMmSsFf { get; set; } = false;
     public double DefaultFrameRate { get; set; }
     public double CurrentFrameRate { get; set; }
@@ -29,12 +29,18 @@ public class SeGeneral
     public string CpsLineLengthStrategy { get; set; }
     public double SubtitleMaximumWordsPerMinute { get; set; }
 
+    public bool ColorDurationTooShort { get; set; }
+    public bool ColorDurationTooLong { get; set; }
+    public bool ColorTextTooLong { get; set; }
+    public bool ColorTextTooWide { get; set; }
+    public bool ColorTextTooManyLines { get; set; }
+    public bool ColorTimeCodeOverlap { get; set; }
+    public bool ColorGapTooShort { get; set; }
 
     public SeGeneral()
     {
         LayoutNumber = 0;
         FfmpegPath = string.Empty;
-        Theme = "Dark";
         UseTimeFormatHhMmSsFf = false;
         DefaultFrameRate = 23.976;
         CurrentFrameRate = DefaultFrameRate;

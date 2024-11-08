@@ -16,6 +16,7 @@ public class Se
     public SeTools Tools { get; set; } = new();
     public SeSync Synchronization { get; set; } = new();
     public SeSpellCheck SpellCheck { get; set; } = new();
+    public SeAppearance Appearance { get; set; } = new();
     public SeVideo Video { get; set; } = new();
     public static SeLanguage Language { get; set; } = new();
     public static Se Settings { get; set; } = new();
@@ -108,6 +109,11 @@ public class Se
             Settings.SpellCheck = new();
         }
 
+        if (Settings.Appearance == null)
+        {
+            Settings.Appearance = new();
+        }
+
         if (Settings.Video == null)
         {
             Settings.Video = new();
@@ -173,7 +179,7 @@ public class Se
     private static void UpdateLibSeSettings()
     {
         Configuration.Settings.General.FFmpegLocation = Settings.General.FfmpegPath;
-        Configuration.Settings.General.UseDarkTheme = Settings.General.Theme == "Dark";
+        Configuration.Settings.General.UseDarkTheme = Settings.Appearance.Theme == "Dark";
         Configuration.Settings.General.UseTimeFormatHHMMSSFF = Settings.General.UseTimeFormatHhMmSsFf;
 
         var tts = Settings.Tools.AudioToText;
