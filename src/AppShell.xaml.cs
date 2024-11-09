@@ -1,10 +1,12 @@
 ﻿using SubtitleAlchemist.Features.Edit.RedoUndoHistory;
 using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
+using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
+using SubtitleAlchemist.Features.Tools.BatchConvert;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
@@ -20,7 +22,7 @@ namespace SubtitleAlchemist
         {
             InitializeComponent();
 
-            //Routing.RegisterRoute(nameof(MainPage), typeof(MainPage)); -- defined in xml... not sure how to remove from xml...
+            Routing.RegisterRoute(nameof(MainPage), typeof(MainPage)); 
             Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
             Routing.RegisterRoute(nameof(AudioToTextWhisperPage), typeof(AudioToTextWhisperPage));
             Routing.RegisterRoute(nameof(WhisperAdvancedPage), typeof(WhisperAdvancedPage));
@@ -36,6 +38,7 @@ namespace SubtitleAlchemist
             Routing.RegisterRoute(nameof(TransparentSubPage), typeof(TransparentSubPage));
             Routing.RegisterRoute(nameof(TextToSpeechPage), typeof(TextToSpeechPage));
             Routing.RegisterRoute(nameof(ReviewSpeechPage), typeof(ReviewSpeechPage));
+            Routing.RegisterRoute(nameof(BatchConvertPage), typeof(BatchConvertPage));
         }
     }
 }

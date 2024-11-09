@@ -331,7 +331,6 @@ public partial class SettingsViewModel : ObservableObject
 
     public void LoadSettings()
     {
-        Theme = Se.Settings.Appearance.Theme;
         FfmpegPath = Se.Settings.General.FfmpegPath;
         SubtitleLineMaximumLength = Se.Settings.General.SubtitleLineMaximumLength;
         SelectedMaxNumberOfLines = Se.Settings.General.MaxNumberOfLines;
@@ -344,6 +343,7 @@ public partial class SettingsViewModel : ObservableObject
         SubtitleOptimalCharactersPerSeconds = Se.Settings.General.SubtitleOptimalCharactersPerSeconds;
         SubtitleMaximumWordsPerMinute = Se.Settings.General.SubtitleMaximumWordsPerMinute;
 
+        Theme = Se.Settings.Appearance.Theme;
         ToolbarShowFileNew = Se.Settings.Appearance.ToolbarShowFileNew;
         ToolbarShowFileOpen = Se.Settings.Appearance.ToolbarShowFileOpen;
         ToolbarShowVideoFileOpen = Se.Settings.Appearance.ToolbarShowVideoFileOpen;

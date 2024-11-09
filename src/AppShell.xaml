@@ -6,5 +6,5 @@
     xmlns:local="clr-namespace:SubtitleAlchemist.Features.Main"
     Shell.FlyoutBehavior="Disabled"
     Title="Untitled - Subtitle Alchemist">
-    <ShellContent ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
+    <ShellContent ContentTemplate="{DataTemplate local:MainPage}"  />
 </Shell>

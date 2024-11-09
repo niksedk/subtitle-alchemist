@@ -42,6 +42,7 @@ using System.Text;
 using System.Timers;
 using SharpHook.Native;
 using SubtitleAlchemist.Features.Main.LayoutPicker;
+using SubtitleAlchemist.Features.Tools.BatchConvert;
 using LayoutPickerModel = SubtitleAlchemist.Features.Main.LayoutPicker.LayoutPickerModel;
 using Path = System.IO.Path;
 using SpellCheckDictionary = SubtitleAlchemist.Features.SpellCheck.SpellCheckDictionary;
@@ -1826,6 +1827,15 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             { "Subtitle", UpdatedSubtitle },
             { "Encoding", CurrentEncoding },
             { "Format", CurrentSubtitleFormat },
+        });
+    }
+
+    [RelayCommand]
+    private async Task BatchConvertShow()
+    {
+        await Shell.Current.GoToAsync(nameof(BatchConvertPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
         });
     }
 

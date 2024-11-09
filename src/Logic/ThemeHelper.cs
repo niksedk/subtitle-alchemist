@@ -11,6 +11,8 @@ namespace SubtitleAlchemist.Logic
 {
     public static class ThemeHelper
     {
+        public static double TitleFontSize { get; set; } = 24;
+
         public static CollectionView BindDynamicTheme(this CollectionView control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
@@ -73,6 +75,12 @@ namespace SubtitleAlchemist.Logic
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
             control.SetDynamicResource(SearchBar.TextColorProperty, ThemeNames.TextColor);
+            return control;
+        }
+
+        public static Switch BindToggledProperty(this Switch control, string bindName)
+        {
+            control.SetBinding(Switch.IsToggledProperty, bindName);
             return control;
         }
 

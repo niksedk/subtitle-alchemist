@@ -27,6 +27,7 @@ using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 using SubtitleAlchemist.Features.Sync.ChangeFrameRate;
 using SubtitleAlchemist.Features.Sync.ChangeSpeed;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
+using SubtitleAlchemist.Features.Tools.BatchConvert;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
@@ -97,6 +98,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<TextToSpeechPageModel>();
             builder.Services.AddTransient<ReviewSpeechPage>();
             builder.Services.AddTransient<ReviewSpeechPageModel>();
+            builder.Services.AddTransient<BatchConvertPage>();
+            builder.Services.AddTransient<BatchConvertModel>();
 
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<ISpellCheckManager, SpellCheckManager>();
@@ -142,6 +145,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<EditTextPopup, EditTextPopupModel>();
             builder.Services.AddTransientPopup<ElevenLabSettingsPopup, ElevenLabSettingsPopupModel>();
             builder.Services.AddTransientPopup<EditShortcutPopup, EditShortcutPopupModel>();
+            builder.Services.AddTransientPopup<BatchConvertOutputPropertiesPopup, BatchConvertOutputPropertiesPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

@@ -221,6 +221,12 @@ internal static class InitMenuBar
             Command = vm.FixCommonErrorsShowCommand,
         });
 
+        menu.Add(new MenuFlyoutItem
+        {
+            Text = "Batch convert...",
+            Command = vm.BatchConvertShowCommand,
+        });
+
         return menu;
     }
 
