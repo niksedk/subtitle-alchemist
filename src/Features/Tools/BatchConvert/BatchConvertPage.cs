@@ -13,7 +13,7 @@ public class BatchConvertPage : ContentPage
     {
         BindingContext = vm;
         _vm = vm;
-        ThemeHelper.GetGridSelectionStyle();
+        Resources.Add(ThemeHelper.GetGridSelectionStyle());
 
         var pageGrid = new Grid
         {
@@ -67,16 +67,40 @@ public class BatchConvertPage : ContentPage
             Command = vm.OkCommand,
         }.BindDynamicTheme();
 
+        var stackProgress = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                new Label
+                {
+                    HorizontalOptions = LayoutOptions.Fill,
+                    VerticalOptions = LayoutOptions.Start,
+                }.BindDynamicTheme()
+                .BindIsVisible(nameof(vm.IsProgressVisible))
+                .BindText(nameof(vm.ProgressText)),
+
+                new ProgressBar
+                {
+                    HorizontalOptions = LayoutOptions.Fill,
+                    VerticalOptions = LayoutOptions.Start,
+                }.BindIsVisible(nameof(vm.IsProgressVisible)).BindProgress(nameof(vm.Progress)),
+            },
+        }.BindDynamicTheme();
+
         var okCancelBar = new StackLayout
         {
             Margin = new Thickness(0, 25, 0, 0),
             Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Start,
+            HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             Children =
             {
                 buttonConvert,
                 buttonOk,
+                stackProgress,
             },
         }.BindDynamicTheme();
 
@@ -162,8 +186,7 @@ public class BatchConvertPage : ContentPage
             }, 3);
 
         // Add the header grid to the main grid
-        grid.Add(gridHeader, 0, 0);
-
+        grid.Add(gridHeader, 0);
 
         var collectionView = new CollectionView
         {
@@ -190,7 +213,7 @@ public class BatchConvertPage : ContentPage
                     VerticalTextAlignment = TextAlignment.Center,
                 }.BindDynamicThemeTextColorOnly();
                 labelFileName.SetBinding(Label.TextProperty, nameof(BatchConvertItem.FileName));
-                jobItemGrid.Add(labelFileName, 0, 0);
+                jobItemGrid.Add(labelFileName);
 
                 var labelSize = new Label
                 {
@@ -198,7 +221,7 @@ public class BatchConvertPage : ContentPage
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
                 labelSize.SetBinding(Label.TextProperty, nameof(BatchConvertItem.Size));
-                jobItemGrid.Add(labelSize, 1, 0);
+                jobItemGrid.Add(labelSize, 1);
 
                 var labelFormat = new Label
                 {
@@ -206,7 +229,7 @@ public class BatchConvertPage : ContentPage
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
                 labelFormat.SetBinding(Label.TextProperty, nameof(BatchConvertItem.Format));
-                jobItemGrid.Add(labelFormat, 2, 0);
+                jobItemGrid.Add(labelFormat, 2);
 
                 var labelStatus = new Label
                 {
@@ -214,7 +237,7 @@ public class BatchConvertPage : ContentPage
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
                 labelStatus.SetBinding(Label.TextProperty, nameof(BatchConvertItem.Status));
-                jobItemGrid.Add(labelStatus, 3, 0);
+                jobItemGrid.Add(labelStatus, 3);
 
                 return jobItemGrid;
             }),
@@ -258,7 +281,7 @@ public class BatchConvertPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
             Margin = new Thickness(5),
             Opacity = 0.5,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BorderColor],
+            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BorderColor],
         };
 
         var buttonOutputProperties = new Button
@@ -275,7 +298,7 @@ public class BatchConvertPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicThemeTextColorOnly();
-        //labelOutputUseSource.SetBinding(IsVisibleProperty, nameof(vm.UseSourceFolderVisible));
+        labelOutputUseSource.SetBinding(IsVisibleProperty, nameof(vm.UseSourceFolderVisible));
 
         var labelOutputFolder = new Label
         {
@@ -283,17 +306,9 @@ public class BatchConvertPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             TextDecorations = TextDecorations.Underline,
         }.BindDynamicThemeTextColorOnly();
-        //labelOutputFolder.SetBinding(Label.TextProperty, nameof(vm.OutputSourceFolder));
-        //labelOutputFolder.SetBinding(IsVisibleProperty, nameof(vm.UseOutputFolderVisible));
-
-        //var pointerGesture = new PointerGestureRecognizer();
-        //pointerGesture.PointerEntered += vm.OutputFolderLinkMouseEntered;
-        //pointerGesture.PointerExited += vm.OutputFolderLinkMouseExited;
-        //labelOutputFolder.GestureRecognizers.Add(pointerGesture);
-        //var tapGesture = new TapGestureRecognizer();
-        //tapGesture.Tapped += vm.OutputFolderLinkMouseClicked;
-        //labelOutputFolder.GestureRecognizers.Add(tapGesture);
-        //vm.LabelOutputFolder = labelOutputFolder;
+        labelOutputFolder.SetBinding(Label.TextProperty, nameof(vm.OutputFolder));
+        labelOutputFolder.SetBinding(IsVisibleProperty, nameof(vm.UseOutputFolderVisible));
+        labelOutputFolder.WithLinkLabel(vm.OpenOutputFolderCommand);
 
         var boxSeparator2 = new BoxView
         {
@@ -302,7 +317,7 @@ public class BatchConvertPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
             Margin = new Thickness(5),
             Opacity = 0.5,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BorderColor],
+            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BorderColor],
         };
 
         var labelTargetFormat = new Label
@@ -327,7 +342,7 @@ public class BatchConvertPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
             Margin = new Thickness(5),
             Opacity = 0.5,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BorderColor],
+            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BorderColor],
         };
 
         var labelTargetEncoding = new Label
@@ -390,7 +405,7 @@ public class BatchConvertPage : ContentPage
         return border;
     }
 
-    private Border MakeSettingsList(BatchConvertModel vm)
+    private static Grid MakeSettingsList(BatchConvertModel vm)
     {
         var grid = new Grid
         {
@@ -434,7 +449,7 @@ public class BatchConvertPage : ContentPage
                     Padding = new Thickness(5),
                 }.BindDynamicThemeTextColorOnly();
                 labelFunctionName.SetBinding(Label.TextProperty, nameof(BatchConvertFunction.Name));
-                functionGrid.Add(labelFunctionName, 0, 0);
+                functionGrid.Add(labelFunctionName, 0);
 
                 var switchIsSelected = new Switch
                 {
@@ -442,7 +457,7 @@ public class BatchConvertPage : ContentPage
                     VerticalOptions = LayoutOptions.Center,
                 }.BindDynamicTheme();
                 switchIsSelected.SetBinding(Switch.IsToggledProperty, nameof(BatchConvertFunction.IsSelected));
-                functionGrid.Add(switchIsSelected, 1, 0);
+                functionGrid.Add(switchIsSelected, 1);
 
                 return functionGrid;
             }),
@@ -451,32 +466,18 @@ public class BatchConvertPage : ContentPage
         collectionViewFunctions.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedBatchFunction));
         collectionViewFunctions.SelectionChanged += vm.FunctionSelectionChanged;
 
-        grid.Add(collectionViewFunctions, 0, 0);
+        grid.Add(PackIntoScrollViewAndBorder(collectionViewFunctions), 0);
 
         vm.ViewRemoveFormatting = MakeRemoveFormattingSettings(vm);
-        grid.Add(vm.ViewRemoveFormatting, 1, 0);
+        grid.Add(vm.ViewRemoveFormatting, 1);
 
         vm.ViewOffsetTimeCodes = MakeOffsetTimeCodesSettings(vm);
-        grid.Add(vm.ViewOffsetTimeCodes, 1, 0);
+        grid.Add(vm.ViewOffsetTimeCodes, 1);
 
-        var border = new Border
-        {
-            StrokeThickness = 1,
-            Padding = new Thickness(5),
-            Margin = new Thickness(2),
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            StrokeShape = new RoundRectangle
-            {
-                CornerRadius = new CornerRadius(5)
-            },
-            Content = grid,
-        }.BindDynamicTheme();
-
-        return border;
+        return grid;
     }
 
-    private View MakeRemoveFormattingSettings(BatchConvertModel vm)
+    private static View MakeRemoveFormattingSettings(BatchConvertModel vm)
     {
         var stackRemoveFormatting = new StackLayout
         {
@@ -506,6 +507,8 @@ public class BatchConvertPage : ContentPage
                             Text = "Remove all",
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 150,
+                            Margin = new Thickness(0, 0, 5, 0),
                         }.BindDynamicThemeTextColorOnly(),
                         new Switch
                         {
@@ -526,6 +529,8 @@ public class BatchConvertPage : ContentPage
                             Text = "Remove italic",
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 150,
+                            Margin = new Thickness(0, 0, 5, 0),
                         }.BindDynamicThemeTextColorOnly(),
                         new Switch
                         {
@@ -546,6 +551,8 @@ public class BatchConvertPage : ContentPage
                             Text = "Remove bold",
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 150,
+                            Margin = new Thickness(0, 0, 5, 0),
                         }.BindDynamicThemeTextColorOnly(),
                         new Switch
                         {
@@ -566,6 +573,8 @@ public class BatchConvertPage : ContentPage
                             Text = "Remove underline",
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 150,
+                            Margin = new Thickness(0, 0, 5, 0),
                         }.BindDynamicThemeTextColorOnly(),
                         new Switch
                         {
@@ -586,6 +595,8 @@ public class BatchConvertPage : ContentPage
                             Text = "Remove font tags",
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 150,
+                            Margin = new Thickness(0, 0, 5, 0),
                         }.BindDynamicThemeTextColorOnly(),
                         new Switch
                         {
@@ -607,6 +618,8 @@ public class BatchConvertPage : ContentPage
                             Text = "Remove alignment tags",
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 150,
+                            Margin = new Thickness(0, 0, 5, 0),
                         }.BindDynamicThemeTextColorOnly(),
                         new Switch
                         {
@@ -628,7 +641,10 @@ public class BatchConvertPage : ContentPage
                             Text = "Remove color tags",
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 150,
+                            Margin = new Thickness(0, 0, 5, 0),
                         }.BindDynamicThemeTextColorOnly(),
+
                         new Switch
                         {
                             HorizontalOptions = LayoutOptions.Start,
@@ -640,10 +656,36 @@ public class BatchConvertPage : ContentPage
 
         }.BindDynamicTheme();
 
-        return stackRemoveFormatting;
+        return PackIntoScrollViewAndBorder(stackRemoveFormatting);
     }
 
-    private View MakeOffsetTimeCodesSettings(BatchConvertModel vm)
+    private static View PackIntoScrollViewAndBorder(View view)
+    {
+        var scrollView = new ScrollView
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Content = view,
+        }.BindDynamicTheme();
+
+        var borderSettings = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(5),
+            Margin = new Thickness(5, 3, 3, 3),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = scrollView,
+        }.BindDynamicTheme();
+
+        return borderSettings;
+    }
+
+    private static View MakeOffsetTimeCodesSettings(BatchConvertModel vm)
     {
         var stackBar = new StackLayout
         {
@@ -686,7 +728,7 @@ public class BatchConvertPage : ContentPage
             },
         }.BindDynamicTheme();
 
-        return stackBar;
+        return PackIntoScrollViewAndBorder(stackBar);
     }
 
     protected override void OnDisappearing()

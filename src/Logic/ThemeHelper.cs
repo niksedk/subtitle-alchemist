@@ -44,16 +44,16 @@ namespace SubtitleAlchemist.Logic
         {
             control.TextDecorations = TextDecorations.Underline;
 
-            //var pointerGesture = new PointerGestureRecognizer();
-            //pointerGesture.PointerEntered += (s, e) =>
-            //{
-            //    control.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
-            //};
-            //pointerGesture.PointerExited += (s, e) =>
-            //{
-            //    control.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
-            //};
-            //control.GestureRecognizers.Add(pointerGesture);
+            var pointerGesture = new PointerGestureRecognizer();
+            pointerGesture.PointerEntered += (s, e) =>
+            {
+                control.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
+            };
+            pointerGesture.PointerExited += (s, e) =>
+            {
+                control.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+            };
+            control.GestureRecognizers.Add(pointerGesture);
 
             return control;
         }
@@ -81,6 +81,30 @@ namespace SubtitleAlchemist.Logic
         public static Switch BindToggledProperty(this Switch control, string bindName)
         {
             control.SetBinding(Switch.IsToggledProperty, bindName);
+            return control;
+        }
+
+        public static Label BindIsVisible(this Label control, string bindName)
+        {
+            control.SetBinding(VisualElement.IsVisibleProperty, bindName);
+            return control;
+        }
+
+        public static Label BindText(this Label control, string bindName)
+        {
+            control.SetBinding(Label.TextProperty, bindName);
+            return control;
+        }
+
+        public static ProgressBar BindIsVisible(this ProgressBar control, string bindName)
+        {
+            control.SetBinding(VisualElement.IsVisibleProperty, bindName);
+            return control;
+        }
+
+        public static ProgressBar BindProgress(this ProgressBar control, string bindName)
+        {
+            control.SetBinding(ProgressBar.ProgressProperty, bindName);
             return control;
         }
 

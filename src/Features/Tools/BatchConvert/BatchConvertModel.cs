@@ -16,6 +16,8 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
 
     [ObservableProperty] private string _outputFolder;
     [ObservableProperty] private bool _saveInSourceFolder;
+    [ObservableProperty] private bool _useSourceFolderVisible;
+    [ObservableProperty] private bool _useOutputFolderVisible;
     [ObservableProperty] private bool _overwrite;
     [ObservableProperty] private string _targetFormatName;
     [ObservableProperty] private string _targetEncoding;
@@ -38,16 +40,22 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     [ObservableProperty] private bool _formattingRemoveAlignmentTags;
     [ObservableProperty] private bool _formattingRemoveColors;
 
+    [ObservableProperty] private bool _isProgressVisible;
+    [ObservableProperty] private string _progressText;
+    [ObservableProperty] private double _progress;
+
     public View ViewRemoveFormatting { get; set; }
     public View ViewOffsetTimeCodes { get; set; }
 
     private readonly IFileHelper _fileHelper;
     private readonly IPopupService _popupService;
+    private readonly IBatchConverter _batchConverter;
 
-    public BatchConvertModel(IFileHelper fileHelper, IPopupService popupService)
+    public BatchConvertModel(IFileHelper fileHelper, IPopupService popupService, IBatchConverter batchConverter)
     {
         _fileHelper = fileHelper;
         _popupService = popupService;
+        _batchConverter = batchConverter;
         _outputFolder = string.Empty;
         _saveInSourceFolder = true;
         _targetFormatName = SubRip.NameOfFormat;
@@ -60,6 +68,8 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         _batchFunctions = new ObservableCollection<BatchConvertFunction>();
         ViewRemoveFormatting = new BoxView();
         ViewOffsetTimeCodes = new BoxView();
+
+        _progressText = string.Empty;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -68,7 +78,6 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-
                 var activeFunctions = Se.Settings.Tools.BatchConvert.ActiveFunctions;
                 BatchFunctions = new ObservableCollection<BatchConvertFunction>
                 {
@@ -109,7 +118,7 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task FileAdd()
     {
-        var fileNames = await _fileHelper.PickAndShowVideoFiles("Pick video files");
+        var fileNames = await _fileHelper.PickAndShowSubtitleFiles("Pick subtitle files");
         if (fileNames.Length == 0)
         {
             return;
@@ -118,7 +127,8 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         foreach (var fileName in fileNames)
         {
             var fileInfo = new FileInfo(fileName);
-            var batchItem = new BatchConvertItem(fileName, fileInfo.Length, "Unknown");
+            var subtitle = Subtitle.Parse(fileName);
+            var batchItem = new BatchConvertItem(fileName, fileInfo.Length, subtitle != null ? subtitle.OriginalFormat.Name : "Unknown", subtitle);
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -156,17 +166,80 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
 
         if (result is BatchConvertOutputProperties outputResult)
         {
-            Se.Settings.Tools.BatchConvert.UseOutputFolder = outputResult.UseOutputFolder;
-            Se.Settings.Tools.BatchConvert.OutputFolder = outputResult.OutputFolder;
-            Se.Settings.Tools.BatchConvert.Overwrite = outputResult.Overwrite;
-            Se.SaveSettings();
+            SaveInSourceFolder = !outputResult.UseOutputFolder;
+            OutputFolder = outputResult.OutputFolder;
+            Overwrite = outputResult.Overwrite;
+
+            UpdateOutputFolder();
+            SaveSettings();
         }
     }
 
+    private void UpdateOutputFolder()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            UseSourceFolderVisible = SaveInSourceFolder;
+            UseOutputFolderVisible = !SaveInSourceFolder;
+        });
+    }
+
     [RelayCommand]
-    private async Task Convert()
+    private void OpenOutputFolder()
+    {
+        UiUtil.OpenFolder(OutputFolder);
+    }
+
+    [RelayCommand]
+    private void Convert()
     {
         SaveSettings();
+
+        var config = MakeBatchConvertConfig();
+        _batchConverter.Initialize(config);
+
+        IsProgressVisible = true;
+        var unused = Task.Run(async () =>
+        {
+            var count = 1;
+            foreach (var batchItem in BatchItems)
+            {
+                var countDisplay = count;
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ProgressText = $"Converting {countDisplay}/{BatchItems.Count}";
+                    Progress = countDisplay / (double)BatchItems.Count;
+                });
+                await _batchConverter.Convert(batchItem);
+                Thread.Sleep(100); //TODO: remove this
+                count++;
+            }
+            IsProgressVisible = false;
+        });
+    }
+
+    private BatchConvertConfig MakeBatchConvertConfig()
+    {
+        return new BatchConvertConfig
+        {
+            SaveInSourceFolder = SaveInSourceFolder,
+            OutputFolder = OutputFolder,
+            Overwrite = Overwrite,
+            TargetFormatName = SelectedTargetFormat ?? string.Empty,
+            TargetEncoding = SelectedTargetEncoding ?? string.Empty,
+
+            RemoveFormatting = new BatchConvertConfig.RemoveFormattingSettings
+            {
+                IsActive = SelectedBatchFunction?.Type == BatchConvertFunctionType.RemoveFormatting,
+                RemoveAll = FormattingRemoveAll,
+                RemoveItalic = FormattingRemoveItalic,
+                RemoveBold = FormattingRemoveBold,
+                RemoveUnderline = FormattingRemoveUnderline,
+                RemoveColor = FormattingRemoveColors,
+                RemoveFontName = FormattingRemoveFontTags,
+                RemoveAlignment = FormattingRemoveAlignmentTags,
+            },
+        };
     }
 
     [RelayCommand]
@@ -190,6 +263,11 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
 
     private void LoadSettings()
     {
+        SaveInSourceFolder = !Se.Settings.Tools.BatchConvert.UseOutputFolder;
+        OutputFolder = Se.Settings.Tools.BatchConvert.OutputFolder;
+        Overwrite = Se.Settings.Tools.BatchConvert.Overwrite;
+        UpdateOutputFolder();
+
         FormattingRemoveAll = Se.Settings.Tools.BatchConvert.FormattingRemoveAll;
         FormattingRemoveItalic = Se.Settings.Tools.BatchConvert.FormattingRemoveItalic;
         FormattingRemoveBold = Se.Settings.Tools.BatchConvert.FormattingRemoveBold;
@@ -197,6 +275,7 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         FormattingRemoveFontTags = Se.Settings.Tools.BatchConvert.FormattingRemoveFontTags;
         FormattingRemoveAlignmentTags = Se.Settings.Tools.BatchConvert.FormattingRemoveAlignmentTags;
         FormattingRemoveColors = Se.Settings.Tools.BatchConvert.FormattingRemoveColorTags;
+
     }
 
     private void SaveSettings()
