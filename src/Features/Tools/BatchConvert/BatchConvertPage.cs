@@ -691,8 +691,7 @@ public class BatchConvertPage : ContentPage
         var borderSettings = new Border
         {
             StrokeThickness = 1,
-            Padding = new Thickness(5),
-            Margin = new Thickness(10, 5, 5, 5),
+            Padding = new Thickness(10, 5,10, 5),
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             StrokeShape = new RoundRectangle
@@ -707,8 +706,6 @@ public class BatchConvertPage : ContentPage
 
     private static View MakeOffsetTimeCodesSettings(BatchConvertModel vm)
     {
-
-
         var stackBar = new StackLayout
         {
             Orientation = StackOrientation.Vertical,
@@ -735,7 +732,6 @@ public class BatchConvertPage : ContentPage
                 {
                     HorizontalOptions = LayoutOptions.Start,
                     VerticalOptions = LayoutOptions.Center,
-                    BindingContext = vm,
                 }.BindTime(nameof(vm.OffsetTimeCodesTime)).BindDynamicTheme(),
                 new StackLayout
                 {

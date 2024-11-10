@@ -104,7 +104,7 @@ namespace SubtitleAlchemist.Logic
 
         public static SubTimeUpDown BindTime(this SubTimeUpDown control, string bindName)
         {
-            control.SetBinding(SubTimeUpDown.TimeProperty, bindName);
+            control.SetBinding(SubTimeUpDown.TimeProperty, bindName, BindingMode.TwoWay);
             return control;
         }
 

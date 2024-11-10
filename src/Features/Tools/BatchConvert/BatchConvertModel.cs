@@ -224,6 +224,8 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
 
     private BatchConvertConfig MakeBatchConvertConfig()
     {
+        var activeFunctions = BatchFunctions.Where(p => p.IsSelected).Select(p => p.Type).ToList();
+
         return new BatchConvertConfig
         {
             SaveInSourceFolder = SaveInSourceFolder,
@@ -234,7 +236,7 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
 
             RemoveFormatting = new BatchConvertConfig.RemoveFormattingSettings
             {
-                IsActive = SelectedBatchFunction?.Type == BatchConvertFunctionType.RemoveFormatting,
+                IsActive = activeFunctions.Contains(BatchConvertFunctionType.RemoveFormatting),
                 RemoveAll = FormattingRemoveAll,
                 RemoveItalic = FormattingRemoveItalic,
                 RemoveBold = FormattingRemoveBold,
@@ -246,7 +248,7 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
 
             OffsetTimeCodes = new BatchConvertConfig.OffsetTimeCodesSettings
             {
-                IsActive = SelectedBatchFunction?.Type == BatchConvertFunctionType.OffsetTimeCodes,
+                IsActive = activeFunctions.Contains(BatchConvertFunctionType.OffsetTimeCodes),
                 Forward = OffsetTimeCodesForward,
                 Milliseconds = (long)OffsetTimeCodesTime.TotalMilliseconds,
             },
