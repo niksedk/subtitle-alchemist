@@ -13,6 +13,10 @@ public class BatchConvertConfig
     
     public RemoveFormattingSettings RemoveFormatting { get; set; }
     public OffsetTimeCodesSettings OffsetTimeCodes { get; set; }
+    public ChangeFrameRateSettings ChangeFrameRate { get; set; }
+    public RemoveLineBreaksSettings RemoveLineBreaks { get; set; }
+    public DeleteLinesSettings DeleteLines { get; set; }
+    public AdjustDisplayDurationSettings AdjustDisplayDuration { get; set; }
 
     public BatchConvertConfig()
     {
@@ -22,6 +26,10 @@ public class BatchConvertConfig
         TargetEncoding = TextEncoding.Utf8WithBom;
         RemoveFormatting = new RemoveFormattingSettings();
         OffsetTimeCodes = new OffsetTimeCodesSettings();
+        RemoveLineBreaks = new RemoveLineBreaksSettings();
+        ChangeFrameRate = new ChangeFrameRateSettings();
+        DeleteLines = new DeleteLinesSettings();
+        AdjustDisplayDuration = new AdjustDisplayDurationSettings();
     }
 
     public class RemoveFormattingSettings
@@ -41,6 +49,45 @@ public class BatchConvertConfig
         public bool IsActive { get; set; }
         public bool Forward { get; set; }
         public long Milliseconds { get; set; }
+    }
+
+    public class ChangeFrameRateSettings
+    {
+        public bool IsActive { get; set; }
+        public double FromFrameRate { get; set; }
+        public double ToFrameRate { get; set; }
+    }
+
+    public class RemoveLineBreaksSettings
+    {
+        public bool IsActive { get; set; }
+    }
+
+    public class DeleteLinesSettings
+    {
+        public bool IsActive { get; set; }
+        public int DeleteXFirst { get; set; }
+        public int DeleteXLast { get; set; }
+        public string DeleteContains { get; set; }
+
+        public DeleteLinesSettings()
+        {
+            DeleteContains = string.Empty;
+        }
+    }
+
+    public class AdjustDisplayDurationSettings
+    {
+        public bool IsActive { get; set; }
+        public string AdjustmentType { get; set; }
+        public int Percentage { get; set; }
+        public int FixedMilliseconds { get; set; }
+        public double MaxCharsSecond { get; set; }
+
+        public AdjustDisplayDurationSettings()
+        {
+            AdjustmentType = string.Empty;
+        }
     }
 }
 

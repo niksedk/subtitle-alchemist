@@ -113,7 +113,7 @@ public class BatchConvertPage : ContentPage
         vm.Page = this;
     }
 
-    private Border MakeFileList(BatchConvertModel vm)
+    private static Border MakeFileList(BatchConvertModel vm)
     {
         var grid = new Grid
         {
@@ -192,8 +192,7 @@ public class BatchConvertPage : ContentPage
         {
             SelectionMode = SelectionMode.Single,
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
-            HeightRequest = 250,
+            VerticalOptions = LayoutOptions.Fill,
             ItemTemplate = new DataTemplate(() =>
             {
                 var jobItemGrid = new Grid
@@ -672,7 +671,7 @@ public class BatchConvertPage : ContentPage
         {
             StrokeThickness = 1,
             Padding = new Thickness(5),
-            Margin = new Thickness(5, 3, 3, 3),
+            Margin = new Thickness(10, 5, 5, 5),
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             StrokeShape = new RoundRectangle
@@ -713,18 +712,52 @@ public class BatchConvertPage : ContentPage
                 {
                     HorizontalOptions = LayoutOptions.Start,
                     VerticalOptions = LayoutOptions.Center,
-                },
-                new Switch
+                }.BindTime(nameof(vm.OffsetTimeCodesTime)).BindDynamicTheme(),
+                new StackLayout
                 {
+                    Orientation = StackOrientation.Horizontal,
                     HorizontalOptions = LayoutOptions.Start,
                     VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = "Forward",
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 80,
+                        }.BindDynamicThemeTextColorOnly(),
+                        new RadioButton
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            GroupName = "OffsetTimeCodes"
+                        }.BindIsChecked(nameof(vm.OffsetTimeCodesForward)),
+                    },
                 },
-                new Switch
+                new StackLayout
                 {
+                    Orientation = StackOrientation.Horizontal,
                     HorizontalOptions = LayoutOptions.Start,
                     VerticalOptions = LayoutOptions.Center,
-                },
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = "Back",
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 80,
+                        }.BindDynamicThemeTextColorOnly(),
 
+                        new RadioButton
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            GroupName = "OffsetTimeCodes"
+                        }.BindIsChecked(nameof(vm.OffsetTimeCodesBack)),
+                     },
+                },
             },
         }.BindDynamicTheme();
 

@@ -1,19 +1,21 @@
-﻿using Nikse.SubtitleEdit.Core.Common;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Nikse.SubtitleEdit.Core.Common;
 
 namespace SubtitleAlchemist.Features.Tools.BatchConvert;
-public class BatchConvertItem
+
+public partial class BatchConvertItem : ObservableObject
 {
     public string FileName { get; set; }
     public long Size { get; set; }
     public string Format { get; set; }
-    public string Status { get; set; }
+    [ObservableProperty] private string _status;
     public Subtitle? Subtitle { get; set; }
 
     public BatchConvertItem()
     {
         FileName = string.Empty;
         Format = string.Empty;
-        Status = string.Empty;
+        _status = string.Empty;
     }
 
     public BatchConvertItem(string fileName, long size, string format, Subtitle? subtitle)
@@ -21,7 +23,7 @@ public class BatchConvertItem
         FileName = fileName;
         Size = size;
         Format = format;
-        Status = "-";
+        _status = "-";
         Subtitle = subtitle;
     }
 }

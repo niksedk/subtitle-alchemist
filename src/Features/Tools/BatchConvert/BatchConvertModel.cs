@@ -32,6 +32,11 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     [ObservableProperty] private ObservableCollection<BatchConvertFunction> _batchFunctions;
     [ObservableProperty] private BatchConvertFunction? _selectedBatchFunction;
 
+    [ObservableProperty] private bool _isProgressVisible;
+    [ObservableProperty] private string _progressText;
+    [ObservableProperty] private double _progress;
+
+    // Remove formatting
     [ObservableProperty] private bool _formattingRemoveAll;
     [ObservableProperty] private bool _formattingRemoveItalic;
     [ObservableProperty] private bool _formattingRemoveBold;
@@ -40,9 +45,11 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     [ObservableProperty] private bool _formattingRemoveAlignmentTags;
     [ObservableProperty] private bool _formattingRemoveColors;
 
-    [ObservableProperty] private bool _isProgressVisible;
-    [ObservableProperty] private string _progressText;
-    [ObservableProperty] private double _progress;
+    //Offset time codes
+    [ObservableProperty] private bool _offsetTimeCodesForward;
+    [ObservableProperty] private bool _offsetTimeCodesBack;
+    [ObservableProperty] private TimeSpan _offsetTimeCodesTime;
+
 
     public View ViewRemoveFormatting { get; set; }
     public View ViewOffsetTimeCodes { get; set; }
@@ -85,31 +92,13 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
                     MakeFunction(BatchConvertFunctionType.OffsetTimeCodes, "Offset time codes", ViewOffsetTimeCodes, activeFunctions),
                 };
 
-                SelectedTargetFormat = Se.Settings.Tools.BatchConvert.TargetFormat;
-                if (string.IsNullOrEmpty(SelectedTargetFormat))
-                {
-                    SelectedTargetFormat = TargetFormats.First();
-                }
-
-                SelectedTargetEncoding = Se.Settings.Tools.BatchConvert.TargetEncoding;
-                if (string.IsNullOrEmpty(SelectedTargetEncoding))
-                {
-                    SelectedTargetEncoding = TargetEncodings.First();
-                }
-
-                SelectedBatchFunction = BatchFunctions.First();
-                foreach (var batchFunction in BatchFunctions)
-                {
-                    batchFunction.View.IsVisible = batchFunction == SelectedBatchFunction;
-                }
-
                 LoadSettings();
             });
             return false;
         });
     }
 
-    private BatchConvertFunction MakeFunction(BatchConvertFunctionType functionType, string name, View view, string[] activeFunctions)
+    private static BatchConvertFunction MakeFunction(BatchConvertFunctionType functionType, string name, View view, string[] activeFunctions)
     {
         var isActive = activeFunctions.Contains(functionType.ToString());
         return new BatchConvertFunction(functionType, name, isActive, view);
@@ -157,9 +146,9 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     {
         var input = new BatchConvertOutputProperties
         {
-            UseOutputFolder = Se.Settings.Tools.BatchConvert.UseOutputFolder,
-            OutputFolder = Se.Settings.Tools.BatchConvert.OutputFolder,
-            Overwrite = Se.Settings.Tools.BatchConvert.Overwrite,
+            UseOutputFolder = UseOutputFolderVisible,
+            OutputFolder = OutputFolder,
+            Overwrite = Overwrite,
         };
 
         var result = await _popupService.ShowPopupAsync<BatchConvertOutputPropertiesPopupModel>(onPresenting: viewModel => viewModel.Initialize(input), CancellationToken.None);
@@ -193,6 +182,11 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private void Convert()
     {
+        foreach (var batchItem in BatchItems)
+        {
+            batchItem.Status = "-";
+        }
+
         SaveSettings();
 
         var config = MakeBatchConvertConfig();
@@ -239,6 +233,13 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
                 RemoveFontName = FormattingRemoveFontTags,
                 RemoveAlignment = FormattingRemoveAlignmentTags,
             },
+
+            OffsetTimeCodes = new BatchConvertConfig.OffsetTimeCodesSettings
+            {
+                IsActive = SelectedBatchFunction?.Type == BatchConvertFunctionType.OffsetTimeCodes,
+                Forward = OffsetTimeCodesForward,
+                Milliseconds = (long)OffsetTimeCodesTime.TotalMilliseconds,
+            },
         };
     }
 
@@ -263,6 +264,24 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
 
     private void LoadSettings()
     {
+        SelectedTargetFormat = Se.Settings.Tools.BatchConvert.TargetFormat;
+        if (string.IsNullOrEmpty(SelectedTargetFormat))
+        {
+            SelectedTargetFormat = TargetFormats.First();
+        }
+
+        SelectedTargetEncoding = Se.Settings.Tools.BatchConvert.TargetEncoding;
+        if (string.IsNullOrEmpty(SelectedTargetEncoding))
+        {
+            SelectedTargetEncoding = TargetEncodings.First();
+        }
+
+        SelectedBatchFunction = BatchFunctions.First();
+        foreach (var batchFunction in BatchFunctions)
+        {
+            batchFunction.View.IsVisible = batchFunction == SelectedBatchFunction;
+        }
+
         SaveInSourceFolder = !Se.Settings.Tools.BatchConvert.UseOutputFolder;
         OutputFolder = Se.Settings.Tools.BatchConvert.OutputFolder;
         Overwrite = Se.Settings.Tools.BatchConvert.Overwrite;
@@ -276,6 +295,8 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         FormattingRemoveAlignmentTags = Se.Settings.Tools.BatchConvert.FormattingRemoveAlignmentTags;
         FormattingRemoveColors = Se.Settings.Tools.BatchConvert.FormattingRemoveColorTags;
 
+        OffsetTimeCodesTime = TimeSpan.FromMilliseconds(Se.Settings.Tools.BatchConvert.OffsetTimeCodesMilliseconds);
+        OffsetTimeCodesForward = Se.Settings.Tools.BatchConvert.OffsetTimeCodesForward;
     }
 
     private void SaveSettings()
@@ -283,6 +304,9 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         Se.Settings.Tools.BatchConvert.TargetFormat = SelectedTargetFormat ?? string.Empty;
         Se.Settings.Tools.BatchConvert.TargetEncoding = SelectedTargetEncoding ?? string.Empty;
         Se.Settings.Tools.BatchConvert.ActiveFunctions = BatchFunctions.Where(p => p.IsSelected).Select(p => p.Type.ToString()).ToArray();
+        Se.Settings.Tools.BatchConvert.UseOutputFolder = !SaveInSourceFolder;
+        Se.Settings.Tools.BatchConvert.OutputFolder = OutputFolder;
+        Se.Settings.Tools.BatchConvert.Overwrite = Overwrite;
 
         Se.Settings.Tools.BatchConvert.FormattingRemoveAll = FormattingRemoveAll;
         Se.Settings.Tools.BatchConvert.FormattingRemoveItalic = FormattingRemoveItalic;
@@ -291,6 +315,9 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         Se.Settings.Tools.BatchConvert.FormattingRemoveFontTags = FormattingRemoveFontTags;
         Se.Settings.Tools.BatchConvert.FormattingRemoveAlignmentTags = FormattingRemoveAlignmentTags;
         Se.Settings.Tools.BatchConvert.FormattingRemoveColorTags = FormattingRemoveColors;
+
+        Se.Settings.Tools.BatchConvert.OffsetTimeCodesMilliseconds = (long)OffsetTimeCodesTime.TotalMilliseconds;
+        Se.Settings.Tools.BatchConvert.OffsetTimeCodesForward = OffsetTimeCodesForward;
 
         Se.SaveSettings();
     }

@@ -96,6 +96,18 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static RadioButton BindIsChecked(this RadioButton control, string bindName)
+        {
+            control.SetBinding(RadioButton.IsCheckedProperty, bindName);
+            return control;
+        }
+
+        public static SubTimeUpDown BindTime(this SubTimeUpDown control, string bindName)
+        {
+            control.SetBinding(SubTimeUpDown.TimeProperty, bindName);
+            return control;
+        }
+
         public static ProgressBar BindIsVisible(this ProgressBar control, string bindName)
         {
             control.SetBinding(VisualElement.IsVisibleProperty, bindName);
@@ -113,6 +125,7 @@ namespace SubtitleAlchemist.Logic
             control.SetDynamicResource(Label.TextColorProperty, ThemeNames.TextColor);
             return control;
         }
+
         public static Switch BindDynamicThemeTextColorOnly(this Switch control)
         {
             //control.SetDynamicResource(Switch.property.TextColorProperty, ThemeNames.TextColor);

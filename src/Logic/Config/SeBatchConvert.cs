@@ -17,11 +17,15 @@ public class SeBatchConvert
     public bool FormattingRemoveBold { get; set; }
     public bool FormattingRemoveAlignmentTags { get; set; }
 
+    public double OffsetTimeCodesMilliseconds { get; set; }
+    public bool OffsetTimeCodesForward { get; set; }
+
     public SeBatchConvert()
     {
         OutputFolder = string.Empty;
         UseOutputFolder = true;
         TargetFormat = string.Empty;
         TargetEncoding = string.Empty;
+        OffsetTimeCodesForward = true;
     }
 }
