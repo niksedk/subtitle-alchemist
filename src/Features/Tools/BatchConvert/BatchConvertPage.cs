@@ -7,9 +7,9 @@ namespace SubtitleAlchemist.Features.Tools.BatchConvert;
 
 public class BatchConvertPage : ContentPage
 {
-    private readonly BatchConvertModel _vm;
+    private readonly BatchConvertPageModel _vm;
 
-    public BatchConvertPage(BatchConvertModel vm)
+    public BatchConvertPage(BatchConvertPageModel vm)
     {
         BindingContext = vm;
         _vm = vm;
@@ -46,6 +46,15 @@ public class BatchConvertPage : ContentPage
         }.BindDynamicTheme();
         pageGrid.Add(title, 0);
 
+        var labelFilesInfo = new Label
+        {
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(0, 0, 15, 1),
+            FontSize = 12,
+        }.BindDynamicTheme().BindText(nameof(vm.BatchItemsInfo));
+        pageGrid.Add(labelFilesInfo, 0);
+
         pageGrid.Add(MakeFileList(vm), 0, 1);
         pageGrid.Add(MakeSettingsList(vm), 0, 2);
 
@@ -56,7 +65,16 @@ public class BatchConvertPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 15, 10),
             Command = vm.ConvertCommand,
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().BindIsEnabled(nameof(vm.AreControlsEnabled));
+
+        var buttonCancel = new Button
+        {
+            Text = "Cancel",
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 15, 10),
+            Command = vm.CancelConvertCommand,
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsConverting));
 
         var buttonOk = new Button
         {
@@ -65,7 +83,7 @@ public class BatchConvertPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 15, 10),
             Command = vm.OkCommand,
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().BindIsEnabled(nameof(vm.AreControlsEnabled));
 
         var stackProgress = new StackLayout
         {
@@ -101,6 +119,7 @@ public class BatchConvertPage : ContentPage
             Children =
             {
                 buttonConvert,
+                buttonCancel,
                 buttonOk,
                 stackProgress,
             },
@@ -115,7 +134,7 @@ public class BatchConvertPage : ContentPage
         vm.Page = this;
     }
 
-    private static Border MakeFileList(BatchConvertModel vm)
+    private static Border MakeFileList(BatchConvertPageModel vm)
     {
         var grid = new Grid
         {
@@ -221,7 +240,7 @@ public class BatchConvertPage : ContentPage
                     HorizontalTextAlignment = TextAlignment.Start,
                     VerticalTextAlignment = TextAlignment.Center
                 }.BindDynamicThemeTextColorOnly();
-                labelSize.SetBinding(Label.TextProperty, nameof(BatchConvertItem.Size));
+                labelSize.SetBinding(Label.TextProperty, nameof(BatchConvertItem.DisplaySize));
                 jobItemGrid.Add(labelSize, 1);
 
                 var labelFormat = new Label
@@ -276,7 +295,7 @@ public class BatchConvertPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.FileAddCommand,
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().BindIsEnabled(nameof(vm.AreControlsEnabled));
 
         var buttonRemove = new Button
         {
@@ -284,7 +303,7 @@ public class BatchConvertPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.FileRemoveCommand,
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().BindIsEnabled(nameof(vm.AreControlsEnabled));
 
         var buttonClear = new Button
         {
@@ -292,7 +311,7 @@ public class BatchConvertPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.FileClearCommand,
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().BindIsEnabled(nameof(vm.AreControlsEnabled));
 
         var boxSeparator1 = new BoxView
         {
@@ -310,7 +329,7 @@ public class BatchConvertPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.BatchOutputPropertiesCommand,
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().BindIsEnabled(nameof(vm.AreControlsEnabled));
 
         var labelOutputUseSource = new Label
         {
@@ -425,7 +444,7 @@ public class BatchConvertPage : ContentPage
         return border;
     }
 
-    private static Grid MakeSettingsList(BatchConvertModel vm)
+    private static Grid MakeSettingsList(BatchConvertPageModel vm)
     {
         var grid = new Grid
         {
@@ -503,7 +522,7 @@ public class BatchConvertPage : ContentPage
         return grid;
     }
 
-    private static View MakeRemoveFormattingSettings(BatchConvertModel vm)
+    private static View MakeRemoveFormattingSettings(BatchConvertPageModel vm)
     {
         var stackRemoveFormatting = new StackLayout
         {
@@ -710,7 +729,7 @@ public class BatchConvertPage : ContentPage
         return borderSettings;
     }
 
-    private static View MakeOffsetTimeCodesSettings(BatchConvertModel vm)
+    private static View MakeOffsetTimeCodesSettings(BatchConvertPageModel vm)
     {
         var stackBar = new StackLayout
         {
@@ -790,7 +809,7 @@ public class BatchConvertPage : ContentPage
         return PackIntoScrollViewAndBorder(stackBar);
     }
 
-    private static View MakeAdjustDurationSettings(BatchConvertModel vm)
+    private static View MakeAdjustDurationSettings(BatchConvertPageModel vm)
     {
         var stackBar = new StackLayout
         {
@@ -871,7 +890,7 @@ public class BatchConvertPage : ContentPage
     }
 
 
-    private static View MakeDeleteLinesSettings(BatchConvertModel vm)
+    private static View MakeDeleteLinesSettings(BatchConvertPageModel vm)
     {
         var stackBar = new StackLayout
         {

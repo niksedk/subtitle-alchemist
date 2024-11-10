@@ -45,11 +45,11 @@ namespace SubtitleAlchemist.Logic
             control.TextDecorations = TextDecorations.Underline;
 
             var pointerGesture = new PointerGestureRecognizer();
-            pointerGesture.PointerEntered += (s, e) =>
+            pointerGesture.PointerEntered += (_, _) =>
             {
                 control.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
             };
-            pointerGesture.PointerExited += (s, e) =>
+            pointerGesture.PointerExited += (_, _) =>
             {
                 control.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
             };
@@ -195,6 +195,18 @@ namespace SubtitleAlchemist.Logic
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.SecondaryBackgroundColor);
             control.SetDynamicResource(Button.TextColorProperty, ThemeNames.TextColor);
+            return control;
+        }
+
+        public static Button BindIsEnabled(this Button control, string bindName)
+        {
+            control.SetBinding(VisualElement.IsEnabledProperty, bindName);
+            return control;
+        }
+
+        public static Button BindIsVisible(this Button control, string bindName)
+        {
+            control.SetBinding(VisualElement.IsVisibleProperty, bindName);
             return control;
         }
 

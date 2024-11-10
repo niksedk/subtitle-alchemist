@@ -11,7 +11,7 @@ using SubtitleAlchemist.Logic.Media;
 
 namespace SubtitleAlchemist.Features.Tools.BatchConvert;
 
-public partial class BatchConvertModel : ObservableObject, IQueryAttributable
+public partial class BatchConvertPageModel : ObservableObject, IQueryAttributable
 {
     public BatchConvertPage? Page { get; set; }
 
@@ -24,6 +24,7 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     [ObservableProperty] private string _targetEncoding;
     [ObservableProperty] private ObservableCollection<BatchConvertItem> _batchItems;
     [ObservableProperty] private BatchConvertItem? _selectedBatchItem;
+    [ObservableProperty] private string _batchItemsInfo;
 
     [ObservableProperty] private ObservableCollection<string> _targetFormats;
     [ObservableProperty] private string? _selectedTargetFormat;
@@ -34,6 +35,8 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     [ObservableProperty] private BatchConvertFunction? _selectedBatchFunction;
 
     [ObservableProperty] private bool _isProgressVisible;
+    [ObservableProperty] private bool _isConverting;
+    [ObservableProperty] private bool _areControlsEnabled;
     [ObservableProperty] private string _progressText;
     [ObservableProperty] private double _progress;
 
@@ -81,10 +84,12 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     private readonly IFileHelper _fileHelper;
     private readonly IPopupService _popupService;
     private readonly IBatchConverter _batchConverter;
+    private CancellationToken _cancellationToken;
+    private CancellationTokenSource _cancellationTokenSource;
 
     private bool _stopping;
 
-    public BatchConvertModel(IFileHelper fileHelper, IPopupService popupService, IBatchConverter batchConverter)
+    public BatchConvertPageModel(IFileHelper fileHelper, IPopupService popupService, IBatchConverter batchConverter)
     {
         _fileHelper = fileHelper;
         _popupService = popupService;
@@ -95,6 +100,7 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         _targetEncoding = TextEncoding.Utf8WithBom;
 
         _batchItems = new ObservableCollection<BatchConvertItem>();
+        _batchItemsInfo = string.Empty;
         _targetFormats = new ObservableCollection<string>(SubtitleFormat.AllSubtitleFormats.Select(p => p.Name));
         _targetEncodings = new ObservableCollection<string>(EncodingHelper.GetEncodings().Select(p => p.DisplayName).ToList());
 
@@ -107,6 +113,7 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         LabelStatusText = new Label();
         _statusText = string.Empty;
         _progressText = string.Empty;
+        _areControlsEnabled = true;
 
         _adjustTypes = new ObservableCollection<string>
         {
@@ -119,6 +126,8 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         _selectedAdjustType = AdjustDurationType.Seconds.ToString();
         _deleteLinesContains = string.Empty;
         _deleteLineNumbers = new ObservableCollection<int>(Enumerable.Range(0, 100));
+        _cancellationTokenSource = new CancellationTokenSource();
+        _cancellationToken = _cancellationTokenSource.Token;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -168,6 +177,13 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
                 BatchItems.Add(batchItem);
             });
         }
+
+        MakeBatchItemsInfo();
+    }
+
+    private void MakeBatchItemsInfo()
+    {
+        BatchItemsInfo = $"{BatchItems.Count:#,###,##0} items";
     }
 
     [RelayCommand]
@@ -177,12 +193,15 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         {
             BatchItems.Remove(SelectedBatchItem);
         }
+
+        MakeBatchItemsInfo();
     }
 
     [RelayCommand]
     private void FileClear()
     {
         BatchItems.Clear();
+        MakeBatchItemsInfo();
     }
 
     [RelayCommand]
@@ -224,8 +243,17 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
+    private void CancelConvert()
+    {
+        _cancellationTokenSource.Cancel();
+    }
+
+    [RelayCommand]
     private void Convert()
     {
+        _cancellationTokenSource = new CancellationTokenSource();
+        _cancellationToken = _cancellationTokenSource.Token;
+
         foreach (var batchItem in BatchItems)
         {
             batchItem.Status = "-";
@@ -238,6 +266,8 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         var start = System.Diagnostics.Stopwatch.GetTimestamp();
 
         IsProgressVisible = true;
+        IsConverting = true;
+        AreControlsEnabled = false;
         var unused = Task.Run(async () =>
         {
             var count = 1;
@@ -246,16 +276,28 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
                 var countDisplay = count;
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    ProgressText = $"Converting {countDisplay}/{BatchItems.Count}";
+                    ProgressText = $"Converting {countDisplay:#,###,##0}/{BatchItems.Count:#,###,##0}";
                     Progress = countDisplay / (double)BatchItems.Count;
                 });
                 await _batchConverter.Convert(batchItem);
                 count++;
+
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
             }
             IsProgressVisible = false;
+            IsConverting = false;
+            AreControlsEnabled = true;
 
             var end = System.Diagnostics.Stopwatch.GetTimestamp();
-            ShowStatus($"{BatchItems.Count} files converted in {ProgressHelper.ToTimeResult(new TimeSpan(end - start).TotalMilliseconds)}");
+            var message = $"{BatchItems.Count:#,###,##0} files converted in {ProgressHelper.ToTimeResult(new TimeSpan(end - start).TotalMilliseconds)}";
+            if (_cancellationToken.IsCancellationRequested)
+            {
+                message += " - conversion cancelled by user";
+            }
+            ShowStatus(message);
         });
     }
 
@@ -325,6 +367,7 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
 
     public void OnDisappearing()
     {
+        _cancellationTokenSource.Cancel();
         _stopping = true;
         SaveSettings();
     }

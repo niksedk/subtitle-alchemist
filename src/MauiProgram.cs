@@ -99,7 +99,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<ReviewSpeechPage>();
             builder.Services.AddTransient<ReviewSpeechPageModel>();
             builder.Services.AddTransient<BatchConvertPage>();
-            builder.Services.AddTransient<BatchConvertModel>();
+            builder.Services.AddTransient<BatchConvertPageModel>();
 
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<ISpellCheckManager, SpellCheckManager>();

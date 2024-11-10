@@ -7,6 +7,7 @@ public partial class BatchConvertItem : ObservableObject
 {
     public string FileName { get; set; }
     public long Size { get; set; }
+    public string DisplaySize { get; set; }
     public string Format { get; set; }
     [ObservableProperty] private string _status;
     public Subtitle? Subtitle { get; set; }
@@ -16,6 +17,7 @@ public partial class BatchConvertItem : ObservableObject
         FileName = string.Empty;
         Format = string.Empty;
         _status = string.Empty;
+        DisplaySize = string.Empty;
     }
 
     public BatchConvertItem(string fileName, long size, string format, Subtitle? subtitle)
@@ -25,5 +27,6 @@ public partial class BatchConvertItem : ObservableObject
         Format = format;
         _status = "-";
         Subtitle = subtitle;
+        DisplaySize = Utilities.FormatBytesToDisplayFileSize(size);
     }
 }
