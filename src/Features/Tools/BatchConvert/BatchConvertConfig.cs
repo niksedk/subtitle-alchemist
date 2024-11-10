@@ -1,5 +1,6 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using SubtitleAlchemist.Features.Tools.AdjustDuration;
 
 namespace SubtitleAlchemist.Features.Tools.BatchConvert;
 
@@ -56,14 +57,14 @@ public class BatchConvertConfig
     public class AdjustDurationSettings
     {
         public bool IsActive { get; set; }
-        public string AdjustmentType { get; set; }
+        public AdjustDurationType AdjustmentType { get; set; }
         public int Percentage { get; set; }
         public int FixedMilliseconds { get; set; }
         public double MaxCharsSecond { get; set; }
 
         public AdjustDurationSettings()
         {
-            AdjustmentType = string.Empty;
+            AdjustmentType = AdjustDurationType.Seconds;
         }
     }
 

@@ -55,12 +55,17 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
     [ObservableProperty] private TimeSpan _offsetTimeCodesTime;
 
     // Adjust display duration
-    [ObservableProperty] private ObservableCollection<string> _adjustTypes;
-    [ObservableProperty] private string _selectedAdjustType;
+    [ObservableProperty] private ObservableCollection<AdjustDurationItem> _adjustTypes;
+    [ObservableProperty] private AdjustDurationItem _selectedAdjustType;
     [ObservableProperty] private TimeSpan _adjustSeconds;
     [ObservableProperty] private int _adjustPercentage;
     [ObservableProperty] private decimal _adjustFixedValue;
     [ObservableProperty] private decimal _adjustRecalculateMaximumCharacters;
+    [ObservableProperty] private bool _adjustIsSecondsVisible;
+    [ObservableProperty] private bool _adjustIsPercentVisible;
+    [ObservableProperty] private bool _adjustIsFixedVisible;
+    [ObservableProperty] private bool _adjustIsRecalculateVisible;
+    [ObservableProperty] private decimal _adjustRecalculateOptimalCharacters;
 
     // Delete lines
     [ObservableProperty] private ObservableCollection<int> _deleteLineNumbers;
@@ -68,17 +73,20 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
     [ObservableProperty] private int _deleteXLastLines;
     [ObservableProperty] private string _deleteLinesContains;
 
-
-    [ObservableProperty]
-    private decimal _adjustRecalculateOptimalCharacters;
+    // Change frame rate
+    [ObservableProperty] private ObservableCollection<double> _frameRates;
+    [ObservableProperty] private double _selectedFromFrameRate;
+    [ObservableProperty] private double _selectedToFrameRate;
 
 
     public View ViewRemoveFormatting { get; set; }
     public View ViewOffsetTimeCodes { get; set; }
     public View ViewAdjustDuration { get; set; }
     public View ViewDeleteLines { get; set; }
+    public View ViewChangeFrameRate { get; set; }
 
     public Label LabelStatusText { get; set; }
+
     [ObservableProperty] private string _statusText;
 
     private readonly IFileHelper _fileHelper;
@@ -109,25 +117,39 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
         ViewOffsetTimeCodes = new BoxView();
         ViewAdjustDuration = new BoxView();
         ViewDeleteLines = new BoxView();
+        ViewChangeFrameRate = new BoxView();
 
         LabelStatusText = new Label();
         _statusText = string.Empty;
         _progressText = string.Empty;
         _areControlsEnabled = true;
 
-        _adjustTypes = new ObservableCollection<string>
+        _adjustTypes = new ObservableCollection<AdjustDurationItem>
         {
-            AdjustDurationType.Seconds.ToString(),
-            AdjustDurationType.Percent.ToString(),
-            AdjustDurationType.Fixed.ToString(),
-            AdjustDurationType.Recalculate.ToString(),
+            new(AdjustDurationType.Seconds, "Seconds"),
+            new(AdjustDurationType.Percent, "Percent"),
+            new(AdjustDurationType.Fixed, "Fixed"),
+            new(AdjustDurationType.Recalculate, "Recalculate"),
         };
 
-        _selectedAdjustType = AdjustDurationType.Seconds.ToString();
+        _selectedAdjustType = _adjustTypes.First();
         _deleteLinesContains = string.Empty;
         _deleteLineNumbers = new ObservableCollection<int>(Enumerable.Range(0, 100));
         _cancellationTokenSource = new CancellationTokenSource();
         _cancellationToken = _cancellationTokenSource.Token;
+
+        _frameRates = new ObservableCollection<double>
+        {
+            23.976,
+            24,
+            25,
+            29.97,
+            30,
+            48,
+            59.94,
+            60,
+            120,
+        };
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -143,6 +165,7 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
                     MakeFunction(BatchConvertFunctionType.OffsetTimeCodes, "Offset time codes", ViewOffsetTimeCodes, activeFunctions),
                     MakeFunction(BatchConvertFunctionType.AdjustDisplayDuration, "Adjust display duration", ViewAdjustDuration, activeFunctions),
                     MakeFunction(BatchConvertFunctionType.DeleteLines, "Delete lines", ViewDeleteLines, activeFunctions),
+                    MakeFunction(BatchConvertFunctionType.ChangeFrameRate, "Change frame rate", ViewChangeFrameRate, activeFunctions),
                 };
 
                 LoadSettings();
@@ -251,6 +274,12 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
     [RelayCommand]
     private void Convert()
     {
+        if (BatchItems.Count == 0)
+        {
+            ShowStatus("No files to convert");
+            return;
+        }
+
         _cancellationTokenSource = new CancellationTokenSource();
         _cancellationToken = _cancellationTokenSource.Token;
 
@@ -335,7 +364,7 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
             AdjustDuration = new BatchConvertConfig.AdjustDurationSettings
             {
                 IsActive = activeFunctions.Contains(BatchConvertFunctionType.AdjustDisplayDuration),
-                AdjustmentType = SelectedAdjustType,
+                AdjustmentType = SelectedAdjustType.Type,
                 Percentage = AdjustPercentage,
                 FixedMilliseconds = (int)AdjustFixedValue,
                 MaxCharsSecond = (double)AdjustRecalculateMaximumCharacters,
@@ -347,6 +376,13 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
                 DeleteXFirst = DeleteXFirstLines,
                 DeleteXLast = DeleteXLastLines,
                 DeleteContains = DeleteLinesContains,
+            },
+
+            ChangeFrameRate = new BatchConvertConfig.ChangeFrameRateSettings
+            {
+                IsActive = activeFunctions.Contains(BatchConvertFunctionType.ChangeFrameRate),
+                FromFrameRate = SelectedFromFrameRate,
+                ToFrameRate = SelectedToFrameRate,
             },
         };
     }
@@ -407,6 +443,14 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
 
         OffsetTimeCodesTime = TimeSpan.FromMilliseconds(Se.Settings.Tools.BatchConvert.OffsetTimeCodesMilliseconds);
         OffsetTimeCodesForward = Se.Settings.Tools.BatchConvert.OffsetTimeCodesForward;
+
+        var adjustType = AdjustTypes.FirstOrDefault(p => p.Type.ToString() == Se.Settings.Tools.BatchConvert.AdjustVia);
+        SelectedAdjustType = adjustType ?? AdjustTypes.First();
+        AdjustSeconds = TimeSpan.FromSeconds(Se.Settings.Tools.BatchConvert.AdjustDurationSeconds);
+        AdjustFixedValue = Se.Settings.Tools.BatchConvert.AdjustDurationFixedMilliseconds;
+
+        SelectedFromFrameRate = Se.Settings.Tools.BatchConvert.ChangeFrameRateFrom;
+        SelectedToFrameRate = Se.Settings.Tools.BatchConvert.ChangeFrameRateTo;
     }
 
     private void SaveSettings()
@@ -428,6 +472,13 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
 
         Se.Settings.Tools.BatchConvert.OffsetTimeCodesMilliseconds = (long)OffsetTimeCodesTime.TotalMilliseconds;
         Se.Settings.Tools.BatchConvert.OffsetTimeCodesForward = OffsetTimeCodesForward;
+
+        Se.Settings.Tools.BatchConvert.AdjustVia = SelectedAdjustType.Type.ToString();
+        Se.Settings.Tools.BatchConvert.AdjustDurationSeconds = AdjustSeconds.TotalSeconds;
+        Se.Settings.Tools.BatchConvert.AdjustDurationFixedMilliseconds = (int)AdjustFixedValue;
+
+        Se.Settings.Tools.BatchConvert.ChangeFrameRateFrom = SelectedFromFrameRate;
+        Se.Settings.Tools.BatchConvert.ChangeFrameRateTo = SelectedToFrameRate;
 
         Se.SaveSettings();
     }
@@ -457,5 +508,33 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
             });
             return false;
         });
+    }
+
+    public void PickerAdjustVia_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        if (sender is Picker { SelectedItem: AdjustDurationItem selectedItem })
+        {
+            AdjustIsSecondsVisible = false;
+            AdjustIsFixedVisible = false;
+            AdjustIsPercentVisible = false;
+            AdjustIsRecalculateVisible = false;
+
+            if (selectedItem.Type == AdjustDurationType.Seconds)
+            {
+                AdjustIsSecondsVisible = true;
+            }
+            else if (selectedItem.Type == AdjustDurationType.Percent)
+            {
+                AdjustIsPercentVisible = true;
+            }
+            else if (selectedItem.Type == AdjustDurationType.Fixed)
+            {
+                AdjustIsFixedVisible = true;
+            }
+            else if (selectedItem.Type == AdjustDurationType.Recalculate)
+            {
+                AdjustIsRecalculateVisible = true;
+            }
+        }
     }
 }

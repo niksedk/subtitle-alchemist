@@ -6,4 +6,5 @@ public enum BatchConvertFunctionType
     OffsetTimeCodes,
     AdjustDisplayDuration,
     DeleteLines,
+    ChangeFrameRate,
 }

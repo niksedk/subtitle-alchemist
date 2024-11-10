@@ -121,7 +121,19 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static NumberUpDownView BindValue(this NumberUpDownView control, string bindName)
+        {
+            control.SetBinding(NumberUpDownView.ValueProperty, bindName, BindingMode.TwoWay);
+            return control;
+        }
+
         public static ProgressBar BindIsVisible(this ProgressBar control, string bindName)
+        {
+            control.SetBinding(VisualElement.IsVisibleProperty, bindName);
+            return control;
+        }
+
+        public static StackLayout BindIsVisible(this StackLayout control, string bindName)
         {
             control.SetBinding(VisualElement.IsVisibleProperty, bindName);
             return control;

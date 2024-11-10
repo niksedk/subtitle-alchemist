@@ -1,6 +1,9 @@
 using Microsoft.Maui.Controls.Shapes;
+using SubtitleAlchemist.Controls.NumberUpDownControl;
 using SubtitleAlchemist.Controls.SubTimeControl;
+using SubtitleAlchemist.Features.Tools.AdjustDuration;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Tools.BatchConvert;
@@ -519,6 +522,9 @@ public class BatchConvertPage : ContentPage
         vm.ViewDeleteLines = MakeDeleteLinesSettings(vm);
         grid.Add(vm.ViewDeleteLines, 1);
 
+        vm.ViewChangeFrameRate = MakeChangeFrameRateSettings(vm);
+        grid.Add(vm.ViewChangeFrameRate, 1);
+
         return grid;
     }
 
@@ -811,6 +817,13 @@ public class BatchConvertPage : ContentPage
 
     private static View MakeAdjustDurationSettings(BatchConvertPageModel vm)
     {
+        var pickerAdjustVia = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+        }.Bind(nameof(vm.AdjustTypes), nameof(vm.SelectedAdjustType));
+        pickerAdjustVia.SelectedIndexChanged += vm.PickerAdjustVia_SelectedIndexChanged;
+
         var stackBar = new StackLayout
         {
             Orientation = StackOrientation.Vertical,
@@ -827,17 +840,7 @@ public class BatchConvertPage : ContentPage
                     VerticalOptions = LayoutOptions.Center,
                     FontSize = ThemeHelper.TitleFontSize,
                 }.BindDynamicThemeTextColorOnly(),
-                new Label
-                {
-                    Text = "Adjust via",
-                    HorizontalOptions = LayoutOptions.Start,
-                    VerticalOptions = LayoutOptions.Center,
-                }.BindDynamicThemeTextColorOnly(),
-                new Picker
-                {
-                    HorizontalOptions = LayoutOptions.Start,
-                    VerticalOptions = LayoutOptions.Center,
-                }.Bind(nameof(vm.AdjustTypes), nameof(vm.SelectedAdjustType)),
+
                 new StackLayout
                 {
                     Orientation = StackOrientation.Horizontal,
@@ -847,19 +850,15 @@ public class BatchConvertPage : ContentPage
                     {
                         new Label
                         {
-                            Text = "Forward",
+                            Text = "Adjust via",
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
-                            WidthRequest = 80,
+                            Margin = new Thickness(0, 0, 5, 0),
                         }.BindDynamicThemeTextColorOnly(),
-                        new RadioButton
-                        {
-                            HorizontalOptions = LayoutOptions.Start,
-                            VerticalOptions = LayoutOptions.Center,
-                            GroupName = "OffsetTimeCodes"
-                        }.BindIsChecked(nameof(vm.OffsetTimeCodesForward)),
+                        pickerAdjustVia
                     },
                 },
+
                 new StackLayout
                 {
                     Orientation = StackOrientation.Horizontal,
@@ -869,26 +868,93 @@ public class BatchConvertPage : ContentPage
                     {
                         new Label
                         {
-                            Text = "Back",
+                            Text = Se.Language.AdjustDurations.AddSeconds,
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
-                            WidthRequest = 80,
+                            Padding = new Thickness(0, 0, 5, 0),
                         }.BindDynamicThemeTextColorOnly(),
-
-                        new RadioButton
+                        new SubTimeUpDown
                         {
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
-                            GroupName = "OffsetTimeCodes"
-                        }.BindIsChecked(nameof(vm.OffsetTimeCodesBack)),
+                        }.BindDynamicTheme().BindTime(nameof(vm.AdjustSeconds))
+                    },
+                }.BindIsVisible(nameof(vm.AdjustIsSecondsVisible)),
+                new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = Se.Language.AdjustDurations.SetAsPercent,
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            Padding = new Thickness(0, 0, 5, 0),
+                        }.BindDynamicThemeTextColorOnly(),
+                        new NumberUpDownView
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 50,
+                        }.BindDynamicTheme().BindValue(nameof(vm.AdjustPercentage)),
+                        new Label
+                        {
+                            Text = "%",
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                        }.BindDynamicThemeTextColorOnly(),
                      },
-                },
+                }.BindIsVisible(nameof(vm.AdjustIsPercentVisible)),
+                new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = Se.Language.AdjustDurations.Fixed,
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            Padding = new Thickness(0, 0, 5, 0),
+                        }.BindDynamicThemeTextColorOnly(),
+                        new SubTimeUpDown
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                        }.BindDynamicTheme().BindTime(nameof(vm.AdjustFixedValue))
+                    },
+                }.BindIsVisible(nameof(vm.AdjustIsFixedVisible)),
+                new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = Se.Language.AdjustDurations.Recalculate,
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            Padding = new Thickness(0, 0, 5, 0),
+                        }.BindDynamicThemeTextColorOnly(),
+                        new NumberUpDownView
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                        }.BindDynamicTheme().BindValue(nameof(vm.AdjustRecalculateOptimalCharacters))
+                    },
+                }.BindIsVisible(nameof(vm.AdjustIsRecalculateVisible)),
             },
         }.BindDynamicTheme();
 
         return PackIntoScrollViewAndBorder(stackBar);
     }
-
 
     private static View MakeDeleteLinesSettings(BatchConvertPageModel vm)
     {
@@ -970,6 +1036,72 @@ public class BatchConvertPage : ContentPage
         return PackIntoScrollViewAndBorder(stackBar);
     }
 
+    private static View MakeChangeFrameRateSettings(BatchConvertPageModel vm)
+    {
+        var stackBar = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                new Label
+                {
+                    Text = "Change frame rate",
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    FontSize = ThemeHelper.TitleFontSize,
+                }.BindDynamicThemeTextColorOnly(),
+                new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = "From frame rate",
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 180,
+                        }.BindDynamicThemeTextColorOnly(),
+                        new Picker
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                        }.BindDynamicTheme().Bind(nameof(vm.FrameRates), nameof(vm.SelectedFromFrameRate)),
+                    },
+                },
+                new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = "To frame rate",
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 180,
+                        }.BindDynamicThemeTextColorOnly(),
+
+                        new Picker
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                        }.BindDynamicTheme().Bind(nameof(vm.FrameRates), nameof(vm.SelectedToFrameRate)),
+                     },
+                },
+            },
+        }.BindDynamicTheme();
+
+        return PackIntoScrollViewAndBorder(stackBar);
+    }
 
     protected override void OnDisappearing()
     {

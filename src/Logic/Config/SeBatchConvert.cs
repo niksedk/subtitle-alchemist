@@ -1,4 +1,6 @@
-﻿namespace SubtitleAlchemist.Logic.Config;
+﻿using SubtitleAlchemist.Features.Tools.AdjustDuration;
+
+namespace SubtitleAlchemist.Logic.Config;
 
 public class SeBatchConvert
 {
@@ -20,6 +22,14 @@ public class SeBatchConvert
     public double OffsetTimeCodesMilliseconds { get; set; }
     public bool OffsetTimeCodesForward { get; set; }
 
+    public string AdjustVia { get; set; }
+    public double AdjustDurationSeconds { get; set; }
+    public int AdjustDurationPercentage { get; set; }
+    public int AdjustDurationFixedMilliseconds { get; set; }
+
+    public double ChangeFrameRateFrom { get; set; }
+    public double ChangeFrameRateTo { get; set; }
+
     public SeBatchConvert()
     {
         OutputFolder = string.Empty;
@@ -27,5 +37,11 @@ public class SeBatchConvert
         TargetFormat = string.Empty;
         TargetEncoding = string.Empty;
         OffsetTimeCodesForward = true;
+        AdjustVia = AdjustDurationType.Seconds.ToString();
+        AdjustDurationSeconds = 0.1;
+        AdjustDurationPercentage = 100;
+        AdjustDurationFixedMilliseconds = 3000;
+        ChangeFrameRateFrom = 23.976;
+        ChangeFrameRateTo = 24;
     }
 }
