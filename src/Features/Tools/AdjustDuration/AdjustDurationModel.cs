@@ -10,11 +10,6 @@ namespace SubtitleAlchemist.Features.Tools.AdjustDuration;
 
 public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
 {
-    internal const string ModeSeconds = "seconds";
-    internal const string ModePercent = "percent";
-    internal const string ModeFixed = "fixed";
-    internal const string ModeRecalculate = "recalc";
-
     [ObservableProperty]
     private ObservableCollection<DisplayParagraph> _paragraphs = new();
 
@@ -146,9 +141,16 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
 
             _previewLastHash = hash;
 
-            var averageDurationMs = totalDurationMs / subtitle.Paragraphs.Count;
-            var originalAverageDurationMs = originalTotalDurationMs / subtitle.Paragraphs.Count;
-            PreviewInfo = $"New average duration: {new TimeCode(averageDurationMs).ToShortDisplayString()}, old average duration: {new TimeCode(originalAverageDurationMs).ToShortDisplayString()}";
+            if (subtitle.Paragraphs.Count > 0)
+            {
+                var averageDurationMs = totalDurationMs / subtitle.Paragraphs.Count;
+                var originalAverageDurationMs = originalTotalDurationMs / subtitle.Paragraphs.Count;
+                PreviewInfo = $"New average duration: {new TimeCode(averageDurationMs).ToShortDisplayString()}, old average duration: {new TimeCode(originalAverageDurationMs).ToShortDisplayString()}";
+            }
+            else
+            {
+                PreviewInfo = string.Empty;
+            }
         }
     }
 
@@ -176,19 +178,19 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeSeconds)
+                if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == AdjustDurationType.Seconds.ToString())
                 {
                     SelectedAdjustViaItem = AdjustViaItems[0];
                 }
-                else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModePercent)
+                else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == AdjustDurationType.Percent.ToString())
                 {
                     SelectedAdjustViaItem = AdjustViaItems[1];
                 }
-                else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeFixed)
+                else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == AdjustDurationType.Fixed.ToString())
                 {
                     SelectedAdjustViaItem = AdjustViaItems[2];
                 }
-                else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == ModeRecalculate)
+                else if (Se.Settings.Tools.AdjustDurations.AdjustDurationLast == AdjustDurationType.Recalculate.ToString())
                 {
                     SelectedAdjustViaItem = AdjustViaItems[3];
                 }
@@ -225,25 +227,25 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
 
         if (SelectedAdjustViaItem == AdjustViaItems[0])
         {
-            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModeSeconds;
+            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = AdjustDurationType.Seconds.ToString();
             subtitle.AdjustDisplayTimeUsingSeconds(AdjustSeconds.TotalSeconds, _selectedIndices, _shotChanges, EnforceDurationLimits);
             info = "Subtitle durations adjusted by " + AdjustSeconds + " seconds.";
         }
         else if (SelectedAdjustViaItem == AdjustViaItems[1])
         {
-            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModePercent;
+            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = AdjustDurationType.Percent.ToString();
             subtitle.AdjustDisplayTimeUsingPercent(AdjustPercentage, _selectedIndices, _shotChanges, EnforceDurationLimits);
             info = "Subtitle durations adjusted by " + AdjustPercentage + "%.";
         }
         else if (SelectedAdjustViaItem == AdjustViaItems[2])
         {
-            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModeFixed;
+            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = AdjustDurationType.Fixed.ToString();
             subtitle.SetFixedDuration(_selectedIndices, (double)AdjustFixedValue, _shotChanges);
             info = "Subtitle durations set to " + AdjustFixedValue + " seconds.";
         }
         else if (SelectedAdjustViaItem == AdjustViaItems[3])
         {
-            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = ModeRecalculate;
+            Se.Settings.Tools.AdjustDurations.AdjustDurationLast = AdjustDurationType.Recalculate.ToString();
             subtitle.RecalculateDisplayTimes(
                 (double)AdjustRecalculateMaximumCharacters,
                 _selectedIndices,

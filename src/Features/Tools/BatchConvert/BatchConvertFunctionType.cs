@@ -4,4 +4,6 @@ public enum BatchConvertFunctionType
 {
     RemoveFormatting,
     OffsetTimeCodes,
+    AdjustDisplayDuration,
+    DeleteLines,
 }

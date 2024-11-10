@@ -494,6 +494,12 @@ public class BatchConvertPage : ContentPage
         vm.ViewOffsetTimeCodes = MakeOffsetTimeCodesSettings(vm);
         grid.Add(vm.ViewOffsetTimeCodes, 1);
 
+        vm.ViewAdjustDuration = MakeAdjustDurationSettings(vm);
+        grid.Add(vm.ViewAdjustDuration, 1);
+
+        vm.ViewDeleteLines = MakeDeleteLinesSettings(vm);
+        grid.Add(vm.ViewDeleteLines, 1);
+
         return grid;
     }
 
@@ -691,7 +697,7 @@ public class BatchConvertPage : ContentPage
         var borderSettings = new Border
         {
             StrokeThickness = 1,
-            Padding = new Thickness(10, 5,10, 5),
+            Padding = new Thickness(10, 5, 10, 5),
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             StrokeShape = new RoundRectangle
@@ -783,6 +789,168 @@ public class BatchConvertPage : ContentPage
 
         return PackIntoScrollViewAndBorder(stackBar);
     }
+
+    private static View MakeAdjustDurationSettings(BatchConvertModel vm)
+    {
+        var stackBar = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                new Label
+                {
+                    Text = "Adjust durations",
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    FontSize = ThemeHelper.TitleFontSize,
+                }.BindDynamicThemeTextColorOnly(),
+                new Label
+                {
+                    Text = "Adjust via",
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicThemeTextColorOnly(),
+                new Picker
+                {
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                }.Bind(nameof(vm.AdjustTypes), nameof(vm.SelectedAdjustType)),
+                new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = "Forward",
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 80,
+                        }.BindDynamicThemeTextColorOnly(),
+                        new RadioButton
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            GroupName = "OffsetTimeCodes"
+                        }.BindIsChecked(nameof(vm.OffsetTimeCodesForward)),
+                    },
+                },
+                new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = "Back",
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 80,
+                        }.BindDynamicThemeTextColorOnly(),
+
+                        new RadioButton
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            GroupName = "OffsetTimeCodes"
+                        }.BindIsChecked(nameof(vm.OffsetTimeCodesBack)),
+                     },
+                },
+            },
+        }.BindDynamicTheme();
+
+        return PackIntoScrollViewAndBorder(stackBar);
+    }
+
+
+    private static View MakeDeleteLinesSettings(BatchConvertModel vm)
+    {
+        var stackBar = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5,
+            Children =
+            {
+                new Label
+                {
+                    Text = "Delete lines",
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    FontSize = ThemeHelper.TitleFontSize,
+                }.BindDynamicThemeTextColorOnly(),
+                new Label
+                {
+                    Text = "Delete where line contains",
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicThemeTextColorOnly(),
+                new Entry
+                {
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    WidthRequest = 200,
+                    Margin = new Thickness(0,0,0,15),
+                }.BindText(nameof(vm.DeleteLinesContains)).BindDynamicTheme(),
+                new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = "Delete first number of lines",
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 180,
+                        }.BindDynamicThemeTextColorOnly(),
+                        new Picker
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                        }.BindDynamicTheme().Bind(nameof(vm.DeleteLineNumbers), nameof(vm.DeleteXFirstLines)),
+                    },
+                },
+                new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = "Delete last number of lines",
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            WidthRequest = 180,
+                        }.BindDynamicThemeTextColorOnly(),
+
+                        new Picker
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                        }.BindDynamicTheme().Bind(nameof(vm.DeleteLineNumbers), nameof(vm.DeleteXLastLines)),
+                     },
+                },
+            },
+        }.BindDynamicTheme();
+
+        return PackIntoScrollViewAndBorder(stackBar);
+    }
+
 
     protected override void OnDisappearing()
     {

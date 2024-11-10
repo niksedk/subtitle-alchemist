@@ -96,6 +96,19 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static Entry BindText(this Entry control, string bindName)
+        {
+            control.SetBinding(Entry.TextProperty, bindName);
+            return control;
+        }
+
+        public static Picker Bind(this Picker control, string itemsSourceBindName, string selectedItemBindName)
+        {
+            control.SetBinding(Picker.ItemsSourceProperty, itemsSourceBindName);
+            control.SetBinding(Picker.SelectedItemProperty, selectedItemBindName);
+            return control;
+        }
+
         public static RadioButton BindIsChecked(this RadioButton control, string bindName)
         {
             control.SetBinding(RadioButton.IsCheckedProperty, bindName);

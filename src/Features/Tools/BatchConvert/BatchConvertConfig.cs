@@ -13,6 +13,7 @@ public class BatchConvertConfig
     
     public RemoveFormattingSettings RemoveFormatting { get; set; }
     public OffsetTimeCodesSettings OffsetTimeCodes { get; set; }
+    public AdjustDurationSettings AdjustDuration { get; set; }
     public ChangeFrameRateSettings ChangeFrameRate { get; set; }
     public RemoveLineBreaksSettings RemoveLineBreaks { get; set; }
     public DeleteLinesSettings DeleteLines { get; set; }
@@ -26,6 +27,7 @@ public class BatchConvertConfig
         TargetEncoding = TextEncoding.Utf8WithBom;
         RemoveFormatting = new RemoveFormattingSettings();
         OffsetTimeCodes = new OffsetTimeCodesSettings();
+        AdjustDuration = new AdjustDurationSettings();
         RemoveLineBreaks = new RemoveLineBreaksSettings();
         ChangeFrameRate = new ChangeFrameRateSettings();
         DeleteLines = new DeleteLinesSettings();
@@ -49,6 +51,20 @@ public class BatchConvertConfig
         public bool IsActive { get; set; }
         public bool Forward { get; set; }
         public long Milliseconds { get; set; }
+    }
+
+    public class AdjustDurationSettings
+    {
+        public bool IsActive { get; set; }
+        public string AdjustmentType { get; set; }
+        public int Percentage { get; set; }
+        public int FixedMilliseconds { get; set; }
+        public double MaxCharsSecond { get; set; }
+
+        public AdjustDurationSettings()
+        {
+            AdjustmentType = string.Empty;
+        }
     }
 
     public class ChangeFrameRateSettings

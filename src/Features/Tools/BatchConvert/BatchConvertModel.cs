@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using SubtitleAlchemist.Features.Tools.AdjustDuration;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Media;
@@ -45,14 +46,34 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     [ObservableProperty] private bool _formattingRemoveAlignmentTags;
     [ObservableProperty] private bool _formattingRemoveColors;
 
-    //Offset time codes
+    // Offset time codes
     [ObservableProperty] private bool _offsetTimeCodesForward;
     [ObservableProperty] private bool _offsetTimeCodesBack;
     [ObservableProperty] private TimeSpan _offsetTimeCodesTime;
 
+    // Adjust display duration
+    [ObservableProperty] private ObservableCollection<string> _adjustTypes;
+    [ObservableProperty] private string _selectedAdjustType;
+    [ObservableProperty] private TimeSpan _adjustSeconds;
+    [ObservableProperty] private int _adjustPercentage;
+    [ObservableProperty] private decimal _adjustFixedValue;
+    [ObservableProperty] private decimal _adjustRecalculateMaximumCharacters;
+
+    // Delete lines
+    [ObservableProperty] private ObservableCollection<int> _deleteLineNumbers;
+    [ObservableProperty] private int _deleteXFirstLines;
+    [ObservableProperty] private int _deleteXLastLines;
+    [ObservableProperty] private string _deleteLinesContains;
+
+
+    [ObservableProperty]
+    private decimal _adjustRecalculateOptimalCharacters;
+
 
     public View ViewRemoveFormatting { get; set; }
     public View ViewOffsetTimeCodes { get; set; }
+    public View ViewAdjustDuration { get; set; }
+    public View ViewDeleteLines { get; set; }
 
     public Label LabelStatusText { get; set; }
     [ObservableProperty] private string _statusText;
@@ -80,10 +101,24 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         _batchFunctions = new ObservableCollection<BatchConvertFunction>();
         ViewRemoveFormatting = new BoxView();
         ViewOffsetTimeCodes = new BoxView();
+        ViewAdjustDuration = new BoxView();
+        ViewDeleteLines = new BoxView();
 
         LabelStatusText = new Label();
         _statusText = string.Empty;
         _progressText = string.Empty;
+
+        _adjustTypes = new ObservableCollection<string>
+        {
+            AdjustDurationType.Seconds.ToString(),
+            AdjustDurationType.Percent.ToString(),
+            AdjustDurationType.Fixed.ToString(),
+            AdjustDurationType.Recalculate.ToString(),
+        };
+
+        _selectedAdjustType = AdjustDurationType.Seconds.ToString();
+        _deleteLinesContains = string.Empty;
+        _deleteLineNumbers = new ObservableCollection<int>(Enumerable.Range(0, 100));
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -97,6 +132,8 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
                 {
                     MakeFunction(BatchConvertFunctionType.RemoveFormatting, "Remove formatting", ViewRemoveFormatting, activeFunctions),
                     MakeFunction(BatchConvertFunctionType.OffsetTimeCodes, "Offset time codes", ViewOffsetTimeCodes, activeFunctions),
+                    MakeFunction(BatchConvertFunctionType.AdjustDisplayDuration, "Adjust display duration", ViewAdjustDuration, activeFunctions),
+                    MakeFunction(BatchConvertFunctionType.DeleteLines, "Delete lines", ViewDeleteLines, activeFunctions),
                 };
 
                 LoadSettings();
@@ -251,6 +288,23 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
                 IsActive = activeFunctions.Contains(BatchConvertFunctionType.OffsetTimeCodes),
                 Forward = OffsetTimeCodesForward,
                 Milliseconds = (long)OffsetTimeCodesTime.TotalMilliseconds,
+            },
+
+            AdjustDuration = new BatchConvertConfig.AdjustDurationSettings
+            {
+                IsActive = activeFunctions.Contains(BatchConvertFunctionType.AdjustDisplayDuration),
+                AdjustmentType = SelectedAdjustType,
+                Percentage = AdjustPercentage,
+                FixedMilliseconds = (int)AdjustFixedValue,
+                MaxCharsSecond = (double)AdjustRecalculateMaximumCharacters,
+            },
+
+            DeleteLines = new BatchConvertConfig.DeleteLinesSettings
+            {
+                IsActive = activeFunctions.Contains(BatchConvertFunctionType.DeleteLines),
+                DeleteXFirst = DeleteXFirstLines,
+                DeleteXLast = DeleteXLastLines,
+                DeleteContains = DeleteLinesContains,
             },
         };
     }
