@@ -87,6 +87,8 @@ public class BatchConvertPage : ContentPage
                     HorizontalOptions = LayoutOptions.Fill,
                     VerticalOptions = LayoutOptions.Start,
                 }.BindIsVisible(nameof(vm.IsProgressVisible)).BindProgress(nameof(vm.Progress)),
+
+                vm.LabelStatusText.BindText(nameof(vm.StatusText)),
             },
         }.BindDynamicTheme();
 
@@ -248,7 +250,26 @@ public class BatchConvertPage : ContentPage
 
         grid.Add(collectionView, 0, 1);
 
+        // Context menu
+        var flyout = new MenuFlyout();
+        flyout.Add(new MenuFlyoutItem
+        {
+            Text = "Add...",
+            Command = vm.FileAddCommand,
+        });
+        flyout.Add(new MenuFlyoutItem
+        {
+            Text = "Remove",
+            Command = vm.FileRemoveCommand,
+        });
+        flyout.Add(new MenuFlyoutItem
+        {
+            Text = "Clear",
+            Command = vm.FileClearCommand,
+        });
+        FlyoutBase.SetContextFlyout(collectionView, flyout);
 
+        // Buttons
         var buttonAdd = new Button
         {
             Text = "Add",
@@ -686,6 +707,8 @@ public class BatchConvertPage : ContentPage
 
     private static View MakeOffsetTimeCodesSettings(BatchConvertModel vm)
     {
+
+
         var stackBar = new StackLayout
         {
             Orientation = StackOrientation.Vertical,
@@ -712,6 +735,7 @@ public class BatchConvertPage : ContentPage
                 {
                     HorizontalOptions = LayoutOptions.Start,
                     VerticalOptions = LayoutOptions.Center,
+                    BindingContext = vm,
                 }.BindTime(nameof(vm.OffsetTimeCodesTime)).BindDynamicTheme(),
                 new StackLayout
                 {

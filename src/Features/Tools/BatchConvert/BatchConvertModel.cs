@@ -54,9 +54,14 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
     public View ViewRemoveFormatting { get; set; }
     public View ViewOffsetTimeCodes { get; set; }
 
+    public Label LabelStatusText { get; set; }
+    [ObservableProperty] private string _statusText;
+
     private readonly IFileHelper _fileHelper;
     private readonly IPopupService _popupService;
     private readonly IBatchConverter _batchConverter;
+
+    private bool _stopping;
 
     public BatchConvertModel(IFileHelper fileHelper, IPopupService popupService, IBatchConverter batchConverter)
     {
@@ -76,6 +81,8 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         ViewRemoveFormatting = new BoxView();
         ViewOffsetTimeCodes = new BoxView();
 
+        LabelStatusText = new Label();
+        _statusText = string.Empty;
         _progressText = string.Empty;
     }
 
@@ -191,6 +198,7 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
 
         var config = MakeBatchConvertConfig();
         _batchConverter.Initialize(config);
+        var start = System.Diagnostics.Stopwatch.GetTimestamp();
 
         IsProgressVisible = true;
         var unused = Task.Run(async () =>
@@ -205,10 +213,12 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
                     Progress = countDisplay / (double)BatchItems.Count;
                 });
                 await _batchConverter.Convert(batchItem);
-                Thread.Sleep(100); //TODO: remove this
                 count++;
             }
             IsProgressVisible = false;
+
+            var end = System.Diagnostics.Stopwatch.GetTimestamp();
+            ShowStatus($"{BatchItems.Count} files converted in {ProgressHelper.ToTimeResult(new TimeSpan(end - start).TotalMilliseconds)}");
         });
     }
 
@@ -259,6 +269,7 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
 
     public void OnDisappearing()
     {
+        _stopping = true;
         SaveSettings();
     }
 
@@ -320,5 +331,32 @@ public partial class BatchConvertModel : ObservableObject, IQueryAttributable
         Se.Settings.Tools.BatchConvert.OffsetTimeCodesForward = OffsetTimeCodesForward;
 
         Se.SaveSettings();
+    }
+
+    private void ShowStatus(string statusText)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            LabelStatusText.Opacity = 0;
+            StatusText = statusText;
+            LabelStatusText.FadeTo(1, 200);
+        });
+
+        Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(6_000), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (_stopping)
+                {
+                    return;
+                }
+
+                if (StatusText == statusText)
+                {
+                    LabelStatusText.FadeTo(0, 200);
+                }
+            });
+            return false;
+        });
     }
 }
