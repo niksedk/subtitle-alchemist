@@ -18,7 +18,6 @@ public class BatchConvertConfig
     public ChangeFrameRateSettings ChangeFrameRate { get; set; }
     public RemoveLineBreaksSettings RemoveLineBreaks { get; set; }
     public DeleteLinesSettings DeleteLines { get; set; }
-    public AdjustDisplayDurationSettings AdjustDisplayDuration { get; set; }
 
     public BatchConvertConfig()
     {
@@ -32,7 +31,6 @@ public class BatchConvertConfig
         RemoveLineBreaks = new RemoveLineBreaksSettings();
         ChangeFrameRate = new ChangeFrameRateSettings();
         DeleteLines = new DeleteLinesSettings();
-        AdjustDisplayDuration = new AdjustDisplayDurationSettings();
     }
 
     public class RemoveFormattingSettings
@@ -58,13 +56,17 @@ public class BatchConvertConfig
     {
         public bool IsActive { get; set; }
         public AdjustDurationType AdjustmentType { get; set; }
+        public double Seconds { get; set; }
         public int Percentage { get; set; }
         public int FixedMilliseconds { get; set; }
-        public double MaxCharsSecond { get; set; }
+        public double OptimalCharsPerSecond { get; set; }
+        public double MaxCharsPerSecond { get; set; }
 
         public AdjustDurationSettings()
         {
             AdjustmentType = AdjustDurationType.Seconds;
+            OptimalCharsPerSecond = 15;
+            MaxCharsPerSecond = 25;
         }
     }
 
@@ -90,20 +92,6 @@ public class BatchConvertConfig
         public DeleteLinesSettings()
         {
             DeleteContains = string.Empty;
-        }
-    }
-
-    public class AdjustDisplayDurationSettings
-    {
-        public bool IsActive { get; set; }
-        public string AdjustmentType { get; set; }
-        public int Percentage { get; set; }
-        public int FixedMilliseconds { get; set; }
-        public double MaxCharsSecond { get; set; }
-
-        public AdjustDisplayDurationSettings()
-        {
-            AdjustmentType = string.Empty;
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
-using SubtitleAlchemist.Logic.Config;
+using SubtitleAlchemist.Features.Tools.AdjustDuration;
 
 namespace SubtitleAlchemist.Features.Tools.BatchConvert;
 
@@ -54,16 +54,17 @@ public class BatchConverter : IBatchConverter
     private Subtitle RunConvertFunctions(BatchConvertItem item)
     {
         var s = new Subtitle(item.Subtitle, false);
-        s = ProcessRemoveFormatting(s);
-        s = ProcessOffsetTimeCodes(s);
+        s = RemoveFormatting(s);
+        s = OffsetTimeCodes(s);
         s = ChangeFrameRate(s);
         s = RemoveLineBreaks(s);
         s = DeleteLines(s);
         s = AdjustDisplayDuration(s);
+
         return s;
     }
 
-    private Subtitle ProcessRemoveFormatting(Subtitle subtitle)
+    private Subtitle RemoveFormatting(Subtitle subtitle)
     {
         if (!_config.RemoveFormatting.IsActive)
         {
@@ -132,7 +133,7 @@ public class BatchConverter : IBatchConverter
         return subtitle;
     }
 
-    private Subtitle ProcessOffsetTimeCodes(Subtitle subtitle)
+    private Subtitle OffsetTimeCodes(Subtitle subtitle)
     {
         if (!_config.OffsetTimeCodes.IsActive)
         {
@@ -205,34 +206,32 @@ public class BatchConverter : IBatchConverter
 
     public Subtitle AdjustDisplayDuration(Subtitle subtitle)
     {
-        if (!_config.AdjustDisplayDuration.IsActive)
+        if (!_config.AdjustDuration.IsActive)
         {
             return subtitle;
         }
 
-        //TODO: Implement this, use enum?
-        var c = _config.AdjustDisplayDuration;
-        var adjustmentType = _config.AdjustDisplayDuration.AdjustmentType;
-        if (adjustmentType == Se.Language.AdjustDurations.Percent)
+        var shotChanges = new List<double>();
+        var c = _config.AdjustDuration;
+        if (c.AdjustmentType == AdjustDurationType.Percent)
         {
-            //subtitle.AdjustDisplayTimeUsingPercent(c.Percentage, null, shotChanges, checkBoxEnforceDurationLimits.Checked);
+            subtitle.AdjustDisplayTimeUsingPercent(c.Percentage, null, shotChanges, true);
         }
-        else if (adjustmentType == Se.Language.AdjustDurations.Recalculate)
+        else if (c.AdjustmentType == AdjustDurationType.Recalculate)
         {
-            //subtitle.RecalculateDisplayTimes((double)numericUpDownMaxCharsSec.Value, null, (double)numericUpDownOptimalCharsSec.Value, checkBoxExtendOnly.Checked, shotChanges, checkBoxEnforceDurationLimits.Checked);
+            subtitle.RecalculateDisplayTimes(c.MaxCharsPerSecond, null, c.OptimalCharsPerSecond, true, shotChanges, true);
         }
-        else if (adjustmentType == Se.Language.AdjustDurations.Fixed)
+        else if (c.AdjustmentType == AdjustDurationType.Fixed)
         {
-            //subtitle.SetFixedDuration(null, (double)numericUpDownFixedMilliseconds.Value);
+            subtitle.SetFixedDuration(null, c.FixedMilliseconds);
         }
-        else if (adjustmentType == Se.Language.AdjustDurations.Seconds)
+        else if (c.AdjustmentType == AdjustDurationType.Seconds)
         {
-            //subtitle.AdjustDisplayTimeUsingSeconds((double)numericUpDownSeconds.Value, null, shotChanges, checkBoxEnforceDurationLimits.Checked);
+            subtitle.AdjustDisplayTimeUsingSeconds(c.Seconds, null, shotChanges, true);
         }
 
         return subtitle;
     }
-
 
     private string MakeOutputFileName(BatchConvertItem item, SubtitleFormat format)
     {

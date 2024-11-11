@@ -26,6 +26,8 @@ public class SeBatchConvert
     public double AdjustDurationSeconds { get; set; }
     public int AdjustDurationPercentage { get; set; }
     public int AdjustDurationFixedMilliseconds { get; set; }
+    public double AdjustOptimalCps { get; set; }
+    public double AdjustMaxCps { get; set; }
 
     public double ChangeFrameRateFrom { get; set; }
     public double ChangeFrameRateTo { get; set; }

@@ -877,6 +877,7 @@ public class BatchConvertPage : ContentPage
                         {
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
+                            MinimumWidthRequest = 100,
                         }.BindDynamicTheme().BindTime(nameof(vm.AdjustSeconds))
                     },
                 }.BindIsVisible(nameof(vm.AdjustIsSecondsVisible)),
@@ -898,7 +899,7 @@ public class BatchConvertPage : ContentPage
                         {
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
-                            WidthRequest = 50,
+                            MinimumWidthRequest = 100,
                         }.BindDynamicTheme().BindValue(nameof(vm.AdjustPercentage)),
                         new Label
                         {
@@ -926,6 +927,7 @@ public class BatchConvertPage : ContentPage
                         {
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
+                            MinimumWidthRequest = 100,
                         }.BindDynamicTheme().BindTime(nameof(vm.AdjustFixedValue))
                     },
                 }.BindIsVisible(nameof(vm.AdjustIsFixedVisible)),
@@ -938,7 +940,7 @@ public class BatchConvertPage : ContentPage
                     {
                         new Label
                         {
-                            Text = Se.Language.AdjustDurations.Recalculate,
+                            Text = "Optimal chars/sec",
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
                             Padding = new Thickness(0, 0, 5, 0),
@@ -947,9 +949,37 @@ public class BatchConvertPage : ContentPage
                         {
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center,
+                            MinimumWidthRequest = 100,
+                            StepValue = 1,
+                            StepValueFast = 10,
                         }.BindDynamicTheme().BindValue(nameof(vm.AdjustRecalculateOptimalCharacters))
                     },
                 }.BindIsVisible(nameof(vm.AdjustIsRecalculateVisible)),
+                new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Center,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = "Max chars/sec",
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            Padding = new Thickness(0, 0, 5, 0),
+                        }.BindDynamicThemeTextColorOnly(),
+                        new NumberUpDownView
+                        {
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            MinimumWidthRequest = 100,
+                            StepValue = 1,
+                            StepValueFast = 10,
+                        }.BindDynamicTheme().BindValue(nameof(vm.AdjustRecalculateMaximumCharacters))
+                    },
+                }.BindIsVisible(nameof(vm.AdjustIsRecalculateVisible)),
+
             },
         }.BindDynamicTheme();
 

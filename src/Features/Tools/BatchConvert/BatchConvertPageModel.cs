@@ -59,13 +59,13 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
     [ObservableProperty] private AdjustDurationItem _selectedAdjustType;
     [ObservableProperty] private TimeSpan _adjustSeconds;
     [ObservableProperty] private int _adjustPercentage;
-    [ObservableProperty] private decimal _adjustFixedValue;
+    [ObservableProperty] private TimeSpan _adjustFixedValue;
     [ObservableProperty] private decimal _adjustRecalculateMaximumCharacters;
+    [ObservableProperty] private decimal _adjustRecalculateOptimalCharacters;
     [ObservableProperty] private bool _adjustIsSecondsVisible;
     [ObservableProperty] private bool _adjustIsPercentVisible;
     [ObservableProperty] private bool _adjustIsFixedVisible;
     [ObservableProperty] private bool _adjustIsRecalculateVisible;
-    [ObservableProperty] private decimal _adjustRecalculateOptimalCharacters;
 
     // Delete lines
     [ObservableProperty] private ObservableCollection<int> _deleteLineNumbers;
@@ -366,8 +366,9 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
                 IsActive = activeFunctions.Contains(BatchConvertFunctionType.AdjustDisplayDuration),
                 AdjustmentType = SelectedAdjustType.Type,
                 Percentage = AdjustPercentage,
-                FixedMilliseconds = (int)AdjustFixedValue,
-                MaxCharsSecond = (double)AdjustRecalculateMaximumCharacters,
+                FixedMilliseconds = (int) AdjustFixedValue.TotalMilliseconds,
+                MaxCharsPerSecond = (double)AdjustRecalculateMaximumCharacters,
+                OptimalCharsPerSecond = (double)AdjustRecalculateOptimalCharacters,
             },
 
             DeleteLines = new BatchConvertConfig.DeleteLinesSettings
@@ -447,7 +448,10 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
         var adjustType = AdjustTypes.FirstOrDefault(p => p.Type.ToString() == Se.Settings.Tools.BatchConvert.AdjustVia);
         SelectedAdjustType = adjustType ?? AdjustTypes.First();
         AdjustSeconds = TimeSpan.FromSeconds(Se.Settings.Tools.BatchConvert.AdjustDurationSeconds);
-        AdjustFixedValue = Se.Settings.Tools.BatchConvert.AdjustDurationFixedMilliseconds;
+        AdjustFixedValue = TimeSpan.FromMilliseconds(Se.Settings.Tools.BatchConvert.AdjustDurationFixedMilliseconds);
+        AdjustPercentage = Se.Settings.Tools.BatchConvert.AdjustDurationPercentage;
+        AdjustRecalculateOptimalCharacters = (decimal)Se.Settings.Tools.BatchConvert.AdjustOptimalCps;
+        AdjustRecalculateMaximumCharacters = (decimal)Se.Settings.Tools.BatchConvert.AdjustMaxCps;
 
         SelectedFromFrameRate = Se.Settings.Tools.BatchConvert.ChangeFrameRateFrom;
         SelectedToFrameRate = Se.Settings.Tools.BatchConvert.ChangeFrameRateTo;
@@ -475,7 +479,10 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
 
         Se.Settings.Tools.BatchConvert.AdjustVia = SelectedAdjustType.Type.ToString();
         Se.Settings.Tools.BatchConvert.AdjustDurationSeconds = AdjustSeconds.TotalSeconds;
-        Se.Settings.Tools.BatchConvert.AdjustDurationFixedMilliseconds = (int)AdjustFixedValue;
+        Se.Settings.Tools.BatchConvert.AdjustDurationPercentage = AdjustPercentage;
+        Se.Settings.Tools.BatchConvert.AdjustDurationFixedMilliseconds = (int)AdjustFixedValue.TotalMilliseconds;
+        Se.Settings.Tools.BatchConvert.AdjustOptimalCps = (double)AdjustRecalculateOptimalCharacters;
+        Se.Settings.Tools.BatchConvert.AdjustMaxCps = (double)AdjustRecalculateMaximumCharacters;
 
         Se.Settings.Tools.BatchConvert.ChangeFrameRateFrom = SelectedFromFrameRate;
         Se.Settings.Tools.BatchConvert.ChangeFrameRateTo = SelectedToFrameRate;
