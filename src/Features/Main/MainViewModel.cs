@@ -48,6 +48,9 @@ using Path = System.IO.Path;
 using SpellCheckDictionary = SubtitleAlchemist.Features.SpellCheck.SpellCheckDictionary;
 using SubtitleAlchemist.Features.Video.TransparentSubtitles;
 using SubtitleAlchemist.Logic.Constants;
+using SubtitleAlchemist.Logic.BluRaySup;
+using SharpCompress.Common;
+using SkiaSharp;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -1123,6 +1126,43 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 catch
                 {
                     // ignore
+                }
+
+                var ext = Path.GetExtension(subtitleFileName);
+
+                if (ext == ".sup" && FileUtil.IsBluRaySup(subtitleFileName))
+                {
+                    var log = new StringBuilder();
+                    var subtitles = BluRaySupParser.ParseBluRaySup(subtitleFileName, log);
+                    if (subtitles.Count == 0)
+                    {
+                        MainThread.BeginInvokeOnMainThread(async () =>
+                        {
+                            var message ="Did not find any subtitles in Bluray sup file.";
+                            await MainPage!.DisplayAlert(
+                                "Open subtitle failed",
+                                $"{message}",
+                                "OK");
+                        });
+
+                        return;
+                    }
+
+                    var count = 1;
+                    foreach (BluRaySupParser.PcsData p in subtitles)
+                    {
+                        var bitmap = p.GetBitmap();
+                        using (var surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height, SKColorType.Rgba8888, SKAlphaType.Premul)))
+                        {
+                            var canvas = surface.Canvas;
+                            canvas.DrawBitmap(bitmap, 0, 0);
+                            using (var data = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100))
+                            {
+                                File.WriteAllBytes(@"C:\Temp\" + count + ".png", data.ToArray());
+                            }
+                        }
+                        count++;
+                    }
                 }
 
                 MainThread.BeginInvokeOnMainThread(async () =>
