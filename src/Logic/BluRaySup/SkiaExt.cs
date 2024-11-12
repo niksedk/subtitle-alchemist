@@ -8,8 +8,8 @@ namespace SubtitleAlchemist.Logic.BluRaySup
         public static int GetNonTransparentHeight(this SKBitmap bitmap)
         {
             var startY = 0;
-            int transparentBottomPixels = 0;
-            for (int y = 0; y < bitmap.Height; y++)
+            var transparentBottomPixels = 0;
+            for (var y = 0; y < bitmap.Height; y++)
             {
                 var isLineTransparent = bitmap.IsLineTransparent(y);
                 if (startY == y && isLineTransparent)
@@ -39,7 +39,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                 throw new ArgumentOutOfRangeException(nameof(y), "The row y is out of bounds.");
             }
 
-            for (int x = 0; x < bitmap.Width; x++)
+            for (var x = 0; x < bitmap.Width; x++)
             {
                 var color = bitmap.GetPixel(x, y);
                 if (color.Alpha != 0)
@@ -54,8 +54,8 @@ namespace SubtitleAlchemist.Logic.BluRaySup
         public static int GetNonTransparentWidth(this SKBitmap bitmap)
         {
             var startX = 0;
-            int transparentPixelsRight = 0;
-            for (int x = 0; x < bitmap.Width; x++)
+            var transparentPixelsRight = 0;
+            for (var x = 0; x < bitmap.Width; x++)
             {
                 var isLineTransparent = bitmap.IsVerticalLineTransparent(x);
                 if (startX == x && isLineTransparent)
@@ -85,7 +85,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                 throw new ArgumentOutOfRangeException(nameof(x), "The column x is out of bounds.");
             }
 
-            for (int y = 0; y < bitmap.Height; y++)
+            for (var y = 0; y < bitmap.Height; y++)
             {
                 var color = bitmap.GetPixel(x, y);
                 if (color.Alpha != 0)
@@ -110,15 +110,15 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             }
 
             // Use SKPixmap to access the raw pixel data of both bitmaps
-            using (SKPixmap pixmap1 = bitmap.PeekPixels())
-            using (SKPixmap pixmap2 = other.PeekPixels())
+            using (var pixmap1 = bitmap.PeekPixels())
+            using (var pixmap2 = other.PeekPixels())
             {
                 // Get the total byte size of each image
-                int byteSize = pixmap1.RowBytes * bitmap.Height;
+                var byteSize = pixmap1.RowBytes * bitmap.Height;
 
                 // Allocate byte arrays for the pixel data
-                byte[] pixels1 = new byte[byteSize];
-                byte[] pixels2 = new byte[byteSize];
+                var pixels1 = new byte[byteSize];
+                var pixels2 = new byte[byteSize];
 
                 // Copy raw pixel data into the byte arrays
                 Marshal.Copy(pixmap1.GetPixels(), pixels1, 0, byteSize);

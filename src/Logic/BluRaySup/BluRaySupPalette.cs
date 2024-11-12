@@ -75,7 +75,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             rgb[0] = (int)(r + 0.5);
             rgb[1] = (int)(g + 0.5);
             rgb[2] = (int)(b + 0.5);
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 if (rgb[i] < 0)
                 {
@@ -118,7 +118,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             yCbCr[0] = 16 + (int)(y + 0.5);
             yCbCr[1] = 128 + (int)(cb + 0.5);
             yCbCr[2] = 128 + (int)(cr + 0.5);
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 if (yCbCr[i] < 16)
                 {
@@ -164,7 +164,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
 
             // set at least all alpha values to invisible
             var yCbCr = Rgb2YCbCr(0, 0, 0, _useBt601);
-            for (int i = 0; i < palSize; i++)
+            for (var i = 0; i < palSize; i++)
             {
                 _y[i] = (byte)yCbCr[0];
                 _cb[i] = (byte)yCbCr[1];
@@ -201,7 +201,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             _cb = new byte[_size];
             _cr = new byte[_size];
 
-            for (int i = 0; i < _size; i++)
+            for (var i = 0; i < _size; i++)
             {
                 _a[i] = alpha[i];
                 _r[i] = red[i];
@@ -230,7 +230,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             _cb = new byte[_size];
             _cr = new byte[_size];
 
-            for (int i = 0; i < _size; i++)
+            for (var i = 0; i < _size; i++)
             {
                 _a[i] = p._a[i];
                 _r[i] = p._r[i];
@@ -249,10 +249,10 @@ namespace SubtitleAlchemist.Logic.BluRaySup
          */
         public void SetArgb(int index, int c)
         {
-            int a1 = (c >> 24) & 0xff;
-            int r1 = (c >> 16) & 0xff;
-            int g1 = (c >> 8) & 0xff;
-            int b1 = c & 0xff;
+            var a1 = (c >> 24) & 0xff;
+            var r1 = (c >> 16) & 0xff;
+            var g1 = (c >> 8) & 0xff;
+            var b1 = c & 0xff;
             SetRgb(index, r1, g1, b1);
             SetAlpha(index, a1);
         }
@@ -267,9 +267,9 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             return ((_a[index] & 0xff) << 24) | ((_r[index] & 0xff) << 16) | ((_g[index] & 0xff) << 8) | (_b[index] & 0xff);
         }
 
-        public Color GetColor(int index)
+        public SKColor GetColor(int index)
         {
-            return new Color(_r[index] & 0xff, _g[index] & 0xff, _b[index] & 0xff, _a[index] & 0xff); 
+            return new SKColor((byte)(_r[index] & 0xff), (byte)(_g[index] & 0xff), (byte)(_b[index] & 0xff), (byte)(_a[index] & 0xff)); 
         }
 
         internal void SetColor(int index, SKColor color)
@@ -443,9 +443,9 @@ namespace SubtitleAlchemist.Logic.BluRaySup
         public int GetTransparentIndex()
         {
             // find (most) transparent index in palette
-            int transpIdx = 0;
-            int minAlpha = 0x100;
-            for (int i = 0; i < _size; i++)
+            var transpIdx = 0;
+            var minAlpha = 0x100;
+            for (var i = 0; i < _size; i++)
             {
                 if ((_a[i] & 0xff) < minAlpha)
                 {

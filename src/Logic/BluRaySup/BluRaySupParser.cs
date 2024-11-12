@@ -176,25 +176,25 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                     return new SKBitmap(1, 1);
                 }
 
-                int w = data[0].Width;
-                int h = data[0].Height;
+                var w = data[0].Width;
+                var h = data[0].Height;
 
                 if (w <= 0 || h <= 0 || data[0].Fragment.ImageBuffer.Length == 0)
                 {
                     return new SKBitmap(1, 1);
                 }
 
-                var bm = new SKBitmap(w, h);
+                var bm = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
                 var pal = DecodePalette(palettes);
 
-                int ofs = 0;
-                int xpos = 0;
+                var ofs = 0;
+                var xpos = 0;
                 var index = 0;
 
-                byte[] buf = data[0].Fragment.ImageBuffer;
+                var buf = data[0].Fragment.ImageBuffer;
                 do
                 {
-                    int b = buf[index++] & 0xff;
+                    var b = buf[index++] & 0xff;
                     if (b == 0 && index < buf.Length)
                     {
                         b = buf[index++] & 0xff;
@@ -219,7 +219,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                                     // 00 4x xx -> xxx zeroes
                                     size = ((b - 0x40) << 8) + (buf[index++] & 0xff);
                                     var c = pal.GetColor(0);
-                                    for (int i = 0; i < size; i++)
+                                    for (var i = 0; i < size; i++)
                                     {
                                         PutPixel(bm, ofs++, c);
                                     }
@@ -235,7 +235,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                                     size = (b - 0x80);
                                     b = buf[index++] & 0xff;
                                     var c = pal.GetColor(0);
-                                    for (int i = 0; i < size; i++)
+                                    for (var i = 0; i < size; i++)
                                     {
                                         PutPixel(bm, ofs++, c);
                                     }
@@ -251,7 +251,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                                     size = ((b - 0xC0) << 8) + (buf[index++] & 0xff);
                                     b = buf[index++] & 0xff;
                                     var c = pal.GetColor(0);
-                                    for (int i = 0; i < size; i++)
+                                    for (var i = 0; i < size; i++)
                                     {
                                         PutPixel(bm, ofs++, c);
                                     }
@@ -263,7 +263,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                             {
                                 // 00 xx -> xx times 0
                                 var c = pal.GetColor(0);
-                                for (int i = 0; i < b; i++)
+                                for (var i = 0; i < b; i++)
                                 {
                                     PutPixel(bm, ofs++, c);
                                 }
@@ -282,25 +282,25 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                 return bm;
             }
 
-            private static void PutPixel(SKBitmap bmp, int index, int color, SubtitleAlchemist.Logic.BluRaySup.BluRaySupPalette palette)
+            private static void PutPixel(SKBitmap bmp, int index, int color, BluRaySupPalette palette)
             {
-                int x = index % bmp.Width;
-                int y = index / bmp.Width;
+                var x = index % bmp.Width;
+                var y = index / bmp.Width;
                 if (x < bmp.Width && y < bmp.Height)
                 {
-                    bmp.SetPixel(x, y, palette.GetColor(color).ToSKColor());
+                    bmp.SetPixel(x, y, palette.GetColor(color));
                 }
             }
 
-            private static void PutPixel(SKBitmap bmp, int index, Color color)
+            private static void PutPixel(SKBitmap bmp, int index, SKColor color)
             {
                 if (color.Alpha > 0)
                 {
-                    int x = index % bmp.Width;
-                    int y = index / bmp.Width;
+                    var x = index % bmp.Width;
+                    var y = index / bmp.Width;
                     if (x < bmp.Width && y < bmp.Height)
                     {
-                        bmp.SetPixel(x, y, color.ToSKColor());
+                        bmp.SetPixel(x, y, color);
                     }
                 }
             }
@@ -343,7 +343,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                 }
 
                 var r = BluRayRectangle.Empty;
-                for (int ioIndex = 0; ioIndex < PcsObjects.Count; ioIndex++)
+                for (var ioIndex = 0; ioIndex < PcsObjects.Count; ioIndex++)
                 {
                     if (ioIndex < BitmapObjects.Count)
                     {
@@ -409,7 +409,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             public string Message { get; set; }
             public int PaletteId { get; set; }
             public int PaletteVersion { get; set; }
-            public PaletteInfo PaletteInfo { get; set; }
+            public PaletteInfo? PaletteInfo { get; set; }
         }
 
         public class OdsData
@@ -464,12 +464,10 @@ namespace SubtitleAlchemist.Logic.BluRaySup
         /// <returns>List of BluRaySupPictures</returns>
         public static List<PcsData> ParseBluRaySup(string fileName, StringBuilder log)
         {
-            using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                var lastPalettes = new Dictionary<int, List<PaletteInfo>>();
-                var lastBitmapObjects = new Dictionary<int, List<OdsData>>();
-                return ParseBluRaySup(fs, log, false, lastPalettes, lastBitmapObjects);
-            }
+            using var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var lastPalettes = new Dictionary<int, List<PaletteInfo>>();
+            var lastBitmapObjects = new Dictionary<int, List<OdsData>>();
+            return ParseBluRaySup(fs, log, false, lastPalettes, lastBitmapObjects);
         }
 
         public static List<PcsData> ParseBluRaySupFromMatroska(MatroskaTrackInfo matroskaSubtitleInfo, MatroskaFile matroska)
@@ -482,7 +480,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             var lastBitmapObjects = new Dictionary<int, List<OdsData>>();
             foreach (var p in sub)
             {
-                byte[] buffer = p.GetData(matroskaSubtitleInfo);
+                var buffer = p.GetData(matroskaSubtitleInfo);
                 if (buffer != null && buffer.Length > 2)
                 {
                     clusterStream.Write(buffer, 0, buffer.Length);
@@ -632,9 +630,9 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             }
             else
             {
-                int offset = 0;
+                var offset = 0;
                 pcs.PcsObjects = new List<PcsObject>();
-                for (int compObjIndex = 0; compObjIndex < compositionObjectCount; compObjIndex++)
+                for (var compObjIndex = 0; compObjIndex < compositionObjectCount; compObjIndex++)
                 {
                     var pcsObj = ParsePcs(buffer, offset);
                     pcs.PcsObjects.Add(pcsObj);
@@ -668,9 +666,9 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             pcs.PaletteInfos = new List<PaletteInfo>(palettes[pcs.PaletteId]);
             pcs.BitmapObjects = new List<List<OdsData>>();
             var found = false;
-            for (int index = 0; index < pcs.PcsObjects.Count; index++)
+            for (var index = 0; index < pcs.PcsObjects.Count; index++)
             {
-                int objId = pcs.PcsObjects[index].ObjectId;
+                var objId = pcs.PcsObjects[index].ObjectId;
                 if (bitmapObjects.ContainsKey(objId))
                 {
                     pcs.BitmapObjects.Add(bitmapObjects[objId]);
@@ -720,18 +718,18 @@ namespace SubtitleAlchemist.Logic.BluRaySup
         /// <returns>true if this is a valid new object (neither invalid nor a fragment)</returns>
         private static OdsData ParseOds(byte[] buffer, SupSegment segment, bool forceFirst)
         {
-            int objId = BigEndianInt16(buffer, 0);      // 16bit object_id
+            var objId = BigEndianInt16(buffer, 0);      // 16bit object_id
             int objVer = buffer[2];     // 16bit object_id nikse - index 2 or 1???
             int objSeq = buffer[3];     // 8bit  first_in_sequence (0x80),
                                         // last_in_sequence (0x40), 6bits reserved
-            bool first = (objSeq & 0x80) == 0x80 || forceFirst;
-            bool last = (objSeq & 0x40) == 0x40;
+            var first = (objSeq & 0x80) == 0x80 || forceFirst;
+            var last = (objSeq & 0x40) == 0x40;
 
             var info = new ImageObjectFragment();
             if (first)
             {
-                int width = BigEndianInt16(buffer, 7);      // object_width
-                int height = BigEndianInt16(buffer, 9);     // object_height
+                var width = BigEndianInt16(buffer, 7);      // object_width
+                var height = BigEndianInt16(buffer, 9);     // object_height
 
                 info.ImagePacketSize = segment.Size - 11; // Image packet size (image bytes)
                 info.ImageBuffer = new byte[info.ImagePacketSize];
@@ -765,11 +763,11 @@ namespace SubtitleAlchemist.Logic.BluRaySup
 
         public static List<PcsData> ParseBluRaySup(Stream ms, StringBuilder log, bool fromMatroskaFile, Dictionary<int, List<PaletteInfo>> lastPalettes, Dictionary<int, List<OdsData>> bitmapObjects)
         {
-            long position = ms.Position;
-            int segmentCount = 0;
+            var position = ms.Position;
+            var segmentCount = 0;
             var palettes = new Dictionary<int, List<PaletteInfo>>();
-            bool forceFirstOds = true;
-            PcsData latestPcs = null;
+            var forceFirstOds = true;
+            PcsData? latestPcs = null;
             var pcsList = new List<PcsData>();
             var headerBuffer = fromMatroskaFile ? new byte[3] : new byte[HeaderSize];
 
@@ -907,14 +905,14 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                                 log.AppendLine($"0x17 - Window display offset={position} size={segment.Size}");
 #endif
                                 int windowCount = buffer[0];
-                                int offset = 0;
-                                for (int nextWindow = 0; nextWindow < windowCount; nextWindow++)
+                                var offset = 0;
+                                for (var nextWindow = 0; nextWindow < windowCount; nextWindow++)
                                 {
                                     int windowId = buffer[1 + offset];
-                                    int x = BigEndianInt16(buffer, 2 + offset);
-                                    int y = BigEndianInt16(buffer, 4 + offset);
-                                    int width = BigEndianInt16(buffer, 6 + offset);
-                                    int height = BigEndianInt16(buffer, 8 + offset);
+                                    var x = BigEndianInt16(buffer, 2 + offset);
+                                    var y = BigEndianInt16(buffer, 4 + offset);
+                                    var width = BigEndianInt16(buffer, 6 + offset);
+                                    var height = BigEndianInt16(buffer, 8 + offset);
                                     log.AppendLine(string.Format("WinId: {4}, X: {0}, Y: {1}, Width: {2}, Height: {3}", x, y, width, height, windowId));
                                     offset += 9;
                                 }
@@ -959,7 +957,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                 }
             }
 
-            for (int pcsIndex = 1; pcsIndex < pcsList.Count; pcsIndex++)
+            for (var pcsIndex = 1; pcsIndex < pcsList.Count; pcsIndex++)
             {
                 var prev = pcsList[pcsIndex - 1];
                 if (prev.EndTime == 0)
@@ -976,14 +974,14 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                 {
                     if (odsList.Count > 1)
                     {
-                        int bufSize = 0;
+                        var bufSize = 0;
                         foreach (var ods in odsList)
                         {
                             bufSize += ods.Fragment.ImagePacketSize;
                         }
 
-                        byte[] buf = new byte[bufSize];
-                        int offset = 0;
+                        var buf = new byte[bufSize];
+                        var offset = 0;
                         foreach (var ods in odsList)
                         {
                             Buffer.BlockCopy(ods.Fragment.ImageBuffer, 0, buf, offset, ods.Fragment.ImagePacketSize);
@@ -1061,7 +1059,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                 }
 
                 // Use the middle image of each group with same pixels
-                int mergeCount = removeIndices.GroupBy(p => p.Number).Count();
+                var mergeCount = removeIndices.GroupBy(p => p.Number).Count();
                 foreach (var group in removeIndices.GroupBy(p => p.Number).OrderBy(p => p.Key))
                 {
                     var arr = group.OrderByDescending(p => p.Index).ToArray();
