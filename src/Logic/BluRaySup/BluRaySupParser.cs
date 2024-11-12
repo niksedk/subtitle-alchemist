@@ -21,8 +21,6 @@ using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.ContainerFormats.Matroska;
 using System.Text;
 using SkiaSharp;
-using SkiaSharp.Views.Maui;
-using Color = Microsoft.Maui.Graphics.Color;
 
 public class BluRayPoint
 {
@@ -234,7 +232,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                                     // 00 8x yy -> x times value y
                                     size = (b - 0x80);
                                     b = buf[index++] & 0xff;
-                                    var c = pal.GetColor(0);
+                                    var c = pal.GetColor(b);
                                     for (var i = 0; i < size; i++)
                                     {
                                         PutPixel(bm, ofs++, c);
@@ -250,7 +248,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                                     // 00 cx yy zz -> xyy times value z
                                     size = ((b - 0xC0) << 8) + (buf[index++] & 0xff);
                                     b = buf[index++] & 0xff;
-                                    var c = pal.GetColor(0);
+                                    var c = pal.GetColor(b);
                                     for (var i = 0; i < size; i++)
                                     {
                                         PutPixel(bm, ofs++, c);
