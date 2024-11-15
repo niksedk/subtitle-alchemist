@@ -7,6 +7,7 @@ using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
 using SubtitleAlchemist.Features.Tools.BatchConvert;
+using SubtitleAlchemist.Features.Tools.ChangeCasing;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
 using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
@@ -39,6 +40,7 @@ namespace SubtitleAlchemist
             Routing.RegisterRoute(nameof(TextToSpeechPage), typeof(TextToSpeechPage));
             Routing.RegisterRoute(nameof(ReviewSpeechPage), typeof(ReviewSpeechPage));
             Routing.RegisterRoute(nameof(BatchConvertPage), typeof(BatchConvertPage));
+            Routing.RegisterRoute(nameof(ChangeCasingPage), typeof(ChangeCasingPage));
         }
     }
 }

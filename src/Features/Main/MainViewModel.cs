@@ -51,6 +51,7 @@ using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.BluRaySup;
 using SharpCompress.Common;
 using SkiaSharp;
+using SubtitleAlchemist.Features.Tools.ChangeCasing;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -1867,6 +1868,19 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             { "Subtitle", UpdatedSubtitle },
             { "Encoding", CurrentEncoding },
             { "Format", CurrentSubtitleFormat },
+        });
+    }
+
+    [RelayCommand]
+    private async Task ChangeCasingShow()
+    {
+        await DictionaryLoader.UnpackIfNotFound();
+        await Shell.Current.GoToAsync(nameof(ChangeCasingPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
+            { "Format", CurrentSubtitleFormat },
+            { "SelectedIndexes", GetSelectedIndexes().ToList() },
         });
     }
 

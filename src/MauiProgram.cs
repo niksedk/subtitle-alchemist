@@ -42,6 +42,7 @@ using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Services;
 using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
 using EditShortcutPopupModel = SubtitleAlchemist.Features.Options.Settings.EditShortcutPopupModel;
+using SubtitleAlchemist.Features.Tools.ChangeCasing;
 
 namespace SubtitleAlchemist
 {
@@ -100,6 +101,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<ReviewSpeechPageModel>();
             builder.Services.AddTransient<BatchConvertPage>();
             builder.Services.AddTransient<BatchConvertPageModel>();
+            builder.Services.AddTransient<ChangeCasingPage>();
+            builder.Services.AddTransient<ChangeCasingPageModel>();
 
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<ISpellCheckManager, SpellCheckManager>();

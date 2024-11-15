@@ -221,6 +221,13 @@ internal static class InitMenuBar
             Command = vm.FixCommonErrorsShowCommand,
         });
 
+
+        menu.Add(new MenuFlyoutItem
+        {
+            Text = "Change casing...",
+            Command = vm.ChangeCasingShowCommand,
+        });
+
         menu.Add(new MenuFlyoutItem
         {
             Text = "Batch convert...",
