@@ -68,6 +68,7 @@ namespace SubtitleAlchemist.Logic
         {
             control.FontSize = TitleFontSize;
             control.SetDynamicResource(Label.TextColorProperty, ThemeNames.TextColor);
+            control.Margin = new Thickness(0, 0, 0, 15);
             return control;
         }
 

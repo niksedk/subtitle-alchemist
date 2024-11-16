@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.Dictionaries;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic.Config;
 
@@ -29,14 +30,16 @@ public partial class ChangeCasingPageModel : ObservableObject, IQueryAttributabl
 
 
     [ObservableProperty]
-    private ObservableCollection<DisplayParagraph> _paragraphs = new();
+    private ObservableCollection<DisplayParagraph> _paragraphs;
 
     public ChangeCasingPage? Page { get; set; }
 
-    private Subtitle _subtitle = new();
+    private Subtitle _subtitle;
 
     public ChangeCasingPageModel()
     {
+        _subtitle = new Subtitle();
+        Paragraphs = new ObservableCollection<DisplayParagraph>();
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)

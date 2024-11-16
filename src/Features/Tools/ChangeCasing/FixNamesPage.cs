@@ -1,4 +1,6 @@
+using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Tools.ChangeCasing;
 
@@ -37,7 +39,7 @@ public class FixNamesPage : ContentPage
         grid.Add(labelTitle, 0, row);
 
         row++;
-        grid.Add(MakeNamesView(vm));
+        grid.Add(MakeNamesView(vm), 0, row);
 
         row++;
         var buttonSelectAll = new Button
@@ -56,7 +58,7 @@ public class FixNamesPage : ContentPage
         var stackNamesButtons = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
-            Margin = new Thickness(0, 0, 0, 20),
+            Margin = new Thickness(0, 5, 0, 20),
             Children =
             {
                 buttonSelectAll,
@@ -85,13 +87,13 @@ public class FixNamesPage : ContentPage
         var labelHits = new Label
         {
             Text = "Hits",
-            HorizontalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.Start,
             Margin = new Thickness(0, 20, 0, 0),
         }.BindDynamicTheme();
         grid.Add(labelHits, 0, row);
 
         row++;
-        grid.Add(MakeHitsView(vm));
+        grid.Add(MakeHitsView(vm), 0, row);
 
         // OK and Cancel buttons
         row++;
@@ -111,7 +113,7 @@ public class FixNamesPage : ContentPage
         var stackButtons = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
-            Margin = new Thickness(0, 0, 0, 20),
+            Margin = new Thickness(0, 5, 0, 20),
             Children =
             {
                 buttonOk,
@@ -127,41 +129,266 @@ public class FixNamesPage : ContentPage
         vm.Page = this;
     }
 
-    private static Grid MakeNamesView(FixNamesPageModel vm)
+    private static Border MakeNamesView(FixNamesPageModel vm)
     {
         var grid = new Grid
         {
-            RowDefinitions = new RowDefinitionCollection
+            RowDefinitions =
             {
-                new() { Height = GridLength.Auto }, // Title
-                new() { Height = GridLength.Auto }, // Names
-                new() { Height = GridLength.Auto }, // Buttons
+                new RowDefinition { Height = GridLength.Auto }, // header
+                new RowDefinition { Height = GridLength.Star }, // collection view of batch items
             },
-            ColumnDefinitions = new ColumnDefinitionCollection
+            ColumnDefinitions =
             {
-                new() { Width = GridLength.Star },
-            }
+                new ColumnDefinition { Width = GridLength.Star },
+            },
+            Margin = new Thickness(2),
+            Padding = new Thickness(2),
+            RowSpacing = 5,
+            ColumnSpacing = 5,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        }.BindDynamicTheme();
+
+
+        // Create the header grid
+        var gridHeader = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
+            Padding = new Thickness(5),
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto }, // Enabled
+                new ColumnDefinition { Width = GridLength.Star }, // Name
+            },
         };
 
-        return grid;
+        // Add headers
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Enabled",
+                FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Start,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 0);
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Name",
+                FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Start,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 1);
+
+        // Add the header grid to the main grid
+        grid.Add(gridHeader, 0);
+
+        var collectionView = new CollectionView
+        {
+            SelectionMode = SelectionMode.Single,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            ItemTemplate = new DataTemplate(() =>
+            {
+                var jobItemGrid = new Grid
+                {
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = GridLength.Auto }, // Enabled
+                        new ColumnDefinition { Width = GridLength.Star }, // Name
+                    },
+                };
+
+                var switchNameEnabled = new Switch
+                {
+                }.BindDynamicThemeTextColorOnly();
+                switchNameEnabled.SetBinding(Label.TextProperty, nameof(FixNameItem.IsChecked));
+                jobItemGrid.Add(switchNameEnabled);
+
+                var labelName = new Label
+                {
+                    HorizontalTextAlignment = TextAlignment.Start,
+                    VerticalTextAlignment = TextAlignment.Center
+                }.BindDynamicThemeTextColorOnly();
+                labelName.SetBinding(Label.TextProperty, nameof(FixNameItem.Name));
+                jobItemGrid.Add(labelName, 1);
+
+                return jobItemGrid;
+            }),
+        }.BindDynamicTheme();
+
+        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Names), BindingMode.TwoWay);
+        collectionView.BindingContext = vm;
+
+        grid.Add(collectionView, 0, 1);
+
+        var border = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(5),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = grid,
+        }.BindDynamicTheme();
+
+        return border;
     }
 
-    private static Grid MakeHitsView(FixNamesPageModel vm)
+    private static Border MakeHitsView(FixNamesPageModel vm)
     {
         var grid = new Grid
         {
-            RowDefinitions = new RowDefinitionCollection
+            RowDefinitions =
             {
-                new() { Height = GridLength.Auto }, // Title
-                new() { Height = GridLength.Auto }, // Names
-                new() { Height = GridLength.Auto }, // Buttons
+                new RowDefinition { Height = GridLength.Auto }, // header
+                new RowDefinition { Height = GridLength.Star }, // collection view of batch items
             },
-            ColumnDefinitions = new ColumnDefinitionCollection
+            ColumnDefinitions =
             {
-                new() { Width = GridLength.Star },
-            }
+                new ColumnDefinition { Width = GridLength.Star },
+            },
+            Margin = new Thickness(2),
+            Padding = new Thickness(2),
+            RowSpacing = 5,
+            ColumnSpacing = 5,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        }.BindDynamicTheme();
+
+
+        // Create the header grid
+        var gridHeader = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
+            Padding = new Thickness(5),
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto }, // Apply
+                new ColumnDefinition { Width = GridLength.Auto }, // Line#
+                new ColumnDefinition { Width = GridLength.Star }, // Before
+                new ColumnDefinition { Width = GridLength.Star }, // After
+            },
         };
 
-        return grid;
+        // Add headers
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Apply",
+                FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Start,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 0);
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Line#",
+                FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Start,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 1);
+
+        gridHeader.Add(
+            new Label
+            {
+                Text = "Before",
+                FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Start,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 2);
+
+        gridHeader.Add(
+            new Label
+            {
+                Text = "After",
+                FontAttributes = FontAttributes.Bold,
+                HorizontalTextAlignment = TextAlignment.Start,
+                VerticalTextAlignment = TextAlignment.Center
+            }, 3);
+
+
+        // Add the header grid to the main grid
+        grid.Add(gridHeader, 0);
+
+        var collectionView = new CollectionView
+        {
+            SelectionMode = SelectionMode.Single,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            ItemTemplate = new DataTemplate(() =>
+            {
+                var jobItemGrid = new Grid
+                {
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = GridLength.Auto }, // Apply
+                        new ColumnDefinition { Width = GridLength.Auto }, // Line#
+                        new ColumnDefinition { Width = GridLength.Star }, // Before
+                        new ColumnDefinition { Width = GridLength.Star }, // After
+                    },
+                };
+
+                var switchHitActive = new Switch
+                {
+                }.BindDynamicThemeTextColorOnly();
+                switchHitActive.SetBinding(Label.TextProperty, nameof(FixNameHitItem.IsEnabled));
+                jobItemGrid.Add(switchHitActive);
+
+                var labelLineNumber = new Label
+                {
+                    HorizontalTextAlignment = TextAlignment.Start,
+                    VerticalTextAlignment = TextAlignment.Center
+                }.BindDynamicThemeTextColorOnly();
+                labelLineNumber.SetBinding(Label.TextProperty, nameof(FixNameHitItem.LineIndexDisplay));
+                jobItemGrid.Add(labelLineNumber, 1);
+
+                var labelBefore = new Label
+                {
+                    HorizontalTextAlignment = TextAlignment.Start,
+                    VerticalTextAlignment = TextAlignment.Center
+                }.BindDynamicThemeTextColorOnly();
+                labelBefore.SetBinding(Label.TextProperty, nameof(FixNameHitItem.Before));
+                jobItemGrid.Add(labelBefore, 2);
+
+                var labelAfter = new Label
+                {
+                    HorizontalTextAlignment = TextAlignment.Start,
+                    VerticalTextAlignment = TextAlignment.Center
+                }.BindDynamicThemeTextColorOnly();
+                labelAfter.SetBinding(Label.TextProperty, nameof(FixNameHitItem.After));
+                jobItemGrid.Add(labelAfter, 3);
+
+                return jobItemGrid;
+            }),
+        }.BindDynamicTheme();
+
+        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Names), BindingMode.TwoWay);
+        collectionView.BindingContext = vm;
+
+        grid.Add(collectionView, 0, 1);
+
+        var border = new Border
+        {
+            StrokeThickness = 1,
+            Padding = new Thickness(5),
+            Margin = new Thickness(2),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+            Content = grid,
+        }.BindDynamicTheme();
+
+        return border;
     }
 }

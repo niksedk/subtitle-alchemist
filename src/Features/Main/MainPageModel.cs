@@ -238,7 +238,6 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
 
         if (page == nameof(TranslatePage))
         {
-
             if (query["TranslatedRows"] is List<TranslateRow> lines)
             {
                 MakeHistoryForUndo("Before auto-translate");
@@ -397,8 +396,13 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
             }
         }
 
-        if (page == nameof(ChangeCasingPage))
+        if (page is nameof(ChangeCasingPage) or nameof(FixNamesPage))
         {
+            if (!query.ContainsKey("Subtitle"))
+            {
+                return;
+            }
+
             if (query["NoOfLinesChanged"] is int and 0)
             {
                 return;

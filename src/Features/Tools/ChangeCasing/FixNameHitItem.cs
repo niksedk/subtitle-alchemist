@@ -2,8 +2,10 @@
 
 public class FixNameHitItem
 {
+    public bool IsEnabled { get; set; }
     public string Name { get; set; }
     public int LineIndex { get; set; }
+    public int LineIndexDisplay { get; set; }
     public string Before { get; set; }
     public string After { get; set; }
 
@@ -11,6 +13,7 @@ public class FixNameHitItem
     {
         Name = name;
         LineIndex = lineIndex;
+        LineIndexDisplay = lineIndex + 1;
         Before = before;
         After = after;
     }

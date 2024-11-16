@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.Dictionaries;
+using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleAlchemist.Features.Main;
 
 namespace SubtitleAlchemist.Features.Tools.ChangeCasing;
@@ -16,12 +18,20 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
 
     public FixNamesPage? Page { get; set; }
 
-    private Subtitle _subtitle = new();
+    private Subtitle _subtitle;
+
+    private NameList? _nameList;
+    private List<string> _nameListInclMulti;
+    private string _language;
 
     public FixNamesPageModel()
     {
         _names = new ObservableCollection<FixNameItem>();
         _hits = new ObservableCollection<FixNameHitItem>();
+
+        _nameListInclMulti = new List<string>();
+        _language = "en";
+        _subtitle = new Subtitle();
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -65,16 +75,21 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
     {
         var subtitle = new Subtitle(_subtitle, false);
 
-        await Shell.Current.GoToAsync(nameof(MainPage), new Dictionary<string, object>
+        await Shell.Current.GoToAsync("../..", new Dictionary<string, object>
         {
-            { "Page", nameof(ChangeCasingPage) },
+            { "Page", nameof(FixNamesPage) },
             { "Subtitle", subtitle },
+            { "NoOfLinesChanged", 1 },
+            { "Status", "status" },
         });
     }
 
     [RelayCommand]
     public async Task Cancel()
     {
-        await Shell.Current.GoToAsync(nameof(MainPage));
+        await Shell.Current.GoToAsync("../..", new Dictionary<string, object>
+        {
+            { "Page", nameof(FixNamesPage) },
+        });
     }
 }
