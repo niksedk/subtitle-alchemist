@@ -397,6 +397,28 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 ShowStatus($"Spell check done - changed words: {totalChangedWords}, skipped words: {totalSkippedWords}");
             }
         }
+
+        if (page == nameof(ChangeCasingPage))
+        {
+            if (query["NoOfLinesChanged"] is int and 0)
+            {
+                return;
+            }
+
+            var statusInfo = string.Empty;
+            if (query["Status"] is string status)
+            {
+                statusInfo = status;
+            }
+
+            MakeHistoryForUndo("Before change casing");
+            if (query["Subtitle"] is Subtitle subtitle)
+            {
+                Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+                ShowStatus(statusInfo);
+                SelectParagraph(0);
+            }
+        }
     }
 
     private void MakeHistoryForUndo(string description)

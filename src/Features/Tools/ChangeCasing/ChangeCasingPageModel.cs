@@ -72,15 +72,66 @@ public partial class ChangeCasingPageModel : ObservableObject, IQueryAttributabl
         Se.Settings.Tools.ChangeCasing.ToUppercase = ToUppercase;
         Se.Settings.Tools.ChangeCasing.ToLowercase = ToLowercase;
 
+        Se.SaveSettings();
+
         var subtitle = new Subtitle(_subtitle, false);
+
+        if (FixOnlyNames)
+        {
+            await ShowFixNames(subtitle, 0);
+            return;
+        }
+
+
         var info = string.Empty;
 
-        Se.SaveSettings();
+        var language = LanguageAutoDetect.AutoDetectGoogleLanguage(subtitle);
+        var fixCasing = new FixCasing(language)
+        {
+            FixNormal = ToNormalCasing,
+            FixNormalOnlyAllUppercase = OnlyChangeAllUppercaseLines,
+            FixMakeUppercase = ToUppercase,
+            FixMakeLowercase = ToLowercase,
+            FixMakeProperCase = false,
+            FixProperCaseOnlyAllUppercase = false,
+            Format = subtitle.OriginalFormat,
+        };
+        fixCasing.Fix(subtitle);
+
+        if (ToNormalCasing)
+        {
+            info = $"Normal Casing - lines changed: {fixCasing.NoOfLinesChanged}";
+            if (FixNames)
+            {
+                await ShowFixNames(subtitle, fixCasing.NoOfLinesChanged);
+                return;
+            }
+        }
+        else if (ToUppercase)
+        {
+            info = $"Uppercase - lines changed: {fixCasing.NoOfLinesChanged}";
+        }
+        else if (ToLowercase)
+        {
+            info = $"Lowercase - lines changed: {fixCasing.NoOfLinesChanged}";
+        }
 
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
+            { "Page", nameof(ChangeCasingPage) },
             { "Subtitle", subtitle },
             { "Status", info },
+            { "NoOfLinesChanged", fixCasing.NoOfLinesChanged },
+        });
+    }
+
+    private async Task ShowFixNames(Subtitle subtitle, int noOfFixes)
+    {
+        await Shell.Current.GoToAsync(nameof(FixNamesPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(ChangeCasingPage) },
+            { "Subtitle", subtitle },
+            { "NoOfFixes", noOfFixes },
         });
     }
 

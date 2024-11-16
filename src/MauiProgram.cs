@@ -103,6 +103,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<BatchConvertPageModel>();
             builder.Services.AddTransient<ChangeCasingPage>();
             builder.Services.AddTransient<ChangeCasingPageModel>();
+            builder.Services.AddTransient<FixNamesPage>();
+            builder.Services.AddTransient<FixNamesPageModel>();
 
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<ISpellCheckManager, SpellCheckManager>();

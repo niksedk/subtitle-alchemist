@@ -23,24 +23,35 @@ namespace SubtitleAlchemist
         {
             InitializeComponent();
 
-            Routing.RegisterRoute(nameof(MainPage), typeof(MainPage)); 
-            Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
-            Routing.RegisterRoute(nameof(AudioToTextWhisperPage), typeof(AudioToTextWhisperPage));
-            Routing.RegisterRoute(nameof(WhisperAdvancedPage), typeof(WhisperAdvancedPage));
-            Routing.RegisterRoute(nameof(TranslatePage), typeof(TranslatePage));
-            Routing.RegisterRoute(nameof(AdjustDurationPage), typeof(AdjustDurationPage));
-            Routing.RegisterRoute(nameof(FixCommonErrorsPage), typeof(FixCommonErrorsPage));
-            Routing.RegisterRoute(nameof(SpellCheckerPage), typeof(SpellCheckerPage));
-            Routing.RegisterRoute(nameof(RestoreAutoBackupPage), typeof(RestoreAutoBackupPage));
-            Routing.RegisterRoute(nameof(ExportEbuPage), typeof(ExportEbuPage));
-            Routing.RegisterRoute(nameof(UndoRedoHistoryPage), typeof(UndoRedoHistoryPage));
-            Routing.RegisterRoute(nameof(AdjustAllTimesPage), typeof(AdjustAllTimesPage));
-            Routing.RegisterRoute(nameof(BurnInPage), typeof(BurnInPage));
-            Routing.RegisterRoute(nameof(TransparentSubPage), typeof(TransparentSubPage));
-            Routing.RegisterRoute(nameof(TextToSpeechPage), typeof(TextToSpeechPage));
-            Routing.RegisterRoute(nameof(ReviewSpeechPage), typeof(ReviewSpeechPage));
-            Routing.RegisterRoute(nameof(BatchConvertPage), typeof(BatchConvertPage));
-            Routing.RegisterRoute(nameof(ChangeCasingPage), typeof(ChangeCasingPage));
+            AddRoutes(
+                typeof(MainPage),
+                typeof(SettingsPage),
+                typeof(AudioToTextWhisperPage),
+                typeof(WhisperAdvancedPage),
+                typeof(TranslatePage),
+                typeof(AdjustDurationPage),
+                typeof(FixCommonErrorsPage),
+                typeof(SpellCheckerPage),
+                typeof(RestoreAutoBackupPage),
+                typeof(ExportEbuPage),
+                typeof(UndoRedoHistoryPage),
+                typeof(AdjustAllTimesPage),
+                typeof(BurnInPage),
+                typeof(TransparentSubPage),
+                typeof(TextToSpeechPage),
+                typeof(ReviewSpeechPage),
+                typeof(BatchConvertPage),
+                typeof(ChangeCasingPage),
+                typeof(FixNamesPage)
+            );
+        }
+
+        private static void AddRoutes(params Type[] types)
+        {
+            foreach (var type in types)
+            {
+                Routing.RegisterRoute(type.Name, type);
+            }
         }
     }
 }

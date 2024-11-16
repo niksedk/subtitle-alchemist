@@ -1,12 +1,4 @@
-using Microsoft.Maui.Controls.Shapes;
-using Nikse.SubtitleEdit.Core.Common;
-using SubtitleAlchemist.Controls.NumberUpDownControl;
-using SubtitleAlchemist.Controls.SubTimeControl;
-using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Config;
-using SubtitleAlchemist.Logic.Constants;
-using SubtitleAlchemist.Logic.Converters;
 
 namespace SubtitleAlchemist.Features.Tools.ChangeCasing;
 
@@ -25,10 +17,9 @@ public class ChangeCasingPage : ContentPage
         var labelTitle = new Label
         {
             Text = "Change Casing to",
-            FontSize = 24,
             FontAttributes = FontAttributes.Bold,
             Margin = new Thickness(0, 0, 0, 25),
-        }.BindDynamicTheme();
+        }.AsTitle();
         stack.Children.Add(labelTitle);
 
         var radioNormalCasing = new RadioButton

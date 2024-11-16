@@ -64,6 +64,13 @@ namespace SubtitleAlchemist.Logic
             return control.WithLinkLabel();
         }
 
+        public static Label AsTitle(this Label control)
+        {
+            control.FontSize = TitleFontSize;
+            control.SetDynamicResource(Label.TextColorProperty, ThemeNames.TextColor);
+            return control;
+        }
+
         public static CheckBox BindDynamicTheme(this CheckBox control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
