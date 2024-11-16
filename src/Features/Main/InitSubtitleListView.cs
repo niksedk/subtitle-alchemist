@@ -10,7 +10,7 @@ namespace SubtitleAlchemist.Features.Main;
 
 public static class InitSubtitleListView
 {
-    public static Border MakeSubtitleListView(MainViewModel vm)
+    public static Border MakeSubtitleListView(MainPageModel vm)
     {
         var grid = new Grid
         {
@@ -243,7 +243,7 @@ public static class InitSubtitleListView
         //return view;
     }
 
-    private static Grid MakeGrid(MainViewModel vm)
+    private static Grid MakeGrid(MainPageModel vm)
     {
         IValueConverter converter = new TimeSpanToStringConverter();
         IValueConverter converterShort = new TimeSpanToShortStringConverter();

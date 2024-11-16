@@ -6,7 +6,7 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 
 public sealed class DownloadFfmpegPopup : Popup
 {
-    public DownloadFfmpegPopup(DownloadFfmpegModel vm)
+    public DownloadFfmpegPopup(DownloadFfmpegPopupModel vm)
     {
         BindingContext = vm;
 

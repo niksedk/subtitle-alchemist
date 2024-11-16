@@ -7,7 +7,7 @@ using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Files;
 
-public partial class RestoreAutoBackupModel : ObservableObject
+public partial class RestoreAutoBackupPageModel : ObservableObject
 {
     [ObservableProperty]
     private bool _isOkButtonEnabled;
@@ -23,7 +23,7 @@ public partial class RestoreAutoBackupModel : ObservableObject
 
     private readonly IAutoBackup _autoBackup;
 
-    public RestoreAutoBackupModel(IAutoBackup autoBackup)
+    public RestoreAutoBackupPageModel(IAutoBackup autoBackup)
     {
         _autoBackup = autoBackup;
     }

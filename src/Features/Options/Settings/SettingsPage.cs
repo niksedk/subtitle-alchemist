@@ -17,9 +17,9 @@ public class SettingsPage : ContentPage
         FileTypeAssociations,
     }
 
-    private readonly SettingsViewModel _vm;
+    private readonly SettingsPageModel _vm;
 
-    public SettingsPage(SettingsViewModel vm)
+    public SettingsPage(SettingsPageModel vm)
     {
         _vm = vm;
         vm.Page = this;
@@ -99,7 +99,7 @@ public class SettingsPage : ContentPage
         _vm.OnAppearing();
     }
 
-    private static IView MakeLeftMenuItem(SettingsViewModel vm, SectionName sectionName, string text)
+    private static IView MakeLeftMenuItem(SettingsPageModel vm, SectionName sectionName, string text)
     {
         var label = new Label
         {
@@ -118,7 +118,7 @@ public class SettingsPage : ContentPage
         return label;
     }
 
-    private static View MakeSettingItems(SettingsViewModel vm)
+    private static View MakeSettingItems(SettingsPageModel vm)
     {
         var grid = new Grid
         {
@@ -169,7 +169,7 @@ public class SettingsPage : ContentPage
         return scrollView;
     }
 
-    public static void BuildGrid(SettingsViewModel vm, Grid grid)
+    public static void BuildGrid(SettingsPageModel vm, Grid grid)
     {
         grid.Children.Clear();
         var row = 0;
@@ -195,7 +195,7 @@ public class SettingsPage : ContentPage
         }
     }
 
-    private static void MakeGeneralSettings(SettingsViewModel vm)
+    private static void MakeGeneralSettings(SettingsPageModel vm)
     {
         vm.AllSettings.Add(new SettingItem("General", SectionName.General));
         vm.AllSettings.Add(new SettingItem("Rules"));
@@ -454,7 +454,7 @@ public class SettingsPage : ContentPage
         vm.AllSettings.Add(new SettingItem("Auto-backup delete", ruleTextWidth, string.Empty, pickerAutoBackupDeletAfter));
     }
 
-    private static void MakeSubtitleFormatSettings(SettingsViewModel vm)
+    private static void MakeSubtitleFormatSettings(SettingsPageModel vm)
     {
         vm.AllSettings.Add(new SettingItem("Subtitle formats", SectionName.SubtitleFormats));
 
@@ -493,7 +493,7 @@ public class SettingsPage : ContentPage
         vm.AllSettings.Add(new SettingItem(string.Empty, textWidth, string.Empty, buttonAdd));
     }
 
-    private static void MakeShortcutsSettings(SettingsViewModel vm)
+    private static void MakeShortcutsSettings(SettingsPageModel vm)
     {
         vm.AllSettings.Add(new SettingItem("Shortcuts", SectionName.Shortcuts));
 
@@ -513,7 +513,7 @@ public class SettingsPage : ContentPage
         AddShortcutSection(vm, ShortcutArea.WaveformAndSpectrogram);
     }
 
-    public static SettingItem UpdateShortcutsSection(SettingsViewModel vm, ShortcutArea area)
+    public static SettingItem UpdateShortcutsSection(SettingsPageModel vm, ShortcutArea area)
     {
         var gridShortcuts = new Grid
         {
@@ -539,7 +539,7 @@ public class SettingsPage : ContentPage
         return settingsItem;
     }
 
-    public static Grid AddShortcutSection(SettingsViewModel vm, ShortcutArea area)
+    public static Grid AddShortcutSection(SettingsPageModel vm, ShortcutArea area)
     {
         vm.AllSettings.Add(new SettingItem(area.ToString()));
 
@@ -568,7 +568,7 @@ public class SettingsPage : ContentPage
         return gridShortcuts;
     }
 
-    private static void AddShortcuts(SettingsViewModel vm, ShortcutArea area, Grid gridShortcuts)
+    private static void AddShortcuts(SettingsPageModel vm, ShortcutArea area, Grid gridShortcuts)
     {
         var descriptionWidth = 220;
         var shortcutWidth = 120;
@@ -635,7 +635,7 @@ public class SettingsPage : ContentPage
         }
     }
 
-    public static void MakeFavorites(SettingsViewModel vm)
+    public static void MakeFavorites(SettingsPageModel vm)
     {
         var favorites = new List<StackLayout>();
 
@@ -732,7 +732,7 @@ public class SettingsPage : ContentPage
         }
     }
 
-    private static void MakeFileTypeAssociationsSettings(SettingsViewModel vm)
+    private static void MakeFileTypeAssociationsSettings(SettingsPageModel vm)
     {
         var textWidth = 200;
 
@@ -783,7 +783,7 @@ public class SettingsPage : ContentPage
         vm.AllSettings.Add(new SettingItem("Sub Station Alpha (.ssa)", textWidth, string.Empty, switchSsa));
     }
 
-    private static void MakeToolsSettings(SettingsViewModel vm)
+    private static void MakeToolsSettings(SettingsPageModel vm)
     {
         vm.AllSettings.Add(new SettingItem("Tools", SectionName.Tools));
 
@@ -792,7 +792,7 @@ public class SettingsPage : ContentPage
         vm.AllSettings.Add(new SettingItem("auto-break"));
     }
 
-    private static void MakeToolbarSettings(SettingsViewModel vm)
+    private static void MakeToolbarSettings(SettingsPageModel vm)
     {
         var textWidth = 200;
 
@@ -874,7 +874,7 @@ public class SettingsPage : ContentPage
         vm.AllSettings.Add(new SettingItem("Frame rate"));
     }
 
-    private static void MakeAppearanceSettings(SettingsViewModel vm)
+    private static void MakeAppearanceSettings(SettingsPageModel vm)
     {
         var textWidth = 200;
 
@@ -912,7 +912,7 @@ public class SettingsPage : ContentPage
         vm.AllSettings.Add(new SettingItem("Subtitle list view font size", textWidth, string.Empty, entrySubtitleListViewFontSize));
     }
 
-    private static void MakeWaveformSpectrogramSettings(SettingsViewModel vm)
+    private static void MakeWaveformSpectrogramSettings(SettingsPageModel vm)
     {
         vm.AllSettings.Add(new SettingItem("Waveform/spectrogram", SectionName.WaveformSpectrogram));
 
@@ -922,13 +922,13 @@ public class SettingsPage : ContentPage
         vm.AllSettings.Add(new SettingItem("Cleanup"));
     }
 
-    private static void MakeVideoPlayerSettings(SettingsViewModel vm)
+    private static void MakeVideoPlayerSettings(SettingsPageModel vm)
     {
         vm.AllSettings.Add(new SettingItem("Video player", SectionName.VideoPlayer));
         vm.AllSettings.Add(new SettingItem("Video engine"));
     }
 
-    private static void MakeSyntaxColoringSettings(SettingsViewModel vm)
+    private static void MakeSyntaxColoringSettings(SettingsPageModel vm)
     {
         var textWidth = 200;
 

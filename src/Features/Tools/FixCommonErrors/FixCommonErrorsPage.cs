@@ -10,7 +10,7 @@ namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 
 public class FixCommonErrorsPage : ContentPage
 {
-    public FixCommonErrorsPage(FixCommonErrorsModel vm)
+    public FixCommonErrorsPage(FixCommonErrorsPageModel vm)
     {
         this.BindDynamicTheme();
         Padding = new Thickness(10);
@@ -22,7 +22,7 @@ public class FixCommonErrorsPage : ContentPage
         Content = vm.Step1Grid;
     }
 
-    public static Grid MakeStep1Grid(FixCommonErrorsModel vm)
+    public static Grid MakeStep1Grid(FixCommonErrorsPageModel vm)
     {
         var grid = new Grid
         {
@@ -262,7 +262,7 @@ public class FixCommonErrorsPage : ContentPage
         return grid;
     }
 
-    private Grid MakeStep2Grid(FixCommonErrorsModel vm)
+    private Grid MakeStep2Grid(FixCommonErrorsPageModel vm)
     {
         var grid = new Grid
         {
@@ -347,7 +347,7 @@ public class FixCommonErrorsPage : ContentPage
         return grid;
     }
 
-    private static View MakeFixesView(FixCommonErrorsModel vm)
+    private static View MakeFixesView(FixCommonErrorsPageModel vm)
     {
         // Create the header grid
         var gridHeader = new Grid
@@ -533,7 +533,7 @@ public class FixCommonErrorsPage : ContentPage
         return border;
     }
 
-    private static View MakeSubtitleView(FixCommonErrorsModel vm)
+    private static View MakeSubtitleView(FixCommonErrorsPageModel vm)
     {
         var gridHeader = new Grid
         {

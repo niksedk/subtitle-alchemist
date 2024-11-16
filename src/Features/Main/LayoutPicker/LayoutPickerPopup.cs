@@ -11,24 +11,24 @@ public class LayoutPickerPopup : Popup
     private enum Row { Row0, Row1, Row2 }
     private enum Column { Column0, Column1, Column2, Column3 }
 
-    private readonly LayoutPickerModel _model;
+    private readonly LayoutPickerPopupModel _popupModel;
 
     protected override Task OnClosed(
         object? result, 
         bool wasDismissedByTappingOutsideOfPopup,
         CancellationToken token = new CancellationToken())
     {
-        SharpHookHandler.AddKeyPressed(_model.KeyPressed);
+        SharpHookHandler.AddKeyPressed(_popupModel.KeyPressed);
         return base.OnClosed(result, wasDismissedByTappingOutsideOfPopup, token);
     }
 
-    public LayoutPickerPopup(LayoutPickerModel model)
+    public LayoutPickerPopup(LayoutPickerPopupModel popupModel)
     {
         const int columnWidth = 220;
         const int columnHeight = 160;
 
-        BindingContext = model;
-        _model = model;
+        BindingContext = popupModel;
+        _popupModel = popupModel;
 
         CanBeDismissedByTappingOutsideOfPopup = true;
 
@@ -52,86 +52,86 @@ public class LayoutPickerPopup : Popup
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout1ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout1ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout1ImageSource = imageSource)
                     .Row(0).Column(0),
-                MakeLabel(0, model, 0, 0),
+                MakeLabel(0, popupModel, 0, 0),
 
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout2ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout2ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout2ImageSource = imageSource)
                     .Row(0).Column(1),
-                MakeLabel(1, model, 0, 1),
+                MakeLabel(1, popupModel, 0, 1),
 
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout3ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout3ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout3ImageSource = imageSource)
                     .Row(0).Column(2),
-                MakeLabel(2, model, 0, 2),
+                MakeLabel(2, popupModel, 0, 2),
 
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout4ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout4ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout4ImageSource = imageSource)
                     .Row(0).Column(3),
-                    MakeLabel(3, model, 0, 3),
+                    MakeLabel(3, popupModel, 0, 3),
 
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout5ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout5ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout5ImageSource = imageSource)
                     .Row(1).Column(0),
-                MakeLabel(4, model, 1, 0),
+                MakeLabel(4, popupModel, 1, 0),
 
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout6ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout6ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout6ImageSource = imageSource)
                     .Row(1).Column(1),
-                MakeLabel(5, model, 1, 1),
+                MakeLabel(5, popupModel, 1, 1),
 
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout7ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout7ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout7ImageSource = imageSource)
                     .Row(1).Column(2),
-                MakeLabel(6, model, 1, 2),
+                MakeLabel(6, popupModel, 1, 2),
 
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout8ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout8ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout8ImageSource = imageSource)
                     .Row(1).Column(3),
-                MakeLabel(7, model, 1, 3),
+                MakeLabel(7, popupModel, 1, 3),
 
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout9ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout9ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout9ImageSource = imageSource)
                     .Row(2).Column(0),
-                MakeLabel(8, model, 2, 0),
+                MakeLabel(8, popupModel, 2, 0),
 
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout10ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout10ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout10ImageSource = imageSource)
                     .Row(2).Column(1),
-                MakeLabel(9, model, 2, 1),
+                MakeLabel(9, popupModel, 2, 1),
 
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout11ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout11ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout11ImageSource = imageSource)
                     .Row(2).Column(2),
-                MakeLabel(10, model, 2, 2),
+                MakeLabel(10, popupModel, 2, 2),
 
                 new Image()
                     .Margin(10)
                     .Bind(ImageButton.SourceProperty, static vm => vm.Layout12ImageSource,
-                        static (LayoutPickerModel vm, ImageSource? imageSource) => vm.Layout12ImageSource = imageSource)
+                        static (LayoutPickerPopupModel vm, ImageSource? imageSource) => vm.Layout12ImageSource = imageSource)
                     .Row(2).Column(3),
-                MakeLabel(11, model, 2, 3),
+                MakeLabel(11, popupModel, 2, 3),
             }
         }.BindDynamicTheme();
 
@@ -153,11 +153,11 @@ public class LayoutPickerPopup : Popup
 
         Content = windowBorder;
 
-        SharpHookHandler.AddKeyPressed(model.KeyPressed);
-        model.Popup = this;
+        SharpHookHandler.AddKeyPressed(popupModel.KeyPressed);
+        popupModel.Popup = this;
     }
 
-    private static Label MakeLabel(int layoutNumber, LayoutPickerModel model, int row, int column)
+    private static Label MakeLabel(int layoutNumber, LayoutPickerPopupModel popupModel, int row, int column)
     {
         return new Label
         {
@@ -165,11 +165,11 @@ public class LayoutPickerPopup : Popup
             VerticalTextAlignment = TextAlignment.Center,
             GestureRecognizers =
             {
-                new TapGestureRecognizer { Command = new Command(() => model.Close(layoutNumber)) },
+                new TapGestureRecognizer { Command = new Command(() => popupModel.Close(layoutNumber)) },
                 new PointerGestureRecognizer
                 {
-                    PointerEnteredCommand = new Command(() => model.MouseOverLayout(layoutNumber)),
-                    PointerExitedCommand = new Command(() => model.MouseOutLayout(layoutNumber)),
+                    PointerEnteredCommand = new Command(() => popupModel.MouseOverLayout(layoutNumber)),
+                    PointerExitedCommand = new Command(() => popupModel.MouseOutLayout(layoutNumber)),
                 }
             },
             Shadow = new Shadow

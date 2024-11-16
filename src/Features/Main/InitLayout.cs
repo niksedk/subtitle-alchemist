@@ -18,67 +18,67 @@ internal static class InitLayout
     private enum RowLayout11 { Toolbar, ListView, StatusBar }
     private enum Column { Left, Right }
 
-    public static void MakeLayout(MainPage mainPage, MainViewModel viewModel, int layoutNumber)
+    public static void MakeLayout(MainPage mainPage, MainPageModel pageModel, int layoutNumber)
     {
         mainPage.BatchBegin();
 
         (mainPage.Content as Grid)?.Children.Clear();
-        viewModel.ListViewAndEditBox?.Children.Clear();
+        pageModel.ListViewAndEditBox?.Children.Clear();
         mainPage.Content = null;
 
         if (layoutNumber == 1) // like default, but video left
         {
-            MakeLayout1(mainPage, viewModel);
+            MakeLayout1(mainPage, pageModel);
         }
         else if (layoutNumber == 2) // mobile, video right
         {
-            MakeLayout2(mainPage, viewModel);
+            MakeLayout2(mainPage, pageModel);
         }
         else if (layoutNumber == 3) // mobile, video left
         {
-            MakeLayout3(mainPage, viewModel);
+            MakeLayout3(mainPage, pageModel);
         }
         else if (layoutNumber == 4) // stacked vertically: video list-view waveform
         {
-            MakeLayout4(mainPage, viewModel);
+            MakeLayout4(mainPage, pageModel);
         }
         else if (layoutNumber == 5) // stacked vertically: list-view waveform
         {
-            MakeLayout5(mainPage, viewModel);
+            MakeLayout5(mainPage, pageModel);
         }
         else if (layoutNumber == 6) // mobile, video right (no waveform)
         {
-            MakeLayout6(mainPage, viewModel);
+            MakeLayout6(mainPage, pageModel);
         }
         else if (layoutNumber == 7) // stacked vertically: list-view video
         {
-            MakeLayout7(mainPage, viewModel);
+            MakeLayout7(mainPage, pageModel);
         }
         else if (layoutNumber == 8) // stacked vertically: video, list-view 
         {
-            MakeLayout8(mainPage, viewModel);
+            MakeLayout8(mainPage, pageModel);
         }
         else if (layoutNumber == 9) // video + waveform-and-text, list-view 
         {
-            MakeLayout9(mainPage, viewModel);
+            MakeLayout9(mainPage, pageModel);
         }
         else if (layoutNumber == 10) // stacked vertically: video waveform list-view 
         {
-            MakeLayout10(mainPage, viewModel);
+            MakeLayout10(mainPage, pageModel);
         }
         else if (layoutNumber == 11) // stacked vertically: video waveform list-view 
         {
-            MakeLayout11(mainPage, viewModel);
+            MakeLayout11(mainPage, pageModel);
         }
         else
         {
-            MakeLayout0(mainPage, viewModel);
+            MakeLayout0(mainPage, pageModel);
         }
 
         mainPage.BatchCommit();
     }
 
-    private static void MakeLayout0(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout0(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -96,28 +96,28 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         };
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)Row.ListViewAndVideo);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Left, (int)Row.ListViewAndVideo);
 
-        grid.Add(viewModel.VideoPlayer, (int)Column.Right, (int)Row.ListViewAndVideo);
+        grid.Add(pageModel.VideoPlayer, (int)Column.Right, (int)Row.ListViewAndVideo);
 
-        grid.Add(viewModel.AudioVisualizer, (int)Column.Left, (int)Row.WaveForm);
-        grid.SetColumnSpan(viewModel.AudioVisualizer, 2);
+        grid.Add(pageModel.AudioVisualizer, (int)Column.Left, (int)Row.WaveForm);
+        grid.SetColumnSpan(pageModel.AudioVisualizer, 2);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)Row.StatusBar);
         grid.SetColumnSpan(statusBar, 2);
 
         mainPage.Content = grid;
     }
 
-    private static void MakeLayout1(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout1(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -135,29 +135,29 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         }.BindDynamicTheme();
 
 
-        grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)Row.ListViewAndVideo);
+        grid.Add(pageModel.VideoPlayer, (int)Column.Left, (int)Row.ListViewAndVideo);
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Right, (int)Row.ListViewAndVideo);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Right, (int)Row.ListViewAndVideo);
 
-        grid.Add(viewModel.AudioVisualizer, (int)Column.Left, (int)Row.WaveForm);
-        grid.SetColumnSpan(viewModel.AudioVisualizer, 2);
+        grid.Add(pageModel.AudioVisualizer, (int)Column.Left, (int)Row.WaveForm);
+        grid.SetColumnSpan(pageModel.AudioVisualizer, 2);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)Row.StatusBar);
         grid.SetColumnSpan(statusBar, 2);
 
         mainPage.Content = grid;
     }
 
-    private static void MakeLayout2(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout2(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -175,28 +175,28 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         };
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)Row.ListViewAndVideo);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Left, (int)Row.ListViewAndVideo);
 
-        grid.Add(viewModel.VideoPlayer, (int)Column.Right, (int)Row.ListViewAndVideo);
-        grid.SetRowSpan(viewModel.VideoPlayer, 2);
+        grid.Add(pageModel.VideoPlayer, (int)Column.Right, (int)Row.ListViewAndVideo);
+        grid.SetRowSpan(pageModel.VideoPlayer, 2);
 
-        grid.Add(viewModel.AudioVisualizer, (int)Column.Left, (int)Row.WaveForm);
+        grid.Add(pageModel.AudioVisualizer, (int)Column.Left, (int)Row.WaveForm);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)Row.StatusBar);
         grid.SetColumnSpan(statusBar, 2);
 
         mainPage.Content = grid;
     }
 
-    private static void MakeLayout3(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout3(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -214,30 +214,30 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         };
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Right, (int)Row.ListViewAndVideo);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Right, (int)Row.ListViewAndVideo);
 
-        grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)Row.ListViewAndVideo);
-        grid.SetRowSpan(viewModel.VideoPlayer, 2);
+        grid.Add(pageModel.VideoPlayer, (int)Column.Left, (int)Row.ListViewAndVideo);
+        grid.SetRowSpan(pageModel.VideoPlayer, 2);
 
 
 
-        grid.Add(viewModel.AudioVisualizer, (int)Column.Right, (int)Row.WaveForm);
+        grid.Add(pageModel.AudioVisualizer, (int)Column.Right, (int)Row.WaveForm);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)Row.StatusBar);
         grid.SetColumnSpan(statusBar, 2);
 
         mainPage.Content = grid;
     }
 
-    private static void MakeLayout4(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout4(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -255,26 +255,26 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         };
 
-        grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout4.Video);
+        grid.Add(pageModel.VideoPlayer, (int)Column.Left, (int)RowLayout4.Video);
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout4.ListView);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout4.ListView);
 
-        grid.Add(viewModel.AudioVisualizer, (int)Column.Left, (int)RowLayout4.WaveForm);
+        grid.Add(pageModel.AudioVisualizer, (int)Column.Left, (int)RowLayout4.WaveForm);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)RowLayout4.StatusBar);
 
         mainPage.Content = grid;
     }
 
-    private static void MakeLayout5(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout5(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -291,24 +291,24 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         };
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout5.ListView);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout5.ListView);
 
-        grid.Add(viewModel.AudioVisualizer, (int)Column.Left, (int)RowLayout5.WaveForm);
+        grid.Add(pageModel.AudioVisualizer, (int)Column.Left, (int)RowLayout5.WaveForm);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)RowLayout5.StatusBar);
 
         mainPage.Content = grid;
     }
 
-    private static void MakeLayout6(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout6(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -325,26 +325,26 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         };
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout6.ListViewAndVideo);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout6.ListViewAndVideo);
 
-        grid.Add(viewModel.VideoPlayer, (int)Column.Right, (int)RowLayout6.ListViewAndVideo);
-        grid.SetRowSpan(viewModel.VideoPlayer, 2);
+        grid.Add(pageModel.VideoPlayer, (int)Column.Right, (int)RowLayout6.ListViewAndVideo);
+        grid.SetRowSpan(pageModel.VideoPlayer, 2);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)RowLayout6.StatusBar);
         grid.SetColumnSpan(statusBar, 2);
 
         mainPage.Content = grid;
     }
 
-    private static void MakeLayout7(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout7(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -361,24 +361,24 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         };
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout7.ListView);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout7.ListView);
 
-        grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout7.Video);
+        grid.Add(pageModel.VideoPlayer, (int)Column.Left, (int)RowLayout7.Video);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)RowLayout7.StatusBar);
 
         mainPage.Content = grid;
     }
 
-    private static void MakeLayout8(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout8(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -395,24 +395,24 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         };
 
-        grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout8.Video);
+        grid.Add(pageModel.VideoPlayer, (int)Column.Left, (int)RowLayout8.Video);
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout8.ListView);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout8.ListView);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)RowLayout8.StatusBar);
 
         mainPage.Content = grid;
     }
 
-    private static void MakeLayout9(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout9(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -430,27 +430,27 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         };
 
-        grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout9.VideoAndWaveformAndText);
+        grid.Add(pageModel.VideoPlayer, (int)Column.Left, (int)RowLayout9.VideoAndWaveformAndText);
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout9.ListView);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout9.ListView);
 
-        grid.SetColumnSpan(viewModel.ListViewAndEditBox, 2);
+        grid.SetColumnSpan(pageModel.ListViewAndEditBox, 2);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)RowLayout9.StatusBar);
         grid.SetColumnSpan(statusBar, 2);
 
         mainPage.Content = grid;
     }
 
-    private static void MakeLayout10(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout10(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -468,25 +468,25 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         };
 
-        grid.Add(viewModel.VideoPlayer, (int)Column.Left, (int)RowLayout10.Video);
-        grid.Add(viewModel.AudioVisualizer, (int)Column.Left, (int)RowLayout10.WaveForm);
+        grid.Add(pageModel.VideoPlayer, (int)Column.Left, (int)RowLayout10.Video);
+        grid.Add(pageModel.AudioVisualizer, (int)Column.Left, (int)RowLayout10.WaveForm);
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout10.ListView);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout10.ListView);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)RowLayout10.StatusBar);
 
         mainPage.Content = grid;
     }
 
-    private static void MakeLayout11(MainPage mainPage, MainViewModel viewModel)
+    private static void MakeLayout11(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
@@ -502,22 +502,22 @@ internal static class InitLayout
 
             Children =
             {
-                InitToolbar.CreateToolbarBar(mainPage, viewModel).Row(Row.Toolbar).ColumnSpan(2),
+                InitToolbar.CreateToolbarBar(mainPage, pageModel).Row(Row.Toolbar).ColumnSpan(2),
             }
         };
 
-        viewModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(viewModel);
-        viewModel.ListViewAndEditBox.Add(viewModel.SubtitleListBorder, 0, 0);
-        viewModel.ListViewAndEditBox.SetColumnSpan(viewModel.SubtitleListBorder, 3);
-        grid.Add(viewModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout11.ListView);
+        pageModel.ListViewAndEditBox = MakeDefaultListViewAndEditBox(pageModel);
+        pageModel.ListViewAndEditBox.Add(pageModel.SubtitleListBorder, 0, 0);
+        pageModel.ListViewAndEditBox.SetColumnSpan(pageModel.SubtitleListBorder, 3);
+        grid.Add(pageModel.ListViewAndEditBox, (int)Column.Left, (int)RowLayout11.ListView);
 
-        var statusBar = MakeStatusBar(viewModel);
+        var statusBar = MakeStatusBar(pageModel);
         grid.Add(statusBar, 0, (int)RowLayout11.StatusBar);
 
         mainPage.Content = grid;
     }
 
-    private static Grid MakeDefaultListViewAndEditBox(MainViewModel vm)
+    private static Grid MakeDefaultListViewAndEditBox(MainPageModel vm)
     {
         var startTimeUpDown = new SubTimeUpDown
         {
@@ -605,7 +605,7 @@ internal static class InitLayout
         return grid;
     }
 
-    private static StackLayout MakeStatusBar(MainViewModel vm)
+    private static StackLayout MakeStatusBar(MainPageModel vm)
     {
         vm.LabelStatusText = new Label
         {
@@ -621,11 +621,11 @@ internal static class InitLayout
             {
                 vm.LabelStatusText
                     .Bind(Label.TextProperty, static vm => vm.StatusText,
-                    static (MainViewModel vm, string text) => vm.StatusText = text),
+                    static (MainPageModel vm, string text) => vm.StatusText = text),
                 new Label()
                     .BindDynamicTheme()
                     .Bind(Label.TextProperty, static vm => vm.SelectedLineInfo,
-                    static (MainViewModel vm, string text) => vm.SelectedLineInfo = text),
+                    static (MainPageModel vm, string text) => vm.SelectedLineInfo = text),
             }
         };
     }

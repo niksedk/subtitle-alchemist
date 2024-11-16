@@ -16,7 +16,7 @@ using SubtitleAlchemist.Logic.Dictionaries;
 
 namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 
-public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable, IFixCallbacks
+public partial class FixCommonErrorsPageModel : ObservableObject, IQueryAttributable, IFixCallbacks
 {
     [ObservableProperty]
     private string _searchText = string.Empty;
@@ -76,7 +76,7 @@ public partial class FixCommonErrorsModel : ObservableObject, IQueryAttributable
     private readonly IPopupService _popupService;
     private readonly INamesList _namesList;
 
-    public FixCommonErrorsModel(IPopupService popupService, INamesList namesList)
+    public FixCommonErrorsPageModel(IPopupService popupService, INamesList namesList)
     {
         _popupService = popupService;
         _namesList = namesList;

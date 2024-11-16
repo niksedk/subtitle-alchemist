@@ -9,7 +9,7 @@ public static class FfmpegHelper
     public static bool IsFfmpegInstalled()
     {
         Configuration.Settings.General.UseFFmpegForWaveExtraction = true;
-        Se.Settings.General.FfmpegPath = DownloadFfmpegModel.GetFfmpegFileName();
+        Se.Settings.General.FfmpegPath = DownloadFfmpegPopupModel.GetFfmpegFileName();
         return File.Exists(Se.Settings.General.FfmpegPath);
     }
 }

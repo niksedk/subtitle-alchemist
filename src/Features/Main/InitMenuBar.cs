@@ -5,7 +5,7 @@ namespace SubtitleAlchemist.Features.Main;
 
 internal static class InitMenuBar
 {
-    internal static void CreateMenuBar(MainPage page, MainViewModel vm)
+    internal static void CreateMenuBar(MainPage page, MainPageModel vm)
     {
         page.MenuBarItems.Clear();
         page.MenuBarItems.Add(MakeFileMenu(vm));
@@ -19,7 +19,7 @@ internal static class InitMenuBar
         page.MenuBarItems.Add(MakeHelpMenu(vm));
     }
 
-    private static MenuBarItem MakeFileMenu(MainViewModel vm)
+    private static MenuBarItem MakeFileMenu(MainPageModel vm)
     {
         var menu = new MenuBarItem { Text = "File" };
 
@@ -128,7 +128,7 @@ internal static class InitMenuBar
         return menu;
     }
 
-    private static MenuBarItem MakeEditMenu(MainViewModel vm)
+    private static MenuBarItem MakeEditMenu(MainPageModel vm)
     {
         var menu = new MenuBarItem { Text = "Edit" };
 
@@ -205,7 +205,7 @@ internal static class InitMenuBar
         return menu;
     }
 
-    private static MenuBarItem MakeToolsMenu(MainViewModel vm)
+    private static MenuBarItem MakeToolsMenu(MainPageModel vm)
     {
         var menu = new MenuBarItem { Text = "Tools" };
 
@@ -237,7 +237,7 @@ internal static class InitMenuBar
         return menu;
     }
 
-    private static MenuBarItem MakeSpellCheckMenu(MainViewModel vm)
+    private static MenuBarItem MakeSpellCheckMenu(MainPageModel vm)
     {
         var menu = new MenuBarItem { Text = "Spell check" };
 
@@ -256,7 +256,7 @@ internal static class InitMenuBar
         return menu;
     }
 
-    private static MenuBarItem MakeVideoMenu(MainViewModel vm)
+    private static MenuBarItem MakeVideoMenu(MainPageModel vm)
     {
         var menu = new MenuBarItem { Text = "Video" };
 
@@ -302,7 +302,7 @@ internal static class InitMenuBar
         return menu;
     }
 
-    private static MenuBarItem MakeSynchronizationMenu(MainViewModel vm)
+    private static MenuBarItem MakeSynchronizationMenu(MainPageModel vm)
     {
         var menu = new MenuBarItem { Text = "Synchronization" };
 
@@ -327,7 +327,7 @@ internal static class InitMenuBar
         return menu;
     }
 
-    private static MenuBarItem MakeTranslateMenu(MainViewModel vm)
+    private static MenuBarItem MakeTranslateMenu(MainPageModel vm)
     {
         var menu = new MenuBarItem { Text = "Translate" };
 
@@ -340,7 +340,7 @@ internal static class InitMenuBar
         return menu;
     }
 
-    private static MenuBarItem MakeOptionsMenu(MainViewModel vm)
+    private static MenuBarItem MakeOptionsMenu(MainPageModel vm)
     {
         var menu = new MenuBarItem { Text = "Options" };
 
@@ -353,7 +353,7 @@ internal static class InitMenuBar
         return menu;
     }
 
-    private static MenuBarItem MakeHelpMenu(MainViewModel vm)
+    private static MenuBarItem MakeHelpMenu(MainPageModel vm)
     {
         var menu = new MenuBarItem { Text = "Help" };
 

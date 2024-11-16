@@ -11,7 +11,7 @@ using System.Globalization;
 
 namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
 {
-    public partial class ExportEbuModel : ObservableObject, IQueryAttributable
+    public partial class ExportEbuPageModel : ObservableObject, IQueryAttributable
     {
 
         [ObservableProperty]
@@ -166,7 +166,7 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
 
         private readonly IFileHelper _fileHelper;
 
-        public ExportEbuModel(IFileHelper fileHelper)
+        public ExportEbuPageModel(IFileHelper fileHelper)
         {
             _errorLog = string.Empty;
             _fileHelper = fileHelper;

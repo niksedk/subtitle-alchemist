@@ -7,11 +7,11 @@ namespace SubtitleAlchemist.Features.Main;
 
 public class MainPage : ContentPage
 {
-    private readonly MainViewModel _viewModel;
+    private readonly MainPageModel _pageModel;
 
-    public MainPage(MainViewModel vm)
+    public MainPage(MainPageModel vm)
     {
-        _viewModel = vm;
+        _pageModel = vm;
 
         var themeName = Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme
             ? "Dark"
@@ -35,20 +35,20 @@ public class MainPage : ContentPage
         ThemeHelper.UpdateTheme(themeName);
         Resources.Add(ThemeHelper.GetGridSelectionStyle());
 
-        BindingContext = _viewModel;
-        _viewModel.MainPage = this;
+        BindingContext = _pageModel;
+        _pageModel.MainPage = this;
         this.BindDynamicTheme();
 
-        InitMenuBar.CreateMenuBar(this, _viewModel);
+        InitMenuBar.CreateMenuBar(this, _pageModel);
 
-        _viewModel.VideoPlayer = new MediaElement
+        _pageModel.VideoPlayer = new MediaElement
         {
             ZIndex = -10000,
             Margin = new Thickness(10),
         }.BindDynamicTheme();
 
-        _viewModel.SubtitleListBorder = InitSubtitleListView.MakeSubtitleListView(_viewModel);
-        _viewModel.ListViewAndEditBox = new Grid();
+        _pageModel.SubtitleListBorder = InitSubtitleListView.MakeSubtitleListView(_pageModel);
+        _pageModel.ListViewAndEditBox = new Grid();
 
         MakeLayout(Se.Settings.General.LayoutNumber); 
 
@@ -57,19 +57,19 @@ public class MainPage : ContentPage
 
     protected override void OnDisappearing()
     {
-        _viewModel.Stop();
+        _pageModel.Stop();
         base.OnDisappearing();
     }
 
     public void MakeLayout(int layoutNumber)
     {
-        InitLayout.MakeLayout(this, _viewModel, layoutNumber);
+        InitLayout.MakeLayout(this, _pageModel, layoutNumber);
     }
 
     private async void OnLoaded(object s, EventArgs e)
     {
-        _viewModel.Loaded(this);
-        _viewModel.Start();
+        _pageModel.Loaded(this);
+        _pageModel.Start();
         await SharpHookHandler.RunAsync();
     }
 }

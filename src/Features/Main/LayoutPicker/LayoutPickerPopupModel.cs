@@ -6,7 +6,7 @@ using SubtitleAlchemist.Logic.Media;
 
 namespace SubtitleAlchemist.Features.Main.LayoutPicker
 {
-    public partial class LayoutPickerModel : ObservableObject
+    public partial class LayoutPickerPopupModel : ObservableObject
     {
         public int SelectedLayout
         {
@@ -78,7 +78,7 @@ namespace SubtitleAlchemist.Features.Main.LayoutPicker
 
         public LayoutPickerPopup? Popup { get; set; }
 
-        public LayoutPickerModel()
+        public LayoutPickerPopupModel()
         {
             var selectedLayout = 0;
             var imagePath = FileSystem.Current.AppDataDirectory;

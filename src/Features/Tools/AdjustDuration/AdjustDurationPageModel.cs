@@ -8,7 +8,7 @@ using SubtitleAlchemist.Features.Main;
 
 namespace SubtitleAlchemist.Features.Tools.AdjustDuration;
 
-public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
+public partial class AdjustDurationPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
     private ObservableCollection<DisplayParagraph> _paragraphs = new();
@@ -58,7 +58,7 @@ public partial class AdjustDurationModel : ObservableObject, IQueryAttributable
     private readonly System.Timers.Timer _previewTimer;
     private int _previewLastHash = -1;
 
-    public AdjustDurationModel()
+    public AdjustDurationPageModel()
     {
         _adjustViaItems = new ObservableCollection<string>
         {

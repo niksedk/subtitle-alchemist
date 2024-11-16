@@ -15,7 +15,7 @@ using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Translate;
 
-public partial class TranslateModel : ObservableObject, IQueryAttributable
+public partial class TranslatePageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
     private ObservableCollection<TranslateRow> _lines;
@@ -42,7 +42,7 @@ public partial class TranslateModel : ObservableObject, IQueryAttributable
 
     private readonly IPopupService _popupService;
 
-    public TranslateModel(IPopupService popupService)
+    public TranslatePageModel(IPopupService popupService)
     {
         Paragraphs = new ObservableCollection<DisplayParagraph>();
 

@@ -6,7 +6,7 @@ namespace SubtitleAlchemist.Features.Files;
 
 public class RestoreAutoBackupPage : ContentPage
 {
-    public RestoreAutoBackupPage(RestoreAutoBackupModel vm)
+    public RestoreAutoBackupPage(RestoreAutoBackupPageModel vm)
     {
         this.BindDynamicTheme();
         Padding = new Thickness(10);
@@ -98,7 +98,7 @@ public class RestoreAutoBackupPage : ContentPage
             Command = vm.OkCommand,
             Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
-        buttonOk.SetBinding(IsEnabledProperty, nameof(RestoreAutoBackupModel.IsOkButtonEnabled));
+        buttonOk.SetBinding(IsEnabledProperty, nameof(RestoreAutoBackupPageModel.IsOkButtonEnabled));
 
         var buttonCancel = new Button
         {
@@ -122,7 +122,7 @@ public class RestoreAutoBackupPage : ContentPage
         Content = grid;
     }
 
-    private CollectionView MakeCollectionView(RestoreAutoBackupModel vm)
+    private CollectionView MakeCollectionView(RestoreAutoBackupPageModel vm)
     {
         var collectionView = new CollectionView
         {
@@ -174,15 +174,15 @@ public class RestoreAutoBackupPage : ContentPage
             }),
         }; 
         
-        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(RestoreAutoBackupModel.Files));
-        collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(RestoreAutoBackupModel.SelectedFile));
+        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(RestoreAutoBackupPageModel.Files));
+        collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(RestoreAutoBackupPageModel.SelectedFile));
 
         collectionView.SelectionChanged += vm.SelectionChanged;
 
         return collectionView;
     }
 
-    private static Grid MakeHeader(RestoreAutoBackupModel vm)
+    private static Grid MakeHeader(RestoreAutoBackupPageModel vm)
     {
         // Create the header grid
         var gridHeader = new Grid
@@ -234,6 +234,6 @@ public class RestoreAutoBackupPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        (BindingContext as RestoreAutoBackupModel)?.Initialize();
+        (BindingContext as RestoreAutoBackupPageModel)?.Initialize();
     }
 }

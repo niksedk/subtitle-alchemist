@@ -7,7 +7,7 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
 
 public class ExportEbuPage : ContentPage
 {
-    public ExportEbuPage(ExportEbuModel vm)
+    public ExportEbuPage(ExportEbuPageModel vm)
     {
         BindingContext = vm;
 
@@ -88,7 +88,7 @@ public class ExportEbuPage : ContentPage
         vm.Page = this;
     }
 
-    private static Grid MakeTopBar(ExportEbuModel vm)
+    private static Grid MakeTopBar(ExportEbuPageModel vm)
     {
         var topBar = new Grid
         {
@@ -151,7 +151,7 @@ public class ExportEbuPage : ContentPage
         return topBar;
     }
 
-    private static Border MakeGeneralGrid(ExportEbuModel vm)
+    private static Border MakeGeneralGrid(ExportEbuPageModel vm)
     {
         var grid = new Grid
         {
@@ -594,7 +594,7 @@ public class ExportEbuPage : ContentPage
         return windowBorder;
     }
 
-    private static Border MakeTextAndTimingView(ExportEbuModel vm)
+    private static Border MakeTextAndTimingView(ExportEbuPageModel vm)
     {
         var grid = new Grid
         {
@@ -761,7 +761,7 @@ public class ExportEbuPage : ContentPage
         return windowBorder;
     }
 
-    private static Border MakeErrorsView(ExportEbuModel vm)
+    private static Border MakeErrorsView(ExportEbuPageModel vm)
     {
         var grid = new Grid
         {

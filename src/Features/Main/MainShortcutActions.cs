@@ -7,12 +7,12 @@ namespace SubtitleAlchemist.Features.Main;
 
 public class MainShortcutActions : IMainShortcutActions
 {
-    private MainViewModel _vm;
+    private MainPageModel _vm;
     private MainPage _page;
 
-    public void Initialize(IShortcutManager shortcutManager, MainViewModel viewModel, MainPage mainPage)
+    public void Initialize(IShortcutManager shortcutManager, MainPageModel pageModel, MainPage mainPage)
     {
-        _vm = viewModel;
+        _vm = pageModel;
         _page = mainPage;
 
         shortcutManager.ClearShortcuts();

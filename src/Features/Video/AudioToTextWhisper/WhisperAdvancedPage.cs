@@ -8,8 +8,8 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
 public class WhisperAdvancedPage : ContentPage
 {
-    private readonly WhisperAdvancedModel? _vm;
-    public WhisperAdvancedPage(WhisperAdvancedModel vm)
+    private readonly WhisperAdvancedPageModel? _vm;
+    public WhisperAdvancedPage(WhisperAdvancedPageModel vm)
     {
         vm.Page = this;
         _vm = vm;
@@ -179,7 +179,7 @@ public class WhisperAdvancedPage : ContentPage
         Content = grid;
     }
 
-    private static IView MakeLeftMenuItem(WhisperAdvancedModel vm, string engineName)
+    private static IView MakeLeftMenuItem(WhisperAdvancedPageModel vm, string engineName)
     {
         var label = new Label
         {

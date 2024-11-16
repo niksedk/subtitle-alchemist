@@ -9,9 +9,9 @@ namespace SubtitleAlchemist.Features.Translate;
 
 public class TranslatePage : ContentPage
 {
-    private readonly TranslateModel _vm;
+    private readonly TranslatePageModel _vm;
 
-    public TranslatePage(TranslateModel vm)
+    public TranslatePage(TranslatePageModel vm)
     {
         this.BindDynamicTheme();
 

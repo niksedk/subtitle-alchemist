@@ -7,7 +7,7 @@ using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
-public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
+public partial class WhisperAdvancedPageModel : ObservableObject, IQueryAttributable
 {
     public WhisperAdvancedPage? Page { get; set; }
     public Dictionary<string, View> WhisperEngines { get; set; } = new();
@@ -36,7 +36,7 @@ public partial class WhisperAdvancedModel : ObservableObject, IQueryAttributable
     private readonly IPopupService _popupService;
     private static readonly SeAudioToText _settings = Se.Settings.Tools.AudioToText;
 
-    public WhisperAdvancedModel(IPopupService popupService)
+    public WhisperAdvancedPageModel(IPopupService popupService)
     {
         _engineName = DefaultWhisperEngineName;
         _popupService = popupService;

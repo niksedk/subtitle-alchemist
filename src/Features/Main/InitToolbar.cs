@@ -5,13 +5,13 @@ namespace SubtitleAlchemist.Features.Main;
 
 internal static class InitToolbar
 {
-    internal static StackLayout CreateToolbarBar(MainPage page, MainViewModel vm)
+    internal static StackLayout CreateToolbarBar(MainPage page, MainPageModel vm)
     {
         var imagePrefix = "theme_dark_";
 
         vm.SubtitleFormatPicker = new Picker
         {
-            ItemsSource = MainViewModel.SubtitleFormatNames,
+            ItemsSource = MainPageModel.SubtitleFormatNames,
             SelectedIndex = 0,
             WidthRequest = 225,
             HeightRequest = 16,
@@ -20,7 +20,7 @@ internal static class InitToolbar
 
         vm.EncodingPicker = new Picker
         {
-            ItemsSource = MainViewModel.EncodingNames,
+            ItemsSource = MainPageModel.EncodingNames,
             SelectedIndex = 0,
             WidthRequest = 225,
             HeightRequest = 16,

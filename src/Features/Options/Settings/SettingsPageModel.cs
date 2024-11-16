@@ -12,7 +12,7 @@ using System.Collections.ObjectModel;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
 
-public partial class SettingsViewModel : ObservableObject
+public partial class SettingsPageModel : ObservableObject
 {
     [ObservableProperty]
     private ObservableCollection<SettingItem> _allSettings;
@@ -226,7 +226,7 @@ public partial class SettingsViewModel : ObservableObject
 
     private bool _loaded;
 
-    public SettingsViewModel(IPopupService popupService)
+    public SettingsPageModel(IPopupService popupService)
     {
         _popupService = popupService;
 
@@ -420,7 +420,7 @@ public partial class SettingsViewModel : ObservableObject
             return;
         }
 
-        var result = await _popupService.ShowPopupAsync<DownloadFfmpegModel>(CancellationToken.None);
+        var result = await _popupService.ShowPopupAsync<DownloadFfmpegPopupModel>(CancellationToken.None);
         if (result is string ffmpegFileName)
         {
             FfmpegPath = ffmpegFileName;

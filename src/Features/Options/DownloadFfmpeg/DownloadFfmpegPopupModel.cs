@@ -9,7 +9,7 @@ using Timer = System.Timers.Timer;
 
 namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
 {
-    public partial class DownloadFfmpegModel : ObservableObject
+    public partial class DownloadFfmpegPopupModel : ObservableObject
     {
         public DownloadFfmpegPopup? Popup { get; set; }
 
@@ -31,7 +31,7 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
         private readonly MemoryStream _downloadStream;
         private readonly IZipUnpacker _zipUnpacker;
 
-        public DownloadFfmpegModel(IFfmpegDownloadService ffmpegDownloadService, IZipUnpacker zipUnpacker)
+        public DownloadFfmpegPopupModel(IFfmpegDownloadService ffmpegDownloadService, IZipUnpacker zipUnpacker)
         {
             _ffmpegDownloadService = ffmpegDownloadService;
             _zipUnpacker = zipUnpacker;

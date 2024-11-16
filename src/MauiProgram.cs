@@ -66,25 +66,25 @@ namespace SubtitleAlchemist
                 });
 
             builder.Services.AddTransient<MainPage>();
-            builder.Services.AddTransient<MainViewModel>();
+            builder.Services.AddTransient<MainPageModel>();
             builder.Services.AddTransient<SettingsPage>();
-            builder.Services.AddTransient<SettingsViewModel>();
+            builder.Services.AddTransient<SettingsPageModel>();
             builder.Services.AddTransient<AudioToTextWhisperPage>();
             builder.Services.AddTransient<AudioToTextWhisperModel>();
             builder.Services.AddTransient<TranslatePage>();
-            builder.Services.AddTransient<TranslateModel>();
+            builder.Services.AddTransient<TranslatePageModel>();
             builder.Services.AddTransient<AdjustDurationPage>();
-            builder.Services.AddTransient<AdjustDurationModel>();
+            builder.Services.AddTransient<AdjustDurationPageModel>();
             builder.Services.AddTransient<FixCommonErrorsPage>();
-            builder.Services.AddTransient<FixCommonErrorsModel>();
+            builder.Services.AddTransient<FixCommonErrorsPageModel>();
             builder.Services.AddTransient<WhisperAdvancedPage>();
-            builder.Services.AddTransient<WhisperAdvancedModel>();
+            builder.Services.AddTransient<WhisperAdvancedPageModel>();
             builder.Services.AddTransient<SpellCheckerPage>();
             builder.Services.AddTransient<SpellCheckerPageModel>();
             builder.Services.AddTransient<RestoreAutoBackupPage>();
-            builder.Services.AddTransient<RestoreAutoBackupModel>();
+            builder.Services.AddTransient<RestoreAutoBackupPageModel>();
             builder.Services.AddTransient<ExportEbuPage>();
-            builder.Services.AddTransient<ExportEbuModel>();
+            builder.Services.AddTransient<ExportEbuPageModel>();
             builder.Services.AddTransient<UndoRedoHistoryPage>();
             builder.Services.AddTransient<UndoRedoHistoryPageModel>();
             builder.Services.AddTransient<AdjustAllTimesPage>();
@@ -121,8 +121,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<IBatchConverter, BatchConverter>();
 
             builder.Services.AddTransientPopup<AboutPopup, AboutPopupModel>();
-            builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerModel>();
-            builder.Services.AddTransientPopup<DownloadFfmpegPopup, DownloadFfmpegModel>();
+            builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerPopupModel>();
+            builder.Services.AddTransientPopup<DownloadFfmpegPopup, DownloadFfmpegPopupModel>();
             builder.Services.AddTransientPopup<ColorPickerPopup, ColorPickerPopupModel>();
             builder.Services.AddTransientPopup<PickerPopup, PickerPopupModel>();
             builder.Services.AddTransientPopup<TranslateAdvancedSettingsPopup, TranslateAdvancedSettingsPopupModel>();

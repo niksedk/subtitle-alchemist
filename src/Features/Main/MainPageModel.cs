@@ -43,7 +43,6 @@ using System.Timers;
 using SharpHook.Native;
 using SubtitleAlchemist.Features.Main.LayoutPicker;
 using SubtitleAlchemist.Features.Tools.BatchConvert;
-using LayoutPickerModel = SubtitleAlchemist.Features.Main.LayoutPicker.LayoutPickerModel;
 using Path = System.IO.Path;
 using SpellCheckDictionary = SubtitleAlchemist.Features.SpellCheck.SpellCheckDictionary;
 using SubtitleAlchemist.Features.Video.TransparentSubtitles;
@@ -55,7 +54,7 @@ using SubtitleAlchemist.Features.Tools.ChangeCasing;
 
 namespace SubtitleAlchemist.Features.Main;
 
-public partial class MainViewModel : ObservableObject, IQueryAttributable
+public partial class MainPageModel : ObservableObject, IQueryAttributable
 {
     public int SelectedLayout { get; set; }
 
@@ -130,7 +129,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     private readonly IShortcutManager _shortcutManager;
     private readonly IMainShortcutActions _mainShortcutActions;
 
-    public MainViewModel(
+    public MainPageModel(
         IPopupService popupService,
         IAutoBackup autoBackup,
         IUndoRedoManager undoRedoManager,
@@ -963,7 +962,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     public async Task ShowLayoutPicker()
     {
-        var result = await _popupService.ShowPopupAsync<LayoutPickerModel>(onPresenting: viewModel => viewModel.SelectedLayout = SelectedLayout, CancellationToken.None);
+        var result = await _popupService.ShowPopupAsync<LayoutPickerPopupModel>(onPresenting: viewModel => viewModel.SelectedLayout = SelectedLayout, CancellationToken.None);
 
         if (result is LayoutPickerPopupResult popupResult && MainPage != null)
         {
@@ -2037,9 +2036,9 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
             return true;
         }
 
-        if (File.Exists(DownloadFfmpegModel.GetFfmpegFileName()))
+        if (File.Exists(DownloadFfmpegPopupModel.GetFfmpegFileName()))
         {
-            Se.Settings.General.FfmpegPath = DownloadFfmpegModel.GetFfmpegFileName();
+            Se.Settings.General.FfmpegPath = DownloadFfmpegPopupModel.GetFfmpegFileName();
             return true;
         }
 
@@ -2062,7 +2061,7 @@ public partial class MainViewModel : ObservableObject, IQueryAttributable
                 return false;
             }
 
-            var result = await _popupService.ShowPopupAsync<DownloadFfmpegModel>(CancellationToken.None);
+            var result = await _popupService.ShowPopupAsync<DownloadFfmpegPopupModel>(CancellationToken.None);
             if (result is string ffmpegFileNameResult)
             {
                 Se.Settings.General.FfmpegPath = ffmpegFileNameResult;

@@ -14,7 +14,7 @@ public class AdjustDurationPage : ContentPage
 {
     private readonly Grid _grid;
 
-    public AdjustDurationPage(AdjustDurationModel vm)
+    public AdjustDurationPage(AdjustDurationPageModel vm)
     {
         BindingContext = vm;
         ThemeHelper.GetGridSelectionStyle();
@@ -156,14 +156,14 @@ public class AdjustDurationPage : ContentPage
         vm.Page = this;
     }
 
-    public void Initialize(Subtitle subtitle, AdjustDurationModel vm)
+    public void Initialize(Subtitle subtitle, AdjustDurationPageModel vm)
     {
         var subtitleGrid = MakeSubtitleGrid(vm);
         _grid.Add(subtitleGrid, 2);
         _grid.SetRowSpan(subtitleGrid, 7);
     }
 
-    private static View MakeTopBar(AdjustDurationModel vm)
+    private static View MakeTopBar(AdjustDurationPageModel vm)
     {
         var topBar = new Grid
         {
@@ -214,7 +214,7 @@ public class AdjustDurationPage : ContentPage
         return topBar;
     }
 
-    private static Grid MakeAdjustViaSecondsView(AdjustDurationModel vm)
+    private static Grid MakeAdjustViaSecondsView(AdjustDurationPageModel vm)
     {
         var grid = new Grid
         {
@@ -253,7 +253,7 @@ public class AdjustDurationPage : ContentPage
         return grid;
     }
 
-    private static Grid MakeAdjustViaPercentView(AdjustDurationModel vm)
+    private static Grid MakeAdjustViaPercentView(AdjustDurationPageModel vm)
     {
         var grid = new Grid
         {
@@ -296,7 +296,7 @@ public class AdjustDurationPage : ContentPage
         return grid;
     }
 
-    private static Grid MakeAdjustViaFixedView(AdjustDurationModel vm)
+    private static Grid MakeAdjustViaFixedView(AdjustDurationPageModel vm)
     {
         var grid = new Grid
         {
@@ -336,7 +336,7 @@ public class AdjustDurationPage : ContentPage
         return grid;
     }
 
-    private static Grid MakeAdjustRecalculateView(AdjustDurationModel vm)
+    private static Grid MakeAdjustRecalculateView(AdjustDurationPageModel vm)
     {
         var grid = new Grid
         {
@@ -412,7 +412,7 @@ public class AdjustDurationPage : ContentPage
         return grid;
     }
 
-    private static Border MakeSubtitleGrid(AdjustDurationModel vm)
+    private static Border MakeSubtitleGrid(AdjustDurationPageModel vm)
     {
         // Create the header grid
         var headerGrid = new Grid
