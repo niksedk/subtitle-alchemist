@@ -22,12 +22,12 @@ public class FixNamesPage : ContentPage
                 new() { Height = GridLength.Auto }, // Hits title
                 new() { Height = GridLength.Star }, // Hits
                 new() { Height = GridLength.Auto }, // Buttons
-                },
+            },
             ColumnDefinitions = new ColumnDefinitionCollection
             {
                 new() { Width = GridLength.Star },
             },
-            Margin = new Thickness(20,20,20,20)
+            Margin = new Thickness(20, 20, 20, 20)
         };
 
         var row = 0;
@@ -159,7 +159,7 @@ public class FixNamesPage : ContentPage
             Padding = new Thickness(5),
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Auto }, // Enabled
+                new ColumnDefinition { Width = 100 }, // Enabled
                 new ColumnDefinition { Width = GridLength.Star }, // Name
             },
         };
@@ -196,10 +196,10 @@ public class FixNamesPage : ContentPage
                 {
                     ColumnDefinitions =
                     {
-                        new ColumnDefinition { Width = GridLength.Auto }, // Enabled
+                        new ColumnDefinition { Width = 100 }, // Enabled
                         new ColumnDefinition { Width = GridLength.Star }, // Name
                     },
-                };
+                }.BindDynamicTheme();
 
                 var switchNameEnabled = new Switch
                 {
@@ -210,7 +210,7 @@ public class FixNamesPage : ContentPage
                 var labelName = new Label
                 {
                     HorizontalTextAlignment = TextAlignment.Start,
-                    VerticalTextAlignment = TextAlignment.Center
+                    VerticalTextAlignment = TextAlignment.Center,
                 }.BindDynamicThemeTextColorOnly();
                 labelName.SetBinding(Label.TextProperty, nameof(FixNameItem.Name));
                 jobItemGrid.Add(labelName, 1);
@@ -370,7 +370,7 @@ public class FixNamesPage : ContentPage
             }),
         }.BindDynamicTheme();
 
-        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Names), BindingMode.TwoWay);
+        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Hits), BindingMode.TwoWay);
         collectionView.BindingContext = vm;
 
         grid.Add(collectionView, 0, 1);
