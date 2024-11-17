@@ -1,14 +1,17 @@
-﻿namespace SubtitleAlchemist.Features.Tools.ChangeCasing;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class FixNameItem
+namespace SubtitleAlchemist.Features.Tools.ChangeCasing;
+
+public partial class FixNameItem : ObservableObject
 {
     public string Name { get; set; }
-    public bool IsChecked { get; set; }
+
+    [ObservableProperty] private bool _isChecked;
 
     public FixNameItem(string name, bool isChecked)
     {
         Name = name;
-        IsChecked = isChecked;
+        _isChecked = isChecked;
     }
 
     public override string ToString()

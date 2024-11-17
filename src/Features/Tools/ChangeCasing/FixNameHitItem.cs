@@ -9,13 +9,14 @@ public class FixNameHitItem
     public string Before { get; set; }
     public string After { get; set; }
 
-    public FixNameHitItem(string name, int lineIndex, string before, string after)
+    public FixNameHitItem(string name, int lineIndex, string before, string after, bool isEnabled)
     {
         Name = name;
         LineIndex = lineIndex;
         LineIndexDisplay = lineIndex + 1;
         Before = before;
         After = after;
+        IsEnabled = isEnabled;
     }
 
     public override string ToString()

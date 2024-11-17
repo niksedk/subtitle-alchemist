@@ -134,6 +134,7 @@ public partial class ChangeCasingPageModel : ObservableObject, IQueryAttributabl
         {
             { "Page", nameof(ChangeCasingPage) },
             { "Subtitle", subtitle },
+            { "SubtitleBefore", _subtitle },
             { "NoOfFixes", noOfFixes },
         });
     }

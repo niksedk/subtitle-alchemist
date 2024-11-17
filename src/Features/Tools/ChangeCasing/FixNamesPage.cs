@@ -9,12 +9,14 @@ public class FixNamesPage : ContentPage
     public FixNamesPage(FixNamesPageModel vm)
     {
         BindingContext = vm;
+        Resources.Add(ThemeHelper.GetGridSelectionStyle());
 
         var grid = new Grid
         {
             RowDefinitions = new RowDefinitionCollection
             {
                 new() { Height = GridLength.Auto }, // Title
+                new() { Height = GridLength.Auto }, // Name title
                 new() { Height = GridLength.Star }, // Names
                 new() { Height = GridLength.Auto }, // Buttons
                 new() { Height = GridLength.Auto }, // Extra names label
@@ -33,10 +35,17 @@ public class FixNamesPage : ContentPage
         var row = 0;
         var labelTitle = new Label
         {
-            Text = "Fix Names",
+            Text = "Fix names",
             HorizontalOptions = LayoutOptions.Start,
         }.AsTitle();
         grid.Add(labelTitle, 0, row);
+
+        row++;
+        var labelNamesCount = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+        }.BindDynamicThemeTextColorOnly().BindText(nameof(vm.NamesCount));
+        grid.Add(labelNamesCount, 0, row);
 
         row++;
         grid.Add(MakeNamesView(vm), 0, row);
@@ -78,18 +87,33 @@ public class FixNamesPage : ContentPage
         row++;
         var entryExtraNames = new Entry
         {
-            Text = "",
             Placeholder = "Enter extra names separated by comma",
+            MinimumWidthRequest = 600,
+        }.BindDynamicTheme().BindText(nameof(vm.ExtraNames));
+        var buttonAddExtraName = new Button
+        {
+            Text = "Refresh",
+            Command = vm.AddExtraNameCommand,
+            Margin = new Thickness(10, 0, 10, 0),
         }.BindDynamicTheme();
-        grid.Add(entryExtraNames, 0, row);
+        var stackExtraNames = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            Margin = new Thickness(0, 5, 0, 20),
+            Children =
+            {
+                entryExtraNames,
+                buttonAddExtraName,
+            }
+        };
+        grid.Add(stackExtraNames, 0, row);
 
         row++;
         var labelHits = new Label
         {
-            Text = "Hits",
             HorizontalOptions = LayoutOptions.Start,
             Margin = new Thickness(0, 20, 0, 0),
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().BindText(nameof(vm.HitCount));
         grid.Add(labelHits, 0, row);
 
         row++;
@@ -144,8 +168,8 @@ public class FixNamesPage : ContentPage
             },
             Margin = new Thickness(2),
             Padding = new Thickness(2),
-            RowSpacing = 5,
-            ColumnSpacing = 5,
+            RowSpacing = 2,
+            ColumnSpacing = 2,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
@@ -201,28 +225,28 @@ public class FixNamesPage : ContentPage
                     },
                 }.BindDynamicTheme();
 
-                var switchNameEnabled = new Switch
+                var isSelectedSwitch = new Switch
                 {
+                    VerticalOptions = LayoutOptions.Center,
                 }.BindDynamicThemeTextColorOnly();
-                switchNameEnabled.SetBinding(Label.TextProperty, nameof(FixNameItem.IsChecked));
-                jobItemGrid.Add(switchNameEnabled);
+                isSelectedSwitch.SetBinding(Switch.IsToggledProperty, nameof(FixNameItem.IsChecked));
+                jobItemGrid.Add(isSelectedSwitch, 0, 0);
+                isSelectedSwitch.Toggled += vm.OnNameToggled;
 
-                var labelName = new Label
+                var nameLabel = new Label
                 {
-                    HorizontalTextAlignment = TextAlignment.Start,
-                    VerticalTextAlignment = TextAlignment.Center,
+                    VerticalOptions = LayoutOptions.Center,
                 }.BindDynamicThemeTextColorOnly();
-                labelName.SetBinding(Label.TextProperty, nameof(FixNameItem.Name));
-                jobItemGrid.Add(labelName, 1);
+                nameLabel.SetBinding(Label.TextProperty, nameof(FixNameItem.Name));
+                jobItemGrid.Add(nameLabel, 1, 0);
 
                 return jobItemGrid;
             }),
         }.BindDynamicTheme();
 
-        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Names), BindingMode.TwoWay);
-        collectionView.BindingContext = vm;
-
         grid.Add(collectionView, 0, 1);
+        collectionView.BindingContext = vm;
+        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Names), BindingMode.TwoWay);
 
         var border = new Border
         {
@@ -256,8 +280,8 @@ public class FixNamesPage : ContentPage
             },
             Margin = new Thickness(2),
             Padding = new Thickness(2),
-            RowSpacing = 5,
-            ColumnSpacing = 5,
+            RowSpacing = 2,
+            ColumnSpacing = 2,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
@@ -271,8 +295,8 @@ public class FixNamesPage : ContentPage
             Padding = new Thickness(5),
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Auto }, // Apply
-                new ColumnDefinition { Width = GridLength.Auto }, // Line#
+                new ColumnDefinition { Width = 100 }, // Apply
+                new ColumnDefinition { Width = 65 }, // Line#
                 new ColumnDefinition { Width = GridLength.Star }, // Before
                 new ColumnDefinition { Width = GridLength.Star }, // After
             },
@@ -329,8 +353,8 @@ public class FixNamesPage : ContentPage
                 {
                     ColumnDefinitions =
                     {
-                        new ColumnDefinition { Width = GridLength.Auto }, // Apply
-                        new ColumnDefinition { Width = GridLength.Auto }, // Line#
+                        new ColumnDefinition { Width = 100 }, // Apply
+                        new ColumnDefinition { Width = 65 }, // Line#
                         new ColumnDefinition { Width = GridLength.Star }, // Before
                         new ColumnDefinition { Width = GridLength.Star }, // After
                     },
@@ -339,7 +363,7 @@ public class FixNamesPage : ContentPage
                 var switchHitActive = new Switch
                 {
                 }.BindDynamicThemeTextColorOnly();
-                switchHitActive.SetBinding(Label.TextProperty, nameof(FixNameHitItem.IsEnabled));
+                switchHitActive.SetBinding(Switch.IsToggledProperty, nameof(FixNameHitItem.IsEnabled));
                 jobItemGrid.Add(switchHitActive);
 
                 var labelLineNumber = new Label
@@ -370,10 +394,9 @@ public class FixNamesPage : ContentPage
             }),
         }.BindDynamicTheme();
 
-        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Hits), BindingMode.TwoWay);
-        collectionView.BindingContext = vm;
-
         grid.Add(collectionView, 0, 1);
+        collectionView.BindingContext = vm;
+        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Hits), BindingMode.TwoWay);
 
         var border = new Border
         {

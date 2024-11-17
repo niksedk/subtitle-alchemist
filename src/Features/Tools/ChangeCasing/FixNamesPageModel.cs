@@ -5,6 +5,7 @@ using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Dictionaries;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Dictionaries;
+using static Android.Icu.Text.IDNA;
 
 namespace SubtitleAlchemist.Features.Tools.ChangeCasing;
 
@@ -16,25 +17,55 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private ObservableCollection<FixNameHitItem> _hits;
 
+    [ObservableProperty]
+    private string _namesCount;
+
+    [ObservableProperty]
+    private string _hitCount;
+
+    [ObservableProperty]
+    private string _extraNames;
+
     public FixNamesPage? Page { get; set; }
 
     private Subtitle _subtitle;
-
+    private Subtitle _subtitleBefore;
     private NameList? _nameList;
     private List<string> _nameListInclMulti;
     private string _language;
     private const string ExpectedEndChars = " ,.!?:;…')]<-\"\r\n";
     private readonly HashSet<string> _usedNames;
+    private bool _dirty;
+    private readonly System.Timers.Timer _previewTimer;
+    private bool _loading;
+    private readonly object _lock = new object();
 
     public FixNamesPageModel()
     {
         _names = new ObservableCollection<FixNameItem>();
         _hits = new ObservableCollection<FixNameHitItem>();
 
+        _loading = true;
+        _namesCount = string.Empty;
+        _hitCount = string.Empty;
         _nameListInclMulti = new List<string>();
         _language = "en_US";
         _subtitle = new Subtitle();
         _usedNames = new HashSet<string>();
+        _extraNames = string.Empty;
+
+        _previewTimer = new System.Timers.Timer(500);
+        _previewTimer.Elapsed += (sender, args) =>
+        {
+            if (_dirty && !_loading)
+            {
+                lock (_lock)
+                {
+                    GeneratePreview();
+                    _dirty = false;
+                }
+            }
+        };
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -42,6 +73,11 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
         if (query["Subtitle"] is Subtitle subtitle)
         {
             _subtitle = new Subtitle(subtitle, false);
+        }
+
+        if (query["SubtitleBefore"] is Subtitle subtitleBefore)
+        {
+            _subtitleBefore = new Subtitle(subtitleBefore, false);
         }
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
@@ -56,11 +92,12 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
 
                 await DictionaryLoader.UnpackIfNotFound();
                 _nameList = new NameList(Se.DictionariesFolder, _language, Configuration.Settings.WordLists.UseOnlineNames, Configuration.Settings.WordLists.NamesUrl);
-                _nameListInclMulti = _nameList.GetAllNames(); // Will contains both one word names and multi names
 
+                ExtraNames = Se.Settings.Tools.ChangeCasing.ExtraNames;
                 FindAllNames();
-
-                Hits.Add(new FixNameHitItem("Name", 1, "Before", "After"));
+                GeneratePreview();
+                _previewTimer.Start();
+                _loading = false;
             });
             return false;
         });
@@ -70,7 +107,19 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
     {
         var text = HtmlUtil.RemoveHtmlTags(_subtitle.GetAllTexts());
         var textToLower = text.ToLowerInvariant();
-        Names.Clear();
+
+        _nameListInclMulti = _nameList!.GetAllNames(); // Will contains both one word names and multi names
+        foreach (var s in ExtraNames.Split(','))
+        {
+            var name = s.Trim();
+            if (name.Length > 1 && !_nameListInclMulti.Contains(name))
+            {
+                _nameListInclMulti.Add(name);
+            }
+        }
+
+        _usedNames.Clear();
+        var names = new List<FixNameItem>();
         foreach (var name in _nameListInclMulti)
         {
             var startIndex = textToLower.IndexOf(name.ToLowerInvariant(), StringComparison.Ordinal);
@@ -93,11 +142,33 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
                         {
                             if (!_usedNames.Contains(name))
                             {
-                                var isDont = _language.StartsWith("en", StringComparison.OrdinalIgnoreCase) && text.Substring(startIndex).StartsWith("don't", StringComparison.InvariantCultureIgnoreCase);
-                                if (!isDont)
+                                var skip = false;
+                                var isChecked = true;
+                                if (_language.StartsWith("en", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var isDont = text.Substring(startIndex).StartsWith("don't", StringComparison.InvariantCultureIgnoreCase);
+                                    if (isDont)
+                                    {
+                                        skip = true;
+                                    }
+
+                                    var commonNamesAndWords = new List<string>
+                                    {
+                                        "US",
+                                        "Lane",
+                                        "Bill",
+                                        "Rose",
+                                    };
+                                    if (commonNamesAndWords.Contains(name))
+                                    {
+                                        isChecked = false;
+                                    }
+                                }
+
+                                if (!skip)
                                 {
                                     _usedNames.Add(name);
-                                    Names.Add(new FixNameItem(name, true));
+                                    names.Add(new FixNameItem(name, isChecked));
                                     break; // break while
                                 }
                             }
@@ -109,7 +180,41 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
             }
         }
 
-        //TODO: groupBoxNames.Text = string.Format(LanguageSettings.Current.ChangeCasingNames.NamesFoundInSubtitleX, listViewNames.Items.Count);
+        Names = new ObservableCollection<FixNameItem>(names);
+        NamesCount = string.Format("Names: {0:#,##0}",  Names.Count);
+    }
+
+    private void GeneratePreview()
+    {
+        var hits = new List<FixNameHitItem>();
+        foreach (var p in _subtitle.Paragraphs)
+        {
+            var text = p.Text;
+            foreach (var item in Names)
+            {
+                var name = item.Name;
+
+                var textNoTags = HtmlUtil.RemoveHtmlTags(text, true);
+                if (textNoTags != textNoTags.ToUpperInvariant())
+                {
+                    if (item.IsChecked && text != null && text.Contains(name, StringComparison.OrdinalIgnoreCase) && name.Length > 1 && name != name.ToLowerInvariant())
+                    {
+                        var st = new StrippableText(text);
+                        st.FixCasing(new List<string> { name }, true, false, false, string.Empty);
+                        text = st.MergedString;
+                    }
+                }
+            }
+
+            if (text != p.Text)
+            {
+                var hit = new FixNameHitItem(p.Text, p.Number, p.Text, text, true);
+                hits.Add(hit);
+            }
+        }
+
+        Hits = new ObservableCollection<FixNameHitItem>(hits);
+        HitCount = string.Format("Hits: {0:#,##0}", Hits.Count);
     }
 
     [RelayCommand]
@@ -136,12 +241,32 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
     {
         var subtitle = new Subtitle(_subtitle, false);
 
+        foreach (var hit in Hits)
+        {
+            if (hit.IsEnabled)
+            {
+                subtitle.Paragraphs[hit.LineIndex].Text = hit.After;
+            }
+        }
+
+        Se.Settings.Tools.ChangeCasing.ExtraNames = ExtraNames;
+
+        var noOfLinesChanged = 0;
+        for (var i = 0; i < _subtitle.Paragraphs.Count; i++)
+        {
+            if (_subtitleBefore.Paragraphs[i].Text != subtitle.Paragraphs[i].Text)
+            {
+                noOfLinesChanged++;
+            }
+        }
+        var info = $"Change casing - lines changed: {noOfLinesChanged}";
+
         await Shell.Current.GoToAsync("../..", new Dictionary<string, object>
         {
             { "Page", nameof(FixNamesPage) },
             { "Subtitle", subtitle },
-            { "NoOfLinesChanged", 1 },
-            { "Status", "status" },
+            { "NoOfLinesChanged", noOfLinesChanged },
+            { "Status", info },
         });
     }
 
@@ -152,5 +277,24 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
         {
             { "Page", nameof(FixNamesPage) },
         });
+    }
+
+    [RelayCommand]
+    public void AddExtraName()
+    {
+        _loading = true;
+        FindAllNames();
+        _loading = false;
+        _dirty = true;
+    }
+
+    public void OnNameToggled(object? sender, ToggledEventArgs e)
+    {
+        if (_loading)
+        {
+            return;
+        }   
+
+        _dirty = true;
     }
 }
