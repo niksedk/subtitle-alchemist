@@ -832,7 +832,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     }
 
     [RelayCommand]
-    public async Task ShowEngineSettings()
+    public void ShowEngineSettings()
     {
         MainThread.BeginInvokeOnMainThread(async () =>
         {

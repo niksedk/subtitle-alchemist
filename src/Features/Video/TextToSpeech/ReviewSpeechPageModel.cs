@@ -131,6 +131,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         _models = new ObservableCollection<string>();
         _audioVisualizerTimer = new System.Timers.Timer(40);
         _videoFileName = string.Empty;
+        _styles = new ObservableCollection<string>();
     }
 
     private void PlayEnded(object? sender, EventArgs e)

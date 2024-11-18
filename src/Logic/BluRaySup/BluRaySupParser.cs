@@ -408,6 +408,11 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             public int PaletteId { get; set; }
             public int PaletteVersion { get; set; }
             public PaletteInfo? PaletteInfo { get; set; }
+
+            public PdsData()
+            {
+                Message = string.Empty;
+            }
         }
 
         public class OdsData

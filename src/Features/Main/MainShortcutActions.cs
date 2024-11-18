@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Markup;
-using SubtitleAlchemist.Features.Options.Settings;
+﻿using SubtitleAlchemist.Features.Options.Settings;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 
@@ -7,13 +6,11 @@ namespace SubtitleAlchemist.Features.Main;
 
 public class MainShortcutActions : IMainShortcutActions
 {
-    private MainPageModel _vm;
-    private MainPage _page;
+    private MainPageModel? _vm;
 
-    public void Initialize(IShortcutManager shortcutManager, MainPageModel pageModel, MainPage mainPage)
+    public void Initialize(IShortcutManager shortcutManager, MainPageModel pageModel)
     {
         _vm = pageModel;
-        _page = mainPage;
 
         shortcutManager.ClearShortcuts();
         foreach (var shortcut in Se.Settings.Shortcuts)
@@ -47,7 +44,7 @@ public class MainShortcutActions : IMainShortcutActions
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            _vm.MergeSelectedLinesCommand.Execute(_vm);
+            _vm!.MergeSelectedLinesCommand.Execute(_vm);
         });
     }
 
@@ -55,13 +52,13 @@ public class MainShortcutActions : IMainShortcutActions
     {
         MainThread.BeginInvokeOnMainThread(async () =>
         {
-            await _vm.ShowGoToLineNumber();
+            await _vm!.ShowGoToLineNumber();
         });
     }
 
     private void SubtitleListUp()
     {
-        var idx = _vm.GetFirstSelectedIndex();
+        var idx = _vm!.GetFirstSelectedIndex();
         if (idx <= 0)
         {
             return;
@@ -74,13 +71,13 @@ public class MainShortcutActions : IMainShortcutActions
     {
         MainThread.BeginInvokeOnMainThread(async () =>
         {
-            await _vm.ShowLayoutPicker();
+            await _vm!.ShowLayoutPicker();
         });
     }
 
     private void SubtitleListDown()
     {
-        var idx = _vm.GetFirstSelectedIndex();
+        var idx = _vm!.GetFirstSelectedIndex();
         if (idx < 0 || idx >= _vm.Paragraphs.Count - 1)
         {
             return;
@@ -91,7 +88,7 @@ public class MainShortcutActions : IMainShortcutActions
 
     private void SubtitleListSelectAll()
     {
-        foreach (var displayParagraph in _vm.Paragraphs)
+        foreach (var displayParagraph in _vm!.Paragraphs)
         {
             displayParagraph.IsSelected = true;
         }
@@ -99,11 +96,11 @@ public class MainShortcutActions : IMainShortcutActions
 
     private void SubtitleListSelectFirst()
     {
-        _vm.SelectParagraph(_vm.Paragraphs.FirstOrDefault());
+        _vm!.SelectParagraph(_vm.Paragraphs.FirstOrDefault());
     }
 
     private void SubtitleListSelectLast()
     {
-        _vm.SelectParagraph(_vm.Paragraphs.LastOrDefault());
+        _vm!.SelectParagraph(_vm.Paragraphs.LastOrDefault());
     }
 }

@@ -52,6 +52,7 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
         _subtitle = new Subtitle();
         _usedNames = new HashSet<string>();
         _extraNames = string.Empty;
+        _subtitleBefore = new Subtitle();
 
         _previewTimer = new System.Timers.Timer(500);
         _previewTimer.Elapsed += (sender, args) =>

@@ -648,7 +648,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
         {
             dp.Start = TimeSpan.FromMilliseconds(e.Paragraph.StartTime.TotalMilliseconds);
             dp.Duration = dp.End - dp.Start;
-            if (dp == _selectedParagraph)
+            if (dp == SelectedParagraph)
             {
                 CurrentStart = dp.Start;
                 CurrentDuration = dp.Duration;
@@ -659,7 +659,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
             dp.End = TimeSpan.FromMilliseconds(e.Paragraph.EndTime.TotalMilliseconds);
             dp.Duration = dp.End - dp.Start;
 
-            if (dp == _selectedParagraph)
+            if (dp == SelectedParagraph)
             {
                 CurrentDuration = dp.Duration;
             }
@@ -670,7 +670,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
             dp.End = TimeSpan.FromMilliseconds(e.Paragraph.EndTime.TotalMilliseconds);
             dp.Duration = dp.End - dp.Start;
 
-            if (dp == _selectedParagraph)
+            if (dp == SelectedParagraph)
             {
                 CurrentStart = dp.Start;
                 CurrentDuration = dp.Duration;
@@ -879,7 +879,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
             }
         }
 
-        _selectedParagraph = paragraph;
+        SelectedParagraph = paragraph;
         CurrentText = paragraph.Text;
         CurrentStart = paragraph.Start;
         CurrentEnd = paragraph.End;
@@ -927,7 +927,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
 
         SharpHookHandler.AddKeyPressed(KeyPressed);
         SharpHookHandler.AddKeyReleased(KeyReleased);
-        _mainShortcutActions.Initialize(_shortcutManager, this, MainPage!);
+        _mainShortcutActions.Initialize(_shortcutManager, this);
     }
 
     public void Loaded(MainPage mainPage)
@@ -1320,7 +1320,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
         _videoFileName = string.Empty;
         _subtitle = new Subtitle();
         Paragraphs = new ObservableCollection<DisplayParagraph>();
-        _selectedParagraph = null;
+        SelectedParagraph = null;
         CurrentText = string.Empty;
         CurrentStart = new TimeSpan();
         CurrentEnd = new TimeSpan();
@@ -2099,23 +2099,23 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
             return;
         }
 
-        if (_selectedParagraph != null && e.NewTextValue != _selectedParagraph.Text)
+        if (SelectedParagraph != null && e.NewTextValue != SelectedParagraph.Text)
         {
-            _selectedParagraph.Text = e.NewTextValue;
-            _selectedParagraph.P.Text = e.NewTextValue;
+            SelectedParagraph.Text = e.NewTextValue;
+            SelectedParagraph.P.Text = e.NewTextValue;
         }
     }
 
     public void CurrentStartChanged(object? sender, ValueChangedEventArgs e)
     {
-        if (_updating || _selectedParagraph == null)
+        if (_updating || SelectedParagraph == null)
         {
             return;
         }
 
-        _selectedParagraph.P.StartTime = new TimeCode(e.NewValue);
+        SelectedParagraph.P.StartTime = new TimeCode(e.NewValue);
         CurrentStart = TimeSpan.FromMilliseconds(e.NewValue);
-        var idx = Paragraphs.IndexOf(_selectedParagraph);
+        var idx = Paragraphs.IndexOf(SelectedParagraph);
         if (idx >= 0)
         {
             Paragraphs[idx].Start = CurrentStart;
@@ -2124,18 +2124,18 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
 
     public void CurrentDurationChanged(object? sender, ValueChangedEventArgs e)
     {
-        if (_updating || _selectedParagraph == null)
+        if (_updating || SelectedParagraph == null)
         {
             return;
         }
 
-        var idx = Paragraphs.IndexOf(_selectedParagraph);
+        var idx = Paragraphs.IndexOf(SelectedParagraph);
         if (idx < 0)
         {
             return;
         }
 
-        _selectedParagraph.P.EndTime = new TimeCode(_selectedParagraph.Start.TotalMilliseconds + e.NewValue);
+        SelectedParagraph.P.EndTime = new TimeCode(SelectedParagraph.Start.TotalMilliseconds + e.NewValue);
         CurrentEnd = TimeSpan.FromMilliseconds(CurrentStart.TotalMilliseconds + e.NewValue);
         CurrentDuration = TimeSpan.FromMilliseconds(e.NewValue);
         Paragraphs[idx].Duration = CurrentDuration;
@@ -2192,7 +2192,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
         {
             Paragraphs[firstIdx].IsSelected = true;
 
-            _selectedParagraph = Paragraphs[firstIdx];
+            SelectedParagraph = Paragraphs[firstIdx];
         }
 
         Renumber();
@@ -2319,7 +2319,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
             {
                 if (first)
                 {
-                    _selectedParagraph = displayParagraph;
+                    SelectedParagraph = displayParagraph;
                     toggleOn = !HtmlUtil.IsTagOn(displayParagraph.Text, tag, true, isAssa);
                     first = false;
                 }
@@ -2333,7 +2333,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
                     displayParagraph.Text = HtmlUtil.TagOff(displayParagraph.Text, tag, true, isAssa);
                 }
 
-                if (_selectedParagraph == displayParagraph)
+                if (SelectedParagraph == displayParagraph)
                 {
                     CurrentText = displayParagraph.Text;
                 }
@@ -2356,7 +2356,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
         var action = _shortcutManager.CheckShortcuts(focusedControl);
         if (action != null)
         {
-            MainThread.BeginInvokeOnMainThread(async () => { action.Invoke(); });
+            MainThread.BeginInvokeOnMainThread(() => { action.Invoke(); });
         }
     }
 

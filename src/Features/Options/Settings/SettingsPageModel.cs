@@ -285,6 +285,10 @@ public partial class SettingsPageModel : ObservableObject
         _favoriteSubtitleFormats = new ObservableCollection<string>(allSubtitleFormats.Take(5));
 
         Shortcuts = ShortcutDisplay.GetShortcuts();
+
+        GridShortcutsGeneral = new Grid();
+        SettingsItemShortcutsGeneral = new SettingItem("Shortcuts", SettingsPage.SectionName.Shortcuts);
+        _colorErrorColor = Colors.Red;
     }
 
     public void LeftMenuTapped(object? sender, TappedEventArgs e, SettingsPage.SectionName sectionName)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.IO.Compression;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -99,6 +100,11 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await CheckAndUnpackOcrFiles();
+        });
+
         if (query["Subtitle"] is List<BluRaySupParser.PcsData> bluRaySup)
         {
             _ocrSubtitle = new BluRayPcsDataList(bluRaySup); ;
@@ -124,12 +130,29 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
-            MainThread.BeginInvokeOnMainThread(async () =>
+            MainThread.BeginInvokeOnMainThread(() =>
             {
                 _loading = false;
             });
             return false;
         });
+    }
+
+    private async Task CheckAndUnpackOcrFiles()
+    {
+        if (!Directory.Exists(Se.OcrFolder))
+        {
+            Directory.CreateDirectory(Se.OcrFolder);
+        }
+
+        var nOcrLatin = Path.Combine(Se.OcrFolder, "Latin.nocr");
+        if (!File.Exists(nOcrLatin))
+        {
+            using var stream = await FileSystem.OpenAppPackageFileAsync("Latin.nocr");
+            using var fileStream = File.Create(nOcrLatin);
+            stream.Seek(0, SeekOrigin.Begin);
+            stream.CopyTo(fileStream);
+        }
     }
 
     private string? GetNOcrLanguageFileName()

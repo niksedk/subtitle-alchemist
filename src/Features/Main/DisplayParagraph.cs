@@ -30,6 +30,7 @@ public partial class DisplayParagraph : ObservableObject
 
     public DisplayParagraph(Paragraph paragraph)
     {
+        _backgroundColor = Colors.Transparent;
         P = paragraph;
         Start = paragraph.StartTime.TimeSpan;
         End = paragraph.EndTime.TimeSpan;
@@ -41,6 +42,7 @@ public partial class DisplayParagraph : ObservableObject
 
     public DisplayParagraph(DisplayParagraph paragraph)
     {
+        _backgroundColor = Colors.Transparent;
         P = paragraph.P;
         Start = paragraph.Start;
         End = paragraph.End;

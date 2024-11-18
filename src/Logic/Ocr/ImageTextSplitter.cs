@@ -12,6 +12,11 @@ public class TextSplitter
         public int Y { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
+
+        public LetterBitmap()
+        {
+            Bitmap = new SKBitmap();
+        }
     }
 
     public static List<List<LetterBitmap>> SplitTextIntoLinesAndLetters(SKBitmap image)

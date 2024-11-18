@@ -1,5 +1,4 @@
 ﻿using SkiaSharp;
-using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace SubtitleAlchemist.Logic.Ocr
@@ -62,6 +61,12 @@ namespace SubtitleAlchemist.Logic.Ocr
         public byte[] Buffer1 { get; set; }
         public byte[] Buffer2 { get; set; }
         public int Length => Buffer1.Length + Buffer2.Length;
+
+        public RunLengthTwoParts()
+        {
+            Buffer1 = [];
+            Buffer2 = [];
+        }
     }
 
     public class NikseBitmap2

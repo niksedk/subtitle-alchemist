@@ -132,7 +132,7 @@ public class AzureSpeech : ITtsEngine
         }
 
         var ms = new MemoryStream();
-        var ok = await _ttsDownloadService.DownloadAzureVoiceSpeak(text, azureVoice, model, Se.Settings.Video.TextToSpeech.AzureApiKey, "en", region, ms, null, cancellationToken);
+        var ok = await _ttsDownloadService.DownloadAzureVoiceSpeak(text, azureVoice, model!, Se.Settings.Video.TextToSpeech.AzureApiKey, "en", region!, ms, null, cancellationToken);
         if (!ok)
         {
             return new TtsResult { Text = text, FileName = string.Empty, Error = true };
