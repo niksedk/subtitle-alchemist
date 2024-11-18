@@ -1,6 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Text;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using SkiaSharp;
@@ -8,6 +6,8 @@ using SubtitleAlchemist.Logic.BluRaySup;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Logic.Ocr;
+using System.Collections.ObjectModel;
+using System.Text;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -61,14 +61,17 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private bool _isProgressVisible;
 
+    [ObservableProperty]
+    private bool _nOcrDrawUnknownText;
+
     public OcrPage? Page { get; set; }
     public CollectionView ListView { get; set; }
 
     private bool _isRunningOcr;
-    private Subtitle _subtitle;
     private IOcrSubtitle _ocrSubtitle;
-    private INOcrCaseFixer _nOcrCaseFixer;
+    private readonly INOcrCaseFixer _nOcrCaseFixer;
     private string _language;
+    private string _fileName;
     private bool _loading;
     private CancellationTokenSource _cancellationTokenSource;
     private NOcrDb? _nOcrDb;
@@ -78,7 +81,6 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         _nOcrCaseFixer = nOcrCaseFixer;
         _ocrEngines = new ObservableCollection<OcrEngineItem>(OcrEngineItem.GetOcrEngines());
         _selectedOcrEngine = _ocrEngines.FirstOrDefault();
-        _subtitle = new Subtitle();
         _ocrSubtitle = new BluRayPcsDataList(new List<BluRaySupParser.PcsData>());
         _ocrSubtitleItems = new ObservableCollection<OcrSubtitleItem>();
         _language = "eng";
@@ -95,6 +97,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         _cancellationTokenSource = new CancellationTokenSource();
         _isRunningOcr = false;
         _nOcrDb = null;
+        _fileName = string.Empty;
+        _nOcrDrawUnknownText = true;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -103,6 +107,11 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         {
             await CheckAndUnpackOcrFiles();
         });
+
+        if (query.ContainsKey("FileName") && query["FileName"] is string fileName)
+        {
+            _fileName = fileName;
+        }
 
         if (query["Subtitle"] is List<BluRaySupParser.PcsData> bluRaySup)
         {
@@ -137,7 +146,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         });
     }
 
-    private async Task CheckAndUnpackOcrFiles()
+    private static async Task CheckAndUnpackOcrFiles()
     {
         if (!Directory.Exists(Se.OcrFolder))
         {
@@ -202,6 +211,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
                 ProgressValue = i / (double)OcrSubtitleItems.Count;
                 ProgressText = $"Running OCR... {i + 1}/{OcrSubtitleItems.Count}";
+                SelectedStartFromNumber = i + 1;
 
                 var item = OcrSubtitleItems[i];
                 var bitmap = item.GetBitmap();
@@ -221,19 +231,34 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                     }
                     else
                     {
-                        var match = _nOcrDb.GetMatch(splitterItem.NikseBitmap, splitterItem.Top, true, 50);
+                        var match = _nOcrDb!.GetMatch(splitterItem.NikseBitmap, splitterItem.Top, true, 10);
+
+                        if (NOcrDrawUnknownText && match == null)
+                        {
+                            MainThread.BeginInvokeOnMainThread(async() =>
+                            {
+                                await Shell.Current.GoToAsync(nameof(NOcrCharacterAddPage), new Dictionary<string, object>
+                                {
+                                    { "Page", nameof(OcrPage) },
+                                    { "Bitmap", bitmap },
+                                    { "Letters", list },
+                                    { "Item", splitterItem },
+                                });
+                            });
+                            return;
+                        }
+
                         sb.Append(match != null ? _nOcrCaseFixer.FixUppercaseLowercaseIssues(splitterItem, match) : "*");
                     }
                 }
 
                 item.Text = sb.ToString().Trim().Replace(Environment.NewLine, " ");
 
+                var scrollToIndex = i;
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    ListView.ScrollTo(i, -1, ScrollToPosition.MakeVisible, false);
+                    ListView.ScrollTo(scrollToIndex, -1, ScrollToPosition.MakeVisible, false);
                 });
-
-                SelectedStartFromNumber = i + 1;
             }
 
             MainThread.BeginInvokeOnMainThread(async () =>
@@ -259,12 +284,20 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task Ok()
     {
-        var subtitle = new Subtitle(_subtitle, false);
+        var subtitle = new Subtitle();
+        foreach (var item in OcrSubtitleItems)
+        {
+            var start = item.StartTime;
+            var end = item.EndTime;
+            var text = item.Text;
+            subtitle.Paragraphs.Add(new Paragraph(text, start.TotalMilliseconds, end.TotalMilliseconds));
+        }
 
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(OcrPage) },
             { "Subtitle", subtitle },
+            { "Status", "" },
         });
     }
 
@@ -283,7 +316,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         {
             var bitmap = SelectedOcrSubtitleItem.GetBitmap();
             CurrentImageSource = bitmap.ToImageSource();
-            CurrentBitmapInfo = $"{SelectedOcrSubtitleItem.Number}/{_ocrSubtitle.Count}: {bitmap.Width}x{bitmap.Height}";
+            CurrentBitmapInfo = $"Image {SelectedOcrSubtitleItem.Number} of {_ocrSubtitle.Count}: {bitmap.Width}x{bitmap.Height}";
             SelectedStartFromNumber = SelectedOcrSubtitleItem.Number;
             CurrentText = SelectedOcrSubtitleItem.Text;
         }

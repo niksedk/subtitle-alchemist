@@ -79,6 +79,9 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     [ObservableProperty] private double _selectedFromFrameRate;
     [ObservableProperty] private double _selectedToFrameRate;
 
+    [ObservableProperty] private ImageSource? _letterImageSource;
+    [ObservableProperty] private bool _canShrink;
+    [ObservableProperty] private bool _canExpand;
 
     public View ViewRemoveFormatting { get; set; }
     public View ViewOffsetTimeCodes { get; set; }
@@ -258,6 +261,37 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             UseSourceFolderVisible = SaveInSourceFolder;
             UseOutputFolderVisible = !SaveInSourceFolder;
         });
+    }
+
+    [RelayCommand]
+    private void Shrink()
+    {
+        
+    }
+
+    [RelayCommand]
+    private void Expand()
+    {
+        
+    }
+
+    [RelayCommand]
+    private void UseOnce()
+    {
+
+    }
+
+    [RelayCommand]
+    private void Skip()
+    {
+
+    }
+
+
+    [RelayCommand]
+    private void Abort()
+    {
+
     }
 
     [RelayCommand]

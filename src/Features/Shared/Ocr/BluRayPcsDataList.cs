@@ -16,12 +16,12 @@ public class BluRayPcsDataList : IOcrSubtitle
 
     public TimeSpan GetStartTime(int index)
     {
-        return TimeSpan.FromMilliseconds(_pcsDataList[index].StartTime);
+        return TimeSpan.FromMilliseconds(_pcsDataList[index].StartTime / 90.0);
     }
 
     public TimeSpan GetEndTime(int index)
     {
-        return TimeSpan.FromMilliseconds(_pcsDataList[index].EndTime);
+        return TimeSpan.FromMilliseconds(_pcsDataList[index].EndTime / 90.0);
     }
 
     public BluRayPcsDataList(List<BluRaySupParser.PcsData> pcsDataList)

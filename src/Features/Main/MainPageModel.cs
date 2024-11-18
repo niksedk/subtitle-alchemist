@@ -423,6 +423,22 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
                 SelectParagraph(0);
             }
         }
+
+        if (page == nameof(OcrPage))
+        {
+            MakeHistoryForUndo("Before OCR");
+
+            if (query.ContainsKey("Subtitle") && query["Subtitle"] is Subtitle ocrSubtitle)
+            {
+                Paragraphs = new ObservableCollection<DisplayParagraph>(ocrSubtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+                SelectParagraph(0);
+            }
+
+            if (query.ContainsKey("Status") && query["Status"] is string statusInfo)
+            {
+                ShowStatus(statusInfo);
+            }
+        }
     }
 
     private void MakeHistoryForUndo(string description)
@@ -1167,24 +1183,8 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
                     {
                         { "Page", nameof(MainPage) },
                         { "Subtitle", subtitles },
+                        { "FileName", subtitleFileName },
                     });
-
-                    //var count = 1;
-                    //foreach (BluRaySupParser.PcsData p in subtitles)
-                    //{
-                    //    var bitmap = p.GetBitmap();
-                    //    using (var surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height, SKColorType.Rgba8888, SKAlphaType.Premul)))
-                    //    {
-                    //        var canvas = surface.Canvas;
-                    //        canvas.DrawBitmap(bitmap, 0, 0);
-                    //        using (var data = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100))
-                    //        {
-                    //            File.WriteAllBytes(@"C:\Temp\" + count + ".png", data.ToArray());
-                    //        }
-                    //    }
-                    //    count++;
-                    //}
-
                 });
                 return;
             }
