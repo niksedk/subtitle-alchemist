@@ -5,7 +5,6 @@ using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Dictionaries;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Dictionaries;
-using static Android.Icu.Text.IDNA;
 
 namespace SubtitleAlchemist.Features.Tools.ChangeCasing;
 

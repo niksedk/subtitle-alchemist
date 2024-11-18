@@ -3,6 +3,7 @@ using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Features.Options.Settings;
+using SubtitleAlchemist.Features.Shared.Ocr;
 using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
@@ -24,25 +25,26 @@ namespace SubtitleAlchemist
             InitializeComponent();
 
             AddRoutes(
-                typeof(MainPage),
-                typeof(SettingsPage),
-                typeof(AudioToTextWhisperPage),
-                typeof(WhisperAdvancedPage),
-                typeof(TranslatePage),
-                typeof(AdjustDurationPage),
-                typeof(FixCommonErrorsPage),
-                typeof(SpellCheckerPage),
-                typeof(RestoreAutoBackupPage),
-                typeof(ExportEbuPage),
-                typeof(UndoRedoHistoryPage),
                 typeof(AdjustAllTimesPage),
-                typeof(BurnInPage),
-                typeof(TransparentSubPage),
-                typeof(TextToSpeechPage),
-                typeof(ReviewSpeechPage),
+                typeof(AdjustDurationPage),
+                typeof(AudioToTextWhisperPage),
                 typeof(BatchConvertPage),
+                typeof(BurnInPage),
                 typeof(ChangeCasingPage),
-                typeof(FixNamesPage)
+                typeof(ExportEbuPage),
+                typeof(FixCommonErrorsPage),
+                typeof(FixNamesPage),
+                typeof(MainPage),
+                typeof(OcrPage),
+                typeof(RestoreAutoBackupPage),
+                typeof(ReviewSpeechPage),
+                typeof(SettingsPage),
+                typeof(SpellCheckerPage),
+                typeof(TextToSpeechPage),
+                typeof(TranslatePage),
+                typeof(TransparentSubPage),
+                typeof(UndoRedoHistoryPage),
+                typeof(WhisperAdvancedPage)
             );
         }
 

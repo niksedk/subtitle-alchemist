@@ -24,6 +24,7 @@ public class Se
     public static string DictionariesFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "Dictionaries");
     public static string AutoBackupFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "AutoBackup");
     public static string TtsFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "TTS");
+    public static string OcrFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "OCR");
 
     public Se()
     {

@@ -50,6 +50,7 @@ using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.BluRaySup;
 using SharpCompress.Common;
 using SkiaSharp;
+using SubtitleAlchemist.Features.Shared.Ocr;
 using SubtitleAlchemist.Features.Tools.ChangeCasing;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -1128,6 +1129,67 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
 
         _timerAutoBackup.Stop();
 
+        var ext = Path.GetExtension(subtitleFileName);
+        var fileSize = (long)0;
+        try
+        {
+            var fi = new FileInfo(subtitleFileName);
+            fileSize = fi.Length;
+        }
+        catch
+        {
+            // ignore
+        }
+
+        if (fileSize < 10)
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                var message = fileSize == 0 ? "File size is zero!" : $"File size too small - only {fileSize} bytes";
+                await MainPage!.DisplayAlert(
+                    "Open subtitle failed",
+                    $"Unable to read subtitle file \"{subtitleFileName}\". {message}",
+                    "OK");
+            });
+
+            return;
+        }
+
+        if (ext == ".sup" && FileUtil.IsBluRaySup(subtitleFileName))
+        {
+            var log = new StringBuilder();
+            var subtitles = BluRaySupParser.ParseBluRaySup(subtitleFileName, log);
+            if (subtitles.Count > 0)
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Shell.Current.GoToAsync(nameof(OcrPage), new Dictionary<string, object>
+                    {
+                        { "Page", nameof(MainPage) },
+                        { "Subtitle", subtitles },
+                    });
+
+                    //var count = 1;
+                    //foreach (BluRaySupParser.PcsData p in subtitles)
+                    //{
+                    //    var bitmap = p.GetBitmap();
+                    //    using (var surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height, SKColorType.Rgba8888, SKAlphaType.Premul)))
+                    //    {
+                    //        var canvas = surface.Canvas;
+                    //        canvas.DrawBitmap(bitmap, 0, 0);
+                    //        using (var data = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100))
+                    //        {
+                    //            File.WriteAllBytes(@"C:\Temp\" + count + ".png", data.ToArray());
+                    //        }
+                    //    }
+                    //    count++;
+                    //}
+
+                });
+                return;
+            }
+        }
+
         var subtitle = Subtitle.Parse(subtitleFileName);
         if (subtitle == null)
         {
@@ -1143,57 +1205,10 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
 
             if (subtitle == null)
             {
-                var fileSize = (long)0;
-                try
-                {
-                    var fi = new FileInfo(subtitleFileName);
-                    fileSize = fi.Length;
-                }
-                catch
-                {
-                    // ignore
-                }
-
-                var ext = Path.GetExtension(subtitleFileName);
-
-                if (ext == ".sup" && FileUtil.IsBluRaySup(subtitleFileName))
-                {
-                    var log = new StringBuilder();
-                    var subtitles = BluRaySupParser.ParseBluRaySup(subtitleFileName, log);
-                    if (subtitles.Count == 0)
-                    {
-                        MainThread.BeginInvokeOnMainThread(async () =>
-                        {
-                            var message ="Did not find any subtitles in Bluray sup file.";
-                            await MainPage!.DisplayAlert(
-                                "Open subtitle failed",
-                                $"{message}",
-                                "OK");
-                        });
-
-                        return;
-                    }
-
-                    var count = 1;
-                    foreach (BluRaySupParser.PcsData p in subtitles)
-                    {
-                        var bitmap = p.GetBitmap();
-                        using (var surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height, SKColorType.Rgba8888, SKAlphaType.Premul)))
-                        {
-                            var canvas = surface.Canvas;
-                            canvas.DrawBitmap(bitmap, 0, 0);
-                            using (var data = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100))
-                            {
-                                File.WriteAllBytes(@"C:\Temp\" + count + ".png", data.ToArray());
-                            }
-                        }
-                        count++;
-                    }
-                }
 
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    var message = fileSize == 0 ? "File size is zero!" : "Unknown format?";
+                    var message = "Unknown format?";
                     await MainPage!.DisplayAlert(
                         "Open subtitle failed",
                         $"Unable to read subtitle file \"{subtitleFileName}\". {message}",

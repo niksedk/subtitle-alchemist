@@ -20,6 +20,7 @@ using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Features.Main.LayoutPicker;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Features.Options.Settings;
+using SubtitleAlchemist.Features.Shared.Ocr;
 using SubtitleAlchemist.Features.Shared.PickSubtitleLine;
 using SubtitleAlchemist.Features.Shared.PickVideoPosition;
 using SubtitleAlchemist.Features.SpellCheck;
@@ -43,6 +44,7 @@ using SubtitleAlchemist.Services;
 using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
 using EditShortcutPopupModel = SubtitleAlchemist.Features.Options.Settings.EditShortcutPopupModel;
 using SubtitleAlchemist.Features.Tools.ChangeCasing;
+using OcrPageModel = SubtitleAlchemist.Features.Shared.Ocr.OcrPageModel;
 
 namespace SubtitleAlchemist
 {
@@ -105,6 +107,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<ChangeCasingPageModel>();
             builder.Services.AddTransient<FixNamesPage>();
             builder.Services.AddTransient<FixNamesPageModel>();
+            builder.Services.AddTransient<OcrPage>();
+            builder.Services.AddTransient<OcrPageModel>();
 
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<ISpellCheckManager, SpellCheckManager>();
@@ -119,6 +123,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<IShortcutManager, ShortcutManager>();
             builder.Services.AddTransient<IMainShortcutActions, MainShortcutActions>();
             builder.Services.AddTransient<IBatchConverter, BatchConverter>();
+            builder.Services.AddTransient<INOcrCaseFixer, NOcrCaseFixer>();
 
             builder.Services.AddTransientPopup<AboutPopup, AboutPopupModel>();
             builder.Services.AddTransientPopup<LayoutPickerPopup, LayoutPickerPopupModel>();

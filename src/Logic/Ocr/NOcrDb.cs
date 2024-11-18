@@ -1,8 +1,6 @@
-﻿using Nikse.SubtitleEdit.Core.Common;
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Text;
-
-//TODO: Remove "NikseBitmap"
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Logic.Ocr;
 
@@ -128,7 +126,7 @@ public class NOcrDb
         }
     }
 
-    public NOcrChar? GetMatchExpanded(NikseBitmap nikseBitmap, ImageSplitterItem targetItem, int listIndex, List<ImageSplitterItem> list)
+    public NOcrChar? GetMatchExpanded(NikseBitmap2 nikseBitmap, ImageSplitterItem2 targetItem, int listIndex, List<ImageSplitterItem2> list)
     {
         var w = targetItem.NikseBitmap.Width;
         for (var i = 0; i < OcrCharactersExpanded.Count; i++)
@@ -274,7 +272,7 @@ public class NOcrDb
         return null;
     }
 
-    private static OcrPoint GetTotalSize(int listIndex, List<ImageSplitterItem> items, int count)
+    private static OcrPoint GetTotalSize(int listIndex, List<ImageSplitterItem2> items, int count)
     {
         if (listIndex + count > items.Count)
         {
@@ -318,7 +316,7 @@ public class NOcrDb
         return new OcrPoint(maximumX - minimumX, maximumY - minimumY);
     }
 
-    public NOcrChar? GetMatch(NikseBitmap bitmap, int topMargin, bool deepSeek, int maxWrongPixels)
+    public NOcrChar? GetMatch(NikseBitmap2 bitmap, int topMargin, bool deepSeek, int maxWrongPixels)
     {
         // only very very accurate matches
         foreach (var oc in OcrCharacters)
@@ -461,7 +459,7 @@ public class NOcrDb
         return new OcrPoint((int)Math.Round(p.X + (height - p.Y) * italicAngle - moveLeftPixels), p.Y);
     }
 
-    public static bool IsMatch(NikseBitmap bitmap, NOcrChar oc, int errorsAllowed)
+    public static bool IsMatch(NikseBitmap2 bitmap, NOcrChar oc, int errorsAllowed)
     {
         var index = 0;
         var errors = 0;
@@ -515,9 +513,9 @@ public class NOcrDb
     public static List<string> GetDatabases()
     {
         return Directory
-            .GetFiles(Configuration.OcrDirectory.TrimEnd(Path.DirectorySeparatorChar), "*.nocr")
+            .GetFiles(Se.OcrFolder.TrimEnd(Path.DirectorySeparatorChar), "*.nocr")
             .Select(Path.GetFileNameWithoutExtension)
             .OrderBy(p => p)
-            .ToList();
+            .ToList()!;
     }
 }

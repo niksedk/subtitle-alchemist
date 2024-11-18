@@ -16,7 +16,7 @@ namespace SubtitleAlchemist.Logic.Media
                     {
                         { DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // UTType values
                         { DevicePlatform.Android, new[] { "application/text" } }, // MIME type
-                        { DevicePlatform.WinUI, new[] { ".srt", ".ass" } }, // file extension
+                        { DevicePlatform.WinUI, new[] { ".srt", ".ass", ".sup" } }, // file extension
                         { DevicePlatform.Tizen, new[] { "*/*" } },
                         { DevicePlatform.macOS, new[] { "srt", "ass" } }, // UTType values
                     });
