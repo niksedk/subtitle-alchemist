@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download;
 
@@ -111,7 +112,7 @@ public class DownloadWhisperModelPopup : Popup
         vm.ProgressBar  = new ProgressBar
         {
             Progress = 0.5,
-            ProgressColor = Colors.Orange,
+            ProgressColor = (Color)Application.Current!.Resources[ThemeNames.ProgressColor],
             HorizontalOptions = LayoutOptions.Fill,
         };
         vm.ProgressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));

@@ -1,6 +1,7 @@
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 
@@ -54,7 +55,7 @@ public sealed class DownloadFfmpegPopup : Popup
         var progressBar = new ProgressBar
         {
             Progress = 0.5,
-            ProgressColor = Colors.Orange,
+            ProgressColor = (Color)Application.Current!.Resources[ThemeNames.ProgressColor],
             HorizontalOptions = LayoutOptions.Fill,
         };
         progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));

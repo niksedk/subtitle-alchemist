@@ -1,6 +1,7 @@
 using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 
@@ -265,7 +266,7 @@ public class AudioToTextWhisperPage : ContentPage
         vm.ProgressBar = new ProgressBar
         {
             Progress = 0.5,
-            ProgressColor = Colors.Orange,
+            ProgressColor = (Color)Application.Current!.Resources[ThemeNames.ProgressColor],
             HorizontalOptions = LayoutOptions.Fill,
             Margin = new Thickness(15, 2, 15, 2),
             IsVisible = false

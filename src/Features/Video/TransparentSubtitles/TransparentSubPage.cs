@@ -77,7 +77,7 @@ public class TransparentSubPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
             Progress = 0,
-            ProgressColor = Colors.Orange,
+            ProgressColor = (Color)Application.Current!.Resources[ThemeNames.ProgressColor],
             IsVisible = false,
         };
         progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));

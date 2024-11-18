@@ -332,6 +332,7 @@ namespace SubtitleAlchemist.Logic
                     SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Colors.LightGreen);
                     SetThemeDictionaryColor(dictionaries, ThemeNames.LinkColor, Colors.DarkBlue);
                     SetThemeDictionaryColor(dictionaries, ThemeNames.TableHeaderBackgroundColor, Color.FromRgb(253, 253, 253));
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.ProgressColor, Colors.Orange);
                 }
                 else if (themeName == "Dark")
                 {
@@ -342,6 +343,7 @@ namespace SubtitleAlchemist.Logic
                     SetThemeDictionaryColor(dictionaries, ThemeNames.ActiveBackgroundColor, Color.FromRgb(24, 52, 75));
                     SetThemeDictionaryColor(dictionaries, ThemeNames.LinkColor, Colors.LightSkyBlue);
                     SetThemeDictionaryColor(dictionaries, ThemeNames.TableHeaderBackgroundColor, Color.FromRgb(52, 52, 52));
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.ProgressColor, Colors.Orange);
                 }
             }
         }

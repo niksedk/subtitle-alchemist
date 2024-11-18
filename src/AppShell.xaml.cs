@@ -24,7 +24,8 @@ namespace SubtitleAlchemist
         {
             InitializeComponent();
 
-            AddRoutes(
+            var types = new List<Type>
+            {
                 typeof(AdjustAllTimesPage),
                 typeof(AdjustDurationPage),
                 typeof(AudioToTextWhisperPage),
@@ -35,6 +36,8 @@ namespace SubtitleAlchemist
                 typeof(FixCommonErrorsPage),
                 typeof(FixNamesPage),
                 typeof(MainPage),
+                typeof(NOcrCharacterAddPage),
+                typeof(NOcrCharacterInspectPage),
                 typeof(OcrPage),
                 typeof(RestoreAutoBackupPage),
                 typeof(ReviewSpeechPage),
@@ -44,12 +47,9 @@ namespace SubtitleAlchemist
                 typeof(TranslatePage),
                 typeof(TransparentSubPage),
                 typeof(UndoRedoHistoryPage),
-                typeof(WhisperAdvancedPage)
-            );
-        }
+                typeof(WhisperAdvancedPage),
+            };
 
-        private static void AddRoutes(params Type[] types)
-        {
             foreach (var type in types)
             {
                 Routing.RegisterRoute(type.Name, type);

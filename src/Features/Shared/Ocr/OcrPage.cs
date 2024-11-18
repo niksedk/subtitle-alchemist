@@ -80,32 +80,6 @@ public class OcrPage : ContentPage
             Command = vm.CancelCommand,
         }.BindDynamicTheme();
 
-
-
-        var stackProgress = new StackLayout
-        {
-            Orientation = StackOrientation.Vertical,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Children =
-            {
-                new Label
-                    {
-                        HorizontalOptions = LayoutOptions.Fill,
-                        VerticalOptions = LayoutOptions.Start,
-                    }.BindDynamicTheme()
-                    .BindIsVisible(nameof(vm.IsProgressVisible))
-                    .BindText(nameof(vm.ProgressText)),
-
-                new ProgressBar
-                {
-                    HorizontalOptions = LayoutOptions.Fill,
-                    VerticalOptions = LayoutOptions.Start,
-                }.BindIsVisible(nameof(vm.IsProgressVisible)).BindProgress(nameof(vm.ProgressValue)),
-            },
-        }.BindDynamicTheme();
-
-
         var stackButtons = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -114,7 +88,6 @@ public class OcrPage : ContentPage
             {
                 buttonOk,
                 buttonCancel,
-                stackProgress,
             }
         };
         grid.Add(stackButtons, 0, row);
@@ -338,8 +311,9 @@ public class OcrPage : ContentPage
         {
             RowDefinitions =
             {
-                new RowDefinition { Height = GridLength.Star }, 
-                new RowDefinition { Height = GridLength.Auto }, 
+                new RowDefinition { Height = 100 }, // text box
+                new RowDefinition { Height = GridLength.Auto }, // buttons 
+                new RowDefinition { Height = GridLength.Auto },  // progress
             },
             ColumnDefinitions =
             {
@@ -403,9 +377,32 @@ public class OcrPage : ContentPage
                 buttonPause,
             }
         };
-
         grid.Add(stackButtons, 0, 1);
 
+        var stackProgress = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                new Label
+                    {
+                        HorizontalOptions = LayoutOptions.Fill,
+                        VerticalOptions = LayoutOptions.Start,
+                    }.BindDynamicTheme()
+                    .BindIsVisible(nameof(vm.IsProgressVisible))
+                    .BindText(nameof(vm.ProgressText)),
+
+                new ProgressBar
+                {
+                    HorizontalOptions = LayoutOptions.Fill,
+                    VerticalOptions = LayoutOptions.Start,
+                    ProgressColor = (Color)Application.Current!.Resources[ThemeNames.ProgressColor],
+                }.BindIsVisible(nameof(vm.IsProgressVisible)).BindProgress(nameof(vm.ProgressValue)),
+            },
+        }.BindDynamicTheme();
+        grid.Add(stackProgress, 0, 2);
 
         return grid;
     }

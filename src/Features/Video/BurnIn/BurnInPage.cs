@@ -90,8 +90,8 @@ public class BurnInPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 0),
             Progress = 0,
-            ProgressColor = Colors.Orange,
             IsVisible = false,
+            ProgressColor = (Color)Application.Current!.Resources[ThemeNames.ProgressColor],
         };
         progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));
         vm.ProgressBar = progressBar;

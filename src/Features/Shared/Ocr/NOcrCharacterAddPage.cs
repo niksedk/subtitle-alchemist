@@ -1,18 +1,18 @@
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Controls.NumberUpDownControl;
 using SubtitleAlchemist.Controls.SubTimeControl;
-using SubtitleAlchemist.Features.Tools.AdjustDuration;
+using SubtitleAlchemist.Features.Tools.BatchConvert;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 
-namespace SubtitleAlchemist.Features.Tools.BatchConvert;
+namespace SubtitleAlchemist.Features.Shared.Ocr;
 
-public class BatchConvertPage : ContentPage
+public class NOcrCharacterAddPage : ContentPage
 {
-    private readonly BatchConvertPageModel _vm;
+    private readonly NOcrCharacterAddPageModel _vm;
 
-    public BatchConvertPage(BatchConvertPageModel vm)
+    public NOcrCharacterAddPage(NOcrCharacterAddPageModel vm)
     {
         BindingContext = vm;
         _vm = vm;
@@ -138,7 +138,7 @@ public class BatchConvertPage : ContentPage
         vm.Page = this;
     }
 
-    private static Border MakeFileList(BatchConvertPageModel vm)
+    private static Border MakeFileList(NOcrCharacterAddPageModel vm)
     {
         var grid = new Grid
         {
@@ -448,7 +448,7 @@ public class BatchConvertPage : ContentPage
         return border;
     }
 
-    private static Grid MakeSettingsList(BatchConvertPageModel vm)
+    private static Grid MakeSettingsList(NOcrCharacterAddPageModel vm)
     {
         var grid = new Grid
         {
@@ -511,25 +511,10 @@ public class BatchConvertPage : ContentPage
 
         grid.Add(PackIntoScrollViewAndBorder(collectionViewFunctions), 0);
 
-        vm.ViewRemoveFormatting = MakeRemoveFormattingSettings(vm);
-        grid.Add(vm.ViewRemoveFormatting, 1);
-
-        vm.ViewOffsetTimeCodes = MakeOffsetTimeCodesSettings(vm);
-        grid.Add(vm.ViewOffsetTimeCodes, 1);
-
-        vm.ViewAdjustDuration = MakeAdjustDurationSettings(vm);
-        grid.Add(vm.ViewAdjustDuration, 1);
-
-        vm.ViewDeleteLines = MakeDeleteLinesSettings(vm);
-        grid.Add(vm.ViewDeleteLines, 1);
-
-        vm.ViewChangeFrameRate = MakeChangeFrameRateSettings(vm);
-        grid.Add(vm.ViewChangeFrameRate, 1);
-
         return grid;
     }
 
-    private static View MakeRemoveFormattingSettings(BatchConvertPageModel vm)
+    private static View MakeRemoveFormattingSettings(NOcrCharacterAddPageModel vm)
     {
         var stackRemoveFormatting = new StackLayout
         {

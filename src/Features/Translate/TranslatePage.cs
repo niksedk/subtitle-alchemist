@@ -196,6 +196,7 @@ public class TranslatePage : ContentPage
             IsEnabled = false,
             Progress = 0.0,
             Margin = new Thickness(5, 0, 5, 0),
+            ProgressColor = (Color)Application.Current!.Resources[ThemeNames.ProgressColor],
         };
 
         rightGrid.Add(vm.ProgressBar, 3, 0);

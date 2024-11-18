@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.IO.Compression;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -286,6 +285,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             CurrentImageSource = bitmap.ToImageSource();
             CurrentBitmapInfo = $"{SelectedOcrSubtitleItem.Number}/{_ocrSubtitle.Count}: {bitmap.Width}x{bitmap.Height}";
             SelectedStartFromNumber = SelectedOcrSubtitleItem.Number;
+            CurrentText = SelectedOcrSubtitleItem.Text;
         }
     }
 }

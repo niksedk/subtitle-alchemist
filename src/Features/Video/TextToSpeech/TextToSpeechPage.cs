@@ -1,4 +1,5 @@
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
 
 namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
@@ -420,7 +421,7 @@ public class TextToSpeechPage : ContentPage
         var progressBar = new ProgressBar
         {
             Progress = 0.0,
-            ProgressColor = Colors.Orange,
+            ProgressColor = (Color)Application.Current!.Resources[ThemeNames.ProgressColor],
             HorizontalOptions = LayoutOptions.Fill,
         };
         progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(vm.ProgressValue));

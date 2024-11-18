@@ -107,6 +107,10 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<ChangeCasingPageModel>();
             builder.Services.AddTransient<FixNamesPage>();
             builder.Services.AddTransient<FixNamesPageModel>();
+            builder.Services.AddTransient<NOcrCharacterAddPage>();
+            builder.Services.AddTransient<NOcrCharacterAddPageModel>();
+            builder.Services.AddTransient<NOcrCharacterInspectPage>();
+            builder.Services.AddTransient<NOcrCharacterInspectPageModel>();
             builder.Services.AddTransient<OcrPage>();
             builder.Services.AddTransient<OcrPageModel>();
 
