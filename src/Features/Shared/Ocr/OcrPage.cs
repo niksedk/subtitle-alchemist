@@ -341,6 +341,7 @@ public class OcrPage : ContentPage
             Command = vm.RunOcrCommand,
             Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
+        buttonRunOcr.SetBinding(IsEnabledProperty, nameof(vm.IsRunActive));
 
         var labelFromNumber = new Label
         {
@@ -363,6 +364,7 @@ public class OcrPage : ContentPage
             Command = vm.PauseCommand,
             Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
+        buttonPause.SetBinding(IsEnabledProperty, nameof(vm.IsPauseActive));
 
         var stackButtons = new StackLayout
         {

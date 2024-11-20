@@ -47,6 +47,9 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     private bool _isPauseActive;
 
     [ObservableProperty]
+    private bool _isOkAndCancelActive;
+
+    [ObservableProperty]
     private ObservableCollection<string> _nOcrDatabases;
 
     [ObservableProperty]
@@ -99,6 +102,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         _nOcrDb = null;
         _fileName = string.Empty;
         _nOcrDrawUnknownText = true;
+        _isOkAndCancelActive = true;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -141,6 +145,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 _loading = false;
+                IsRunActive = true;
             });
             return false;
         });
@@ -190,7 +195,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
         IsPauseActive = true;
         IsRunActive = false;
-
+        IsOkAndCancelActive = false;
 
         var nOcrDbFileName = GetNOcrLanguageFileName();
         if (!string.IsNullOrEmpty(nOcrDbFileName))
@@ -279,6 +284,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         IsPauseActive = false;
         IsRunActive = true;
         IsProgressVisible = false;
+        IsOkAndCancelActive = true;
     }
 
     [RelayCommand]
@@ -297,6 +303,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         {
             { "Page", nameof(OcrPage) },
             { "Subtitle", subtitle },
+            { "FileName", _fileName },
             { "Status", "" },
         });
     }
@@ -312,13 +319,15 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     public void OnCollectionViewSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (SelectedOcrSubtitleItem != null)
+        if (SelectedOcrSubtitleItem == null)
         {
-            var bitmap = SelectedOcrSubtitleItem.GetBitmap();
-            CurrentImageSource = bitmap.ToImageSource();
-            CurrentBitmapInfo = $"Image {SelectedOcrSubtitleItem.Number} of {_ocrSubtitle.Count}: {bitmap.Width}x{bitmap.Height}";
-            SelectedStartFromNumber = SelectedOcrSubtitleItem.Number;
-            CurrentText = SelectedOcrSubtitleItem.Text;
+            return;
         }
+
+        var bitmap = SelectedOcrSubtitleItem.GetBitmap();
+        CurrentImageSource = bitmap.ToImageSource();
+        CurrentBitmapInfo = $"Image {SelectedOcrSubtitleItem.Number} of {_ocrSubtitle.Count}: {bitmap.Width}x{bitmap.Height}";
+        SelectedStartFromNumber = SelectedOcrSubtitleItem.Number;
+        CurrentText = SelectedOcrSubtitleItem.Text;
     }
 }

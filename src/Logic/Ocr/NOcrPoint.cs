@@ -7,6 +7,8 @@ public class NOcrPoint
     public OcrPoint Start { get; set; }
     public OcrPoint End { get; set; }
 
+    public string DisplayName => ToString();
+
     public NOcrPoint()
     {
         Start = new OcrPoint();

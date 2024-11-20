@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.Shapes;
-using SubtitleAlchemist.Features.Tools.BatchConvert;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Ocr;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -81,10 +81,10 @@ public class NOcrCharacterAddPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
             Aspect = Aspect.AspectFit,
         };
-        image.SetBinding(Image.SourceProperty, nameof(vm.LetterImageSource));
+        image.SetBinding(Image.SourceProperty, nameof(vm.SentenceImageSource));
         pageGrid.Add(image, 0, 1);
 
-        var settings = MakeSettingsList(vm);
+        var settings = MakeImageDraw(vm);
         pageGrid.Add(settings, 0, 2);
 
         var buttonOk = new Button
@@ -94,7 +94,7 @@ public class NOcrCharacterAddPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 15, 10),
             Command = vm.OkCommand,
-        }.BindDynamicTheme().BindIsEnabled(nameof(vm.AreControlsEnabled));
+        }.BindDynamicTheme();
 
         var buttonUseOnce = new Button
         {
@@ -103,7 +103,7 @@ public class NOcrCharacterAddPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 15, 10),
             Command = vm.UseOnceCommand,
-        }.BindDynamicTheme().BindIsEnabled(nameof(vm.AreControlsEnabled));
+        }.BindDynamicTheme();
 
         var buttonSkip = new Button
         {
@@ -112,7 +112,7 @@ public class NOcrCharacterAddPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 15, 10),
             Command = vm.SkipCommand,
-        }.BindDynamicTheme().BindIsEnabled(nameof(vm.AreControlsEnabled));
+        }.BindDynamicTheme();
 
         var buttonAbort = new Button
         {
@@ -121,7 +121,7 @@ public class NOcrCharacterAddPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 15, 10),
             Command = vm.AbortCommand,
-        }.BindDynamicTheme().BindIsEnabled(nameof(vm.AreControlsEnabled));
+        }.BindDynamicTheme();
 
         var stackButtons = new StackLayout
         {
@@ -145,12 +145,13 @@ public class NOcrCharacterAddPage : ContentPage
         vm.Page = this;
     }
     
-    private static Grid MakeSettingsList(NOcrCharacterAddPageModel vm)
+    private static Grid MakeImageDraw(NOcrCharacterAddPageModel vm)
     {
         var grid = new Grid
         {
             RowDefinitions =
             {
+                new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
@@ -167,7 +168,7 @@ public class NOcrCharacterAddPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
 
-        var collectionViewFunctions = new CollectionView
+        var collectionViewLinesForeground = new CollectionView
         {
             SelectionMode = SelectionMode.Single,
             HorizontalOptions = LayoutOptions.Start,
@@ -178,36 +179,147 @@ public class NOcrCharacterAddPage : ContentPage
                 {
                     ColumnDefinitions =
                     {
-                        new ColumnDefinition { Width = new GridLength(4, GridUnitType.Star) }, // Function name
-                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Is selected
+                        new ColumnDefinition { Width = GridLength.Auto },
                     },
                 };
 
-                var labelFunctionName = new Label
+                var labelPoint = new Label
                 {
                     HorizontalTextAlignment = TextAlignment.Start,
                     VerticalTextAlignment = TextAlignment.Center,
                     Padding = new Thickness(5),
                 }.BindDynamicThemeTextColorOnly();
-                labelFunctionName.SetBinding(Label.TextProperty, nameof(BatchConvertFunction.Name));
-                functionGrid.Add(labelFunctionName, 0);
-
-                var switchIsSelected = new Switch
-                {
-                    HorizontalOptions = LayoutOptions.Start,
-                    VerticalOptions = LayoutOptions.Center,
-                }.BindDynamicTheme();
-                switchIsSelected.SetBinding(Switch.IsToggledProperty, nameof(BatchConvertFunction.IsSelected));
-                functionGrid.Add(switchIsSelected, 1);
+                labelPoint.SetBinding(Label.TextProperty, nameof(NOcrPoint.DisplayName));
+                functionGrid.Add(labelPoint, 0);
 
                 return functionGrid;
             }),
         }.BindDynamicTheme();
-        collectionViewFunctions.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.BatchFunctions), BindingMode.TwoWay);
-        collectionViewFunctions.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedBatchFunction));
-        collectionViewFunctions.SelectionChanged += vm.FunctionSelectionChanged;
+        collectionViewLinesForeground.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.LinesForeground), BindingMode.TwoWay);
+        collectionViewLinesForeground.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedLineForeground));
+        //collectionViewLinesForeground.SelectionChanged += vm
 
-        grid.Add(PackIntoScrollViewAndBorder(collectionViewFunctions), 0);
+        grid.Add(PackIntoScrollViewAndBorder(collectionViewLinesForeground), 0);
+
+
+        var collectionViewLinesBackground = new CollectionView
+        {
+            SelectionMode = SelectionMode.Single,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Fill,
+            ItemTemplate = new DataTemplate(() =>
+            {
+                var functionGrid = new Grid
+                {
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = GridLength.Auto },
+                    },
+                };
+
+                var labelPoint = new Label
+                {
+                    HorizontalTextAlignment = TextAlignment.Start,
+                    VerticalTextAlignment = TextAlignment.Center,
+                    Padding = new Thickness(5),
+                }.BindDynamicThemeTextColorOnly();
+                labelPoint.SetBinding(Label.TextProperty, nameof(NOcrPoint.DisplayName));
+                functionGrid.Add(labelPoint, 0);
+
+                return functionGrid;
+            }),
+        }.BindDynamicTheme();
+        collectionViewLinesBackground.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.LinesBackground), BindingMode.TwoWay);
+        collectionViewLinesBackground.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedLineBackground));
+
+
+        // middle column
+
+        var stackZoomOutAndZoomIn = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                new Label { Text = "Current image" }.BindDynamicTheme(),
+                new Button
+                {
+                    Text = "-",
+                    Command = vm.ZoomOutCommand,
+                }.BindDynamicTheme(),
+                new Button
+                {
+                    Text = "+",
+                    Command = vm.ZoomInCommand,
+                }.BindDynamicTheme(),
+            },
+        }.BindDynamicTheme();
+
+        var imageLetter = new Image
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Aspect = Aspect.AspectFit,
+        };
+        imageLetter.SetBinding(Image.SourceProperty, nameof(vm.ItemImageSource));
+
+        var labelNewText = new Label
+        {
+            Text = "New text",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 10),
+        }.BindDynamicTheme();
+
+        var entryNewText = new Entry
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 10),
+        };
+        entryNewText.SetBinding(Entry.TextProperty, nameof(vm.NewText));
+
+
+        var stackMiddle = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                stackZoomOutAndZoomIn,
+                imageLetter,
+                labelNewText,
+                entryNewText,
+            },
+        }.BindDynamicTheme();
+
+        grid.Add(stackMiddle, 1);
+
+        
+        // right column
+
+
+        var stackRight = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                new Label { Text = "#Lines to draw" }.BindDynamicTheme(),
+                new Picker
+                {
+                    HorizontalOptions = LayoutOptions.Fill,
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicTheme().Bind(nameof(vm.NoOfLinesToAutoDrawList), nameof(vm.SelectedNoOfLinesToAutoDraw)),
+                new Button() { Text = "Auto draw again", Command = vm.AutoGuessLinesCommand }.BindDynamicTheme(),
+            },
+        }.BindDynamicTheme();
+
+        grid.Add(stackRight, 2);
+
 
         return grid;
     }

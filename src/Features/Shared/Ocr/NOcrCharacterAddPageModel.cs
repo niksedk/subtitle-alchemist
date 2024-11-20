@@ -1,14 +1,10 @@
 using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Nikse.SubtitleEdit.Core.Common;
-using Nikse.SubtitleEdit.Core.SubtitleFormats;
-using SubtitleAlchemist.Features.Tools.AdjustDuration;
-using SubtitleAlchemist.Features.Tools.BatchConvert;
-using SubtitleAlchemist.Logic;
+using SkiaSharp;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Media;
+using SubtitleAlchemist.Logic.Ocr;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -16,263 +12,145 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
 {
     public NOcrCharacterAddPage? Page { get; set; }
 
-    [ObservableProperty] private string _outputFolder;
-    [ObservableProperty] private bool _saveInSourceFolder;
-    [ObservableProperty] private bool _useSourceFolderVisible;
-    [ObservableProperty] private bool _useOutputFolderVisible;
-    [ObservableProperty] private bool _overwrite;
-    [ObservableProperty] private string _targetFormatName;
-    [ObservableProperty] private string _targetEncoding;
-    [ObservableProperty] private ObservableCollection<BatchConvertItem> _batchItems;
-    [ObservableProperty] private BatchConvertItem? _selectedBatchItem;
-    [ObservableProperty] private string _batchItemsInfo;
-
-    [ObservableProperty] private ObservableCollection<string> _targetFormats;
-    [ObservableProperty] private string? _selectedTargetFormat;
-    [ObservableProperty] private ObservableCollection<string> _targetEncodings;
-    [ObservableProperty] private string? _selectedTargetEncoding;
-
-    [ObservableProperty] private ObservableCollection<BatchConvertFunction> _batchFunctions;
-    [ObservableProperty] private BatchConvertFunction? _selectedBatchFunction;
-
-    [ObservableProperty] private bool _isProgressVisible;
-    [ObservableProperty] private bool _isConverting;
-    [ObservableProperty] private bool _areControlsEnabled;
-    [ObservableProperty] private string _progressText;
-    [ObservableProperty] private double _progress;
-
-    // Remove formatting
-    [ObservableProperty] private bool _formattingRemoveAll;
-    [ObservableProperty] private bool _formattingRemoveItalic;
-    [ObservableProperty] private bool _formattingRemoveBold;
-    [ObservableProperty] private bool _formattingRemoveUnderline;
-    [ObservableProperty] private bool _formattingRemoveFontTags;
-    [ObservableProperty] private bool _formattingRemoveAlignmentTags;
-    [ObservableProperty] private bool _formattingRemoveColors;
-
-    // Offset time codes
-    [ObservableProperty] private bool _offsetTimeCodesForward;
-    [ObservableProperty] private bool _offsetTimeCodesBack;
-    [ObservableProperty] private TimeSpan _offsetTimeCodesTime;
-
-    // Adjust display duration
-    [ObservableProperty] private ObservableCollection<AdjustDurationItem> _adjustTypes;
-    [ObservableProperty] private AdjustDurationItem _selectedAdjustType;
-    [ObservableProperty] private TimeSpan _adjustSeconds;
-    [ObservableProperty] private int _adjustPercentage;
-    [ObservableProperty] private TimeSpan _adjustFixedValue;
-    [ObservableProperty] private decimal _adjustRecalculateMaximumCharacters;
-    [ObservableProperty] private decimal _adjustRecalculateOptimalCharacters;
-    [ObservableProperty] private bool _adjustIsSecondsVisible;
-    [ObservableProperty] private bool _adjustIsPercentVisible;
-    [ObservableProperty] private bool _adjustIsFixedVisible;
-    [ObservableProperty] private bool _adjustIsRecalculateVisible;
-
-    // Delete lines
-    [ObservableProperty] private ObservableCollection<int> _deleteLineNumbers;
-    [ObservableProperty] private int _deleteXFirstLines;
-    [ObservableProperty] private int _deleteXLastLines;
-    [ObservableProperty] private string _deleteLinesContains;
-
-    // Change frame rate
-    [ObservableProperty] private ObservableCollection<double> _frameRates;
-    [ObservableProperty] private double _selectedFromFrameRate;
-    [ObservableProperty] private double _selectedToFrameRate;
-
-    [ObservableProperty] private ImageSource? _letterImageSource;
+    [ObservableProperty] private ObservableCollection<NOcrPoint> _linesForeground;
+    [ObservableProperty] private NOcrPoint? _selectedLineForeground;
+    [ObservableProperty] private ObservableCollection<NOcrPoint> _linesBackground;
+    [ObservableProperty] private NOcrPoint? _selectedLineBackground;
+    [ObservableProperty] private bool _isNewLinesForegroundActive;
+    [ObservableProperty] private bool _isNewLinesBackgroundActive;
+    [ObservableProperty] private string _newText;
+    [ObservableProperty] private bool _isNewTextItalic;
+    [ObservableProperty] private bool _submitOnFirstLetter;
+    [ObservableProperty] private ImageSource? _sentenceImageSource;
+    [ObservableProperty] private ImageSource? _itemImageSource;
     [ObservableProperty] private bool _canShrink;
     [ObservableProperty] private bool _canExpand;
+    [ObservableProperty] private ObservableCollection<int> _noOfLinesToAutoDrawList;
+    [ObservableProperty] private int _selectedNoOfLinesToAutoDraw;
 
-    public View ViewRemoveFormatting { get; set; }
-    public View ViewOffsetTimeCodes { get; set; }
-    public View ViewAdjustDuration { get; set; }
-    public View ViewDeleteLines { get; set; }
-    public View ViewChangeFrameRate { get; set; }
+    private List<ImageSplitterItem2> _letters;
+    private ImageSplitterItem2 _splitItem;
+    public NOcrChar NOcrChar { get; private set; }
 
-    public Label LabelStatusText { get; set; }
-
-    [ObservableProperty] private string _statusText;
-
-    private readonly IFileHelper _fileHelper;
-    private readonly IPopupService _popupService;
-    private readonly IBatchConverter _batchConverter;
-    private CancellationToken _cancellationToken;
-    private CancellationTokenSource _cancellationTokenSource;
-
-    private bool _stopping;
-
-    public NOcrCharacterAddPageModel(IFileHelper fileHelper, IPopupService popupService, IBatchConverter batchConverter)
+    public NOcrCharacterAddPageModel()
     {
-        _fileHelper = fileHelper;
-        _popupService = popupService;
-        _batchConverter = batchConverter;
-        _outputFolder = string.Empty;
-        _saveInSourceFolder = true;
-        _targetFormatName = SubRip.NameOfFormat;
-        _targetEncoding = TextEncoding.Utf8WithBom;
+        _newText = string.Empty;
+        _linesForeground = new ObservableCollection<NOcrPoint>();
+        _linesBackground = new ObservableCollection<NOcrPoint>();
+        _isNewLinesForegroundActive = true;
+        _isNewLinesBackgroundActive = false;
+        _isNewTextItalic = false;
+        _submitOnFirstLetter = false;
+        _letters = new List<ImageSplitterItem2>();
+        _splitItem = new ImageSplitterItem2(0, 0, new NikseBitmap2(1, 1));
 
-        _batchItems = new ObservableCollection<BatchConvertItem>();
-        _batchItemsInfo = string.Empty;
-        _targetFormats = new ObservableCollection<string>(SubtitleFormat.AllSubtitleFormats.Select(p => p.Name));
-        _targetEncodings = new ObservableCollection<string>(EncodingHelper.GetEncodings().Select(p => p.DisplayName).ToList());
-
-        _batchFunctions = new ObservableCollection<BatchConvertFunction>();
-        ViewRemoveFormatting = new BoxView();
-        ViewOffsetTimeCodes = new BoxView();
-        ViewAdjustDuration = new BoxView();
-        ViewDeleteLines = new BoxView();
-        ViewChangeFrameRate = new BoxView();
-
-        LabelStatusText = new Label();
-        _statusText = string.Empty;
-        _progressText = string.Empty;
-        _areControlsEnabled = true;
-
-        _adjustTypes = new ObservableCollection<AdjustDurationItem>
+        const int maxLines = 250;
+        _noOfLinesToAutoDrawList = new ObservableCollection<int>();
+        for (var i = 0; i <= maxLines; i++)
         {
-            new(AdjustDurationType.Seconds, "Seconds"),
-            new(AdjustDurationType.Percent, "Percent"),
-            new(AdjustDurationType.Fixed, "Fixed"),
-            new(AdjustDurationType.Recalculate, "Recalculate"),
-        };
+            _noOfLinesToAutoDrawList.Add(i);
+        }
 
-        _selectedAdjustType = _adjustTypes.First();
-        _deleteLinesContains = string.Empty;
-        _deleteLineNumbers = new ObservableCollection<int>(Enumerable.Range(0, 100));
-        _cancellationTokenSource = new CancellationTokenSource();
-        _cancellationToken = _cancellationTokenSource.Token;
-
-        _frameRates = new ObservableCollection<double>
-        {
-            23.976,
-            24,
-            25,
-            29.97,
-            30,
-            48,
-            59.94,
-            60,
-            120,
-        };
+        _selectedNoOfLinesToAutoDraw = 100;
+        NOcrChar = new NOcrChar();
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
+        if (query["Item"] is ImageSplitterItem2 item)
+        {
+            _splitItem = item;
+            if (_splitItem.NikseBitmap != null)
+            {
+                ItemImageSource = _splitItem.NikseBitmap.GetBitmap().ToImageSource();
+
+                NOcrChar = new NOcrChar
+                {
+                    Width = _splitItem.NikseBitmap.Width,
+                    Height = _splitItem.NikseBitmap.Height,
+                    MarginTop = _splitItem.Top,
+                };
+            }
+        }
+
+        if (query["Bitmap"] is SKBitmap bitmap)
+        {
+            if (_splitItem.NikseBitmap != null)
+            {
+                var bmp = DrawActiveRectangle(bitmap,
+                    new SKRect(_splitItem.X, _splitItem.Y,
+                        _splitItem.X + _splitItem.NikseBitmap.Width, _splitItem.Y + _splitItem.NikseBitmap.Height));
+                SentenceImageSource = bmp.ToImageSource();
+            }
+        }
+
+        if (query["Letters"] is List<ImageSplitterItem2> letters)
+        {
+            _letters = letters;
+        }
+
+
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                var activeFunctions = Se.Settings.Tools.BatchConvert.ActiveFunctions;
-                BatchFunctions = new ObservableCollection<BatchConvertFunction>
-                {
-                    MakeFunction(BatchConvertFunctionType.RemoveFormatting, "Remove formatting", ViewRemoveFormatting, activeFunctions),
-                    MakeFunction(BatchConvertFunctionType.OffsetTimeCodes, "Offset time codes", ViewOffsetTimeCodes, activeFunctions),
-                    MakeFunction(BatchConvertFunctionType.AdjustDisplayDuration, "Adjust display duration", ViewAdjustDuration, activeFunctions),
-                    MakeFunction(BatchConvertFunctionType.DeleteLines, "Delete lines", ViewDeleteLines, activeFunctions),
-                    MakeFunction(BatchConvertFunctionType.ChangeFrameRate, "Change frame rate", ViewChangeFrameRate, activeFunctions),
-                };
-
                 LoadSettings();
             });
             return false;
         });
     }
 
-    private static BatchConvertFunction MakeFunction(BatchConvertFunctionType functionType, string name, View view, string[] activeFunctions)
+    public static SKBitmap DrawActiveRectangle(
+        SKBitmap originalBitmap,
+        SKRect borderRect,
+        int borderThickness = 1,
+        SKColor? borderColor = null)
     {
-        var isActive = activeFunctions.Contains(functionType.ToString());
-        return new BatchConvertFunction(functionType, name, isActive, view);
-    }
+        var color = borderColor ?? SKColors.Red;
+        using var surface = SKSurface.Create(new SKImageInfo(originalBitmap.Width, originalBitmap.Height));
+        var canvas = surface.Canvas;
+        canvas.DrawBitmap(originalBitmap, new SKPoint(0, 0));
 
-    [RelayCommand]
-    private async Task FileAdd()
-    {
-        var fileNames = await _fileHelper.PickAndShowSubtitleFiles("Pick subtitle files");
-        if (fileNames.Length == 0)
+        using var paint = new SKPaint
         {
-            return;
-        }
-
-        foreach (var fileName in fileNames)
-        {
-            var fileInfo = new FileInfo(fileName);
-            var subtitle = Subtitle.Parse(fileName);
-            var batchItem = new BatchConvertItem(fileName, fileInfo.Length, subtitle != null ? subtitle.OriginalFormat.Name : "Unknown", subtitle);
-
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                BatchItems.Add(batchItem);
-            });
-        }
-
-        MakeBatchItemsInfo();
-    }
-
-    private void MakeBatchItemsInfo()
-    {
-        BatchItemsInfo = $"{BatchItems.Count:#,###,##0} items";
-    }
-
-    [RelayCommand]
-    private void FileRemove()
-    {
-        if (SelectedBatchItem != null)
-        {
-            BatchItems.Remove(SelectedBatchItem);
-        }
-
-        MakeBatchItemsInfo();
-    }
-
-    [RelayCommand]
-    private void FileClear()
-    {
-        BatchItems.Clear();
-        MakeBatchItemsInfo();
-    }
-
-    [RelayCommand]
-    private async Task BatchOutputProperties()
-    {
-        var input = new BatchConvertOutputProperties
-        {
-            UseOutputFolder = UseOutputFolderVisible,
-            OutputFolder = OutputFolder,
-            Overwrite = Overwrite,
+            Color = color,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = borderThickness
         };
+        canvas.DrawRect(borderRect, paint);
 
-        var result = await _popupService.ShowPopupAsync<BatchConvertOutputPropertiesPopupModel>(onPresenting: viewModel => viewModel.Initialize(input), CancellationToken.None);
-
-        if (result is BatchConvertOutputProperties outputResult)
-        {
-            SaveInSourceFolder = !outputResult.UseOutputFolder;
-            OutputFolder = outputResult.OutputFolder;
-            Overwrite = outputResult.Overwrite;
-
-            UpdateOutputFolder();
-            SaveSettings();
-        }
+        return SKBitmap.FromImage(surface.Snapshot());
     }
 
-    private void UpdateOutputFolder()
+    [RelayCommand]
+    private async Task ZoomIn()
     {
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            UseSourceFolderVisible = SaveInSourceFolder;
-            UseOutputFolderVisible = !SaveInSourceFolder;
-        });
+
+    }
+
+    [RelayCommand]
+    private void ZoomOut()
+    {
+
+    }
+
+    [RelayCommand]
+    private void AutoGuessLines()
+    {
+        GenerateLineSegments(SelectedNoOfLinesToAutoDraw, false, NOcrChar, _splitItem.NikseBitmap!);
+        ShowOcrPoints();
     }
 
     [RelayCommand]
     private void Shrink()
     {
-        
+
     }
 
     [RelayCommand]
     private void Expand()
     {
-        
+
     }
 
     [RelayCommand]
@@ -287,140 +165,10 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
 
     }
 
-
     [RelayCommand]
     private void Abort()
     {
 
-    }
-
-    [RelayCommand]
-    private void OpenOutputFolder()
-    {
-        UiUtil.OpenFolder(OutputFolder);
-    }
-
-    [RelayCommand]
-    private void CancelConvert()
-    {
-        _cancellationTokenSource.Cancel();
-    }
-
-    [RelayCommand]
-    private void Convert()
-    {
-        if (BatchItems.Count == 0)
-        {
-            ShowStatus("No files to convert");
-            return;
-        }
-
-        _cancellationTokenSource = new CancellationTokenSource();
-        _cancellationToken = _cancellationTokenSource.Token;
-
-        foreach (var batchItem in BatchItems)
-        {
-            batchItem.Status = "-";
-        }
-
-        SaveSettings();
-
-        var config = MakeBatchConvertConfig();
-        _batchConverter.Initialize(config);
-        var start = System.Diagnostics.Stopwatch.GetTimestamp();
-
-        IsProgressVisible = true;
-        IsConverting = true;
-        AreControlsEnabled = false;
-        var unused = Task.Run(async () =>
-        {
-            var count = 1;
-            foreach (var batchItem in BatchItems)
-            {
-                var countDisplay = count;
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    ProgressText = $"Converting {countDisplay:#,###,##0}/{BatchItems.Count:#,###,##0}";
-                    Progress = countDisplay / (double)BatchItems.Count;
-                });
-                await _batchConverter.Convert(batchItem);
-                count++;
-
-                if (_cancellationToken.IsCancellationRequested)
-                {
-                    break;
-                }
-            }
-            IsProgressVisible = false;
-            IsConverting = false;
-            AreControlsEnabled = true;
-
-            var end = System.Diagnostics.Stopwatch.GetTimestamp();
-            var message = $"{BatchItems.Count:#,###,##0} files converted in {ProgressHelper.ToTimeResult(new TimeSpan(end - start).TotalMilliseconds)}";
-            if (_cancellationToken.IsCancellationRequested)
-            {
-                message += " - conversion cancelled by user";
-            }
-            ShowStatus(message);
-        });
-    }
-
-    private BatchConvertConfig MakeBatchConvertConfig()
-    {
-        var activeFunctions = BatchFunctions.Where(p => p.IsSelected).Select(p => p.Type).ToList();
-
-        return new BatchConvertConfig
-        {
-            SaveInSourceFolder = SaveInSourceFolder,
-            OutputFolder = OutputFolder,
-            Overwrite = Overwrite,
-            TargetFormatName = SelectedTargetFormat ?? string.Empty,
-            TargetEncoding = SelectedTargetEncoding ?? string.Empty,
-
-            RemoveFormatting = new BatchConvertConfig.RemoveFormattingSettings
-            {
-                IsActive = activeFunctions.Contains(BatchConvertFunctionType.RemoveFormatting),
-                RemoveAll = FormattingRemoveAll,
-                RemoveItalic = FormattingRemoveItalic,
-                RemoveBold = FormattingRemoveBold,
-                RemoveUnderline = FormattingRemoveUnderline,
-                RemoveColor = FormattingRemoveColors,
-                RemoveFontName = FormattingRemoveFontTags,
-                RemoveAlignment = FormattingRemoveAlignmentTags,
-            },
-
-            OffsetTimeCodes = new BatchConvertConfig.OffsetTimeCodesSettings
-            {
-                IsActive = activeFunctions.Contains(BatchConvertFunctionType.OffsetTimeCodes),
-                Forward = OffsetTimeCodesForward,
-                Milliseconds = (long)OffsetTimeCodesTime.TotalMilliseconds,
-            },
-
-            AdjustDuration = new BatchConvertConfig.AdjustDurationSettings
-            {
-                IsActive = activeFunctions.Contains(BatchConvertFunctionType.AdjustDisplayDuration),
-                AdjustmentType = SelectedAdjustType.Type,
-                Percentage = AdjustPercentage,
-                FixedMilliseconds = (int) AdjustFixedValue.TotalMilliseconds,
-                MaxCharsPerSecond = (double)AdjustRecalculateMaximumCharacters,
-                OptimalCharsPerSecond = (double)AdjustRecalculateOptimalCharacters,
-            },
-
-            DeleteLines = new BatchConvertConfig.DeleteLinesSettings
-            {
-                IsActive = activeFunctions.Contains(BatchConvertFunctionType.DeleteLines),
-                DeleteXFirst = DeleteXFirstLines,
-                DeleteXLast = DeleteXLastLines,
-                DeleteContains = DeleteLinesContains,
-            },
-
-            ChangeFrameRate = new BatchConvertConfig.ChangeFrameRateSettings
-            {
-                IsActive = activeFunctions.Contains(BatchConvertFunctionType.ChangeFrameRate),
-                FromFrameRate = SelectedFromFrameRate,
-                ToFrameRate = SelectedToFrameRate,
-            },
-        };
     }
 
     [RelayCommand]
@@ -429,154 +177,411 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         await Shell.Current.GoToAsync("..");
     }
 
-    public void FunctionSelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        foreach (var batchFunction in BatchFunctions)
-        {
-            batchFunction.View.IsVisible = batchFunction == SelectedBatchFunction;
-        }
-    }
-
     public void OnDisappearing()
     {
-        _cancellationTokenSource.Cancel();
-        _stopping = true;
         SaveSettings();
     }
 
     private void LoadSettings()
     {
-        SelectedTargetFormat = Se.Settings.Tools.BatchConvert.TargetFormat;
-        if (string.IsNullOrEmpty(SelectedTargetFormat))
-        {
-            SelectedTargetFormat = TargetFormats.First();
-        }
-
-        SelectedTargetEncoding = Se.Settings.Tools.BatchConvert.TargetEncoding;
-        if (string.IsNullOrEmpty(SelectedTargetEncoding))
-        {
-            SelectedTargetEncoding = TargetEncodings.First();
-        }
-
-        SelectedBatchFunction = BatchFunctions.First();
-        foreach (var batchFunction in BatchFunctions)
-        {
-            batchFunction.View.IsVisible = batchFunction == SelectedBatchFunction;
-        }
-
-        SaveInSourceFolder = !Se.Settings.Tools.BatchConvert.UseOutputFolder;
-        OutputFolder = Se.Settings.Tools.BatchConvert.OutputFolder;
-        Overwrite = Se.Settings.Tools.BatchConvert.Overwrite;
-        UpdateOutputFolder();
-
-        FormattingRemoveAll = Se.Settings.Tools.BatchConvert.FormattingRemoveAll;
-        FormattingRemoveItalic = Se.Settings.Tools.BatchConvert.FormattingRemoveItalic;
-        FormattingRemoveBold = Se.Settings.Tools.BatchConvert.FormattingRemoveBold;
-        FormattingRemoveUnderline = Se.Settings.Tools.BatchConvert.FormattingRemoveUnderline;
-        FormattingRemoveFontTags = Se.Settings.Tools.BatchConvert.FormattingRemoveFontTags;
-        FormattingRemoveAlignmentTags = Se.Settings.Tools.BatchConvert.FormattingRemoveAlignmentTags;
-        FormattingRemoveColors = Se.Settings.Tools.BatchConvert.FormattingRemoveColorTags;
-
-        OffsetTimeCodesTime = TimeSpan.FromMilliseconds(Se.Settings.Tools.BatchConvert.OffsetTimeCodesMilliseconds);
-        OffsetTimeCodesForward = Se.Settings.Tools.BatchConvert.OffsetTimeCodesForward;
-
-        var adjustType = AdjustTypes.FirstOrDefault(p => p.Type.ToString() == Se.Settings.Tools.BatchConvert.AdjustVia);
-        SelectedAdjustType = adjustType ?? AdjustTypes.First();
-        AdjustSeconds = TimeSpan.FromSeconds(Se.Settings.Tools.BatchConvert.AdjustDurationSeconds);
-        AdjustFixedValue = TimeSpan.FromMilliseconds(Se.Settings.Tools.BatchConvert.AdjustDurationFixedMilliseconds);
-        AdjustPercentage = Se.Settings.Tools.BatchConvert.AdjustDurationPercentage;
-        AdjustRecalculateOptimalCharacters = (decimal)Se.Settings.Tools.BatchConvert.AdjustOptimalCps;
-        AdjustRecalculateMaximumCharacters = (decimal)Se.Settings.Tools.BatchConvert.AdjustMaxCps;
-
-        SelectedFromFrameRate = Se.Settings.Tools.BatchConvert.ChangeFrameRateFrom;
-        SelectedToFrameRate = Se.Settings.Tools.BatchConvert.ChangeFrameRateTo;
     }
 
     private void SaveSettings()
     {
-        Se.Settings.Tools.BatchConvert.TargetFormat = SelectedTargetFormat ?? string.Empty;
-        Se.Settings.Tools.BatchConvert.TargetEncoding = SelectedTargetEncoding ?? string.Empty;
-        Se.Settings.Tools.BatchConvert.ActiveFunctions = BatchFunctions.Where(p => p.IsSelected).Select(p => p.Type.ToString()).ToArray();
-        Se.Settings.Tools.BatchConvert.UseOutputFolder = !SaveInSourceFolder;
-        Se.Settings.Tools.BatchConvert.OutputFolder = OutputFolder;
-        Se.Settings.Tools.BatchConvert.Overwrite = Overwrite;
-
-        Se.Settings.Tools.BatchConvert.FormattingRemoveAll = FormattingRemoveAll;
-        Se.Settings.Tools.BatchConvert.FormattingRemoveItalic = FormattingRemoveItalic;
-        Se.Settings.Tools.BatchConvert.FormattingRemoveBold = FormattingRemoveBold;
-        Se.Settings.Tools.BatchConvert.FormattingRemoveUnderline = FormattingRemoveUnderline;
-        Se.Settings.Tools.BatchConvert.FormattingRemoveFontTags = FormattingRemoveFontTags;
-        Se.Settings.Tools.BatchConvert.FormattingRemoveAlignmentTags = FormattingRemoveAlignmentTags;
-        Se.Settings.Tools.BatchConvert.FormattingRemoveColorTags = FormattingRemoveColors;
-
-        Se.Settings.Tools.BatchConvert.OffsetTimeCodesMilliseconds = (long)OffsetTimeCodesTime.TotalMilliseconds;
-        Se.Settings.Tools.BatchConvert.OffsetTimeCodesForward = OffsetTimeCodesForward;
-
-        Se.Settings.Tools.BatchConvert.AdjustVia = SelectedAdjustType.Type.ToString();
-        Se.Settings.Tools.BatchConvert.AdjustDurationSeconds = AdjustSeconds.TotalSeconds;
-        Se.Settings.Tools.BatchConvert.AdjustDurationPercentage = AdjustPercentage;
-        Se.Settings.Tools.BatchConvert.AdjustDurationFixedMilliseconds = (int)AdjustFixedValue.TotalMilliseconds;
-        Se.Settings.Tools.BatchConvert.AdjustOptimalCps = (double)AdjustRecalculateOptimalCharacters;
-        Se.Settings.Tools.BatchConvert.AdjustMaxCps = (double)AdjustRecalculateMaximumCharacters;
-
-        Se.Settings.Tools.BatchConvert.ChangeFrameRateFrom = SelectedFromFrameRate;
-        Se.Settings.Tools.BatchConvert.ChangeFrameRateTo = SelectedToFrameRate;
-
         Se.SaveSettings();
     }
 
-    private void ShowStatus(string statusText)
+    public static void GenerateLineSegments(int maxNumberOfLines, bool veryPrecise, NOcrChar nOcrChar, NikseBitmap2 bitmap)
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        const int giveUpCount = 15000;
+        var r = new Random();
+        var count = 0;
+        var hits = 0;
+        var tempVeryPrecise = veryPrecise;
+        var verticalLineX = 2;
+        var horizontalLineY = 2;
+        while (hits < maxNumberOfLines && count < giveUpCount)
         {
-            LabelStatusText.Opacity = 0;
-            StatusText = statusText;
-            LabelStatusText.FadeTo(1, 200);
-        });
+            var start = new OcrPoint(r.Next(nOcrChar.Width), r.Next(nOcrChar.Height));
+            var end = new OcrPoint(r.Next(nOcrChar.Width), r.Next(nOcrChar.Height));
 
-        Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(6_000), () =>
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
+            if (hits < 5 && count < 200 && nOcrChar.Width > 4 && nOcrChar.Height > 4) // vertical lines
             {
-                if (_stopping)
+                start = new OcrPoint(0, 0);
+                end = new OcrPoint(0, 0);
+                for (; verticalLineX < nOcrChar.Width - 3; verticalLineX += 1)
                 {
-                    return;
-                }
+                    start = new OcrPoint(verticalLineX, 2);
+                    end = new OcrPoint(verticalLineX, nOcrChar.Height - 3);
 
-                if (StatusText == statusText)
-                {
-                    LabelStatusText.FadeTo(0, 200);
+                    if (IsMatchPointForeGround(new NOcrPoint(start, end), true, bitmap, nOcrChar))
+                    {
+                        verticalLineX++;
+                        break;
+                    }
                 }
-            });
-            return false;
-        });
+            }
+            else if (hits < 10 && count < 400 && nOcrChar.Width > 4 && nOcrChar.Height > 4) // horizontal lines
+            {
+                start = new OcrPoint(0, 0);
+                end = new OcrPoint(0, 0);
+                for (; horizontalLineY < nOcrChar.Height - 3; horizontalLineY += 1)
+                {
+                    start = new OcrPoint(2, horizontalLineY);
+                    end = new OcrPoint(nOcrChar.Width - 3, horizontalLineY);
+
+                    if (IsMatchPointForeGround(new NOcrPoint(start, end), true, bitmap, nOcrChar))
+                    {
+                        horizontalLineY++;
+                        break;
+                    }
+                }
+            }
+            else if (hits < 20 && count < 2000) // a few large lines
+            {
+                for (var k = 0; k < 500; k++)
+                {
+                    if (Math.Abs(start.X - end.X) + Math.Abs(start.Y - end.Y) > nOcrChar.Height / 2)
+                    {
+                        break;
+                    }
+
+                    end = new OcrPoint(r.Next(nOcrChar.Width), r.Next(nOcrChar.Height));
+                }
+            }
+            else if (hits < 30 && count < 3000) // some medium lines
+            {
+                for (var k = 0; k < 500; k++)
+                {
+                    if (Math.Abs(start.X - end.X) + Math.Abs(start.Y - end.Y) < 15)
+                    {
+                        break;
+                    }
+
+                    end = new OcrPoint(r.Next(nOcrChar.Width), r.Next(nOcrChar.Height));
+                }
+            }
+            else // and a lot of small lines
+            {
+                for (var k = 0; k < 500; k++)
+                {
+                    if (Math.Abs(start.X - end.X) + Math.Abs(start.Y - end.Y) < 15)
+                    {
+                        break;
+                    }
+
+                    end = new OcrPoint(r.Next(nOcrChar.Width), r.Next(nOcrChar.Height));
+                }
+            }
+
+            var op = new NOcrPoint(start, end);
+            var ok = true;
+            foreach (var existingOp in nOcrChar.LinesForeground)
+            {
+                if (existingOp.Start.X == op.Start.X && existingOp.Start.Y == op.Start.Y &&
+                    existingOp.End.X == op.End.X && existingOp.End.Y == op.End.Y)
+                {
+                    ok = false;
+                }
+            }
+
+            if (end.X == start.X && end.Y == start.Y)
+            {
+                ok = false;
+            }
+
+            if (ok && IsMatchPointForeGround(op, !tempVeryPrecise, bitmap, nOcrChar))
+            {
+                nOcrChar.LinesForeground.Add(op);
+                hits++;
+            }
+            count++;
+            if (count > giveUpCount - 100 && !tempVeryPrecise)
+            {
+                tempVeryPrecise = true;
+            }
+        }
+
+        count = 0;
+        hits = 0;
+        horizontalLineY = 2;
+        tempVeryPrecise = veryPrecise;
+        while (hits < maxNumberOfLines && count < giveUpCount)
+        {
+            var start = new OcrPoint(r.Next(nOcrChar.Width), r.Next(nOcrChar.Height));
+            var end = new OcrPoint(r.Next(nOcrChar.Width), r.Next(nOcrChar.Height));
+
+            if (hits < 5 && count < 400 && nOcrChar.Width > 4 && nOcrChar.Height > 4) // horizontal lines
+            {
+                for (; horizontalLineY < nOcrChar.Height - 3; horizontalLineY += 1)
+                {
+                    start = new OcrPoint(2, horizontalLineY);
+                    end = new OcrPoint(nOcrChar.Width - 2, horizontalLineY);
+
+                    if (IsMatchPointBackGround(new NOcrPoint(start, end), true, bitmap, nOcrChar))
+                    {
+                        horizontalLineY++;
+                        break;
+                    }
+                }
+            }
+            if (hits < 10 && count < 1000) // a few large lines
+            {
+                for (var k = 0; k < 500; k++)
+                {
+                    if (Math.Abs(start.X - end.X) + Math.Abs(start.Y - end.Y) > nOcrChar.Height / 2)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        end = new OcrPoint(r.Next(nOcrChar.Width), r.Next(nOcrChar.Height));
+                    }
+                }
+            }
+            else if (hits < 30 && count < 2000) // some medium lines
+            {
+                for (var k = 0; k < 500; k++)
+                {
+                    if (Math.Abs(start.X - end.X) + Math.Abs(start.Y - end.Y) < 15)
+                    {
+                        break;
+                    }
+
+                    end = new OcrPoint(r.Next(nOcrChar.Width), r.Next(nOcrChar.Height));
+                }
+            }
+            else // and a lot of small lines
+            {
+                for (var k = 0; k < 500; k++)
+                {
+                    if (Math.Abs(start.X - end.X) + Math.Abs(start.Y - end.Y) < 5)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        end = new OcrPoint(r.Next(nOcrChar.Width), r.Next(nOcrChar.Height));
+                    }
+                }
+            }
+
+            var op = new NOcrPoint(start, end);
+            var ok = true;
+            foreach (var existingOp in nOcrChar.LinesBackground)
+            {
+                if (existingOp.Start.X == op.Start.X && existingOp.Start.Y == op.Start.Y &&
+                    existingOp.End.X == op.End.X && existingOp.End.Y == op.End.Y)
+                {
+                    ok = false;
+                }
+            }
+            if (ok && IsMatchPointBackGround(op, !tempVeryPrecise, bitmap, nOcrChar))
+            {
+                nOcrChar.LinesBackground.Add(op);
+                hits++;
+            }
+            count++;
+
+            if (count > giveUpCount - 100 && !tempVeryPrecise)
+            {
+                tempVeryPrecise = true;
+            }
+        }
+
+        RemoveDuplicates(nOcrChar.LinesForeground);
+        RemoveDuplicates(nOcrChar.LinesBackground);
     }
 
-    public void PickerAdjustVia_SelectedIndexChanged(object? sender, EventArgs e)
+    private static bool IsMatchPointForeGround(NOcrPoint op, bool loose, NikseBitmap2 nbmp, NOcrChar nOcrChar)
     {
-        if (sender is Picker { SelectedItem: AdjustDurationItem selectedItem })
+        if (Math.Abs(op.Start.X - op.End.X) < 2 && Math.Abs(op.End.Y - op.Start.Y) < 2)
         {
-            AdjustIsSecondsVisible = false;
-            AdjustIsFixedVisible = false;
-            AdjustIsPercentVisible = false;
-            AdjustIsRecalculateVisible = false;
+            return false;
+        }
 
-            if (selectedItem.Type == AdjustDurationType.Seconds)
+        foreach (var point in op.ScaledGetPoints(nOcrChar, nbmp.Width, nbmp.Height))
+        {
+            if (point.X >= 0 && point.Y >= 0 && point.X < nbmp.Width && point.Y < nbmp.Height)
             {
-                AdjustIsSecondsVisible = true;
+                var c = nbmp.GetPixel(point.X, point.Y);
+                if (c.Alpha > 150)
+                {
+                }
+                else
+                {
+                    return false;
+                }
+
+                if (loose)
+                {
+                    if (nbmp.Width > 10 && point.X + 1 < nbmp.Width)
+                    {
+                        c = nbmp.GetPixel(point.X + 1, point.Y);
+                        if (c.Alpha > 150)
+                        {
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+
+                    if (nbmp.Width > 10 && point.X >= 1)
+                    {
+                        c = nbmp.GetPixel(point.X - 1, point.Y);
+                        if (c.Alpha > 150)
+                        {
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+
+                    if (nbmp.Height > 10 && point.Y + 1 < nbmp.Height)
+                    {
+                        c = nbmp.GetPixel(point.X, point.Y + 1);
+                        if (c.Alpha > 150)
+                        {
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+
+                    if (nbmp.Height > 10 && point.Y >= 1)
+                    {
+                        c = nbmp.GetPixel(point.X, point.Y - 1);
+                        if (c.Alpha > 150)
+                        {
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
             }
-            else if (selectedItem.Type == AdjustDurationType.Percent)
+        }
+
+        return true;
+    }
+
+    private static bool IsMatchPointBackGround(NOcrPoint op, bool loose, NikseBitmap2 nbmp, NOcrChar nOcrChar)
+    {
+        foreach (var point in op.ScaledGetPoints(nOcrChar, nbmp.Width, nbmp.Height))
+        {
+            if (point.X >= 0 && point.Y >= 0 && point.X < nbmp.Width && point.Y < nbmp.Height)
             {
-                AdjustIsPercentVisible = true;
+                var c = nbmp.GetPixel(point.X, point.Y);
+                if (c.Alpha > 150)
+                {
+                    return false;
+                }
+
+                if (nbmp.Width > 10 && point.X + 1 < nbmp.Width)
+                {
+                    c = nbmp.GetPixel(point.X + 1, point.Y);
+                    if (c.Alpha > 150)
+                    {
+                        return false;
+                    }
+                }
+
+                if (loose)
+                {
+                    if (nbmp.Width > 10 && point.X >= 1)
+                    {
+                        c = nbmp.GetPixel(point.X - 1, point.Y);
+                        if (c.Alpha > 150)
+                        {
+                            return false;
+                        }
+                    }
+
+                    if (nbmp.Height > 10 && point.Y + 1 < nbmp.Height)
+                    {
+                        c = nbmp.GetPixel(point.X, point.Y + 1);
+                        if (c.Alpha > 150)
+                        {
+                            return false;
+                        }
+                    }
+
+                    if (nbmp.Height > 10 && point.Y >= 1)
+                    {
+                        c = nbmp.GetPixel(point.X, point.Y - 1);
+                        if (c.Alpha > 150)
+                        {
+                            return false;
+                        }
+                    }
+                }
             }
-            else if (selectedItem.Type == AdjustDurationType.Fixed)
+        }
+        return true;
+    }
+
+
+    private static void RemoveDuplicates(List<NOcrPoint> lines)
+    {
+        var indicesToDelete = new List<int>();
+        for (var index = 0; index < lines.Count; index++)
+        {
+            var outerPoint = lines[index];
+            for (var innerIndex = 0; innerIndex < lines.Count; innerIndex++)
             {
-                AdjustIsFixedVisible = true;
+                var innerPoint = lines[innerIndex];
+                if (innerPoint != outerPoint)
+                {
+                    if (innerPoint.Start.X == innerPoint.End.X && outerPoint.Start.X == outerPoint.End.X && innerPoint.Start.X == outerPoint.Start.X)
+                    {
+                        // same y
+                        if (Math.Max(innerPoint.Start.Y, innerPoint.End.Y) <= Math.Max(outerPoint.Start.Y, outerPoint.End.Y) &&
+                            Math.Min(innerPoint.Start.Y, innerPoint.End.Y) >= Math.Min(outerPoint.Start.Y, outerPoint.End.Y))
+                        {
+                            if (!indicesToDelete.Contains(innerIndex))
+                            {
+                                indicesToDelete.Add(innerIndex);
+                            }
+                        }
+                    }
+                    else if (innerPoint.Start.Y == innerPoint.End.Y && outerPoint.Start.Y == outerPoint.End.Y && innerPoint.Start.Y == outerPoint.Start.Y)
+                    {
+                        // same x
+                        if (Math.Max(innerPoint.Start.X, innerPoint.End.X) <= Math.Max(outerPoint.Start.X, outerPoint.End.X) &&
+                            Math.Min(innerPoint.Start.X, innerPoint.End.X) >= Math.Min(outerPoint.Start.X, outerPoint.End.X))
+                        {
+                            if (!indicesToDelete.Contains(innerIndex))
+                            {
+                                indicesToDelete.Add(innerIndex);
+                            }
+                        }
+                    }
+                }
             }
-            else if (selectedItem.Type == AdjustDurationType.Recalculate)
-            {
-                AdjustIsRecalculateVisible = true;
-            }
+        }
+
+        foreach (var i in indicesToDelete.OrderByDescending(p => p))
+        {
+            lines.RemoveAt(i);
+        }
+    }
+
+    private void ShowOcrPoints()
+    {
+        LinesForeground.Clear();
+        foreach (var op in NOcrChar.LinesForeground)
+        {
+            LinesForeground.Add(op);
+        }
+
+        LinesBackground.Clear();
+        foreach (var op in NOcrChar.LinesBackground)
+        {
+            LinesBackground.Add(op);
         }
     }
 }
