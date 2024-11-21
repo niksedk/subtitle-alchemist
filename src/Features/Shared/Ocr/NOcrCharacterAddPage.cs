@@ -1,4 +1,6 @@
 using Microsoft.Maui.Controls.Shapes;
+using SkiaSharp;
+using SubtitleAlchemist.Controls.DrawingCanvasControl;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Ocr;
 
@@ -281,6 +283,17 @@ public class NOcrCharacterAddPage : ContentPage
         entryNewText.SetBinding(Entry.TextProperty, nameof(vm.NewText));
 
 
+        var drawingCanvas = new DrawingCanvasView
+        {
+            VerticalOptions = LayoutOptions.Start,
+            HorizontalOptions = LayoutOptions.Start,
+            WidthRequest = 200,
+            HeightRequest = 200,
+        };
+        drawingCanvas.SetPaintColor(SKColors.Red);
+        drawingCanvas.SetStrokeWidth(1);
+
+
         var stackMiddle = new StackLayout
         {
             Orientation = StackOrientation.Vertical,
@@ -292,6 +305,7 @@ public class NOcrCharacterAddPage : ContentPage
                 imageLetter,
                 labelNewText,
                 entryNewText,
+                drawingCanvas,
             },
         }.BindDynamicTheme();
 
