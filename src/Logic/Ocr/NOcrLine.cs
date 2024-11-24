@@ -2,20 +2,25 @@
 
 namespace SubtitleAlchemist.Logic.Ocr;
 
-public class NOcrPoint
+public class NOcrLine
 {
     public OcrPoint Start { get; set; }
     public OcrPoint End { get; set; }
 
     public string DisplayName => ToString();
 
-    public NOcrPoint()
+    public NOcrLine()
     {
         Start = new OcrPoint();
         End = new OcrPoint();
     }
 
-    public NOcrPoint(OcrPoint start, OcrPoint end)
+    public bool IsEmpty => Start.X != End.X &&
+                           Start.Y != End.Y &&
+                           Start.X != End.X &&
+                           Start.Y != End.Y;
+
+    public NOcrLine(OcrPoint start, OcrPoint end)
     {
         Start = new OcrPoint(start.X, start.Y);
         End = new OcrPoint(end.X, end.Y);

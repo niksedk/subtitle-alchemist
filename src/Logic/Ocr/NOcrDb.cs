@@ -437,12 +437,12 @@ public class NOcrDb
         var c = new NOcrChar();
         foreach (var op in oldChar.LinesForeground)
         {
-            c.LinesForeground.Add(new NOcrPoint(MakePointItalic(op.Start, oldChar.Height, movePixelsLeft, unItalicFactor), MakePointItalic(op.End, oldChar.Height, movePixelsLeft, unItalicFactor)));
+            c.LinesForeground.Add(new NOcrLine(MakePointItalic(op.Start, oldChar.Height, movePixelsLeft, unItalicFactor), MakePointItalic(op.End, oldChar.Height, movePixelsLeft, unItalicFactor)));
         }
 
         foreach (var op in oldChar.LinesBackground)
         {
-            c.LinesBackground.Add(new NOcrPoint(MakePointItalic(op.Start, oldChar.Height, movePixelsLeft, unItalicFactor), MakePointItalic(op.End, oldChar.Height, movePixelsLeft, unItalicFactor)));
+            c.LinesBackground.Add(new NOcrLine(MakePointItalic(op.Start, oldChar.Height, movePixelsLeft, unItalicFactor), MakePointItalic(op.End, oldChar.Height, movePixelsLeft, unItalicFactor)));
         }
 
         c.Text = oldChar.Text;

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SkiaSharp;
+using SubtitleAlchemist.Controls.DrawingCanvasControl;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Logic.Ocr;
@@ -12,10 +13,10 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
 {
     public NOcrCharacterAddPage? Page { get; set; }
 
-    [ObservableProperty] private ObservableCollection<NOcrPoint> _linesForeground;
-    [ObservableProperty] private NOcrPoint? _selectedLineForeground;
-    [ObservableProperty] private ObservableCollection<NOcrPoint> _linesBackground;
-    [ObservableProperty] private NOcrPoint? _selectedLineBackground;
+    [ObservableProperty] private ObservableCollection<NOcrLine> _linesForeground;
+    [ObservableProperty] private NOcrLine? _selectedLineForeground;
+    [ObservableProperty] private ObservableCollection<NOcrLine> _linesBackground;
+    [ObservableProperty] private NOcrLine? _selectedLineBackground;
     [ObservableProperty] private bool _isNewLinesForegroundActive;
     [ObservableProperty] private bool _isNewLinesBackgroundActive;
     [ObservableProperty] private string _newText;
@@ -31,12 +32,15 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     private List<ImageSplitterItem2> _letters;
     private ImageSplitterItem2 _splitItem;
     public NOcrChar NOcrChar { get; private set; }
+    public NOcrDrawingCanvasView NOcrDrawingCanvas { get; set; }
+    private List<OcrSubtitleItem> _ocrSubtitleItems;
+    private int _startFromNumber;
 
     public NOcrCharacterAddPageModel()
     {
         _newText = string.Empty;
-        _linesForeground = new ObservableCollection<NOcrPoint>();
-        _linesBackground = new ObservableCollection<NOcrPoint>();
+        _linesForeground = new ObservableCollection<NOcrLine>();
+        _linesBackground = new ObservableCollection<NOcrLine>();
         _isNewLinesForegroundActive = true;
         _isNewLinesBackgroundActive = false;
         _isNewTextItalic = false;
@@ -53,6 +57,8 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
 
         _selectedNoOfLinesToAutoDraw = 100;
         NOcrChar = new NOcrChar();
+        NOcrDrawingCanvas = new NOcrDrawingCanvasView();
+        _ocrSubtitleItems = new List<OcrSubtitleItem>();
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -70,6 +76,11 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
                     Height = _splitItem.NikseBitmap.Height,
                     MarginTop = _splitItem.Top,
                 };
+
+                NOcrDrawingCanvas.ZoomFactor = 6;
+                NOcrDrawingCanvas.WidthRequest = _splitItem.NikseBitmap.Width * NOcrDrawingCanvas.ZoomFactor;
+                NOcrDrawingCanvas.HeightRequest = _splitItem.NikseBitmap.Height * NOcrDrawingCanvas.ZoomFactor;
+                AutoGuessLines();
             }
         }
 
@@ -87,6 +98,16 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         if (query["Letters"] is List<ImageSplitterItem2> letters)
         {
             _letters = letters;
+        }
+
+        if (query["OcrSubtitleItems"] is List<OcrSubtitleItem> ocrSubtitleItems)
+        {
+            _ocrSubtitleItems = ocrSubtitleItems;
+        }
+
+        if (query["StartFromNumber"] is int startFromNumber)
+        {
+            _startFromNumber = startFromNumber;
         }
 
 
@@ -125,18 +146,32 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     [RelayCommand]
     private async Task ZoomIn()
     {
-
+        if (NOcrDrawingCanvas.ZoomFactor < 10)
+        {
+            NOcrDrawingCanvas.ZoomFactor++;
+            NOcrDrawingCanvas.InvalidateSurface();
+            NOcrDrawingCanvas.WidthRequest = _splitItem.NikseBitmap.Width * NOcrDrawingCanvas.ZoomFactor;
+            NOcrDrawingCanvas.HeightRequest = _splitItem.NikseBitmap.Height * NOcrDrawingCanvas.ZoomFactor;
+        }
     }
 
     [RelayCommand]
     private void ZoomOut()
     {
-
+        if (NOcrDrawingCanvas.ZoomFactor > 1)
+        {
+            NOcrDrawingCanvas.ZoomFactor--;
+            NOcrDrawingCanvas.InvalidateSurface();
+            NOcrDrawingCanvas.WidthRequest = _splitItem.NikseBitmap.Width * NOcrDrawingCanvas.ZoomFactor;
+            NOcrDrawingCanvas.HeightRequest = _splitItem.NikseBitmap.Height * NOcrDrawingCanvas.ZoomFactor;
+        }
     }
 
     [RelayCommand]
     private void AutoGuessLines()
     {
+        NOcrChar.LinesForeground.Clear();
+        NOcrChar.LinesBackground.Clear();
         GenerateLineSegments(SelectedNoOfLinesToAutoDraw, false, NOcrChar, _splitItem.NikseBitmap!);
         ShowOcrPoints();
     }
@@ -174,7 +209,12 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     [RelayCommand]
     private async Task Ok()
     {
-        await Shell.Current.GoToAsync("..");
+        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+        {
+            { "NOcrChar", NOcrChar },
+            { "OcrSubtitleItems", _ocrSubtitleItems },
+            { "StartFromNumber", _startFromNumber },
+        });
     }
 
     public void OnDisappearing()
@@ -214,7 +254,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
                     start = new OcrPoint(verticalLineX, 2);
                     end = new OcrPoint(verticalLineX, nOcrChar.Height - 3);
 
-                    if (IsMatchPointForeGround(new NOcrPoint(start, end), true, bitmap, nOcrChar))
+                    if (IsMatchPointForeGround(new NOcrLine(start, end), true, bitmap, nOcrChar))
                     {
                         verticalLineX++;
                         break;
@@ -230,7 +270,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
                     start = new OcrPoint(2, horizontalLineY);
                     end = new OcrPoint(nOcrChar.Width - 3, horizontalLineY);
 
-                    if (IsMatchPointForeGround(new NOcrPoint(start, end), true, bitmap, nOcrChar))
+                    if (IsMatchPointForeGround(new NOcrLine(start, end), true, bitmap, nOcrChar))
                     {
                         horizontalLineY++;
                         break;
@@ -274,7 +314,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
                 }
             }
 
-            var op = new NOcrPoint(start, end);
+            var op = new NOcrLine(start, end);
             var ok = true;
             foreach (var existingOp in nOcrChar.LinesForeground)
             {
@@ -318,7 +358,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
                     start = new OcrPoint(2, horizontalLineY);
                     end = new OcrPoint(nOcrChar.Width - 2, horizontalLineY);
 
-                    if (IsMatchPointBackGround(new NOcrPoint(start, end), true, bitmap, nOcrChar))
+                    if (IsMatchPointBackGround(new NOcrLine(start, end), true, bitmap, nOcrChar))
                     {
                         horizontalLineY++;
                         break;
@@ -366,7 +406,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
                 }
             }
 
-            var op = new NOcrPoint(start, end);
+            var op = new NOcrLine(start, end);
             var ok = true;
             foreach (var existingOp in nOcrChar.LinesBackground)
             {
@@ -393,7 +433,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         RemoveDuplicates(nOcrChar.LinesBackground);
     }
 
-    private static bool IsMatchPointForeGround(NOcrPoint op, bool loose, NikseBitmap2 nbmp, NOcrChar nOcrChar)
+    private static bool IsMatchPointForeGround(NOcrLine op, bool loose, NikseBitmap2 nbmp, NOcrChar nOcrChar)
     {
         if (Math.Abs(op.Start.X - op.End.X) < 2 && Math.Abs(op.End.Y - op.Start.Y) < 2)
         {
@@ -469,7 +509,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         return true;
     }
 
-    private static bool IsMatchPointBackGround(NOcrPoint op, bool loose, NikseBitmap2 nbmp, NOcrChar nOcrChar)
+    private static bool IsMatchPointBackGround(NOcrLine op, bool loose, NikseBitmap2 nbmp, NOcrChar nOcrChar)
     {
         foreach (var point in op.ScaledGetPoints(nOcrChar, nbmp.Width, nbmp.Height))
         {
@@ -525,7 +565,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     }
 
 
-    private static void RemoveDuplicates(List<NOcrPoint> lines)
+    private static void RemoveDuplicates(List<NOcrLine> lines)
     {
         var indicesToDelete = new List<int>();
         for (var index = 0; index < lines.Count; index++)
@@ -572,16 +612,12 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
 
     private void ShowOcrPoints()
     {
-        LinesForeground.Clear();
-        foreach (var op in NOcrChar.LinesForeground)
-        {
-            LinesForeground.Add(op);
-        }
+        NOcrDrawingCanvas.MissPaths.Clear();
+        NOcrDrawingCanvas.HitPaths.Clear();
 
-        LinesBackground.Clear();
-        foreach (var op in NOcrChar.LinesBackground)
-        {
-            LinesBackground.Add(op);
-        }
+        NOcrDrawingCanvas.MissPaths.AddRange(NOcrChar.LinesBackground);
+        NOcrDrawingCanvas.HitPaths.AddRange(NOcrChar.LinesForeground);
+
+        NOcrDrawingCanvas.InvalidateSurface();
     }
 }

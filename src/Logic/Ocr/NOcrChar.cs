@@ -7,8 +7,8 @@ public class NOcrChar
     public int Height { get; set; }
     public int MarginTop { get; set; }
     public bool Italic { get; set; }
-    public List<NOcrPoint> LinesForeground { get; }
-    public List<NOcrPoint> LinesBackground { get; }
+    public List<NOcrLine> LinesForeground { get; }
+    public List<NOcrLine> LinesBackground { get; }
     public int ExpandCount { get; set; }
     public bool LoadedOk { get; }
 
@@ -16,15 +16,15 @@ public class NOcrChar
 
     public NOcrChar()
     {
-        LinesForeground = new List<NOcrPoint>();
-        LinesBackground = new List<NOcrPoint>();
+        LinesForeground = new List<NOcrLine>();
+        LinesBackground = new List<NOcrLine>();
         Text = string.Empty;
     }
 
     public NOcrChar(NOcrChar old)
     {
-        LinesForeground = new List<NOcrPoint>(old.LinesForeground.Count);
-        LinesBackground = new List<NOcrPoint>(old.LinesBackground.Count);
+        LinesForeground = new List<NOcrLine>(old.LinesForeground.Count);
+        LinesBackground = new List<NOcrLine>(old.LinesBackground.Count);
         Text = old.Text;
         Width = old.Width;
         Height = old.Height;
@@ -32,12 +32,12 @@ public class NOcrChar
         Italic = old.Italic;
         foreach (var p in old.LinesForeground)
         {
-            LinesForeground.Add(new NOcrPoint(new OcrPoint(p.Start.X, p.Start.Y), new OcrPoint(p.End.X, p.End.Y)));
+            LinesForeground.Add(new NOcrLine(new OcrPoint(p.Start.X, p.Start.Y), new OcrPoint(p.End.X, p.End.Y)));
         }
 
         foreach (var p in old.LinesBackground)
         {
-            LinesBackground.Add(new NOcrPoint(new OcrPoint(p.Start.X, p.Start.Y), new OcrPoint(p.End.X, p.End.Y)));
+            LinesBackground.Add(new NOcrLine(new OcrPoint(p.Start.X, p.Start.Y), new OcrPoint(p.End.X, p.End.Y)));
         }
     }
 
@@ -168,15 +168,15 @@ public class NOcrChar
         }
     }
 
-    private static List<NOcrPoint> ReadPoints(Stream stream)
+    private static List<NOcrLine> ReadPoints(Stream stream)
     {
         var length = stream.ReadByte() << 8 | stream.ReadByte();
-        var list = new List<NOcrPoint>(length);
+        var list = new List<NOcrLine>(length);
         var buffer = new byte[8];
         for (var i = 0; i < length; i++)
         {
             stream.Read(buffer, 0, buffer.Length);
-            var point = new NOcrPoint
+            var point = new NOcrLine
             {
                 Start = new OcrPoint(buffer[0] << 8 | buffer[1], buffer[2] << 8 | buffer[3]),
                 End = new OcrPoint(buffer[4] << 8 | buffer[5], buffer[6] << 8 | buffer[7])
@@ -186,15 +186,15 @@ public class NOcrChar
         return list;
     }
 
-    private static List<NOcrPoint> ReadPointsBytes(Stream stream)
+    private static List<NOcrLine> ReadPointsBytes(Stream stream)
     {
         var length = stream.ReadByte();
-        var list = new List<NOcrPoint>(length);
+        var list = new List<NOcrLine>(length);
         var buffer = new byte[4];
         for (var i = 0; i < length; i++)
         {
             stream.Read(buffer, 0, buffer.Length);
-            var point = new NOcrPoint
+            var point = new NOcrLine
             {
                 Start = new OcrPoint(buffer[0], buffer[1]),
                 End = new OcrPoint(buffer[2], buffer[3])
@@ -223,7 +223,7 @@ public class NOcrChar
                IsAllPointByteValues(LinesForeground) && IsAllPointByteValues(LinesForeground);
     }
 
-    private static bool IsAllPointByteValues(List<NOcrPoint> lines)
+    private static bool IsAllPointByteValues(List<NOcrLine> lines)
     {
         for (var index = 0; index < lines.Count; index++)
         {
@@ -302,7 +302,7 @@ public class NOcrChar
         WritePoints(stream, LinesBackground);
     }
 
-    private static void WritePointsAsOneByte(Stream stream, List<NOcrPoint> points)
+    private static void WritePointsAsOneByte(Stream stream, List<NOcrLine> points)
     {
         stream.WriteByte((byte)points.Count);
         foreach (var nOcrPoint in points)
@@ -314,7 +314,7 @@ public class NOcrChar
         }
     }
 
-    private static void WritePoints(Stream stream, List<NOcrPoint> points)
+    private static void WritePoints(Stream stream, List<NOcrLine> points)
     {
         WriteInt16(stream, (ushort)points.Count);
         foreach (var nOcrPoint in points)

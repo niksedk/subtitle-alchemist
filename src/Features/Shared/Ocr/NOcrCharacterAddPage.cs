@@ -191,7 +191,7 @@ public class NOcrCharacterAddPage : ContentPage
                     VerticalTextAlignment = TextAlignment.Center,
                     Padding = new Thickness(5),
                 }.BindDynamicThemeTextColorOnly();
-                labelPoint.SetBinding(Label.TextProperty, nameof(NOcrPoint.DisplayName));
+                labelPoint.SetBinding(Label.TextProperty, nameof(NOcrLine.DisplayName));
                 functionGrid.Add(labelPoint, 0);
 
                 return functionGrid;
@@ -225,7 +225,7 @@ public class NOcrCharacterAddPage : ContentPage
                     VerticalTextAlignment = TextAlignment.Center,
                     Padding = new Thickness(5),
                 }.BindDynamicThemeTextColorOnly();
-                labelPoint.SetBinding(Label.TextProperty, nameof(NOcrPoint.DisplayName));
+                labelPoint.SetBinding(Label.TextProperty, nameof(NOcrLine.DisplayName));
                 functionGrid.Add(labelPoint, 0);
 
                 return functionGrid;
@@ -282,16 +282,44 @@ public class NOcrCharacterAddPage : ContentPage
         };
         entryNewText.SetBinding(Entry.TextProperty, nameof(vm.NewText));
 
+        var labelIsNewTextItalic = new Label
+        {
+            Text = "Italic",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 10),
+        }.BindDynamicTheme();
 
-        var drawingCanvas = new DrawingCanvasView
+        var checkBoxIsNewTextItalic = new CheckBox
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 10),
+        };
+        checkBoxIsNewTextItalic.SetBinding(CheckBox.IsCheckedProperty, nameof(vm.IsNewTextItalic));
+
+        var stackItalic = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                labelIsNewTextItalic,
+                checkBoxIsNewTextItalic,
+            },
+        }.BindDynamicTheme();
+
+
+        var drawingCanvas = new NOcrDrawingCanvasView
         {
             VerticalOptions = LayoutOptions.Start,
             HorizontalOptions = LayoutOptions.Start,
             WidthRequest = 200,
             HeightRequest = 200,
         };
-        drawingCanvas.SetPaintColor(SKColors.Red);
         drawingCanvas.SetStrokeWidth(1);
+        vm.NOcrDrawingCanvas = drawingCanvas;
 
 
         var stackMiddle = new StackLayout
@@ -305,6 +333,7 @@ public class NOcrCharacterAddPage : ContentPage
                 imageLetter,
                 labelNewText,
                 entryNewText,
+                stackItalic,
                 drawingCanvas,
             },
         }.BindDynamicTheme();

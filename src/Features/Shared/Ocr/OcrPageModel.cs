@@ -107,6 +107,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
+        var runOcr = false;
+
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             await CheckAndUnpackOcrFiles();
@@ -140,12 +142,34 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             });
         }
 
+        if (query.ContainsKey("NOcrChar") && query["NOcrChar"] is NOcrChar nOcrChar)
+        {
+            _nOcrDb?.Add(nOcrChar);
+            runOcr = true;
+        }
+
+        if (query.ContainsKey("OcrSubtitleItems") && query["OcrSubtitleItems"] is List<OcrSubtitleItem> ocrSubtitleItems)
+        {
+            OcrSubtitleItems = new ObservableCollection<OcrSubtitleItem>(ocrSubtitleItems);
+        }
+
+        if (query.ContainsKey("StartFromNumber") && query["StartFromNumber"] is int startFromNumber)
+        {
+            SelectedStartFromNumber = startFromNumber;
+        }
+
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
-            MainThread.BeginInvokeOnMainThread(() =>
+            MainThread.BeginInvokeOnMainThread(async() =>
             {
                 _loading = false;
                 IsRunActive = true;
+
+                if (runOcr)
+                {
+                    _isRunningOcr = false;
+                    await RunOcr();
+                }
             });
             return false;
         });
@@ -198,11 +222,10 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         IsOkAndCancelActive = false;
 
         var nOcrDbFileName = GetNOcrLanguageFileName();
-        if (!string.IsNullOrEmpty(nOcrDbFileName))
+        if (!string.IsNullOrEmpty(nOcrDbFileName) && (_nOcrDb == null || _nOcrDb.FileName  != nOcrDbFileName))
         {
             _nOcrDb = new NOcrDb(nOcrDbFileName);
         }
-
 
         // Run OCR in background task
         _ = Task.Run(() =>
@@ -248,6 +271,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                                     { "Bitmap", bitmap },
                                     { "Letters", list },
                                     { "Item", splitterItem },
+                                    { "OcrSubtitleItems", OcrSubtitleItems.ToList() },
+                                    { "StartFromNumber", SelectedStartFromNumber },
                                 });
                             });
                             return;
