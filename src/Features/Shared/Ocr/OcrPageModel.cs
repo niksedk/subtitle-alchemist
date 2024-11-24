@@ -56,6 +56,12 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     private string? _selectedNOcrDatabase;
 
     [ObservableProperty]
+    private ObservableCollection<int> _nOcrMaxWrongPixelsList;
+
+    [ObservableProperty]
+    private int _selectedNOcrMaxWrongPixels;
+
+    [ObservableProperty]
     private string _progressText;
 
     [ObservableProperty]
@@ -78,6 +84,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     private bool _loading;
     private CancellationTokenSource _cancellationTokenSource;
     private NOcrDb? _nOcrDb;
+    private bool _toolsItalicOn;
 
     public OcrPageModel(INOcrCaseFixer nOcrCaseFixer)
     {
@@ -90,6 +97,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         _currentBitmapInfo = string.Empty;
         _currentText = string.Empty;
         _startFromNumbers = new ObservableCollection<int>(Enumerable.Range(1, 2));
+        _nOcrMaxWrongPixelsList = new ObservableCollection<int>(Enumerable.Range(1, 500));
         _selectedStartFromNumber = 1;
         _nOcrDatabases = new ObservableCollection<string>();
         ListView = new CollectionView();
@@ -103,6 +111,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         _fileName = string.Empty;
         _nOcrDrawUnknownText = true;
         _isOkAndCancelActive = true;
+        _selectedNOcrMaxWrongPixels = 25;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -142,9 +151,19 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             });
         }
 
+        var runOnce = false;
+        if (query.ContainsKey("RunOnce") && query["RunOnce"] is bool onlyRunOnce)
+        {
+            runOnce = onlyRunOnce;
+        }
+
         if (query.ContainsKey("NOcrChar") && query["NOcrChar"] is NOcrChar nOcrChar)
         {
-            _nOcrDb?.Add(nOcrChar);
+            if (!runOnce)
+            {
+                _nOcrDb?.Add(nOcrChar);
+                _nOcrDb?.Save();
+            }
             runOcr = true;
         }
 
@@ -156,6 +175,11 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         if (query.ContainsKey("StartFromNumber") && query["StartFromNumber"] is int startFromNumber)
         {
             SelectedStartFromNumber = startFromNumber;
+        }
+
+        if (query.ContainsKey("ItalicOn") && query["ItalicOn"] is bool toolsItalicOn)
+        {
+            _toolsItalicOn = toolsItalicOn;
         }
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
@@ -259,7 +283,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                     }
                     else
                     {
-                        var match = _nOcrDb!.GetMatch(splitterItem.NikseBitmap, splitterItem.Top, true, 10);
+                        var match = _nOcrDb!.GetMatch(splitterItem.NikseBitmap, splitterItem.Top, true, SelectedNOcrMaxWrongPixels);
 
                         if (NOcrDrawUnknownText && match == null)
                         {
@@ -273,6 +297,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                                     { "Item", splitterItem },
                                     { "OcrSubtitleItems", OcrSubtitleItems.ToList() },
                                     { "StartFromNumber", SelectedStartFromNumber },
+                                    { "ItalicOn", _toolsItalicOn },
                                 });
                             });
                             return;

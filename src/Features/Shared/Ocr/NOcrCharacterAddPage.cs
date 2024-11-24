@@ -1,5 +1,4 @@
 using Microsoft.Maui.Controls.Shapes;
-using SkiaSharp;
 using SubtitleAlchemist.Controls.DrawingCanvasControl;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Ocr;
@@ -237,26 +236,7 @@ public class NOcrCharacterAddPage : ContentPage
 
         // middle column
 
-        var stackZoomOutAndZoomIn = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Children =
-            {
-                new Label { Text = "Current image" }.BindDynamicTheme(),
-                new Button
-                {
-                    Text = "-",
-                    Command = vm.ZoomOutCommand,
-                }.BindDynamicTheme(),
-                new Button
-                {
-                    Text = "+",
-                    Command = vm.ZoomInCommand,
-                }.BindDynamicTheme(),
-            },
-        }.BindDynamicTheme();
+        var labelCurrentImage = new Label { Text = "Current image" }.BindDynamicTheme();
 
         var imageLetter = new Image
         {
@@ -271,7 +251,7 @@ public class NOcrCharacterAddPage : ContentPage
             Text = "New text",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 0, 10),
+            Margin = new Thickness(0, 15, 0, 10),
         }.BindDynamicTheme();
 
         var entryNewText = new Entry
@@ -281,6 +261,7 @@ public class NOcrCharacterAddPage : ContentPage
             Margin = new Thickness(0, 0, 0, 10),
         };
         entryNewText.SetBinding(Entry.TextProperty, nameof(vm.NewText));
+        vm.EntryNewText = entryNewText;
 
         var labelIsNewTextItalic = new Label
         {
@@ -297,6 +278,7 @@ public class NOcrCharacterAddPage : ContentPage
             Margin = new Thickness(0, 0, 0, 10),
         };
         checkBoxIsNewTextItalic.SetBinding(CheckBox.IsCheckedProperty, nameof(vm.IsNewTextItalic));
+        checkBoxIsNewTextItalic.CheckedChanged += vm.CheckBoxIsNewTextItalic_CheckedChanged;
 
         var stackItalic = new StackLayout
         {
@@ -307,6 +289,19 @@ public class NOcrCharacterAddPage : ContentPage
             {
                 labelIsNewTextItalic,
                 checkBoxIsNewTextItalic,
+                new Button
+                {
+                    Text = "-",
+                    Command = vm.ZoomOutCommand,
+                    Margin = new Thickness(25, 0, 0, 0),
+                }.BindDynamicTheme(),
+                new Button
+                {
+                    Text = "+",
+                    Command = vm.ZoomInCommand,
+                    Margin = new Thickness(10, 0, 0, 0),
+                }.BindDynamicTheme(),
+
             },
         }.BindDynamicTheme();
 
@@ -329,7 +324,7 @@ public class NOcrCharacterAddPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
             Children =
             {
-                stackZoomOutAndZoomIn,
+                labelCurrentImage,
                 imageLetter,
                 labelNewText,
                 entryNewText,
@@ -357,12 +352,20 @@ public class NOcrCharacterAddPage : ContentPage
                     HorizontalOptions = LayoutOptions.Fill,
                     VerticalOptions = LayoutOptions.Center,
                 }.BindDynamicTheme().Bind(nameof(vm.NoOfLinesToAutoDrawList), nameof(vm.SelectedNoOfLinesToAutoDraw)),
-                new Button() { Text = "Auto draw again", Command = vm.AutoGuessLinesCommand }.BindDynamicTheme(),
+                new Button
+                {
+                    Text = "Auto draw again", Command = vm.AutoGuessLinesCommand,
+                    Margin = new Thickness(0, 10, 0, 0),
+                }.BindDynamicTheme(),
+                new Button
+                {
+                    Text = "Clear", Command = vm.ClearLinesCommand,
+                    Margin = new Thickness(0, 10, 0, 0),
+                }.BindDynamicTheme(),
             },
         }.BindDynamicTheme();
 
         grid.Add(stackRight, 2);
-
 
         return grid;
     }

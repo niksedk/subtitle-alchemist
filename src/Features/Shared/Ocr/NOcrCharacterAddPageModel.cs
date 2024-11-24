@@ -33,6 +33,8 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     private ImageSplitterItem2 _splitItem;
     public NOcrChar NOcrChar { get; private set; }
     public NOcrDrawingCanvasView NOcrDrawingCanvas { get; set; }
+    public Entry EntryNewText { get; set; }
+
     private List<OcrSubtitleItem> _ocrSubtitleItems;
     private int _startFromNumber;
 
@@ -47,6 +49,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         _submitOnFirstLetter = false;
         _letters = new List<ImageSplitterItem2>();
         _splitItem = new ImageSplitterItem2(0, 0, new NikseBitmap2(1, 1));
+        EntryNewText = new Entry();
 
         const int maxLines = 250;
         _noOfLinesToAutoDrawList = new ObservableCollection<int>();
@@ -110,12 +113,17 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             _startFromNumber = startFromNumber;
         }
 
+        if (query["ItalicOn"] is bool italicOn)
+        {
+            IsNewTextItalic = italicOn;
+        }
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 LoadSettings();
+                EntryNewText.Focus();
             });
             return false;
         });
@@ -189,9 +197,16 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     }
 
     [RelayCommand]
-    private void UseOnce()
+    private async Task UseOnce()
     {
-
+        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+        {
+            { "NOcrChar", NOcrChar },
+            { "OcrSubtitleItems", _ocrSubtitleItems },
+            { "StartFromNumber", _startFromNumber },
+            { "ItalicOn", _isNewTextItalic },
+            { "UseOnce", true },
+        });
     }
 
     [RelayCommand]
@@ -214,7 +229,17 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "NOcrChar", NOcrChar },
             { "OcrSubtitleItems", _ocrSubtitleItems },
             { "StartFromNumber", _startFromNumber },
+            { "ItalicOn", _isNewTextItalic },
+            { "UseOnce", false },
         });
+    }
+
+    [RelayCommand]
+    private void ClearLines()
+    {
+        NOcrChar.LinesForeground.Clear();
+        NOcrChar.LinesBackground.Clear();
+        ShowOcrPoints();
     }
 
     public void OnDisappearing()
@@ -619,5 +644,20 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         NOcrDrawingCanvas.HitPaths.AddRange(NOcrChar.LinesForeground);
 
         NOcrDrawingCanvas.InvalidateSurface();
+    }
+
+    public void CheckBoxIsNewTextItalic_CheckedChanged(object? sender, CheckedChangedEventArgs e)
+    {
+        if (sender is CheckBox checkBox)
+        {
+            if (checkBox.IsChecked)
+            {
+                EntryNewText.FontAttributes = FontAttributes.Italic;
+            }
+            else
+            {
+                EntryNewText.FontAttributes = FontAttributes.None;
+            }
+        }
     }
 }

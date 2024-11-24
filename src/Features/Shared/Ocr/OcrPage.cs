@@ -44,6 +44,21 @@ public class OcrPage : ContentPage
 
         }.BindDynamicTheme();
         pickerOcrEngine.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedOcrEngine));
+        var labelMaxWrongPixels = new Label
+        {
+            Text = "Max wrong pixels",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0, 0, 0),
+        }.BindDynamicTheme();
+        var pickerNOcrMaxWrongPixels = new Picker
+        {
+            ItemsSource = vm.NOcrMaxWrongPixelsList,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 0, 0),
+        }.BindDynamicTheme();
+        pickerNOcrMaxWrongPixels.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedNOcrMaxWrongPixels));
         var stackOcrEngine = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -51,6 +66,7 @@ public class OcrPage : ContentPage
             {
                 labelTitle,
                 pickerOcrEngine,
+                pickerNOcrMaxWrongPixels,
             }
         };
         grid.Add(stackOcrEngine, 0, row);
@@ -354,6 +370,7 @@ public class OcrPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0,0,0),
         }.BindDynamicTheme();
         pickerFromNumber.SetBinding(Picker.ItemsSourceProperty, nameof(vm.StartFromNumbers));
         pickerFromNumber.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedStartFromNumber));
@@ -362,7 +379,7 @@ public class OcrPage : ContentPage
         {
             Text = "Pause",
             Command = vm.PauseCommand,
-            Margin = new Thickness(0, 0, 10, 0),
+            Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicTheme();
         buttonPause.SetBinding(IsEnabledProperty, nameof(vm.IsPauseActive));
 
