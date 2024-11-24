@@ -11,13 +11,14 @@ namespace SubtitleAlchemist.Logic.Config;
 public class Se
 {
     public SeGeneral General { get; set; } = new();
-    public List<SeShortCut> Shortcuts { get; set; } = new();
+    public List<SeShortCut> Shortcuts { get; set; }
     public SeFile File { get; set; } = new();
     public SeTools Tools { get; set; } = new();
     public SeSync Synchronization { get; set; } = new();
     public SeSpellCheck SpellCheck { get; set; } = new();
     public SeAppearance Appearance { get; set; } = new();
     public SeVideo Video { get; set; } = new();
+    public SeOcr Ocr { get; set; } = new();
     public static SeLanguage Language { get; set; } = new();
     public static Se Settings { get; set; } = new();
     
@@ -37,7 +38,6 @@ public class Se
             new(ShortcutAction.ListSelectAll, new List<string> { "Control", "A" }),
             new(ShortcutAction.ListSelectFirst, new List<string> { "Control", "Home" }),
             new(ShortcutAction.ListSelectLast, new List<string> { "Control", "End" }),
-
         };
     }
 
@@ -118,6 +118,11 @@ public class Se
         if (Settings.Video == null)
         {
             Settings.Video = new();
+        }
+
+        if (Settings.Ocr == null)
+        {
+            Settings.Ocr = new();
         }
 
         if (Settings.Tools.FixCommonErrors.Profiles.Count == 0)

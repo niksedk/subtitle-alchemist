@@ -59,6 +59,21 @@ public class OcrPage : ContentPage
             Margin = new Thickness(5, 0, 0, 0),
         }.BindDynamicTheme();
         pickerNOcrMaxWrongPixels.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedNOcrMaxWrongPixels));
+        var labelNOcrPixelsAreSpace = new Label
+        {
+            Text = "Pixels are space",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0, 0, 0),
+        }.BindDynamicTheme();
+        var pickerPixelsAreSpace = new Picker
+        {
+            ItemsSource = vm.NOcrPixelsAreSpaceList,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 0, 0),
+        }.BindDynamicTheme();
+        pickerPixelsAreSpace.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedNOcrPixelsAreSpace));
         var stackOcrEngine = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -66,7 +81,10 @@ public class OcrPage : ContentPage
             {
                 labelTitle,
                 pickerOcrEngine,
+                labelMaxWrongPixels,
                 pickerNOcrMaxWrongPixels,
+                labelNOcrPixelsAreSpace,
+                pickerPixelsAreSpace,
             }
         };
         grid.Add(stackOcrEngine, 0, row);

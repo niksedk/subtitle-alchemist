@@ -210,15 +210,29 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     }
 
     [RelayCommand]
-    private void Skip()
+    private async Task Skip()
     {
-
+        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+        {
+            { "NOcrChar", NOcrChar },
+            { "OcrSubtitleItems", _ocrSubtitleItems },
+            { "StartFromNumber", _startFromNumber },
+            { "ItalicOn", _isNewTextItalic },
+            { "Skip", true },
+        });
     }
 
     [RelayCommand]
-    private void Abort()
+    private async Task Abort()
     {
-
+        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+        {
+            { "NOcrChar", NOcrChar },
+            { "OcrSubtitleItems", _ocrSubtitleItems },
+            { "StartFromNumber", _startFromNumber },
+            { "ItalicOn", _isNewTextItalic },
+            { "Abort", true },
+        });
     }
 
     [RelayCommand]

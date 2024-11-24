@@ -259,6 +259,7 @@ public class NOcrCharacterAddPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 10),
+            ReturnCommand = vm.OkCommand,
         };
         entryNewText.SetBinding(Entry.TextProperty, nameof(vm.NewText));
         vm.EntryNewText = entryNewText;

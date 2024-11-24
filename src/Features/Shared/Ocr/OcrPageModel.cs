@@ -8,6 +8,7 @@ using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Logic.Ocr;
 using System.Collections.ObjectModel;
 using System.Text;
+using SubtitleAlchemist.Features.Main;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -62,6 +63,12 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     private int _selectedNOcrMaxWrongPixels;
 
     [ObservableProperty]
+    private ObservableCollection<int> _nOcrPixelsAreSpaceList;
+
+    [ObservableProperty]
+    private int _selectedNOcrPixelsAreSpace;
+
+    [ObservableProperty]
     private string _progressText;
 
     [ObservableProperty]
@@ -98,6 +105,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         _currentText = string.Empty;
         _startFromNumbers = new ObservableCollection<int>(Enumerable.Range(1, 2));
         _nOcrMaxWrongPixelsList = new ObservableCollection<int>(Enumerable.Range(1, 500));
+        _nOcrPixelsAreSpaceList = new ObservableCollection<int>(Enumerable.Range(1, 50));
         _selectedStartFromNumber = 1;
         _nOcrDatabases = new ObservableCollection<string>();
         ListView = new CollectionView();
@@ -112,10 +120,26 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         _nOcrDrawUnknownText = true;
         _isOkAndCancelActive = true;
         _selectedNOcrMaxWrongPixels = 25;
+        _selectedNOcrPixelsAreSpace = 12;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
+        var page = query["Page"].ToString();
+        if (page == nameof(MainPage) && OcrSubtitleItems.Count > 0)
+        {
+            return;
+        }
+
+        if (query.ContainsKey("Abort") && query["Abort"] is bool doAbort)
+        {
+            if (doAbort)
+            {
+                _cancellationTokenSource.Cancel();
+                return;
+            }
+        }
+
         var runOcr = false;
 
         MainThread.BeginInvokeOnMainThread(async () =>
@@ -188,6 +212,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             {
                 _loading = false;
                 IsRunActive = true;
+                LoadSettings();
 
                 if (runOcr)
                 {
@@ -197,6 +222,35 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             });
             return false;
         });
+    }
+
+    private void LoadSettings()
+    {
+        var ocr = Se.Settings.Ocr;
+        if (!string.IsNullOrEmpty(ocr.Engine) && OcrEngines.Any(p=>p.Name == ocr.Engine))
+        {
+            SelectedOcrEngine = OcrEngines.First(p => p.Name == ocr.Engine);
+        }
+
+        if (!string.IsNullOrEmpty(ocr.NOcrDatabase) && NOcrDatabases.Contains(ocr.NOcrDatabase))
+        {
+            SelectedNOcrDatabase = ocr.NOcrDatabase;
+        }
+
+        SelectedNOcrMaxWrongPixels = ocr.NOcrMaxWrongPixels;
+        NOcrDrawUnknownText = ocr.NOcrDrawUnknownText;
+        SelectedNOcrPixelsAreSpace = ocr.NOcrPixelsAreSpace;
+    }
+
+    private void SaveSettings()
+    {
+        var ocr = Se.Settings.Ocr;
+        ocr.Engine = SelectedOcrEngine?.Name ?? "nOCR";
+        ocr.NOcrDatabase = SelectedNOcrDatabase ?? "Latin";
+        ocr.NOcrMaxWrongPixels = SelectedNOcrMaxWrongPixels;
+        ocr.NOcrDrawUnknownText = NOcrDrawUnknownText;
+        ocr.NOcrPixelsAreSpace = SelectedNOcrPixelsAreSpace;
+        Se.SaveSettings();
     }
 
     private static async Task CheckAndUnpackOcrFiles()
@@ -234,6 +288,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        SaveSettings();
         _cancellationTokenSource = new CancellationTokenSource();
         _isRunningOcr = true;
         var startFromIndex = SelectedStartFromNumber - 1;
@@ -270,7 +325,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 var nBmp = new NikseBitmap2(bitmap);
                 nBmp.MakeTwoColor(200);
                 nBmp.CropTop(0, new SKColor(0, 0, 0, 0));
-                var list = NikseBitmapImageSplitter2.SplitBitmapToLettersNew(nBmp, 10, false, true, 20, true);
+                var list = NikseBitmapImageSplitter2.SplitBitmapToLettersNew(nBmp, SelectedNOcrPixelsAreSpace, false, true, 20, true);
                 var sb = new StringBuilder();
                 foreach (var splitterItem in list)
                 {
@@ -289,6 +344,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                         {
                             MainThread.BeginInvokeOnMainThread(async() =>
                             {
+                                await Pause();
                                 await Shell.Current.GoToAsync(nameof(NOcrCharacterAddPage), new Dictionary<string, object>
                                 {
                                     { "Page", nameof(OcrPage) },
