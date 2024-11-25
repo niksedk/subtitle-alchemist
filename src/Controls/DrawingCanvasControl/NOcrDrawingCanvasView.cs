@@ -26,9 +26,10 @@ public class NOcrDrawingCanvasView : SKCanvasView
 
     public bool NewLinesAreHits { get; set; } = true;
 
-    public SKColor CanvasColor { get; set; } = SKColors.White;
+    public SKColor CanvasColor { get; set; } = SKColors.DarkGray;
     public SKColor HitColor { get; set; } = SKColors.Green;
     public SKColor MissColor { get; set; } = SKColors.Red;
+    public SKBitmap BackgroundImage { get; set; }
 
     public NOcrDrawingCanvasView()
     {
@@ -37,6 +38,7 @@ public class NOcrDrawingCanvasView : SKCanvasView
         HitPaths = new List<NOcrLine>();
         MissPaths = new List<NOcrLine>();
         _currentPath = new NOcrLine();
+        BackgroundImage = new SKBitmap(1, 1);
 
         var pointerGestureRecognizer = new PointerGestureRecognizer();
         pointerGestureRecognizer.PointerMoved += PointerMoved;
@@ -92,6 +94,7 @@ public class NOcrDrawingCanvasView : SKCanvasView
     {
         var canvas = e.Surface.Canvas;
         canvas.Clear(CanvasColor);
+        canvas.DrawBitmap(BackgroundImage, new SKRect(0, 0, BackgroundImage.Width * ZoomFactor, BackgroundImage.Height * ZoomFactor));
 
         _drawingPaint.Color = MissColor;
         foreach (var path in MissPaths)

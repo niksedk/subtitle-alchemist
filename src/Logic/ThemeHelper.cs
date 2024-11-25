@@ -98,6 +98,12 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static Picker BindIsVisible(this Picker control, string bindName)
+        {
+            control.SetBinding(VisualElement.IsVisibleProperty, bindName);
+            return control;
+        }
+
         public static Label BindText(this Label control, string bindName)
         {
             control.SetBinding(Label.TextProperty, bindName);

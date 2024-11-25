@@ -44,20 +44,21 @@ public class OcrPage : ContentPage
 
         }.BindDynamicTheme();
         pickerOcrEngine.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedOcrEngine));
+        pickerOcrEngine.SelectedIndexChanged += vm.OnOcrEngineChanged;
         var labelMaxWrongPixels = new Label
         {
             Text = "Max wrong pixels",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(15, 0, 0, 0),
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNOcrVisible));
         var pickerNOcrMaxWrongPixels = new Picker
         {
             ItemsSource = vm.NOcrMaxWrongPixelsList,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(5, 0, 0, 0),
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNOcrVisible));
         pickerNOcrMaxWrongPixels.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedNOcrMaxWrongPixels));
         var labelNOcrPixelsAreSpace = new Label
         {
@@ -65,14 +66,14 @@ public class OcrPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(15, 0, 0, 0),
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNOcrVisible));
         var pickerPixelsAreSpace = new Picker
         {
             ItemsSource = vm.NOcrPixelsAreSpaceList,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(5, 0, 0, 0),
-        }.BindDynamicTheme();
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNOcrVisible));
         pickerPixelsAreSpace.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedNOcrPixelsAreSpace));
         var stackOcrEngine = new StackLayout
         {

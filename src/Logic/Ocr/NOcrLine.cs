@@ -15,10 +15,7 @@ public class NOcrLine
         End = new OcrPoint();
     }
 
-    public bool IsEmpty => Start.X != End.X &&
-                           Start.Y != End.Y &&
-                           Start.X != End.X &&
-                           Start.Y != End.Y;
+    public bool IsEmpty => Start.X == End.X && Start.Y == End.Y;
 
     public NOcrLine(OcrPoint start, OcrPoint end)
     {

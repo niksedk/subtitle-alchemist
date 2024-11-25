@@ -80,6 +80,12 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private bool _nOcrDrawUnknownText;
 
+    [ObservableProperty]
+    private bool _isNOcrVisible;
+
+    [ObservableProperty]
+    private bool _isTesseractVisible;
+
     public OcrPage? Page { get; set; }
     public CollectionView ListView { get; set; }
 
@@ -435,5 +441,14 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         CurrentBitmapInfo = $"Image {SelectedOcrSubtitleItem.Number} of {_ocrSubtitle.Count}: {bitmap.Width}x{bitmap.Height}";
         SelectedStartFromNumber = SelectedOcrSubtitleItem.Number;
         CurrentText = SelectedOcrSubtitleItem.Text;
+    }
+
+    public void OnOcrEngineChanged(object? sender, EventArgs e)
+    {
+        if (sender is Picker { SelectedItem: OcrEngineItem engine })
+        {
+            IsNOcrVisible = engine.EngineType == OcrEngineType.nOcr;
+            IsTesseractVisible = engine.EngineType == OcrEngineType.Tesseract;
+        }
     }
 }

@@ -51,7 +51,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         _splitItem = new ImageSplitterItem2(0, 0, new NikseBitmap2(1, 1));
         EntryNewText = new Entry();
 
-        const int maxLines = 250;
+        const int maxLines = 500;
         _noOfLinesToAutoDrawList = new ObservableCollection<int>();
         for (var i = 0; i <= maxLines; i++)
         {
@@ -83,6 +83,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
                 NOcrDrawingCanvas.ZoomFactor = 6;
                 NOcrDrawingCanvas.WidthRequest = _splitItem.NikseBitmap.Width * NOcrDrawingCanvas.ZoomFactor;
                 NOcrDrawingCanvas.HeightRequest = _splitItem.NikseBitmap.Height * NOcrDrawingCanvas.ZoomFactor;
+                NOcrDrawingCanvas.BackgroundImage = _splitItem.NikseBitmap.GetBitmap();
                 AutoGuessLines();
             }
         }
@@ -152,7 +153,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     }
 
     [RelayCommand]
-    private async Task ZoomIn()
+    private void ZoomIn()
     {
         if (NOcrDrawingCanvas.ZoomFactor < 10)
         {
@@ -243,7 +244,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "NOcrChar", NOcrChar },
             { "OcrSubtitleItems", _ocrSubtitleItems },
             { "StartFromNumber", _startFromNumber },
-            { "ItalicOn", _isNewTextItalic },
+            { "ItalicOn", IsNewTextItalic },
             { "UseOnce", false },
         });
     }
@@ -602,7 +603,6 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         }
         return true;
     }
-
 
     private static void RemoveDuplicates(List<NOcrLine> lines)
     {
