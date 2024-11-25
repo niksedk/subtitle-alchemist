@@ -202,6 +202,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     {
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
+            { "Page", nameof(NOcrCharacterAddPage) },
             { "NOcrChar", NOcrChar },
             { "OcrSubtitleItems", _ocrSubtitleItems },
             { "StartFromNumber", _startFromNumber },
@@ -215,6 +216,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     {
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
+            { "Page", nameof(NOcrCharacterAddPage) },
             { "NOcrChar", NOcrChar },
             { "OcrSubtitleItems", _ocrSubtitleItems },
             { "StartFromNumber", _startFromNumber },
@@ -228,6 +230,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     {
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
+            { "Page", nameof(NOcrCharacterAddPage) },
             { "NOcrChar", NOcrChar },
             { "OcrSubtitleItems", _ocrSubtitleItems },
             { "StartFromNumber", _startFromNumber },
@@ -241,6 +244,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     {
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
+            { "Page", nameof(NOcrCharacterAddPage) },
             { "NOcrChar", NOcrChar },
             { "OcrSubtitleItems", _ocrSubtitleItems },
             { "StartFromNumber", _startFromNumber },
@@ -673,5 +677,20 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
                 EntryNewText.FontAttributes = FontAttributes.None;
             }
         }
+    }
+
+    public void OnAppearing()
+    {
+        Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(250), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                EntryNewText.Focus();
+                EntryNewText.Focus();
+                EntryNewText.Focus();
+            });
+            return false;
+        });
+
     }
 }

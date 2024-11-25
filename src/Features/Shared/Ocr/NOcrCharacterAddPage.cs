@@ -401,4 +401,10 @@ public class NOcrCharacterAddPage : ContentPage
         _vm.OnDisappearing();
         base.OnDisappearing();
     }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        _vm.OnAppearing();
+    }
 }
