@@ -362,13 +362,12 @@ public class OcrPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
 
-
-        var entryText = new Entry
+        var editorText = new Editor
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme().BindText(nameof(vm.CurrentText));
-        grid.Add(entryText, 0, 0);
+        grid.Add(editorText, 0, 0);
 
         var buttonRunOcr = new Button
         {

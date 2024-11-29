@@ -1,0 +1,87 @@
+﻿using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.SubtitleFormats;
+using System.Net.Http.Headers;
+using System.Text;
+using SkiaSharp;
+
+namespace SubtitleAlchemist.Features.Shared.Ocr;
+
+public class OllamaOcr
+{
+    private HttpClient _httpClient;
+
+    public string Error { get; set; }
+
+    public OllamaOcr()
+    {
+        Error = string.Empty;
+        _httpClient = new HttpClient();
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("accept", "application/json");
+        _httpClient.Timeout = TimeSpan.FromMinutes(25);
+    }
+
+    public async Task<string> Ocr(SKBitmap bitmap, string language, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var model = "llama3.2-vision";
+            var modelJson = "\"model\": \"" + model + "\",";
+
+            var prompt = string.Format("Get the text (use '\\n' for new line) from this image in {0}. Return only the text - no commnts or notes. For new line, use '\\n'.", language);
+            var input = "{ " + modelJson + "  \"messages\": [ { \"role\": \"user\", \"content\": \"" + prompt + "\", \"images\": [ \"" + GetBase64StringFromImage(bitmap) + "\"] } ] }";
+            var content = new StringContent(input, Encoding.UTF8);
+            content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+            var result = await _httpClient.PostAsync("http://localhost:11434/api/chat", content, cancellationToken);
+            var bytes = await result.Content.ReadAsByteArrayAsync();
+            var json = Encoding.UTF8.GetString(bytes).Trim();
+            if (!result.IsSuccessStatusCode)
+            {
+                Error = json;
+                SeLogger.Error("Error calling Ollama for OCR: Status code=" + result.StatusCode + Environment.NewLine + json);
+            }
+
+            result.EnsureSuccessStatusCode();
+
+            var parser = new SeJsonParser2();
+            var outputTexts = parser.GetAllTagsByNameAsStrings(json, "content");
+            var resultText = string.Join(string.Empty, outputTexts).Trim();
+
+            // sanitize
+            resultText = resultText.Trim();
+            resultText = resultText.Replace("\\n", Environment.NewLine);
+            resultText = resultText.Replace(" ,", ",");
+            resultText = resultText.Replace(" .", ".");
+            resultText = resultText.Replace(" !", "!");
+            resultText = resultText.Replace(" ?", "?");
+            resultText = resultText.Replace("( ", "(");
+            resultText = resultText.Replace(" )", ")");
+            resultText = resultText.Replace("\\\"", "\"");
+            if (resultText.EndsWith("!'"))
+            {
+                resultText = resultText.TrimEnd('\'');
+            }
+
+            return resultText.Trim();
+        }
+        catch (Exception ex)
+        {
+            SeLogger.Error(ex, "Error calling Ollama for OCR");
+            return string.Empty;
+        }
+    }
+
+    private string GetBase64StringFromImage(SKBitmap bitmap)
+    {
+        using (var image = SKImage.FromBitmap(bitmap))
+        using (var data = image.Encode(SKEncodedImageFormat.Png, 100)) // Using PNG format with 100% quality
+        {
+            if (data == null)
+            {
+                return string.Empty;
+            }
+
+            return Convert.ToBase64String(data.ToArray());
+        }
+    }
+}

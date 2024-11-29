@@ -116,6 +116,12 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static Editor BindText(this Editor control, string bindName)
+        {
+            control.SetBinding(Editor.TextProperty, bindName);
+            return control;
+        }
+
         public static Picker Bind(this Picker control, string itemsSourceBindName, string selectedItemBindName)
         {
             control.SetBinding(Picker.ItemsSourceProperty, itemsSourceBindName);

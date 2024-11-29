@@ -214,7 +214,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
-            MainThread.BeginInvokeOnMainThread(async() =>
+            MainThread.BeginInvokeOnMainThread(async () =>
             {
                 _loading = false;
                 IsRunActive = true;
@@ -233,7 +233,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     private void LoadSettings()
     {
         var ocr = Se.Settings.Ocr;
-        if (!string.IsNullOrEmpty(ocr.Engine) && OcrEngines.Any(p=>p.Name == ocr.Engine))
+        if (!string.IsNullOrEmpty(ocr.Engine) && OcrEngines.Any(p => p.Name == ocr.Engine))
         {
             SelectedOcrEngine = OcrEngines.First(p => p.Name == ocr.Engine);
         }
@@ -306,13 +306,76 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         IsRunActive = false;
         IsOkAndCancelActive = false;
 
+        var ocrEngine = SelectedOcrEngine!;
+        if (ocrEngine.EngineType == OcrEngineType.nOcr)
+        {
+            RunNOcr(startFromIndex);
+        }
+        else if (ocrEngine.EngineType == OcrEngineType.Ollama)
+        {
+            await RunOllama(startFromIndex);
+        }
+    }
+
+    private async Task RunOllama(int startFromIndex)
+    {
+        var ollamaOcr = new OllamaOcr();
+
+        _ = Task.Run(async () =>
+        {
+            for (var i = startFromIndex; i < OcrSubtitleItems.Count; i++)
+            {
+                if (_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                ProgressValue = i / (double)OcrSubtitleItems.Count;
+                ProgressText = $"Running OCR... {i + 1}/{OcrSubtitleItems.Count}";
+                SelectedStartFromNumber = i + 1;
+
+                var item = OcrSubtitleItems[i];
+                var bitmap = item.GetBitmap();
+
+                var scrollToIndex = i;
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ListView.ScrollTo(scrollToIndex, -1, ScrollToPosition.MakeVisible, false);
+                    SelectedOcrSubtitleItem = item;
+                    ListView.Focus();
+                    ListView.SelectedItem = item;
+                    ListView.UpdateSelectedItems(new List<object> { item });
+                });
+
+
+                var text = await ollamaOcr.Ocr(bitmap, "English", _cancellationTokenSource.Token);
+                item.Text = text;
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (SelectedOcrSubtitleItem == item)
+                    {
+                        CurrentText = text;
+                    }
+                });
+            }
+
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                SelectedStartFromNumber = OcrSubtitleItems.Count;
+                await Pause();
+            });
+        });
+    }
+
+    private void RunNOcr(int startFromIndex)
+    {
         var nOcrDbFileName = GetNOcrLanguageFileName();
-        if (!string.IsNullOrEmpty(nOcrDbFileName) && (_nOcrDb == null || _nOcrDb.FileName  != nOcrDbFileName))
+        if (!string.IsNullOrEmpty(nOcrDbFileName) && (_nOcrDb == null || _nOcrDb.FileName != nOcrDbFileName))
         {
             _nOcrDb = new NOcrDb(nOcrDbFileName);
         }
 
-        // Run OCR in background task
         _ = Task.Run(() =>
         {
             for (var i = startFromIndex; i < OcrSubtitleItems.Count; i++)
@@ -348,11 +411,11 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
                         if (NOcrDrawUnknownText && match == null)
                         {
-                            MainThread.BeginInvokeOnMainThread(async() =>
+                            MainThread.BeginInvokeOnMainThread(async () =>
                             {
                                 await Pause();
                                 await Shell.Current.GoToAsync(nameof(NOcrCharacterAddPage), new Dictionary<string, object>
-                                {
+                                    {
                                     { "Page", nameof(OcrPage) },
                                     { "Bitmap", bitmap },
                                     { "Letters", list },
@@ -360,7 +423,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                                     { "OcrSubtitleItems", OcrSubtitleItems.ToList() },
                                     { "StartFromNumber", SelectedStartFromNumber },
                                     { "ItalicOn", _toolsItalicOn },
-                                });
+                                    });
                             });
                             return;
                         }
@@ -385,7 +448,6 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             });
         });
     }
-
 
     [RelayCommand]
     private async Task Pause()
