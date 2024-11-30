@@ -208,6 +208,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "StartFromNumber", _startFromNumber },
             { "ItalicOn", _isNewTextItalic },
             { "UseOnce", true },
+            { "Abort", false },
         });
     }
 
@@ -222,6 +223,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "StartFromNumber", _startFromNumber },
             { "ItalicOn", _isNewTextItalic },
             { "Skip", true },
+            { "Abort", false },
         });
     }
 
@@ -250,6 +252,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "StartFromNumber", _startFromNumber },
             { "ItalicOn", IsNewTextItalic },
             { "UseOnce", false },
+            { "Abort", false },
         });
     }
 

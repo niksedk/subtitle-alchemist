@@ -45,6 +45,24 @@ public class OcrPage : ContentPage
         }.BindDynamicTheme();
         pickerOcrEngine.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedOcrEngine));
         pickerOcrEngine.SelectedIndexChanged += vm.OnOcrEngineChanged;
+
+        var labelNOcrDatabase = new Label
+        {
+            Text = "nOcr database",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNOcrVisible));
+
+        var pickerNOcrDatabase = new Picker
+        {
+            ItemsSource = vm.NOcrDatabases,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNOcrVisible));
+        pickerNOcrDatabase.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedNOcrDatabase));
+
         var labelMaxWrongPixels = new Label
         {
             Text = "Max wrong pixels",
@@ -82,6 +100,8 @@ public class OcrPage : ContentPage
             {
                 labelTitle,
                 pickerOcrEngine,
+                labelNOcrDatabase,
+                pickerNOcrDatabase,
                 labelMaxWrongPixels,
                 pickerNOcrMaxWrongPixels,
                 labelNOcrPixelsAreSpace,
@@ -245,7 +265,7 @@ public class OcrPage : ContentPage
                 var labelDuration = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
-                }.BindDynamicThemeTextColorOnly(); 
+                }.BindDynamicThemeTextColorOnly();
                 labelDuration.SetBinding(Label.TextProperty, nameof(OcrSubtitleItem.Duration), BindingMode.Default, new TimeSpanToShortStringConverter());
                 jobItemGrid.Add(labelDuration, 2, 0);
 
@@ -388,7 +408,7 @@ public class OcrPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(5, 0,0,0),
+            Margin = new Thickness(5, 0, 0, 0),
         }.BindDynamicTheme();
         pickerFromNumber.SetBinding(Picker.ItemsSourceProperty, nameof(vm.StartFromNumbers));
         pickerFromNumber.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedStartFromNumber));
@@ -397,7 +417,7 @@ public class OcrPage : ContentPage
         {
             Text = "Pause",
             Command = vm.PauseCommand,
-            Margin = new Thickness(10, 0, 0, 0),
+            Margin = new Thickness(10, 0, 10, 0),
         }.BindDynamicTheme();
         buttonPause.SetBinding(IsEnabledProperty, nameof(vm.IsPauseActive));
 

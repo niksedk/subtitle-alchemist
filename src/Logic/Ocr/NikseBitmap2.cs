@@ -178,7 +178,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             buffer[0] = 255;
             buffer[1] = 255;
             buffer[2] = 255;
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
                 if (_bitmapData[i + 3] > 200 && // Alpha
                     _bitmapData[i + 2] > 199 && // Red
@@ -198,7 +198,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             buffer[1] = (byte)greenTo;
             buffer[2] = (byte)redTo;
             buffer[3] = (byte)alphaTo;
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
                 if (_bitmapData[i + 3] == alpha &&
                     _bitmapData[i + 2] == red &&
@@ -212,7 +212,7 @@ namespace SubtitleAlchemist.Logic.Ocr
 
         public void InvertColors()
         {
-            for (int i = 0; i < _bitmapData.Length;)
+            for (var i = 0; i < _bitmapData.Length;)
             {
                 _bitmapData[i] = (byte)~_bitmapData[i];
                 i++;
@@ -230,7 +230,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             buffer[1] = 0; // G
             buffer[2] = 0; // R
             buffer[3] = 0; // A
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
                 if (_bitmapData[i + 2] + _bitmapData[i + 1] + _bitmapData[i] < 300)
                 {
@@ -246,7 +246,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             buffer[1] = c.Green;
             buffer[2] = c.Red;
             buffer[3] = c.Alpha;
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
                 if (_bitmapData[i + 3] < 10)
                 {
@@ -268,7 +268,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             bufferTransparent[1] = 0;
             bufferTransparent[2] = 0;
             bufferTransparent[3] = 0;
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
                 Buffer.BlockCopy(_bitmapData[i] > 20 ? buffer : bufferTransparent, 0, _bitmapData, i, 4);
             }
@@ -334,23 +334,23 @@ namespace SubtitleAlchemist.Logic.Ocr
                 emphasis2Buffer[3] = (byte)emphasis2.Alpha;
             }
 
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
-                int smallestDiff = 10000;
-                byte[] buffer = backgroundBuffer;
+                var smallestDiff = 10000;
+                var buffer = backgroundBuffer;
                 if (backgroundBuffer[3] == 0 && _bitmapData[i + 3] < 10) // transparent
                 {
                 }
                 else
                 {
-                    int patternDiff = Math.Abs(patternBuffer[0] - _bitmapData[i]) + Math.Abs(patternBuffer[1] - _bitmapData[i + 1]) + Math.Abs(patternBuffer[2] - _bitmapData[i + 2]) + Math.Abs(patternBuffer[3] - _bitmapData[i + 3]);
+                    var patternDiff = Math.Abs(patternBuffer[0] - _bitmapData[i]) + Math.Abs(patternBuffer[1] - _bitmapData[i + 1]) + Math.Abs(patternBuffer[2] - _bitmapData[i + 2]) + Math.Abs(patternBuffer[3] - _bitmapData[i + 3]);
                     if (patternDiff < smallestDiff)
                     {
                         smallestDiff = patternDiff;
                         buffer = patternBuffer;
                     }
 
-                    int emphasis1Diff = Math.Abs(emphasis1Buffer[0] - _bitmapData[i]) + Math.Abs(emphasis1Buffer[1] - _bitmapData[i + 1]) + Math.Abs(emphasis1Buffer[2] - _bitmapData[i + 2]) + Math.Abs(emphasis1Buffer[3] - _bitmapData[i + 3]);
+                    var emphasis1Diff = Math.Abs(emphasis1Buffer[0] - _bitmapData[i]) + Math.Abs(emphasis1Buffer[1] - _bitmapData[i + 1]) + Math.Abs(emphasis1Buffer[2] - _bitmapData[i + 2]) + Math.Abs(emphasis1Buffer[3] - _bitmapData[i + 3]);
                     if (useInnerAntialize)
                     {
                         if (emphasis1Diff - 20 < smallestDiff)
@@ -366,7 +366,7 @@ namespace SubtitleAlchemist.Logic.Ocr
                             buffer = emphasis1Buffer;
                         }
 
-                        int emphasis2Diff = Math.Abs(emphasis2Buffer[0] - _bitmapData[i]) + Math.Abs(emphasis2Buffer[1] - _bitmapData[i + 1]) + Math.Abs(emphasis2Buffer[2] - _bitmapData[i + 2]) + Math.Abs(emphasis2Buffer[3] - _bitmapData[i + 3]);
+                        var emphasis2Diff = Math.Abs(emphasis2Buffer[0] - _bitmapData[i]) + Math.Abs(emphasis2Buffer[1] - _bitmapData[i + 1]) + Math.Abs(emphasis2Buffer[2] - _bitmapData[i + 2]) + Math.Abs(emphasis2Buffer[3] - _bitmapData[i + 3]);
                         if (emphasis2Diff < smallestDiff)
                         {
                             buffer = emphasis2Buffer;
@@ -390,14 +390,14 @@ namespace SubtitleAlchemist.Logic.Ocr
 
         private SKColor VobSubAntialize(SKColor pattern, SKColor emphasis1)
         {
-            int r = (int)Math.Round(((pattern.Red * 2.0 + emphasis1.Red) / 3.0));
-            int g = (int)Math.Round(((pattern.Green * 2.0 + emphasis1.Green) / 3.0));
-            int b = (int)Math.Round(((pattern.Blue * 2.0 + emphasis1.Blue) / 3.0));
+            var r = (int)Math.Round(((pattern.Red * 2.0 + emphasis1.Red) / 3.0));
+            var g = (int)Math.Round(((pattern.Green * 2.0 + emphasis1.Green) / 3.0));
+            var b = (int)Math.Round(((pattern.Blue * 2.0 + emphasis1.Blue) / 3.0));
             var antializeColor = new SKColor((byte)r, (byte)g, (byte)b);
 
-            for (int y = 1; y < Height - 1; y++)
+            for (var y = 1; y < Height - 1; y++)
             {
-                for (int x = 1; x < Width - 1; x++)
+                for (var x = 1; x < Width - 1; x++)
                 {
                     if (GetPixel(x, y) == pattern)
                     {
@@ -452,11 +452,11 @@ namespace SubtitleAlchemist.Logic.Ocr
 
             var bufferEqual = new byte[Width * Height];
             var bufferUnEqual = new byte[Width * Height];
-            int indexBufferEqual = 0;
-            int indexBufferUnEqual = 0;
+            var indexBufferEqual = 0;
+            var indexBufferUnEqual = 0;
 
             _pixelAddress = -4;
-            for (int y = 0; y < Height; y++)
+            for (var y = 0; y < Height; y++)
             {
                 int index;
                 byte[] buffer;
@@ -475,9 +475,9 @@ namespace SubtitleAlchemist.Logic.Ocr
                 var lastColor = -1;
                 var count = 0;
 
-                for (int x = 0; x < Width; x++)
+                for (var x = 0; x < Width; x++)
                 {
-                    int color = GetDvdColor(patternBuffer, emphasis1Buffer, emphasis2Buffer);
+                    var color = GetDvdColor(patternBuffer, emphasis1Buffer, emphasis2Buffer);
 
                     if (lastColor == -1)
                     {
@@ -541,13 +541,13 @@ namespace SubtitleAlchemist.Logic.Ocr
             }
             else // 64-255 repetitions
             {
-                int factor = count / 255;
-                for (int i = 0; i < factor; i++)
+                var factor = count / 255;
+                for (var i = 0; i < factor; i++)
                 {
                     WriteFourNibbles(buffer, 0xff, lastColor, ref index, indexHalfNibble);
                 }
 
-                int rest = count % 255;
+                var rest = count % 255;
                 if (rest > 0)
                 {
                     WriteFourNibbles(buffer, rest, lastColor, ref index, indexHalfNibble);
@@ -557,7 +557,7 @@ namespace SubtitleAlchemist.Logic.Ocr
 
         private static void WriteFourNibbles(byte[] buffer, int count, int color, ref int index, bool indexHalfNibble)
         {
-            int n = (count << 2) + color;
+            var n = (count << 2) + color;
             if (indexHalfNibble)
             {
                 index++;
@@ -672,7 +672,7 @@ namespace SubtitleAlchemist.Logic.Ocr
                 y = 0;
                 while (!done && y < Height)
                 {
-                    int alpha = GetAlpha(x, y);
+                    var alpha = GetAlpha(x, y);
                     if (alpha != 0)
                     {
                         done = true;
@@ -702,7 +702,7 @@ namespace SubtitleAlchemist.Logic.Ocr
                 y = 0;
                 while (!done && y < Height)
                 {
-                    int alpha = GetAlpha(x, y);
+                    var alpha = GetAlpha(x, y);
                     if (alpha != 0)
                     {
                         done = true;
@@ -735,7 +735,7 @@ namespace SubtitleAlchemist.Logic.Ocr
                     x = 0;
                     while (!done && x < Width)
                     {
-                        int alpha = GetAlpha(x, y);
+                        var alpha = GetAlpha(x, y);
                         if (alpha != 0)
                         {
                             done = true;
@@ -758,7 +758,7 @@ namespace SubtitleAlchemist.Logic.Ocr
                 return 0;
             }
 
-            int newWidth = rightEnd - leftStart + 1;
+            var newWidth = rightEnd - leftStart + 1;
             if (newWidth <= 0)
             {
                 return 0;
@@ -769,7 +769,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             var newWidthX4 = 4 * newWidth;
             for (y = 0; y < newHeight; y++)
             {
-                int pixelAddress = (leftStart * 4) + (y * _widthX4);
+                var pixelAddress = (leftStart * 4) + (y * _widthX4);
                 Buffer.BlockCopy(_bitmapData, pixelAddress, newBitmapData, index, newWidthX4);
                 index += newWidthX4;
             }
@@ -783,9 +783,9 @@ namespace SubtitleAlchemist.Logic.Ocr
         /// <returns>Pixels cropped left</returns>
         public int CropSidesAndBottom(int maximumCropping, SKColor transparentColor, bool bottom)
         {
-            int leftStart = 0;
-            bool done = false;
-            int x = 0;
+            var leftStart = 0;
+            var done = false;
+            var x = 0;
             int y;
             while (!done && x < Width)
             {
@@ -810,7 +810,7 @@ namespace SubtitleAlchemist.Logic.Ocr
                 x++;
             }
 
-            int rightEnd = Width - 1;
+            var rightEnd = Width - 1;
             done = false;
             x = Width - 1;
             while (!done && x >= 0)
@@ -838,7 +838,7 @@ namespace SubtitleAlchemist.Logic.Ocr
 
             //crop bottom
             done = false;
-            int newHeight = Height;
+            var newHeight = Height;
             if (bottom)
             {
                 y = Height - 1;
@@ -870,18 +870,18 @@ namespace SubtitleAlchemist.Logic.Ocr
                 return 0;
             }
 
-            int newWidth = rightEnd - leftStart + 1;
+            var newWidth = rightEnd - leftStart + 1;
             if (newWidth <= 0)
             {
                 return 0;
             }
 
             var newBitmapData = new byte[newWidth * newHeight * 4];
-            int index = 0;
+            var index = 0;
             var newWidthX4 = 4 * newWidth;
             for (y = 0; y < newHeight; y++)
             {
-                int pixelAddress = (leftStart * 4) + (y * _widthX4);
+                var pixelAddress = (leftStart * 4) + (y * _widthX4);
                 Buffer.BlockCopy(_bitmapData, pixelAddress, newBitmapData, index, newWidthX4);
                 index += newWidthX4;
             }
@@ -894,9 +894,9 @@ namespace SubtitleAlchemist.Logic.Ocr
 
         public void CropTop(int maximumCropping, SKColor transparentColor)
         {
-            bool done = false;
-            int newTop = 0;
-            int y = 0;
+            var done = false;
+            var newTop = 0;
+            var y = 0;
             while (!done && y < Height)
             {
                 var x = 0;
@@ -924,12 +924,12 @@ namespace SubtitleAlchemist.Logic.Ocr
                 return;
             }
 
-            int newHeight = Height - newTop;
+            var newHeight = Height - newTop;
             var newBitmapData = new byte[newHeight * _widthX4];
-            int index = 0;
+            var index = 0;
             for (y = newTop; y < Height; y++)
             {
-                int pixelAddress = y * _widthX4;
+                var pixelAddress = y * _widthX4;
                 Buffer.BlockCopy(_bitmapData, pixelAddress, newBitmapData, index, _widthX4);
                 index += _widthX4;
             }
@@ -940,15 +940,15 @@ namespace SubtitleAlchemist.Logic.Ocr
 
         public int CropTopTransparent(int minimumMargin)
         {
-            bool done = false;
-            int newTop = 0;
-            int y = 0;
+            var done = false;
+            var newTop = 0;
+            var y = 0;
             while (!done && y < Height)
             {
                 var x = 0;
                 while (!done && x < Width)
                 {
-                    int alpha = GetAlpha(x, y);
+                    var alpha = GetAlpha(x, y);
                     if (alpha > 10)
                     {
                         done = true;
@@ -970,12 +970,12 @@ namespace SubtitleAlchemist.Logic.Ocr
                 return 0;
             }
 
-            int newHeight = Height - newTop;
+            var newHeight = Height - newTop;
             var newBitmapData = new byte[newHeight * _widthX4];
-            int index = 0;
+            var index = 0;
             for (y = newTop; y < Height; y++)
             {
-                int pixelAddress = y * _widthX4;
+                var pixelAddress = y * _widthX4;
                 Buffer.BlockCopy(_bitmapData, pixelAddress, newBitmapData, index, _widthX4);
                 index += _widthX4;
             }
@@ -1101,7 +1101,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             buffer[1] = (byte)color.Green;
             buffer[2] = (byte)color.Red;
             buffer[3] = (byte)color.Alpha;
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
                 Buffer.BlockCopy(buffer, 0, _bitmapData, i, 4);
             }
@@ -1167,12 +1167,12 @@ namespace SubtitleAlchemist.Logic.Ocr
 
         private static int FindBestMatch(SKColor color, List<SKColor> palette, out int maxDiff)
         {
-            int smallestDiff = 1000;
-            int smallestDiffIndex = -1;
-            int i = 0;
+            var smallestDiff = 1000;
+            var smallestDiffIndex = -1;
+            var i = 0;
             foreach (var pc in palette)
             {
-                int diff = Math.Abs(pc.Alpha - color.Alpha) + Math.Abs(pc.Red - color.Red) + Math.Abs(pc.Green - color.Green) + Math.Abs(pc.Blue - color.Blue);
+                var diff = Math.Abs(pc.Alpha - color.Alpha) + Math.Abs(pc.Red - color.Red) + Math.Abs(pc.Green - color.Green) + Math.Abs(pc.Blue - color.Blue);
                 if (diff < smallestDiff)
                 {
                     smallestDiff = diff;
@@ -1267,12 +1267,12 @@ namespace SubtitleAlchemist.Logic.Ocr
             }
 
             var newBitmapData = new byte[section.Width * section.Height * 4];
-            int index = 0;
+            var index = 0;
             var sectionWidthX4 = 4 * section.Width;
             var sectionLeftX4 = 4 * section.Left;
-            for (int y = section.Top; y < section.Bottom; y++)
+            for (var y = section.Top; y < section.Bottom; y++)
             {
-                int pixelAddress = sectionLeftX4 + (y * _widthX4);
+                var pixelAddress = sectionLeftX4 + (y * _widthX4);
                 Buffer.BlockCopy(_bitmapData, pixelAddress, newBitmapData, index, sectionWidthX4);
                 index += sectionWidthX4;
             }
@@ -1286,9 +1286,9 @@ namespace SubtitleAlchemist.Logic.Ocr
         /// <returns>Brightest color, if not found or if brightes color is white, then Color.Transparent is returned</returns>
         public SKColor GetBrightestColorWhiteIsTransparent()
         {
-            int max = Width * Height - 4;
+            var max = Width * Height - 4;
             var brightest = SKColors.Black;
-            for (int i = 0; i < max; i++)
+            for (var i = 0; i < max; i++)
             {
                 var c = GetPixelNext();
                 if (c.Alpha > 220 && c.Red + c.Green + c.Blue > 200 && c.Red + c.Green + c.Blue > brightest.Red + brightest.Green + brightest.Blue)
@@ -1316,9 +1316,9 @@ namespace SubtitleAlchemist.Logic.Ocr
         /// <returns>Brightest color</returns>
         public SKColor GetBrightestColor()
         {
-            int max = Width * Height - 4;
+            var max = Width * Height - 4;
             var brightest = SKColors.Black;
-            for (int i = 0; i < max; i++)
+            for (var i = 0; i < max; i++)
             {
                 var c = GetPixelNext();
                 if (c.Alpha > 220 && c.Red + c.Green + c.Blue > 200 && c.Red + c.Green + c.Blue > brightest.Red + brightest.Green + brightest.Blue)
@@ -1342,9 +1342,9 @@ namespace SubtitleAlchemist.Logic.Ocr
 
         public void GrayScale()
         {
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
-                int medium = Convert.ToInt32((_bitmapData[i + 2] + _bitmapData[i + 1] + _bitmapData[i]) * 1.5 / 3.0 + 2);
+                var medium = Convert.ToInt32((_bitmapData[i + 2] + _bitmapData[i + 1] + _bitmapData[i]) * 1.5 / 3.0 + 2);
                 if (medium > byte.MaxValue)
                 {
                     medium = byte.MaxValue;
@@ -1365,7 +1365,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             buffer[1] = 0; // G
             buffer[2] = 0; // R
             buffer[3] = 0; // A
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
                 if (_bitmapData[i + 3] < minAlpha)
                 {
@@ -1386,7 +1386,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             bufferWhite[1] = 255; // G
             bufferWhite[2] = 255; // R
             bufferWhite[3] = 255; // A
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
                 if (_bitmapData[i + 3] < 1 || _bitmapData[i + 0] + _bitmapData[i + 1] + _bitmapData[i + 2] < minRgb)
                 {
@@ -1411,7 +1411,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             bufferForeground[1] = (byte)foreground.Green; // G
             bufferForeground[2] = (byte)foreground.Red; // R
             bufferForeground[3] = 255; // A
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
                 if (_bitmapData[i + 3] < 1 || _bitmapData[i + 0] + _bitmapData[i + 1] + _bitmapData[i + 2] < minRgb)
                 {
@@ -1438,28 +1438,28 @@ namespace SubtitleAlchemist.Logic.Ocr
                 xStart = 0;
             }
 
-            int startIndex = (xStart * 4) + (y * _widthX4);
-            int endIndex = (xEnd * 4) + (y * _widthX4) + 4;
-            int length = endIndex - startIndex;
+            var startIndex = (xStart * 4) + (y * _widthX4);
+            var endIndex = (xEnd * 4) + (y * _widthX4) + 4;
+            var length = endIndex - startIndex;
             Buffer.BlockCopy(EmptyByteArray, 0, _bitmapData, startIndex, length);
         }
 
         public void AddTransparentLineRight()
         {
-            int newWidth = Width + 1;
+            var newWidth = Width + 1;
 
             var newBitmapData = new byte[newWidth * Height * 4];
-            int index = 0;
-            for (int y = 0; y < Height; y++)
+            var index = 0;
+            for (var y = 0; y < Height; y++)
             {
-                int pixelAddress = (0 * 4) + (y * _widthX4);
+                var pixelAddress = (0 * 4) + (y * _widthX4);
                 Buffer.BlockCopy(_bitmapData, pixelAddress, newBitmapData, index, _widthX4);
                 index += 4 * newWidth;
             }
 
             Width = newWidth;
             _bitmapData = newBitmapData;
-            for (int y = 0; y < Height; y++)
+            for (var y = 0; y < Height; y++)
             {
                 SetPixel(Width - 1, y, SKColors.Transparent);
             }
@@ -1467,16 +1467,16 @@ namespace SubtitleAlchemist.Logic.Ocr
 
         public void AddMargin(int margin)
         {
-            int newWidth = Width + margin * 2;
-            int newHeight = Height + margin * 2;
+            var newWidth = Width + margin * 2;
+            var newHeight = Height + margin * 2;
             var newBitmapData = new byte[newWidth * newHeight * 4];
             var newWidthX4 = newWidth * 4;
             var marginX4 = margin * 4;
 
-            for (int y = 0; y < Height; y++)
+            for (var y = 0; y < Height; y++)
             {
-                int pixelAddress = y * _widthX4;
-                int index = marginX4 + (y + margin) * newWidthX4;
+                var pixelAddress = y * _widthX4;
+                var index = marginX4 + (y + margin) * newWidthX4;
                 Buffer.BlockCopy(_bitmapData, pixelAddress, newBitmapData, index, _widthX4);
             }
 
@@ -1506,10 +1506,10 @@ namespace SubtitleAlchemist.Logic.Ocr
             };
 
             var pixels = new byte[_bitmapData.Length];
-            int offsetDest = 0;
-            for (int y = Height - 1; y >= 0; y--) // takes lines from bottom lines to top (mirrored horizontally)
+            var offsetDest = 0;
+            for (var y = Height - 1; y >= 0; y--) // takes lines from bottom lines to top (mirrored horizontally)
             {
-                for (int x = 0; x < Width; x++)
+                for (var x = 0; x < Width; x++)
                 {
                     var c = GetPixel(x, y);
                     pixels[offsetDest] = (byte)c.Blue;
@@ -1532,8 +1532,8 @@ namespace SubtitleAlchemist.Logic.Ocr
         /// </summary>
         public bool IsLineTransparent(int y)
         {
-            int max = (_width * 4) + (y * _widthX4) + 3;
-            for (int pos = y * _widthX4 + 3; pos < max; pos += 4)
+            var max = (_width * 4) + (y * _widthX4) + 3;
+            for (var pos = y * _widthX4 + 3; pos < max; pos += 4)
             {
                 if (_bitmapData[pos] != 0)
                 {
@@ -1546,7 +1546,7 @@ namespace SubtitleAlchemist.Logic.Ocr
 
         public bool IsVerticalLineTransparent(int x)
         {
-            for (int y = 0; y < Height; y++)
+            for (var y = 0; y < Height; y++)
             {
                 if (GetAlpha(x, y) > 0)
                 {
@@ -1559,7 +1559,7 @@ namespace SubtitleAlchemist.Logic.Ocr
 
         public bool IsImageOnlyTransparent()
         {
-            for (int i = 0; i < _bitmapData.Length; i += 4)
+            for (var i = 0; i < _bitmapData.Length; i += 4)
             {
                 if (_bitmapData[i] != 0) // check alpha
                 {
@@ -1572,8 +1572,8 @@ namespace SubtitleAlchemist.Logic.Ocr
         public int GetNonTransparentHeight()
         {
             var startY = 0;
-            int transparentBottomPixels = 0;
-            for (int y = 0; y < Height; y++)
+            var transparentBottomPixels = 0;
+            for (var y = 0; y < Height; y++)
             {
                 var isLineTransparent = IsLineTransparent(y);
                 if (startY == y && isLineTransparent)
@@ -1598,8 +1598,8 @@ namespace SubtitleAlchemist.Logic.Ocr
         public int GetNonTransparentWidth()
         {
             var startX = 0;
-            int transparentPixelsRight = 0;
-            for (int x = 0; x < Width; x++)
+            var transparentPixelsRight = 0;
+            for (var x = 0; x < Width; x++)
             {
                 var isLineTransparent = IsVerticalLineTransparent(x);
                 if (startX == x && isLineTransparent)
@@ -1628,16 +1628,16 @@ namespace SubtitleAlchemist.Logic.Ocr
                 return;
             }
 
-            int newWidth = Width;
-            bool widthChanged = false;
+            var newWidth = Width;
+            var widthChanged = false;
             if (Width % 2 != 0)
             {
                 newWidth++;
                 widthChanged = true;
             }
 
-            int newHeight = Height;
-            bool heightChanged = false;
+            var newHeight = Height;
+            var heightChanged = false;
             if (Height % 2 != 0)
             {
                 newHeight++;
@@ -1646,10 +1646,10 @@ namespace SubtitleAlchemist.Logic.Ocr
 
             var newBitmapData = new byte[newWidth * newHeight * 4];
             var newWidthX4 = 4 * newWidth;
-            int index = 0;
-            for (int y = 0; y < Height; y++)
+            var index = 0;
+            for (var y = 0; y < Height; y++)
             {
-                int pixelAddress = y * _widthX4;
+                var pixelAddress = y * _widthX4;
                 Buffer.BlockCopy(_bitmapData, pixelAddress, newBitmapData, index, _widthX4);
                 index += newWidthX4;
             }
@@ -1687,7 +1687,7 @@ namespace SubtitleAlchemist.Logic.Ocr
                 return true;
             }
 
-            for (int i = 0; i < _bitmapData.Length; i++)
+            for (var i = 0; i < _bitmapData.Length; i++)
             {
                 if (_bitmapData[i] != bitmap._bitmapData[i])
                 {
@@ -1718,7 +1718,7 @@ namespace SubtitleAlchemist.Logic.Ocr
         {
             if (factor > 1)
             {
-                for (int i = 0; i < _bitmapData.Length; i += 4)
+                for (var i = 0; i < _bitmapData.Length; i += 4)
                 {
                     int r = _bitmapData[i + 2];
                     int g = _bitmapData[i + 1];
@@ -1730,7 +1730,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             }
             else
             {
-                for (int i = 0; i < _bitmapData.Length; i += 4)
+                for (var i = 0; i < _bitmapData.Length; i += 4)
                 {
                     int r = _bitmapData[i + 2];
                     int g = _bitmapData[i + 1];
@@ -1746,7 +1746,7 @@ namespace SubtitleAlchemist.Logic.Ocr
         {
             if (factor > 1)
             {
-                for (int i = 0; i < _bitmapData.Length; i += 4)
+                for (var i = 0; i < _bitmapData.Length; i += 4)
                 {
                     int a = _bitmapData[i + 3];
                     _bitmapData[i + 3] = (byte)Math.Min(byte.MaxValue, (int)(a * factor));
@@ -1754,7 +1754,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             }
             else
             {
-                for (int i = 0; i < _bitmapData.Length; i += 4)
+                for (var i = 0; i < _bitmapData.Length; i += 4)
                 {
                     int a = _bitmapData[i + 3];
                     _bitmapData[i + 3] = (byte)Math.Max(0, (int)(a * factor));

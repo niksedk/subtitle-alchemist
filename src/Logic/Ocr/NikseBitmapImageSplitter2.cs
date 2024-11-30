@@ -728,7 +728,6 @@ public class NikseBitmapImageSplitter2
             {
                 splitLines.Add(y, points);
             }
-
         }
 
         var transparentColor = new SKColor(0, 0, 0, 0);

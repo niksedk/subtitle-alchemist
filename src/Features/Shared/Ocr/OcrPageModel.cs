@@ -9,7 +9,6 @@ using SubtitleAlchemist.Logic.Ocr;
 using System.Collections.ObjectModel;
 using System.Text;
 using SubtitleAlchemist.Features.Main;
-using System.Threading.Tasks;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -165,7 +164,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             _fileName = fileName;
         }
 
-        if (query["Subtitle"] is List<BluRaySupParser.PcsData> bluRaySup)
+        if (query["Subtitle"] is List<BluRaySupParser.PcsData> bluRaySup && OcrSubtitleItems.Count == 0)
         {
             _ocrSubtitle = new BluRayPcsDataList(bluRaySup); ;
             OcrSubtitleItems = new ObservableCollection<OcrSubtitleItem>(_ocrSubtitle.MakeOcrSubtitleItems());
@@ -235,7 +234,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 if (runOcr)
                 {
                     _isRunningOcr = false;
-                    await RunOcr();
+                    RunOcr();
                 }
             });
             return false;
@@ -299,7 +298,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
-    private async Task RunOcr()
+    private void RunOcr()
     {
         if (_isRunningOcr)
         {
@@ -336,7 +335,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     private void RunTesseractOcr(int startFromIndex)
     {
-        
+
     }
 
     private void RunOllamaOcr(int startFromIndex)
@@ -392,10 +391,9 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     private void RunNOcr(int startFromIndex)
     {
-        var nOcrDbFileName = GetNOcrLanguageFileName();
-        if (!string.IsNullOrEmpty(nOcrDbFileName) && (_nOcrDb == null || _nOcrDb.FileName != nOcrDbFileName))
+        if (!InitNOcrDb())
         {
-            _nOcrDb = new NOcrDb(nOcrDbFileName);
+            return;
         }
 
         _ = Task.Run(() =>
@@ -418,6 +416,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 nBmp.CropTop(0, new SKColor(0, 0, 0, 0));
                 var list = NikseBitmapImageSplitter2.SplitBitmapToLettersNew(nBmp, SelectedNOcrPixelsAreSpace, false, true, 20, true);
                 var sb = new StringBuilder();
+                SelectedOcrSubtitleItem = item;
+
                 foreach (var splitterItem in list)
                 {
                     if (splitterItem.NikseBitmap == null)
@@ -471,6 +471,22 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         });
     }
 
+    private bool InitNOcrDb()
+    {
+        var nOcrDbFileName = GetNOcrLanguageFileName();
+        if (nOcrDbFileName == null)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(nOcrDbFileName) && (_nOcrDb == null || _nOcrDb.FileName != nOcrDbFileName))
+        {
+            _nOcrDb = new NOcrDb(nOcrDbFileName);
+        }
+
+        return true;
+    }
+
     [RelayCommand]
     private async Task Pause()
     {
@@ -493,13 +509,50 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        if (!InitNOcrDb())
+        {
+            return;
+        }
+
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             await Pause();
+
+            var item = SelectedOcrSubtitleItem;
+            if (item == null)
+            {
+                return;
+            }
+
+            var bitmap = item.GetBitmap();
+            var nBmp = new NikseBitmap2(bitmap);
+            nBmp.MakeTwoColor(200);
+            nBmp.CropTop(0, new SKColor(0, 0, 0, 0));
+            var list = NikseBitmapImageSplitter2.SplitBitmapToLettersNew(nBmp, SelectedNOcrPixelsAreSpace, false, true, 20, true);
+            var letters = new List<NOcrCharacterInspectPageModel.LetterItem>();
+            var matches = new List<NOcrChar>();
+            foreach (var letter in list)
+            {
+                var match = new NOcrChar(letter.SpecialCharacter ?? string.Empty);
+
+                if (letter.NikseBitmap != null)
+                {
+                    match = _nOcrDb!.GetMatch(letter.NikseBitmap, letter.Top, true, SelectedNOcrMaxWrongPixels);
+                    if (match == null)
+                    {
+                        match = new NOcrChar(letter.SpecialCharacter ?? "*");
+                    }
+                    matches.Add(match);
+                }
+
+                letters.Add(new NOcrCharacterInspectPageModel.LetterItem(letter, letter.NikseBitmap?.GetBitmap().ToImageSource(), match.Text, match));
+            }
+
             await Shell.Current.GoToAsync(nameof(NOcrCharacterInspectPage), new Dictionary<string, object>
             {
                 { "Page", nameof(OcrPage) },
-                { "OcrSubtitleItems", OcrSubtitleItems.ToList() },
+                { "Letters", letters },
+                { "Matches", matches },
                 { "OcrSubtitleItem", item },
             });
         });
