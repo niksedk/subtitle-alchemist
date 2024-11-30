@@ -21,6 +21,7 @@ using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.ContainerFormats.Matroska;
 using System.Text;
 using SkiaSharp;
+using System.Runtime.InteropServices;
 
 public class BluRayPoint
 {
@@ -183,124 +184,111 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                 }
 
                 var bm = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque);
-                var pal = DecodePalette(palettes);
-
-                var ofs = 0;
-                var xpos = 0;
-                var index = 0;
-
-                var buf = data[0].Fragment.ImageBuffer;
-                do
+                var pixelPtr = bm.GetPixels(); // Writable pixel buffer
+                if (pixelPtr == IntPtr.Zero)
                 {
-                    var b = buf[index++] & 0xff;
-                    if (b == 0 && index < buf.Length)
+                    throw new InvalidOperationException("Unable to access bitmap pixel data.");
+                }
+
+                unsafe
+                {
+                    var buf = data[0].Fragment.ImageBuffer;
+                    var pixelData = new Span<byte>(pixelPtr.ToPointer(), bm.ByteCount); // Create writable span
+                    var pal = DecodePalette(palettes);
+
+                    var ofs = 0;
+                    var xpos = 0;
+
+                    for (var index = 0; index < buf.Length;)
                     {
-                        b = buf[index++] & 0xff;
-                        if (b == 0)
+                        var b = buf[index++] & 0xff;
+
+                        if (b == 0 && index < buf.Length)
                         {
-                            // next line
-                            ofs = ofs / w * w;
-                            if (xpos < w)
-                            {
-                                ofs += w;
-                            }
+                            b = buf[index++] & 0xff;
 
-                            xpos = 0;
-                        }
-                        else
-                        {
-                            int size;
-                            if ((b & 0xC0) == 0x40)
+                            if (b == 0)
                             {
-                                if (index < buf.Length)
+                                // Next line
+                                //ofs = (ofs / w + 1) * w;
+                                ofs = ofs / w * w;
+                                if (xpos < w)
                                 {
-                                    // 00 4x xx -> xxx zeroes
-                                    size = ((b - 0x40) << 8) + (buf[index++] & 0xff);
-                                    var c = pal.GetColor(0);
-                                    for (var i = 0; i < size; i++)
-                                    {
-                                        PutPixel(bm, ofs++, c);
-                                    }
-
-                                    xpos += size;
+                                    ofs += w;
                                 }
+                                xpos = 0;
                             }
-                            else if ((b & 0xC0) == 0x80)
+                            else if ((b & 0xC0) == 0x40 && index < buf.Length)
                             {
-                                if (index < buf.Length)
-                                {
-                                    // 00 8x yy -> x times value y
-                                    size = (b - 0x80);
-                                    b = buf[index++] & 0xff;
-                                    var c = pal.GetColor(b);
-                                    for (var i = 0; i < size; i++)
-                                    {
-                                        PutPixel(bm, ofs++, c);
-                                    }
-
-                                    xpos += size;
-                                }
+                                // 00 4x xx -> xxx zeroes
+                                var size = ((b - 0x40) << 8) + (buf[index++] & 0xff);
+                                var c = pal.GetColor(0);
+                                FillPixels(pixelData, ofs, size, c);
+                                ofs += size;
+                                xpos += size;
                             }
-                            else if ((b & 0xC0) != 0)
+                            else if ((b & 0xC0) == 0x80 && index < buf.Length)
                             {
-                                if (index < buf.Length)
-                                {
-                                    // 00 cx yy zz -> xyy times value z
-                                    size = ((b - 0xC0) << 8) + (buf[index++] & 0xff);
-                                    b = buf[index++] & 0xff;
-                                    var c = pal.GetColor(b);
-                                    for (var i = 0; i < size; i++)
-                                    {
-                                        PutPixel(bm, ofs++, c);
-                                    }
-
-                                    xpos += size;
-                                }
+                                // 00 8x yy -> x times value y
+                                var size = b - 0x80;
+                                b = buf[index++] & 0xff;
+                                var c = pal.GetColor(b);
+                                FillPixels(pixelData, ofs, size, c);
+                                ofs += size;
+                                xpos += size;
+                            }
+                            else if ((b & 0xC0) == 0xC0 && index + 1 < buf.Length)
+                            {
+                                // 00 cx yy zz -> xyy times value z
+                                var size = ((b - 0xC0) << 8) + (buf[index++] & 0xff);
+                                b = buf[index++] & 0xff;
+                                var c = pal.GetColor(b);
+                                FillPixels(pixelData, ofs, size, c);
+                                ofs += size;
+                                xpos += size;
                             }
                             else
                             {
                                 // 00 xx -> xx times 0
                                 var c = pal.GetColor(0);
-                                for (var i = 0; i < b; i++)
-                                {
-                                    PutPixel(bm, ofs++, c);
-                                }
-
+                                FillPixels(pixelData, ofs, b, c);
+                                ofs += b;
                                 xpos += b;
                             }
                         }
+                        else
+                        {
+                            // Regular pixel
+                            PutPixelFast(pixelData, ofs++, pal.GetColor(b));
+                            xpos++;
+                        }
                     }
-                    else
-                    {
-                        PutPixel(bm, ofs++, b, pal);
-                        xpos++;
-                    }
-                } while (index < buf.Length);
+                }
 
                 return bm;
             }
 
-            private static void PutPixel(SKBitmap bmp, int index, int color, BluRaySupPalette palette)
+            // Helper for filling multiple pixels
+            private static void FillPixels(Span<byte> pixelSpan, int offset, int count, SKColor color)
             {
-                var x = index % bmp.Width;
-                var y = index / bmp.Width;
-                if (x < bmp.Width && y < bmp.Height)
+                var idx = offset * 4; // Assuming RGBA8888 (4 bytes per pixel)
+                for (var i = 0; i < count; i++)
                 {
-                    bmp.SetPixel(x, y, palette.GetColor(color));
+                    pixelSpan[idx++] = color.Red;
+                    pixelSpan[idx++] = color.Green;
+                    pixelSpan[idx++] = color.Blue;
+                    pixelSpan[idx++] = color.Alpha;
                 }
             }
 
-            private static void PutPixel(SKBitmap bmp, int index, SKColor color)
+            // Optimized single pixel setter
+            private static void PutPixelFast(Span<byte> pixelSpan, int offset, SKColor color)
             {
-                if (color.Alpha > 0)
-                {
-                    var x = index % bmp.Width;
-                    var y = index / bmp.Width;
-                    if (x < bmp.Width && y < bmp.Height)
-                    {
-                        bmp.SetPixel(x, y, color);
-                    }
-                }
+                var idx = offset * 4; // Assuming RGBA8888 (4 bytes per pixel)
+                pixelSpan[idx++] = color.Red;
+                pixelSpan[idx++] = color.Green;
+                pixelSpan[idx++] = color.Blue;
+                pixelSpan[idx] = color.Alpha;
             }
         }
 

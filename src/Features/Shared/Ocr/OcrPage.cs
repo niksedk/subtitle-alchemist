@@ -401,6 +401,26 @@ public class OcrPage : ContentPage
         }.BindDynamicTheme();
         buttonPause.SetBinding(IsEnabledProperty, nameof(vm.IsPauseActive));
 
+        var boxSeparatorInspect = new BoxView
+        {
+            WidthRequest = 1,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(5),
+            Opacity = 0.5,
+            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BorderColor],
+        };
+
+        var buttonInspect = new Button
+        {
+            Text = "Inspect line",
+            Command = vm.InspectCommand,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicTheme();
+        buttonInspect.SetBinding(IsEnabledProperty, nameof(vm.IsInspectActive));
+        buttonInspect.SetBinding(IsVisibleProperty, nameof(vm.IsInspectVisible));
+
+
         var stackButtons = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -412,6 +432,8 @@ public class OcrPage : ContentPage
                 labelFromNumber,
                 pickerFromNumber,
                 buttonPause,
+                boxSeparatorInspect,
+                buttonInspect,
             }
         };
         grid.Add(stackButtons, 0, 1);

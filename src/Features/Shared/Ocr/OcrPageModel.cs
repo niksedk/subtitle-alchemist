@@ -9,6 +9,7 @@ using SubtitleAlchemist.Logic.Ocr;
 using System.Collections.ObjectModel;
 using System.Text;
 using SubtitleAlchemist.Features.Main;
+using System.Threading.Tasks;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -49,6 +50,12 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     [ObservableProperty]
     private bool _isOkAndCancelActive;
+
+    [ObservableProperty]
+    private bool _isInspectVisible;
+
+    [ObservableProperty]
+    private bool _isInspectActive;
 
     [ObservableProperty]
     private ObservableCollection<string> _nOcrDatabases;
@@ -174,10 +181,15 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             // load all images in the background
             Task.Run(() =>
             {
-                foreach (var item in OcrSubtitleItems)
+                Parallel.ForEach(OcrSubtitleItems, item =>
                 {
+                    if (_cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     item.GetBitmap();
-                }
+                });
             });
         }
 
@@ -305,19 +317,29 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         IsPauseActive = true;
         IsRunActive = false;
         IsOkAndCancelActive = false;
+        IsInspectActive = false;
 
         var ocrEngine = SelectedOcrEngine!;
         if (ocrEngine.EngineType == OcrEngineType.nOcr)
         {
             RunNOcr(startFromIndex);
         }
+        else if (ocrEngine.EngineType == OcrEngineType.Tesseract)
+        {
+            RunTesseractOcr(startFromIndex);
+        }
         else if (ocrEngine.EngineType == OcrEngineType.Ollama)
         {
-            await RunOllama(startFromIndex);
+            RunOllamaOcr(startFromIndex);
         }
     }
 
-    private async Task RunOllama(int startFromIndex)
+    private void RunTesseractOcr(int startFromIndex)
+    {
+        
+    }
+
+    private void RunOllamaOcr(int startFromIndex)
     {
         var ollamaOcr = new OllamaOcr();
 
@@ -459,6 +481,28 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         IsRunActive = true;
         IsProgressVisible = false;
         IsOkAndCancelActive = true;
+        IsInspectActive = true;
+    }
+
+    [RelayCommand]
+    private void Inspect()
+    {
+        var item = SelectedOcrSubtitleItem;
+        if (item == null)
+        {
+            return;
+        }
+
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await Pause();
+            await Shell.Current.GoToAsync(nameof(NOcrCharacterInspectPage), new Dictionary<string, object>
+            {
+                { "Page", nameof(OcrPage) },
+                { "OcrSubtitleItems", OcrSubtitleItems.ToList() },
+                { "OcrSubtitleItem", item },
+            });
+        });
     }
 
     [RelayCommand]
@@ -485,6 +529,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     public async Task Cancel()
     {
+        await Pause();
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(OcrPage) },
@@ -495,6 +540,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     {
         if (SelectedOcrSubtitleItem == null)
         {
+            IsInspectActive = false;
             return;
         }
 
@@ -503,6 +549,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         CurrentBitmapInfo = $"Image {SelectedOcrSubtitleItem.Number} of {_ocrSubtitle.Count}: {bitmap.Width}x{bitmap.Height}";
         SelectedStartFromNumber = SelectedOcrSubtitleItem.Number;
         CurrentText = SelectedOcrSubtitleItem.Text;
+        IsInspectActive = true;
     }
 
     public void OnOcrEngineChanged(object? sender, EventArgs e)
@@ -511,6 +558,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         {
             IsNOcrVisible = engine.EngineType == OcrEngineType.nOcr;
             IsTesseractVisible = engine.EngineType == OcrEngineType.Tesseract;
+            IsInspectVisible = engine.EngineType == OcrEngineType.nOcr;
         }
     }
 }
