@@ -224,6 +224,7 @@ public class NOcrCharacterInspectPage : ContentPage
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
             {
@@ -317,6 +318,46 @@ public class NOcrCharacterInspectPage : ContentPage
             },
         };
         gridMatch.Add(stackItalic, 0, 3);
+
+        var buttonUpdate = new Button
+        {
+            Text = "Update",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(25, 10, 15, 10),
+        }.BindDynamicTheme();
+
+        var buttonDelete = new Button
+        {
+            Text = "Delete",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 15, 10),
+        }.BindDynamicTheme();
+        var buttonAddBetterMatch = new Button
+        {
+            Text = "Add better match...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 15, 10),
+        }.BindDynamicTheme();
+
+        var stackButtons = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(25, 0, 0, 0),
+            Children =
+            {
+                buttonDelete,
+                buttonAddBetterMatch,
+            },
+        }.BindDynamicTheme();
+        gridMatch.Add(stackButtons, 1, 1);
+
+        gridMatch.Add(buttonUpdate, 1, 2);
+
 
         grid.Add(PackIntoScrollViewAndBorder(gridCurrentImage), 0);
         grid.Add(PackIntoScrollViewAndBorder(gridMatch), 1);

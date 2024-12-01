@@ -157,7 +157,7 @@ public class NOcrCharacterAddPage : ContentPage
             },
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Auto }, // lines
+               // new ColumnDefinition { Width = GridLength.Auto }, // lines
                 new ColumnDefinition { Width = GridLength.Auto }, // text settings + image
                 new ColumnDefinition { Width = GridLength.Auto }, // drawing settings
             },
@@ -169,68 +169,68 @@ public class NOcrCharacterAddPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
 
-        var collectionViewLinesForeground = new CollectionView
-        {
-            SelectionMode = SelectionMode.Single,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Fill,
-            ItemTemplate = new DataTemplate(() =>
-            {
-                var functionGrid = new Grid
-                {
-                    ColumnDefinitions =
-                    {
-                        new ColumnDefinition { Width = GridLength.Auto },
-                    },
-                };
+        //var collectionViewLinesForeground = new CollectionView
+        //{
+        //    SelectionMode = SelectionMode.Single,
+        //    HorizontalOptions = LayoutOptions.Start,
+        //    VerticalOptions = LayoutOptions.Fill,
+        //    ItemTemplate = new DataTemplate(() =>
+        //    {
+        //        var functionGrid = new Grid
+        //        {
+        //            ColumnDefinitions =
+        //            {
+        //                new ColumnDefinition { Width = GridLength.Auto },
+        //            },
+        //        };
 
-                var labelPoint = new Label
-                {
-                    HorizontalTextAlignment = TextAlignment.Start,
-                    VerticalTextAlignment = TextAlignment.Center,
-                    Padding = new Thickness(5),
-                }.BindDynamicThemeTextColorOnly();
-                labelPoint.SetBinding(Label.TextProperty, nameof(NOcrLine.DisplayName));
-                functionGrid.Add(labelPoint, 0);
+        //        var labelPoint = new Label
+        //        {
+        //            HorizontalTextAlignment = TextAlignment.Start,
+        //            VerticalTextAlignment = TextAlignment.Center,
+        //            Padding = new Thickness(5),
+        //        }.BindDynamicThemeTextColorOnly();
+        //        labelPoint.SetBinding(Label.TextProperty, nameof(NOcrLine.DisplayName));
+        //        functionGrid.Add(labelPoint, 0);
 
-                return functionGrid;
-            }),
-        }.BindDynamicTheme();
-        collectionViewLinesForeground.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.LinesForeground), BindingMode.TwoWay);
-        collectionViewLinesForeground.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedLineForeground));
+        //        return functionGrid;
+        //    }),
+        //}.BindDynamicTheme();
+        //collectionViewLinesForeground.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.LinesForeground), BindingMode.TwoWay);
+        //collectionViewLinesForeground.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedLineForeground));
 
-        grid.Add(PackIntoScrollViewAndBorder(collectionViewLinesForeground), 0);
+        //grid.Add(PackIntoScrollViewAndBorder(collectionViewLinesForeground), 0);
 
 
-        var collectionViewLinesBackground = new CollectionView
-        {
-            SelectionMode = SelectionMode.Single,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Fill,
-            ItemTemplate = new DataTemplate(() =>
-            {
-                var functionGrid = new Grid
-                {
-                    ColumnDefinitions =
-                    {
-                        new ColumnDefinition { Width = GridLength.Auto },
-                    },
-                };
+        //var collectionViewLinesBackground = new CollectionView
+        //{
+        //    SelectionMode = SelectionMode.Single,
+        //    HorizontalOptions = LayoutOptions.Start,
+        //    VerticalOptions = LayoutOptions.Fill,
+        //    ItemTemplate = new DataTemplate(() =>
+        //    {
+        //        var functionGrid = new Grid
+        //        {
+        //            ColumnDefinitions =
+        //            {
+        //                new ColumnDefinition { Width = GridLength.Auto },
+        //            },
+        //        };
 
-                var labelPoint = new Label
-                {
-                    HorizontalTextAlignment = TextAlignment.Start,
-                    VerticalTextAlignment = TextAlignment.Center,
-                    Padding = new Thickness(5),
-                }.BindDynamicThemeTextColorOnly();
-                labelPoint.SetBinding(Label.TextProperty, nameof(NOcrLine.DisplayName));
-                functionGrid.Add(labelPoint, 0);
+        //        var labelPoint = new Label
+        //        {
+        //            HorizontalTextAlignment = TextAlignment.Start,
+        //            VerticalTextAlignment = TextAlignment.Center,
+        //            Padding = new Thickness(5),
+        //        }.BindDynamicThemeTextColorOnly();
+        //        labelPoint.SetBinding(Label.TextProperty, nameof(NOcrLine.DisplayName));
+        //        functionGrid.Add(labelPoint, 0);
 
-                return functionGrid;
-            }),
-        }.BindDynamicTheme();
-        collectionViewLinesBackground.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.LinesBackground), BindingMode.TwoWay);
-        collectionViewLinesBackground.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedLineBackground));
+        //        return functionGrid;
+        //    }),
+        //}.BindDynamicTheme();
+        //collectionViewLinesBackground.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.LinesBackground), BindingMode.TwoWay);
+        //collectionViewLinesBackground.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedLineBackground));
 
 
         // middle column
@@ -333,7 +333,7 @@ public class NOcrCharacterAddPage : ContentPage
             },
         }.BindDynamicTheme();
 
-        grid.Add(stackMiddle, 1);
+        grid.Add(stackMiddle, 0);
 
         
         // right column
@@ -365,7 +365,7 @@ public class NOcrCharacterAddPage : ContentPage
             },
         }.BindDynamicTheme();
 
-        grid.Add(stackRight, 2);
+        grid.Add(stackRight, 1);
 
         return grid;
     }

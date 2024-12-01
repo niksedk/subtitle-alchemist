@@ -144,6 +144,11 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        if (page == nameof(NOcrCharacterInspectPage))
+        {
+            return;
+        }
+
         if (query.ContainsKey("Abort") && query["Abort"] is bool doAbort)
         {
             if (doAbort)
