@@ -562,6 +562,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 { "Letters", letters },
                 { "Matches", matches },
                 { "OcrSubtitleItem", item },
+                { "NOcrDb", _nOcrDb ?? new NOcrDb(Path.Combine(Se.OcrFolder, "new.nocr")) },
             });
         });
     }

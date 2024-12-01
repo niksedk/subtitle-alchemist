@@ -430,6 +430,7 @@ public class OcrPage : ContentPage
             Opacity = 0.5,
             BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BorderColor],
         };
+        boxSeparatorInspect.SetBinding(IsVisibleProperty, nameof(vm.IsInspectVisible));
 
         var buttonInspect = new Button
         {

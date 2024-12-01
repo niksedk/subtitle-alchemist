@@ -275,7 +275,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
 
     public static void GenerateLineSegments(int maxNumberOfLines, bool veryPrecise, NOcrChar nOcrChar, NikseBitmap2 bitmap)
     {
-        const int giveUpCount = 15000;
+        const int giveUpCount = 15_000;
         var r = new Random();
         var count = 0;
         var hits = 0;

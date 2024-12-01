@@ -21,6 +21,7 @@ public class NOcrCharacterInspectPage : ContentPage
                 new RowDefinition { Height = GridLength.Auto }, // Title
                 new RowDefinition { Height = GridLength.Auto }, // Letter list
                 new RowDefinition { Height = GridLength.Star }, // Current image and match
+                new RowDefinition { Height = GridLength.Auto }, // Status
                 new RowDefinition { Height = GridLength.Auto }, // Buttons
             },
             ColumnDefinitions =
@@ -50,6 +51,15 @@ public class NOcrCharacterInspectPage : ContentPage
 
         var currentImageAndMatchView = MakeCurrentImageAndMatchView(vm);
         pageGrid.Add(currentImageAndMatchView, 0, 2);
+
+        var labelStatus = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(5),
+        };
+        labelStatus.SetBinding(Label.TextProperty, nameof(NOcrCharacterInspectPageModel.StatusText));
+        pageGrid.Add(labelStatus, 0, 3);
 
         var buttonOk = new Button
         {
@@ -82,7 +92,7 @@ public class NOcrCharacterInspectPage : ContentPage
             },
         }.BindDynamicTheme();
 
-        pageGrid.Add(okCancelBar, 0, 3);
+        pageGrid.Add(okCancelBar, 0, 4);
 
         Content = pageGrid;
 
@@ -116,7 +126,7 @@ public class NOcrCharacterInspectPage : ContentPage
         {
             SelectionMode = SelectionMode.Single,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
             ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
             ItemTemplate = new DataTemplate(() =>
             {
@@ -133,7 +143,7 @@ public class NOcrCharacterInspectPage : ContentPage
                     FontSize = 20,
                     FontAttributes = FontAttributes.Bold,
                     HorizontalOptions = LayoutOptions.Start,
-                    VerticalOptions = LayoutOptions.End,
+                    VerticalOptions = LayoutOptions.Center,
                     Margin = new Thickness(5),
                 };
 
@@ -325,6 +335,7 @@ public class NOcrCharacterInspectPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(25, 10, 15, 10),
+            Command = vm.UpdateMatchCommand,
         }.BindDynamicTheme();
 
         var buttonDelete = new Button
@@ -333,6 +344,7 @@ public class NOcrCharacterInspectPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 15, 10),
+            Command = vm.DeleteMatchCommand,
         }.BindDynamicTheme();
         var buttonAddBetterMatch = new Button
         {
@@ -340,6 +352,7 @@ public class NOcrCharacterInspectPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 15, 10),
+            Command = vm.AddBetterMatchCommand,
         }.BindDynamicTheme();
 
         var stackButtons = new StackLayout
