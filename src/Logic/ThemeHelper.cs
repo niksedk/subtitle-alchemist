@@ -314,7 +314,6 @@ namespace SubtitleAlchemist.Logic
         /// <returns>Style for setting on Page</returns>
         public static Style GetGridSelectionStyle()
         {
-
             Setter backgroundColorSetter = new() { Property = VisualElement.BackgroundColorProperty, Value = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor] };
             VisualState stateSelected = new() { Name = CommonStates.Selected, Setters = { backgroundColorSetter } };
             VisualState stateNormal = new() { Name = CommonStates.Normal };

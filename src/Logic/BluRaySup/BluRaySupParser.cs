@@ -178,7 +178,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                 var w = data[0].Width;
                 var h = data[0].Height;
 
-                if (w <= 0 || h <= 0 || data[0].Fragment.ImageBuffer.Length == 0)
+                if (w <= 0 || h <= 0 || data[0].Fragment!.ImageBuffer.Length == 0)
                 {
                     return new SKBitmap(1, 1);
                 }
@@ -192,7 +192,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
 
                 unsafe
                 {
-                    var buf = data[0].Fragment.ImageBuffer;
+                    var buf = data[0].Fragment!.ImageBuffer;
                     var pixelData = new Span<byte>(pixelPtr.ToPointer(), bm.ByteCount); // Create writable span
                     var pal = DecodePalette(palettes);
 
@@ -968,18 +968,18 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                         var bufSize = 0;
                         foreach (var ods in odsList)
                         {
-                            bufSize += ods.Fragment.ImagePacketSize;
+                            bufSize += ods.Fragment!.ImagePacketSize;
                         }
 
                         var buf = new byte[bufSize];
                         var offset = 0;
                         foreach (var ods in odsList)
                         {
-                            Buffer.BlockCopy(ods.Fragment.ImageBuffer, 0, buf, offset, ods.Fragment.ImagePacketSize);
+                            Buffer.BlockCopy(ods.Fragment!.ImageBuffer, 0, buf, offset, ods.Fragment.ImagePacketSize);
                             offset += ods.Fragment.ImagePacketSize;
                         }
-                        odsList[0].Fragment.ImageBuffer = buf;
-                        odsList[0].Fragment.ImagePacketSize = bufSize;
+                        odsList[0].Fragment!.ImageBuffer = buf;
+                        odsList[0].Fragment!.ImagePacketSize = bufSize;
                         while (odsList.Count > 1)
                         {
                             odsList.RemoveAt(1);
@@ -1012,7 +1012,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                                 {
                                     for (var j = 0; j < c.Count; j++)
                                     {
-                                        if (!ByteArraysEqual(c[j].Fragment.ImageBuffer, p[j].Fragment.ImageBuffer))
+                                        if (!ByteArraysEqual(c[j].Fragment!.ImageBuffer, p[j].Fragment!.ImageBuffer))
                                         {
                                             remove = false;
                                             break;

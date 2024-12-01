@@ -428,7 +428,7 @@ public class OcrPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
             Margin = new Thickness(5),
             Opacity = 0.5,
-            BackgroundColor = (Color)Application.Current.Resources[ThemeNames.BorderColor],
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BorderColor],
         };
 
         var buttonInspect = new Button

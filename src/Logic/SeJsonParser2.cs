@@ -26,8 +26,8 @@ namespace Nikse.SubtitleEdit.Core.Common
         {
             Errors = new List<string>();
             var list = new List<string>();
-            int i = 0;
-            int max = content.Length;
+            var i = 0;
+            var max = content.Length;
             var state = new Stack<StateElement>();
             var objectName = string.Empty;
             while (i < max)
@@ -70,9 +70,9 @@ namespace Nikse.SubtitleEdit.Core.Common
                     if (ch == '"')
                     {
                         i++;
-                        int end = content.IndexOf('"', i);
+                        var end = content.IndexOf('"', i);
                         objectName = content.Substring(i, end - i).Trim();
-                        int colon = content.IndexOf(':', end);
+                        var colon = content.IndexOf(':', end);
                         if (colon < 0)
                         {
                             Errors.Add($"Fatal - expected char : after position {end}");
@@ -130,7 +130,7 @@ namespace Nikse.SubtitleEdit.Core.Common
                     {
                         i++;
                         var skip = true;
-                        int end = 0;
+                        var end = 0;
                         var endSeek = i;
                         while (skip)
                         {
@@ -336,15 +336,16 @@ namespace Nikse.SubtitleEdit.Core.Common
                 }
 
             }
+
             return list;
         }
 
         public List<string> GetArrayElementsByName(string content, string name)
         {
             Errors = new List<string>();
-            var list = new List<string>();
-            int i = 0;
-            int max = content.Length;
+            var list = new List<string?>();
+            var i = 0;
+            var max = content.Length;
             var state = new Stack<StateElement>();
             var objectName = string.Empty;
             var start = -1;
@@ -388,9 +389,9 @@ namespace Nikse.SubtitleEdit.Core.Common
                     if (ch == '"')
                     {
                         i++;
-                        int end = content.IndexOf('"', i);
+                        var end = content.IndexOf('"', i);
                         objectName = content.Substring(i, end - i).Trim();
-                        int colon = content.IndexOf(':', end);
+                        var colon = content.IndexOf(':', end);
                         if (colon < 0)
                         {
                             Errors.Add($"Fatal - expected char : after position {end}");
@@ -448,7 +449,7 @@ namespace Nikse.SubtitleEdit.Core.Common
                     {
                         i++;
                         var skip = true;
-                        int end = 0;
+                        var end = 0;
                         var endSeek = i;
                         while (skip)
                         {
@@ -676,8 +677,8 @@ namespace Nikse.SubtitleEdit.Core.Common
         {
             Errors = new List<string>();
             var list = new List<string>();
-            int i = 0;
-            int max = content.Length;
+            var i = 0;
+            var max = content.Length;
             var state = new Stack<StateElement>();
             var objectName = string.Empty;
             var start = -1;
@@ -722,9 +723,9 @@ namespace Nikse.SubtitleEdit.Core.Common
                     if (ch == '"')
                     {
                         i++;
-                        int end = content.IndexOf('"', i);
+                        var end = content.IndexOf('"', i);
                         objectName = content.Substring(i, end - i).Trim();
-                        int colon = content.IndexOf(':', end);
+                        var colon = content.IndexOf(':', end);
                         if (colon < 0)
                         {
                             Errors.Add($"Fatal - expected char : after position {end}");
@@ -782,7 +783,7 @@ namespace Nikse.SubtitleEdit.Core.Common
                     {
                         i++;
                         var skip = true;
-                        int end = 0;
+                        var end = 0;
                         var endSeek = i;
                         while (skip)
                         {
@@ -985,8 +986,8 @@ namespace Nikse.SubtitleEdit.Core.Common
         public string GetFirstObject(string content, string name)
         {
             Errors = new List<string>();
-            int i = 0;
-            int max = content.Length;
+            var i = 0;
+            var max = content.Length;
             var state = new Stack<StateElement>();
             var objectName = string.Empty;
             var start = -1;
@@ -1031,9 +1032,9 @@ namespace Nikse.SubtitleEdit.Core.Common
                     if (ch == '"')
                     {
                         i++;
-                        int end = content.IndexOf('"', i);
+                        var end = content.IndexOf('"', i);
                         objectName = content.Substring(i, end - i).Trim();
-                        int colon = content.IndexOf(':', end);
+                        var colon = content.IndexOf(':', end);
                         if (colon < 0)
                         {
                             Errors.Add($"Fatal - expected char : after position {end}");
@@ -1100,7 +1101,7 @@ namespace Nikse.SubtitleEdit.Core.Common
                     {
                         i++;
                         var skip = true;
-                        int end = 0;
+                        var end = 0;
                         var endSeek = i;
                         while (skip)
                         {
@@ -1355,9 +1356,9 @@ namespace Nikse.SubtitleEdit.Core.Common
                     if (ch == '"')
                     {
                         i++;
-                        int end = content.IndexOf('"', i);
+                        var end = content.IndexOf('"', i);
                         objectName = content.Substring(i, end - i).Trim();
-                        int colon = content.IndexOf(':', end);
+                        var colon = content.IndexOf(':', end);
                         if (colon < 0)
                         {
                             Errors.Add($"Fatal - expected char : after position {end}");
@@ -1444,7 +1445,7 @@ namespace Nikse.SubtitleEdit.Core.Common
                     {
                         i++;
                         var skip = true;
-                        int end = 0;
+                        var end = 0;
                         var endSeek = i;
                         while (skip)
                         {

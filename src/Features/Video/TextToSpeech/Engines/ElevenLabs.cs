@@ -192,6 +192,11 @@ public class ElevenLabs : ITtsEngine
             throw new ArgumentException("Voice is not an ElevenLabVoice");
         }
 
+        if (string.IsNullOrEmpty(model))
+        {
+            throw new ArgumentException("ElevenLabs model is empty");
+        }
+
         var ms = new MemoryStream();
         var ok = await _ttsDownloadService.DownloadElevenLabsVoiceSpeak(text, elevenLabVoice, model, Se.Settings.Video.TextToSpeech.ElevenLabsApiKey, "en", ms, null, cancellationToken);
         if (!ok)

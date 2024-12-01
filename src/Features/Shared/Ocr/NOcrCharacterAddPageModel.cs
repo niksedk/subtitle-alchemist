@@ -159,8 +159,11 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         {
             NOcrDrawingCanvas.ZoomFactor++;
             NOcrDrawingCanvas.InvalidateSurface();
-            NOcrDrawingCanvas.WidthRequest = _splitItem.NikseBitmap.Width * NOcrDrawingCanvas.ZoomFactor;
-            NOcrDrawingCanvas.HeightRequest = _splitItem.NikseBitmap.Height * NOcrDrawingCanvas.ZoomFactor;
+            if (_splitItem.NikseBitmap != null)
+            {
+                NOcrDrawingCanvas.WidthRequest = _splitItem.NikseBitmap.Width * NOcrDrawingCanvas.ZoomFactor;
+                NOcrDrawingCanvas.HeightRequest = _splitItem.NikseBitmap.Height * NOcrDrawingCanvas.ZoomFactor;
+            }
         }
     }
 
@@ -171,8 +174,11 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         {
             NOcrDrawingCanvas.ZoomFactor--;
             NOcrDrawingCanvas.InvalidateSurface();
-            NOcrDrawingCanvas.WidthRequest = _splitItem.NikseBitmap.Width * NOcrDrawingCanvas.ZoomFactor;
-            NOcrDrawingCanvas.HeightRequest = _splitItem.NikseBitmap.Height * NOcrDrawingCanvas.ZoomFactor;
+            if (_splitItem.NikseBitmap != null)
+            {
+                NOcrDrawingCanvas.WidthRequest = _splitItem.NikseBitmap.Width * NOcrDrawingCanvas.ZoomFactor;
+                NOcrDrawingCanvas.HeightRequest = _splitItem.NikseBitmap.Height * NOcrDrawingCanvas.ZoomFactor;
+            }
         }
     }
 
@@ -206,7 +212,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "NOcrChar", NOcrChar },
             { "OcrSubtitleItems", _ocrSubtitleItems },
             { "StartFromNumber", _startFromNumber },
-            { "ItalicOn", _isNewTextItalic },
+            { "ItalicOn", IsNewTextItalic },
             { "UseOnce", true },
             { "Abort", false },
         });
@@ -221,7 +227,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "NOcrChar", NOcrChar },
             { "OcrSubtitleItems", _ocrSubtitleItems },
             { "StartFromNumber", _startFromNumber },
-            { "ItalicOn", _isNewTextItalic },
+            { "ItalicOn", IsNewTextItalic },
             { "Skip", true },
             { "Abort", false },
         });
@@ -236,7 +242,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "NOcrChar", NOcrChar },
             { "OcrSubtitleItems", _ocrSubtitleItems },
             { "StartFromNumber", _startFromNumber },
-            { "ItalicOn", _isNewTextItalic },
+            { "ItalicOn", IsNewTextItalic },
             { "Abort", true },
         });
     }

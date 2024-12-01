@@ -9,6 +9,7 @@ using SubtitleAlchemist.Logic.Ocr;
 using System.Collections.ObjectModel;
 using System.Text;
 using SubtitleAlchemist.Features.Main;
+using static Microsoft.Maui.Controls.VisualStateManager;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -225,11 +226,13 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
-            MainThread.BeginInvokeOnMainThread(async () =>
+            MainThread.BeginInvokeOnMainThread(() =>
             {
                 _loading = false;
                 IsRunActive = true;
                 LoadSettings();
+
+                SelectedOcrSubtitleItem = OcrSubtitleItems.FirstOrDefault();
 
                 if (runOcr)
                 {
@@ -602,7 +605,11 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         CurrentBitmapInfo = $"Image {SelectedOcrSubtitleItem.Number} of {_ocrSubtitle.Count}: {bitmap.Width}x{bitmap.Height}";
         SelectedStartFromNumber = SelectedOcrSubtitleItem.Number;
         CurrentText = SelectedOcrSubtitleItem.Text;
-        IsInspectActive = true;
+
+        if (!_isRunningOcr)
+        {
+            IsInspectActive = true;
+        }
     }
 
     public void OnOcrEngineChanged(object? sender, EventArgs e)

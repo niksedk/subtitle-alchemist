@@ -104,11 +104,6 @@ namespace SubtitleAlchemist.Logic.Ocr
 
         public NikseBitmap2(SKBitmap inputBitmap)
         {
-            if (inputBitmap == null)
-            {
-                return;
-            }
-
             Width = inputBitmap.Width;
             Height = inputBitmap.Height;
 

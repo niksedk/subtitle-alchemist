@@ -62,6 +62,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                SelectedLetterItem = LetterItems.FirstOrDefault();
             });
             return false;
         });

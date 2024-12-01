@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Runtime.Versioning;
 using System.Text.Json;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
@@ -456,7 +457,9 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         }
 
         // Choose folder
+#pragma warning disable CA1416 // Validate platform compatibility
         var result = await FolderPicker.Default.PickAsync(_cancellationToken);
+#pragma warning restore CA1416 // Validate platform compatibility
         if (!result.IsSuccessful)
         {
             return;
@@ -493,7 +496,6 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
                 return;
             }
         }
-
 
         // Copy files
         var index = 0;
@@ -616,7 +618,7 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
                 }
             }
 
-            if (HasLanguageParameter)
+            if (HasLanguageParameter && SelectedVoice != null)
             {
                 var languages = await engine.GetLanguages(SelectedVoice, SelectedModel);
                 Languages.Clear();

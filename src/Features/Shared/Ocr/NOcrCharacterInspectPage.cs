@@ -90,7 +90,68 @@ public class NOcrCharacterInspectPage : ContentPage
         vm.Page = this;
     }
 
-    private IView MakeCurrentImageAndMatchView(NOcrCharacterInspectPageModel vm)
+    private static Grid MakeLettersView(NOcrCharacterInspectPageModel vm)
+    {
+        var grid = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Star },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            },
+            Margin = new Thickness(2),
+            Padding = new Thickness(2),
+            RowSpacing = 5,
+            ColumnSpacing = 5,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        }.BindDynamicTheme();
+
+        var collectionViewFunctions = new CollectionView
+        {
+            SelectionMode = SelectionMode.Single,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Fill,
+            ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
+            ItemTemplate = new DataTemplate(() =>
+            {
+                var functionGrid = new Grid
+                {
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = GridLength.Auto },
+                    },
+                };
+
+                var label = new Label
+                {
+                    FontSize = 20,
+                    FontAttributes = FontAttributes.Bold,
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.End,
+                    Margin = new Thickness(5),
+                };
+
+                label.SetBinding(Label.TextProperty, nameof(NOcrCharacterInspectPageModel.LetterItem.Text));
+                functionGrid.Add(label, 0);
+
+                return functionGrid;
+            }),
+        }.BindDynamicTheme();
+        collectionViewFunctions.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.LetterItems), BindingMode.TwoWay);
+        collectionViewFunctions.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedLetterItem));
+        collectionViewFunctions.SelectionChanged += vm.SelectedLetterItemChanged;
+
+        grid.Add(PackIntoScrollViewAndBorder(collectionViewFunctions), 0);
+
+        return grid;
+    }
+
+    private static IView MakeCurrentImageAndMatchView(NOcrCharacterInspectPageModel vm)
     {
         var grid = new Grid
         {
@@ -133,6 +194,7 @@ public class NOcrCharacterInspectPage : ContentPage
         var labelCurrentImage = new Label
         {
             Text = "Current image",
+            FontAttributes = FontAttributes.Bold,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.End,
             Margin = new Thickness(5),
@@ -178,6 +240,7 @@ public class NOcrCharacterInspectPage : ContentPage
         var labelMatch = new Label
         {
             Text = "Match",
+            FontAttributes = FontAttributes.Bold,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.End,
             Margin = new Thickness(5),
@@ -197,85 +260,64 @@ public class NOcrCharacterInspectPage : ContentPage
         {
             Text = "Text",
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(5),
         };
-        gridMatch.Add(labelMatchText, 0 ,1);
 
         var entryMatchText = new Entry
         {
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(5),
+            WidthRequest = 50,
         };
         entryMatchText.SetBinding(Entry.TextProperty, nameof(NOcrCharacterInspectPageModel.MatchText));
-        gridMatch.Add(entryMatchText, 0, 2);
+
+        var stackMatchText = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                labelMatchText,
+                entryMatchText,
+            },
+        };
+
+        gridMatch.Add(stackMatchText, 0, 2);
+
+        var labelItalic = new Label
+        {
+            Text = "Italic",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5),
+        };
+        var checkBoxItalic = new CheckBox
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5),
+        };
+        checkBoxItalic.SetBinding(CheckBox.IsCheckedProperty, nameof(NOcrCharacterInspectPageModel.MatchIsItalic));
+        var stackItalic = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                labelItalic,
+                checkBoxItalic,
+            },
+        };
+        gridMatch.Add(stackItalic, 0, 3);
 
         grid.Add(PackIntoScrollViewAndBorder(gridCurrentImage), 0);
         grid.Add(PackIntoScrollViewAndBorder(gridMatch), 1);
 
         return grid;
-    }
-
-    private static Grid MakeLettersView(NOcrCharacterInspectPageModel vm)
-    {
-        var grid = new Grid
-        {
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Star },
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto }, 
-                new ColumnDefinition { Width = GridLength.Auto }, 
-            },
-            Margin = new Thickness(2),
-            Padding = new Thickness(2),
-            RowSpacing = 5,
-            ColumnSpacing = 5,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-        }.BindDynamicTheme();
-
-        var collectionViewFunctions = new CollectionView
-        {
-            SelectionMode = SelectionMode.Single,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Fill,
-            ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
-            ItemTemplate = new DataTemplate(() =>
-            {
-                var functionGrid = new Grid
-                {
-                    ColumnDefinitions =
-                    {
-                        new ColumnDefinition { Width = GridLength.Auto }, 
-                    },
-                };
-
-                var label = new Label
-                {
-                    FontSize = 20,
-                    FontAttributes = FontAttributes.Bold,
-                    HorizontalOptions = LayoutOptions.Start,
-                    VerticalOptions = LayoutOptions.End,
-                    Margin = new Thickness(5),
-                };
-
-                label.SetBinding(Label.TextProperty, nameof(NOcrCharacterInspectPageModel.LetterItem.Text));
-                functionGrid.Add(label, 0);
-
-                return functionGrid;
-            }),
-        }.BindDynamicTheme();
-        collectionViewFunctions.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.LetterItems), BindingMode.TwoWay);
-        collectionViewFunctions.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedLetterItem));
-        collectionViewFunctions.SelectionChanged += vm.SelectedLetterItemChanged;
-
-        grid.Add(PackIntoScrollViewAndBorder(collectionViewFunctions), 0);
-
-       return grid;
     }
 
     private static View PackIntoScrollViewAndBorder(View view)

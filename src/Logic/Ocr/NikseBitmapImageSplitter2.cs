@@ -833,9 +833,7 @@ public class NikseBitmapImageSplitter2
         var subtractSpacePixels = 0;
         for (var x = 0; x < bmp.Width; x++)
         {
-            bool right;
-            bool clean;
-            List<NiksePoint> points = IsVerticalLineTransparetNew(bmp, x, out right, out clean);
+            var points = IsVerticalLineTransparent(bmp, x, out var right, out var clean);
 
             if (points != null && clean)
             {
@@ -898,6 +896,7 @@ public class NikseBitmapImageSplitter2
                 startX = newStartX;
             }
         }
+
         return parts;
     }
 
@@ -911,6 +910,7 @@ public class NikseBitmapImageSplitter2
                 x = p.X;
             }
         }
+
         return x;
     }
 
@@ -924,10 +924,11 @@ public class NikseBitmapImageSplitter2
                 x = p.X;
             }
         }
+
         return x;
     }
 
-    private static List<NiksePoint> IsVerticalLineTransparetNew(NikseBitmap2 bmp, int x, out bool right, out bool clean)
+    private static List<NiksePoint>? IsVerticalLineTransparent(NikseBitmap2 bmp, int x, out bool right, out bool clean)
     {
         right = false;
         var left = false;
@@ -1030,6 +1031,7 @@ public class NikseBitmapImageSplitter2
                 y++;
             }
         }
+
         return points;
     }
 

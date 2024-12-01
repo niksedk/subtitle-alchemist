@@ -128,6 +128,11 @@ public class NOcrDb
 
     public NOcrChar? GetMatchExpanded(NikseBitmap2 nikseBitmap, ImageSplitterItem2 targetItem, int listIndex, List<ImageSplitterItem2> list)
     {
+        if (targetItem.NikseBitmap == null)
+        {
+            return null;
+        }
+
         var w = targetItem.NikseBitmap.Width;
         for (var i = 0; i < OcrCharactersExpanded.Count; i++)
         {
