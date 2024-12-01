@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Shapes;
+using SubtitleAlchemist.Controls.DrawingCanvasControl;
 using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
@@ -247,14 +248,17 @@ public class NOcrCharacterInspectPage : ContentPage
         }.BindDynamicTheme();
         gridMatch.Add(labelMatch, 0);
 
-        var imageMatch = new Image
+        var drawingCanvas = new NOcrDrawingCanvasView
         {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Aspect = Aspect.AspectFit,
+            VerticalOptions = LayoutOptions.Start,
+            HorizontalOptions = LayoutOptions.Start,
+            WidthRequest = 200,
+            HeightRequest = 200,
         };
-        imageMatch.SetBinding(Image.SourceProperty, nameof(NOcrCharacterInspectPageModel.MatchImageSource));
-        gridMatch.Add(imageMatch, 0, 1);
+        drawingCanvas.SetStrokeWidth(1);
+        vm.NOcrDrawingCanvas = drawingCanvas;
+        gridMatch.Add(drawingCanvas, 0, 1);
+
 
         var labelMatchText = new Label
         {

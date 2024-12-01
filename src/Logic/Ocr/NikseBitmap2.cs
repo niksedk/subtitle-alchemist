@@ -42,10 +42,6 @@ namespace SubtitleAlchemist.Logic.Ocr
         private int width; // Do not rename (binary serialization)
         private int height; // Do not rename (binary serialization)
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref='System.Drawing.Rectangle'/> class with the specified location
-        /// and size.
-        /// </summary>
         public NikseRectangle(int x, int y, int width, int height)
         {
             this.x = x;
@@ -54,7 +50,6 @@ namespace SubtitleAlchemist.Logic.Ocr
             this.height = height;
         }
     }
-
 
     public class RunLengthTwoParts
     {

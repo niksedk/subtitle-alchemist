@@ -10,7 +10,17 @@ public class NOcrDrawingCanvasView : SKCanvasView
     public List<NOcrLine> HitPaths { get; set; }
     public List<NOcrLine> MissPaths{ get; set; }
 
-    public float ZoomFactor { get; set; } = 1.0f;
+    public float ZoomFactor
+    {
+        get => _zoomFactor;
+        set
+        {
+            _zoomFactor = value;
+            WidthRequest = BackgroundImage.Width * _zoomFactor;
+            HeightRequest = BackgroundImage.Height * _zoomFactor;
+            InvalidateSurface();
+        }
+    }
 
     private NOcrLine _currentPath;
     private bool _isDrawing = false;
@@ -23,6 +33,8 @@ public class NOcrDrawingCanvasView : SKCanvasView
         StrokeWidth = 3,
         IsAntialias = true
     };
+
+    private float _zoomFactor = 1.0f;
 
     public bool NewLinesAreHits { get; set; } = true;
 
@@ -39,6 +51,7 @@ public class NOcrDrawingCanvasView : SKCanvasView
         MissPaths = new List<NOcrLine>();
         _currentPath = new NOcrLine();
         BackgroundImage = new SKBitmap(1, 1);
+        ZoomFactor = 1;
 
         var pointerGestureRecognizer = new PointerGestureRecognizer();
         pointerGestureRecognizer.PointerMoved += PointerMoved;

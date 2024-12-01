@@ -198,7 +198,6 @@ public class NOcrCharacterAddPage : ContentPage
         }.BindDynamicTheme();
         collectionViewLinesForeground.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.LinesForeground), BindingMode.TwoWay);
         collectionViewLinesForeground.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedLineForeground));
-        //collectionViewLinesForeground.SelectionChanged += vm
 
         grid.Add(PackIntoScrollViewAndBorder(collectionViewLinesForeground), 0);
 

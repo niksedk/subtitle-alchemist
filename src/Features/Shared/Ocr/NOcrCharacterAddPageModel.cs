@@ -80,10 +80,8 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
                     MarginTop = _splitItem.Top,
                 };
 
-                NOcrDrawingCanvas.ZoomFactor = 6;
-                NOcrDrawingCanvas.WidthRequest = _splitItem.NikseBitmap.Width * NOcrDrawingCanvas.ZoomFactor;
-                NOcrDrawingCanvas.HeightRequest = _splitItem.NikseBitmap.Height * NOcrDrawingCanvas.ZoomFactor;
                 NOcrDrawingCanvas.BackgroundImage = _splitItem.NikseBitmap.GetBitmap();
+                NOcrDrawingCanvas.ZoomFactor = 4;
                 AutoGuessLines();
             }
         }
@@ -158,12 +156,6 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         if (NOcrDrawingCanvas.ZoomFactor < 10)
         {
             NOcrDrawingCanvas.ZoomFactor++;
-            NOcrDrawingCanvas.InvalidateSurface();
-            if (_splitItem.NikseBitmap != null)
-            {
-                NOcrDrawingCanvas.WidthRequest = _splitItem.NikseBitmap.Width * NOcrDrawingCanvas.ZoomFactor;
-                NOcrDrawingCanvas.HeightRequest = _splitItem.NikseBitmap.Height * NOcrDrawingCanvas.ZoomFactor;
-            }
         }
     }
 
@@ -173,12 +165,6 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         if (NOcrDrawingCanvas.ZoomFactor > 1)
         {
             NOcrDrawingCanvas.ZoomFactor--;
-            NOcrDrawingCanvas.InvalidateSurface();
-            if (_splitItem.NikseBitmap != null)
-            {
-                NOcrDrawingCanvas.WidthRequest = _splitItem.NikseBitmap.Width * NOcrDrawingCanvas.ZoomFactor;
-                NOcrDrawingCanvas.HeightRequest = _splitItem.NikseBitmap.Height * NOcrDrawingCanvas.ZoomFactor;
-            }
         }
     }
 
@@ -250,6 +236,9 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     [RelayCommand]
     private async Task Ok()
     {
+        NOcrChar.Text = NewText;
+        NOcrChar.Italic = IsNewTextItalic;
+
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(NOcrCharacterAddPage) },

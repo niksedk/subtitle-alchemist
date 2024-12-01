@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SubtitleAlchemist.Controls.DrawingCanvasControl;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Logic.Ocr;
 
@@ -25,6 +26,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
     }
 
     public NOcrCharacterInspectPage? Page { get; set; }
+    public NOcrDrawingCanvasView NOcrDrawingCanvas { get; set; }
 
     [ObservableProperty] private ObservableCollection<LetterItem> _letterItems;
     [ObservableProperty] private LetterItem? _selectedLetterItem;
@@ -44,6 +46,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
         _splitItem = new ImageSplitterItem2(string.Empty);
         _nOcrChars = new List<NOcrChar>();
         _currentImageResolution = string.Empty;
+        NOcrDrawingCanvas = new NOcrDrawingCanvasView();
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -94,13 +97,19 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
             {
                 CurrentImageSource = bitmap.GetBitmap().ToImageSource();
                 CurrentImageResolution = $"{bitmap.Width}x{bitmap.Height}";
+                
+                NOcrDrawingCanvas.BackgroundImage = bitmap.GetBitmap();
+                NOcrDrawingCanvas.ZoomFactor = 4.0f;
             }
 
             if (letterItem.NOcrChar is { } match)
             {
                 MatchText = match.Text;
                 MatchIsItalic = match.Italic;
-                //MatchImageSource = // draw lines on original image
+
+                NOcrDrawingCanvas.HitPaths = match.LinesForeground;
+                NOcrDrawingCanvas.MissPaths = match.LinesBackground;
+                NOcrDrawingCanvas.InvalidateSurface();
             }
         }
     }
