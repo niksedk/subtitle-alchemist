@@ -346,14 +346,102 @@ public class NOcrCharacterInspectPage : ContentPage
             Margin = new Thickness(0, 0, 15, 10),
             Command = vm.DeleteMatchCommand,
         }.BindDynamicTheme();
-        var buttonAddBetterMatch = new Button
+
+
+        var labelNumberOfLines = new Label
         {
-            Text = "Add better match...",
+            Text = "Number of lines to auto draw",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 15, 10),
+            Margin = new Thickness(5),
+        };
+        var pickerNumberOfLines=  new Picker
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicTheme().Bind(nameof(vm.NoOfLinesToAutoDrawList), nameof(vm.SelectedNoOfLinesToAutoDraw));
+        var stackNumberOfLines = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                labelNumberOfLines,
+                pickerNumberOfLines,
+            },
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNewMatch));
+
+        var buttonAddBetterMatch = new Button
+        {
+            Text = "Add better match",
+            Margin = new Thickness(0, 10, 0, 0),
             Command = vm.AddBetterMatchCommand,
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsAddBetterMatchVisible));
+
+        var buttonDrawAll = new Button
+        {
+            Text = "Auto draw all",
+            Margin = new Thickness(0, 10, 0, 0),
+            Command = vm.DrawAutoAllCommand,
         }.BindDynamicTheme();
+        var buttonDrawBackground = new Button
+        {
+            Text = "Auto draw background",
+            Margin = new Thickness(10, 10, 0, 0),
+            Command = vm.DrawAutoBackgroundCommand,
+        }.BindDynamicTheme();
+        var buttonDrawForeground = new Button
+        {
+            Text = "Auto draw foreground",
+            Margin = new Thickness(10, 10, 0, 0),
+            Command = vm.DrawAutoForegroundCommand,
+        }.BindDynamicTheme();
+        var stackDrawButtons = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            Children =
+            {
+                buttonDrawAll,
+                buttonDrawBackground,
+                buttonDrawForeground,
+            },
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNewMatch));
+
+        var buttonClearAll = new Button
+        {
+            Text = "Clear all",
+            Margin = new Thickness(0, 10, 0, 0),
+            Command = vm.DrawClearAllCommand,
+        }.BindDynamicTheme();
+        var buttonClearBackground = new Button
+        {
+            Text = "Clear background",
+            Margin = new Thickness(10, 10, 0, 0),
+            Command = vm.DrawClearBackgroundCommand,
+        }.BindDynamicTheme();
+        var buttonClearForeground = new Button
+        {
+            Text = "Clear foreground",
+            Margin = new Thickness(10, 10, 0, 0),
+            Command = vm.DrawClearForegroundCommand,
+        }.BindDynamicTheme();
+        var stackClearButtons = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 0),
+            Children =
+            {
+                buttonClearAll,
+                buttonClearBackground,
+                buttonClearForeground,
+            },
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNewMatch));
 
         var stackButtons = new StackLayout
         {
@@ -365,6 +453,9 @@ public class NOcrCharacterInspectPage : ContentPage
             {
                 buttonDelete,
                 buttonAddBetterMatch,
+                stackNumberOfLines,
+                stackDrawButtons,
+                stackClearButtons,
             },
         }.BindDynamicTheme();
         gridMatch.Add(stackButtons, 1, 1);

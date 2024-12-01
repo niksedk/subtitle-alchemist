@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SkiaSharp;
 using SubtitleAlchemist.Controls.DrawingCanvasControl;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Logic.Ocr;
@@ -38,7 +39,12 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
     [ObservableProperty] private string _matchText;
     [ObservableProperty] private bool _matchIsItalic;
     [ObservableProperty] private string _statusText;
+    [ObservableProperty] private ObservableCollection<int> _noOfLinesToAutoDrawList;
+    [ObservableProperty] private int _selectedNoOfLinesToAutoDraw;
+    [ObservableProperty] private bool _isNewMatch;
+    [ObservableProperty] private bool _isAddBetterMatchVisible;
 
+    private NOcrChar _newMatch { get; set; }
     private ImageSplitterItem2 _splitItem;
     private List<NOcrChar> _nOcrChars;
     private NOcrDb _nOcrDb;
@@ -56,6 +62,17 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
         _nOcrDb = new NOcrDb(string.Empty);
         _closing = false;
         _statusText = string.Empty;
+        _isAddBetterMatchVisible = true;
+        _newMatch = new NOcrChar(string.Empty);
+
+        const int maxLines = 500;
+        _noOfLinesToAutoDrawList = new ObservableCollection<int>();
+        for (var i = 0; i <= maxLines; i++)
+        {
+            _noOfLinesToAutoDrawList.Add(i);
+        }
+
+        _selectedNoOfLinesToAutoDraw = 100;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -67,7 +84,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
 
         if (query["Matches"] is List<NOcrChar> matches)
         {
-            _nOcrChars = new List<NOcrChar>();  
+            _nOcrChars = new List<NOcrChar>();
         }
 
         if (query["NOcrDb"] is NOcrDb nOcrDb)
@@ -100,17 +117,114 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
     [RelayCommand]
     private void UpdateMatch()
     {
-        if (SelectedLetterItem is { NOcrChar: { } } item)
+        if (SelectedLetterItem is { } item)
         {
-            item.NOcrChar.Text = MatchText;
-            item.NOcrChar.Italic = MatchIsItalic;
-            ShowStatus("Match updated");
+            if (IsNewMatch)
+            {
+                item.NOcrChar = new NOcrChar(_newMatch);
+                item.NOcrChar.Text = MatchText;
+                item.NOcrChar.Italic = MatchIsItalic;
+                _nOcrDb.Add(item.NOcrChar);
+                ShowStatus("Match added");
+                IsNewMatch = false;
+                IsAddBetterMatchVisible = true;
+            }
+            else if (item.NOcrChar != null)
+            {
+                item.NOcrChar.Text = MatchText;
+                item.NOcrChar.Italic = MatchIsItalic;
+                ShowStatus("Match updated");
+            }
         }
     }
 
     [RelayCommand]
     private void AddBetterMatch()
     {
+        if (SelectedLetterItem is { NOcrChar: { } } letterItem)
+        {
+            _newMatch = new NOcrChar(letterItem.NOcrChar);
+            DrawAutoAll();
+            IsNewMatch = true;
+            IsAddBetterMatchVisible = false;
+        }
+    }
+
+    [RelayCommand]
+    private void DrawClearAll()
+    {
+        _newMatch.LinesForeground.Clear();
+        _newMatch.LinesBackground.Clear();
+        ShowOcrPoints(_newMatch);
+    }
+
+    [RelayCommand]
+    private void DrawClearBackground()
+    {
+        _newMatch.LinesBackground.Clear();
+        ShowOcrPoints(_newMatch);
+    }
+
+    [RelayCommand]
+    private void DrawClearForeground()
+    {
+        _newMatch.LinesForeground.Clear();
+        ShowOcrPoints(_newMatch);
+    }
+
+    [RelayCommand]
+    private void DrawAutoAll()
+    {
+        if (SelectedLetterItem is { } letterItem)
+        {
+            _newMatch.LinesBackground.Clear();
+            _newMatch.LinesForeground.Clear();
+
+            NOcrChar.GenerateLineSegments(SelectedNoOfLinesToAutoDraw, false, _newMatch, letterItem.Item.NikseBitmap!);
+        }
+
+        ShowOcrPoints(_newMatch);
+    }
+
+    [RelayCommand]
+    private void DrawAutoBackground()
+    {
+        var oldForeground = new List<NOcrLine>(_newMatch.LinesForeground);
+        _newMatch.LinesBackground.Clear();
+        if (SelectedLetterItem is { } letterItem)
+        {
+            NOcrChar.GenerateLineSegments(SelectedNoOfLinesToAutoDraw, false, _newMatch, letterItem.Item.NikseBitmap!);
+        }
+        _newMatch.LinesForeground.Clear();
+        _newMatch.LinesForeground.AddRange(oldForeground);
+
+        ShowOcrPoints(_newMatch);
+    }
+
+    [RelayCommand]
+    private void DrawAutoForeground()
+    {
+        var oldBackground = new List<NOcrLine>(_newMatch.LinesBackground);
+        _newMatch.LinesForeground.Clear();
+        if (SelectedLetterItem is { } letterItem)
+        {
+            NOcrChar.GenerateLineSegments(SelectedNoOfLinesToAutoDraw, false, _newMatch, letterItem.Item.NikseBitmap!);
+        }
+        _newMatch.LinesBackground.Clear();
+        _newMatch.LinesBackground.AddRange(oldBackground);
+
+        ShowOcrPoints(_newMatch);
+    }
+
+    private void ShowOcrPoints(NOcrChar nOcrChar)
+    {
+        NOcrDrawingCanvas.MissPaths.Clear();
+        NOcrDrawingCanvas.HitPaths.Clear();
+
+        NOcrDrawingCanvas.MissPaths.AddRange(nOcrChar.LinesBackground);
+        NOcrDrawingCanvas.HitPaths.AddRange(nOcrChar.LinesForeground);
+
+        NOcrDrawingCanvas.InvalidateSurface();
     }
 
     private void ShowStatus(string statusText)
@@ -165,7 +279,12 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
 
     private void SelectedLetterItemChanged()
     {
+        IsAddBetterMatchVisible = true;
+        IsNewMatch = false;
         CurrentImageResolution = string.Empty;
+        CurrentImageSource = null;
+        MatchImageSource = null;
+        NOcrDrawingCanvas.BackgroundImage = new SKBitmap(1, 1);
 
         if (SelectedLetterItem is { } letterItem)
         {
