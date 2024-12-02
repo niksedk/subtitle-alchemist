@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SkiaSharp;
@@ -35,7 +36,6 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
     [ObservableProperty] private LetterItem? _selectedLetterItem;
     [ObservableProperty] private ImageSource? _currentImageSource;
     [ObservableProperty] private string _currentImageResolution;
-    [ObservableProperty] private ImageSource? _matchImageSource;
     [ObservableProperty] private string _matchText;
     [ObservableProperty] private bool _matchIsItalic;
     [ObservableProperty] private string _statusText;
@@ -131,6 +131,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
             }
             else if (item.NOcrChar != null)
             {
+                item.Text = MatchText;
                 item.NOcrChar.Text = MatchText;
                 item.NOcrChar.Italic = MatchIsItalic;
                 ShowStatus("Match updated");
@@ -144,6 +145,18 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
         if (SelectedLetterItem is { NOcrChar: { } } letterItem)
         {
             _newMatch = new NOcrChar(letterItem.NOcrChar);
+            DrawAutoAll();
+            IsNewMatch = true;
+            IsAddBetterMatchVisible = false;
+        }
+        else if (SelectedLetterItem is { } letterItem2 && letterItem2.Item.NikseBitmap != null)
+        {
+            _newMatch = new NOcrChar(string.Empty)
+            {
+                Width = letterItem2.Item.NikseBitmap.Width,
+                Height = letterItem2.Item.NikseBitmap.Height,
+                MarginTop = letterItem2.Item.Top
+            };
             DrawAutoAll();
             IsNewMatch = true;
             IsAddBetterMatchVisible = false;
@@ -283,7 +296,6 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
         IsNewMatch = false;
         CurrentImageResolution = string.Empty;
         CurrentImageSource = null;
-        MatchImageSource = null;
         NOcrDrawingCanvas.BackgroundImage = new SKBitmap(1, 1);
 
         if (SelectedLetterItem is { } letterItem)
