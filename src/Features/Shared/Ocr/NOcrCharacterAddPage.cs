@@ -1,7 +1,6 @@
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Controls.DrawingCanvasControl;
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Ocr;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 

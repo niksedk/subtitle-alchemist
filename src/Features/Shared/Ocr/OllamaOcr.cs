@@ -1,5 +1,4 @@
 ﻿using Nikse.SubtitleEdit.Core.Common;
-using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using System.Net.Http.Headers;
 using System.Text;
 using SkiaSharp;
@@ -8,7 +7,7 @@ namespace SubtitleAlchemist.Features.Shared.Ocr;
 
 public class OllamaOcr
 {
-    private HttpClient _httpClient;
+    private readonly HttpClient _httpClient;
 
     public string Error { get; set; }
 

@@ -9,7 +9,7 @@ using SubtitleAlchemist.Logic.Ocr;
 using System.Collections.ObjectModel;
 using System.Text;
 using SubtitleAlchemist.Features.Main;
-using static Microsoft.Maui.Controls.VisualStateManager;
+using CommunityToolkit.Maui.Core;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -105,10 +105,12 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     private CancellationTokenSource _cancellationTokenSource;
     private NOcrDb? _nOcrDb;
     private bool _toolsItalicOn;
+    private IPopupService _popupService;
 
-    public OcrPageModel(INOcrCaseFixer nOcrCaseFixer)
+    public OcrPageModel(INOcrCaseFixer nOcrCaseFixer, IPopupService popupService)
     {
         _nOcrCaseFixer = nOcrCaseFixer;
+        _popupService = popupService;
         _ocrEngines = new ObservableCollection<OcrEngineItem>(OcrEngineItem.GetOcrEngines());
         _selectedOcrEngine = _ocrEngines.FirstOrDefault();
         _ocrSubtitle = new BluRayPcsDataList(new List<BluRaySupParser.PcsData>());
@@ -481,6 +483,11 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     private bool InitNOcrDb()
     {
+        if (_nOcrDb != null)
+        {
+            return true;
+        }
+
         var nOcrDbFileName = GetNOcrLanguageFileName();
         if (nOcrDbFileName == null)
         {
@@ -493,6 +500,64 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         }
 
         return true;
+    }
+
+    [RelayCommand]
+    private async Task NOcrAction()
+    {
+        await _cancellationTokenSource.CancelAsync();
+
+        var result = await _popupService.ShowPopupAsync<NOcrDbActionPopupModel>(onPresenting: viewModel => viewModel.Initialize(SelectedNOcrDatabase, NOcrDatabases), CancellationToken.None);
+
+        if (result is string action)
+        {
+            if (action == "delete")
+            {
+                var nOcrDbFileName = GetNOcrLanguageFileName();
+                if (nOcrDbFileName != null)
+                {
+                    File.Delete(nOcrDbFileName);
+                    NOcrDatabases.Remove(SelectedNOcrDatabase);
+                    SelectedNOcrDatabase = NOcrDatabases.FirstOrDefault();
+                    if (NOcrDatabases.Count == 0)
+                    {
+                        _nOcrDb = new NOcrDb(Path.Combine(Se.OcrFolder, "New.nocr"));
+                        _nOcrDb.Save();
+                        NOcrDatabases.Add("New");
+                        SelectedNOcrDatabase = "New";
+                    }
+                }
+            }
+            else if (action == "edit")
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    if (!InitNOcrDb())
+                    {
+                        return;
+                    }
+
+                    await Pause();
+                    await Shell.Current.GoToAsync(nameof(NOcrDbEditPage), new Dictionary<string, object>
+                    {
+                        { "Page", nameof(OcrPage) },
+                        { "nOcrDb", _nOcrDb! },
+                    });
+                });
+            }
+            else if (action.StartsWith("new:"))
+            {
+                var newName = action.Substring(4).Trim();
+                var nOcrDbFileName = Path.Combine(Se.OcrFolder, $"{newName}.nocr");
+                if (!File.Exists(nOcrDbFileName))
+                {
+                    _nOcrDb = new NOcrDb(nOcrDbFileName);
+                    _nOcrDb.Save();
+                    NOcrDatabases.Add(newName);
+                    SelectedNOcrDatabase = newName;
+                }
+            }
+        }
     }
 
     [RelayCommand]
@@ -562,7 +627,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 { "Letters", letters },
                 { "Matches", matches },
                 { "OcrSubtitleItem", item },
-                { "NOcrDb", _nOcrDb ?? new NOcrDb(Path.Combine(Se.OcrFolder, "new.nocr")) },
+                { "nOcrDb", _nOcrDb ?? new NOcrDb(Path.Combine(Se.OcrFolder, "new.nocr")) },
             });
         });
     }

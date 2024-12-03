@@ -38,6 +38,7 @@ namespace SubtitleAlchemist
                 typeof(MainPage),
                 typeof(NOcrCharacterAddPage),
                 typeof(NOcrCharacterInspectPage),
+                typeof(NOcrDbEditPage),
                 typeof(OcrPage),
                 typeof(RestoreAutoBackupPage),
                 typeof(ReviewSpeechPage),

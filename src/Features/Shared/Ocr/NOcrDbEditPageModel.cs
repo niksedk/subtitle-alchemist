@@ -8,7 +8,7 @@ using SubtitleAlchemist.Logic.Ocr;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
-public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAttributable
+public partial class NOcrDbEditPageModel : ObservableObject, IQueryAttributable
 {
     public class LetterItem
     {
@@ -26,7 +26,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
         }
     }
 
-    public NOcrCharacterInspectPage? Page { get; set; }
+    public NOcrDbEditPage? Page { get; set; }
     public NOcrDrawingCanvasView NOcrDrawingCanvas { get; set; }
     public Label LabelStatusText { get; set; } = new();
 
@@ -49,7 +49,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
     private NOcrDb _nOcrDb;
     private bool _closing;
 
-    public NOcrCharacterInspectPageModel()
+    public NOcrDbEditPageModel()
     {
         _letterItems = new ObservableCollection<LetterItem>();
         _matchText = string.Empty;
@@ -76,16 +76,6 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (query["Letters"] is List<LetterItem> letters)
-        {
-            LetterItems = new ObservableCollection<LetterItem>(letters);
-        }
-
-        if (query["Matches"] is List<NOcrChar> matches)
-        {
-            _nOcrChars = new List<NOcrChar>();
-        }
-
         if (query["nOcrDb"] is NOcrDb nOcrDb)
         {
             _nOcrDb = nOcrDb;
@@ -95,7 +85,6 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                SelectedLetterItem = LetterItems.FirstOrDefault();
             });
             return false;
         });

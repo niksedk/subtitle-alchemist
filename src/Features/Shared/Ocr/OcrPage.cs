@@ -63,6 +63,15 @@ public class OcrPage : ContentPage
         }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNOcrVisible));
         pickerNOcrDatabase.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedNOcrDatabase));
 
+        var buttonNOcrAction = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0, 0, 0),
+            Command = vm.NOcrActionCommand,
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNOcrVisible));
+
         var labelMaxWrongPixels = new Label
         {
             Text = "Max wrong pixels",
@@ -102,6 +111,7 @@ public class OcrPage : ContentPage
                 pickerOcrEngine,
                 labelNOcrDatabase,
                 pickerNOcrDatabase,
+                buttonNOcrAction,
                 labelMaxWrongPixels,
                 pickerNOcrMaxWrongPixels,
                 labelNOcrPixelsAreSpace,

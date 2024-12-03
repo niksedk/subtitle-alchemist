@@ -10,5 +10,6 @@
         public const string LinkColor = "LinkColor";
         public const string TableHeaderBackgroundColor = "TableHeaderBackgroundColor";
         public const string ProgressColor = "ProgressColor";
+        public const string ErrorTextColor = "ErrorTextColor";
     }
 }

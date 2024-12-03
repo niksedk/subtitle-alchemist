@@ -98,6 +98,12 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static Entry BindIsVisible(this Entry control, string bindName)
+        {
+            control.SetBinding(VisualElement.IsVisibleProperty, bindName);
+            return control;
+        }
+
         public static Picker BindIsVisible(this Picker control, string bindName)
         {
             control.SetBinding(VisualElement.IsVisibleProperty, bindName);
@@ -344,6 +350,7 @@ namespace SubtitleAlchemist.Logic
                     SetThemeDictionaryColor(dictionaries, ThemeNames.LinkColor, Colors.DarkBlue);
                     SetThemeDictionaryColor(dictionaries, ThemeNames.TableHeaderBackgroundColor, Color.FromRgb(253, 253, 253));
                     SetThemeDictionaryColor(dictionaries, ThemeNames.ProgressColor, Colors.Orange);
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.ErrorTextColor, Colors.Red);
                 }
                 else if (themeName == "Dark")
                 {
@@ -355,6 +362,7 @@ namespace SubtitleAlchemist.Logic
                     SetThemeDictionaryColor(dictionaries, ThemeNames.LinkColor, Colors.LightSkyBlue);
                     SetThemeDictionaryColor(dictionaries, ThemeNames.TableHeaderBackgroundColor, Color.FromRgb(52, 52, 52));
                     SetThemeDictionaryColor(dictionaries, ThemeNames.ProgressColor, Colors.Orange);
+                    SetThemeDictionaryColor(dictionaries, ThemeNames.ErrorTextColor, Colors.Red);
                 }
             }
         }

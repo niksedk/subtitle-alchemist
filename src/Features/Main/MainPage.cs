@@ -29,6 +29,7 @@ public class MainPage : ContentPage
                 { ThemeNames.LinkColor, Colors.Pink },
                 { ThemeNames.TableHeaderBackgroundColor, Colors.Pink },
                 { ThemeNames.ProgressColor, Colors.Orange },
+                { ThemeNames.ErrorTextColor, Colors.Red },
             };
             mergedDictionaries.Add(theme);
 

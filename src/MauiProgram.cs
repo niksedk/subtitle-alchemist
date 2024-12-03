@@ -113,6 +113,8 @@ namespace SubtitleAlchemist
             builder.Services.AddTransient<NOcrCharacterInspectPageModel>();
             builder.Services.AddTransient<OcrPage>();
             builder.Services.AddTransient<OcrPageModel>();
+            builder.Services.AddTransient<NOcrDbEditPage>();
+            builder.Services.AddTransient<NOcrDbEditPageModel>();
 
             builder.Services.AddTransient<TaskbarList>();
             builder.Services.AddTransient<ISpellCheckManager, SpellCheckManager>();
@@ -161,6 +163,7 @@ namespace SubtitleAlchemist
             builder.Services.AddTransientPopup<ElevenLabSettingsPopup, ElevenLabSettingsPopupModel>();
             builder.Services.AddTransientPopup<EditShortcutPopup, EditShortcutPopupModel>();
             builder.Services.AddTransientPopup<BatchConvertOutputPropertiesPopup, BatchConvertOutputPropertiesPopupModel>();
+            builder.Services.AddTransientPopup<NOcrDbActionPopup, NOcrDbActionPopupModel>();
 
             builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
             builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();
