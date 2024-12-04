@@ -43,7 +43,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
     [ObservableProperty] private bool _isNewMatch;
     [ObservableProperty] private bool _isAddBetterMatchVisible;
 
-    private NOcrChar _newMatch { get; set; }
+    private NOcrChar _newMatch;
     private ImageSplitterItem2 _splitItem;
     private List<NOcrChar> _nOcrChars;
     private NOcrDb _nOcrDb;
@@ -269,7 +269,10 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
     {
         _closing = true;
         _nOcrDb.Save();
-        await Shell.Current.GoToAsync("..");
+        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+        {
+            { "Page", nameof(NOcrCharacterInspectPage) },
+        });
     }
 
     [RelayCommand]
@@ -277,7 +280,10 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
     {
         _closing = true;
         _nOcrDb.LoadOcrCharacters();
-        await Shell.Current.GoToAsync("..");
+        await Shell.Current.GoToAsync("..", new Dictionary<string, object>
+        {
+            { "Page", nameof(NOcrCharacterInspectPage) },
+        });
     }
 
     public void OnDisappearing()

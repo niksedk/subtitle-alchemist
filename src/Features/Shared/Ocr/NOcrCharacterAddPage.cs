@@ -234,7 +234,6 @@ public class NOcrCharacterAddPage : ContentPage
                     Command = vm.ZoomInCommand,
                     Margin = new Thickness(10, 0, 0, 0),
                 }.BindDynamicTheme(),
-
             },
         }.BindDynamicTheme();
 

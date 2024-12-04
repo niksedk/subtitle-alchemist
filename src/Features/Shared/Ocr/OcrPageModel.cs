@@ -146,18 +146,15 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             return;
         }
 
-        if (page == nameof(NOcrCharacterInspectPage))
+        if (page is nameof(NOcrCharacterInspectPage) or nameof(NOcrDbEditPage))
         {
             return;
         }
 
-        if (query.ContainsKey("Abort") && query["Abort"] is bool doAbort)
+        if (query.ContainsKey("Abort") && query["Abort"] is true)
         {
-            if (doAbort)
-            {
-                _cancellationTokenSource.Cancel();
-                return;
-            }
+            _cancellationTokenSource.Cancel();
+            return;
         }
 
         var runOcr = false;
@@ -483,7 +480,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     private bool InitNOcrDb()
     {
-        if (_nOcrDb != null)
+        var fileName = GetNOcrLanguageFileName();
+        if (_nOcrDb != null && _nOcrDb.FileName == fileName)
         {
             return true;
         }

@@ -1,6 +1,7 @@
 using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Controls.DrawingCanvasControl;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Ocr;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -20,7 +21,7 @@ public class NOcrDbEditPage : ContentPage
             {
                 new RowDefinition { Height = GridLength.Auto }, // Title
                 new RowDefinition { Height = GridLength.Auto }, // Letter list
-                new RowDefinition { Height = GridLength.Star }, // Current image and match
+                new RowDefinition { Height = GridLength.Star }, // Letter nOCR character instances
                 new RowDefinition { Height = GridLength.Auto }, // Status
                 new RowDefinition { Height = GridLength.Auto }, // Buttons
             },
@@ -38,18 +39,40 @@ public class NOcrDbEditPage : ContentPage
 
         var title = new Label
         {
-            Text = "nOCR inspect image matches",
-            FontSize = ThemeHelper.TitleFontSize,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 10),
-        }.BindDynamicTheme();
+        }.AsTitle().BindText(nameof(vm.Title));
         pageGrid.Add(title, 0);
 
-        var collectionViewLetters = MakeLettersView(vm);
-        pageGrid.Add(collectionViewLetters, 0, 1);
+        var labelCharacters = new Label
+        {
+            Text = "Characters",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5),
+        }.BindDynamicTheme();
+        var pickerCharacters = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5),
+        }.BindDynamicTheme().Bind(nameof(vm.CharacterList), nameof(vm.SelectedCharacter));
+        pickerCharacters.SelectedIndexChanged += (sender, args) => vm.SelectedCharacterChanged();
+        var stackCharacters = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                labelCharacters,
+                pickerCharacters,
+            },
+        }.BindDynamicTheme();
+        pageGrid.Add(stackCharacters, 0, 1);
 
-        var currentImageAndMatchView = MakeCurrentImageAndMatchView(vm);
+        var currentImageAndMatchView = MakeCurrentNOcrView(vm);
         pageGrid.Add(currentImageAndMatchView, 0, 2);
 
         var labelStatus = new Label
@@ -101,7 +124,7 @@ public class NOcrDbEditPage : ContentPage
         vm.Page = this;
     }
 
-    private static Grid MakeLettersView(NOcrDbEditPageModel vm)
+    private static Grid MakeCurrentNOcrView(NOcrDbEditPageModel vm)
     {
         var grid = new Grid
         {
@@ -111,8 +134,8 @@ public class NOcrDbEditPage : ContentPage
             },
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto }, // Character list
+                new ColumnDefinition { Width = GridLength.Auto }, // Character info + edit
             },
             Margin = new Thickness(2),
             Padding = new Thickness(2),
@@ -122,47 +145,65 @@ public class NOcrDbEditPage : ContentPage
             VerticalOptions = LayoutOptions.Fill,
         }.BindDynamicTheme();
 
-        var collectionViewFunctions = new CollectionView
+        var gridCharacterList = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto }, // Title
+                new RowDefinition { Height = GridLength.Auto }, // Character list
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+            },
+            Margin = new Thickness(2),
+            Padding = new Thickness(2),
+            RowSpacing = 5,
+            ColumnSpacing = 5,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        }.BindDynamicTheme();
+        var labelCurrentCharacter = new Label
+        {
+            Text = "Current character(s)",
+            FontAttributes = FontAttributes.Bold,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(5),
+        }.BindDynamicTheme();
+        gridCharacterList.Add(labelCurrentCharacter, 0);
+
+        var collectionViewCharacterItems = new CollectionView
         {
             SelectionMode = SelectionMode.Single,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Start,
-            ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
             ItemTemplate = new DataTemplate(() =>
             {
-                var functionGrid = new Grid
-                {
-                    ColumnDefinitions =
-                    {
-                        new ColumnDefinition { Width = GridLength.Auto },
-                    },
-                };
-
                 var label = new Label
                 {
-                    FontSize = 20,
-                    FontAttributes = FontAttributes.Bold,
                     HorizontalOptions = LayoutOptions.Start,
                     VerticalOptions = LayoutOptions.Center,
                     Margin = new Thickness(5),
                 };
-
-                label.SetBinding(Label.TextProperty, nameof(NOcrCharacterInspectPageModel.LetterItem.Text));
-                functionGrid.Add(label, 0);
-
-                return functionGrid;
+                label.SetBinding(Label.TextProperty, nameof(NOcrChar.Text));
+                return label;
             }),
         }.BindDynamicTheme();
-        collectionViewFunctions.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.LetterItems), BindingMode.TwoWay);
-        collectionViewFunctions.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedLetterItem));
-        collectionViewFunctions.SelectionChanged += vm.SelectedLetterItemChanged;
+        collectionViewCharacterItems.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.NOcrCharList));
+        collectionViewCharacterItems.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedNOcrChar));
+        collectionViewCharacterItems.SelectionChanged += (sender, args) => vm.SelectedNOcrCharChanged();
+        gridCharacterList.Add(collectionViewCharacterItems, 0, 1);
 
-        grid.Add(PackIntoScrollViewAndBorder(collectionViewFunctions), 0);
+        var gridOcrCharDetails = MakeOcrCharDetails(vm);
+
+        grid.Add(PackIntoScrollViewAndBorder(gridCharacterList), 0);
+        grid.Add(PackIntoScrollViewAndBorder(gridOcrCharDetails), 1);
 
         return grid;
     }
 
-    private static IView MakeCurrentImageAndMatchView(NOcrDbEditPageModel vm)
+    private static Grid MakeOcrCharDetails(NOcrDbEditPageModel vm)
     {
         var grid = new Grid
         {
@@ -172,81 +213,15 @@ public class NOcrDbEditPage : ContentPage
             },
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto }, // Character info
+                new ColumnDefinition { Width = GridLength.Auto }, // Buttons
             },
             Margin = new Thickness(2),
             Padding = new Thickness(2),
             RowSpacing = 5,
             ColumnSpacing = 5,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-        }.BindDynamicTheme();
-
-        var gridCurrentImage = new Grid
-        {
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-            },
-            Margin = new Thickness(2),
-            Padding = new Thickness(2),
-            RowSpacing = 5,
-            ColumnSpacing = 5,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-        }.BindDynamicTheme();
-        var labelCurrentImage = new Label
-        {
-            Text = "Current image",
-            FontAttributes = FontAttributes.Bold,
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.End,
-            Margin = new Thickness(5),
-        }.BindDynamicTheme();
-        gridCurrentImage.Add(labelCurrentImage, 0);
-        var imageCurrent = new Image
-        {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Aspect = Aspect.AspectFit,
-        };
-        imageCurrent.SetBinding(Image.SourceProperty, nameof(NOcrCharacterInspectPageModel.CurrentImageSource));
-        gridCurrentImage.Add(imageCurrent, 0, 1);
-        var labelImageResolution = new Label
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.End,
-            Margin = new Thickness(5),
-        };
-        labelImageResolution.SetBinding(Label.TextProperty, nameof(NOcrCharacterInspectPageModel.CurrentImageResolution));
-        gridCurrentImage.Add(labelImageResolution, 0, 2);
-
-
-        var gridMatch = new Grid
-        {
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-            },
-            ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = GridLength.Auto },
-                new ColumnDefinition { Width = GridLength.Auto },
-            },
-            Margin = new Thickness(2),
-            Padding = new Thickness(2),
-            RowSpacing = 5,
-            ColumnSpacing = 5,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
         }.BindDynamicTheme();
 
         var labelMatch = new Label
@@ -257,7 +232,36 @@ public class NOcrDbEditPage : ContentPage
             VerticalOptions = LayoutOptions.End,
             Margin = new Thickness(5),
         }.BindDynamicTheme();
-        gridMatch.Add(labelMatch, 0);
+        var buttonZoomOut = new Button
+        {
+            Text = "-",
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(0, 0, 15, 10),
+            Command = vm.ZoomOutCommand,
+        }.BindDynamicTheme();
+        var buttonZoomIn = new Button
+        {
+            Text = "+",
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(0, 0, 15, 10),
+            Command = vm.ZoomInCommand,
+        }.BindDynamicTheme();
+        var stackZoom = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            Children =
+            {
+                labelMatch,
+                buttonZoomOut,
+                buttonZoomIn,
+            },
+        }.BindDynamicTheme();
+
+        grid.Add(stackZoom, 0);
 
         var drawingCanvas = new NOcrDrawingCanvasView
         {
@@ -268,7 +272,27 @@ public class NOcrDbEditPage : ContentPage
         };
         drawingCanvas.SetStrokeWidth(1);
         vm.NOcrDrawingCanvas = drawingCanvas;
-        gridMatch.Add(drawingCanvas, 0, 1);
+
+        var labelResolution = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(5),
+        }.BindText(nameof(vm.CurrentImageResolution));
+
+        var stackCanvasAndResolution = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                drawingCanvas,
+                labelResolution,
+            },
+        };
+
+        grid.Add(stackCanvasAndResolution, 0, 1);
 
 
         var labelMatchText = new Label
@@ -286,7 +310,7 @@ public class NOcrDbEditPage : ContentPage
             Margin = new Thickness(5),
             WidthRequest = 50,
         };
-        entryMatchText.SetBinding(Entry.TextProperty, nameof(NOcrCharacterInspectPageModel.MatchText));
+        entryMatchText.SetBinding(Entry.TextProperty, nameof(vm.CurrentText));
 
         var stackMatchText = new StackLayout
         {
@@ -300,7 +324,7 @@ public class NOcrDbEditPage : ContentPage
             },
         };
 
-        gridMatch.Add(stackMatchText, 0, 2);
+        grid.Add(stackMatchText, 0, 2);
 
         var labelItalic = new Label
         {
@@ -309,13 +333,14 @@ public class NOcrDbEditPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(5),
         };
+
         var checkBoxItalic = new CheckBox
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(5),
         };
-        checkBoxItalic.SetBinding(CheckBox.IsCheckedProperty, nameof(NOcrCharacterInspectPageModel.MatchIsItalic));
+        checkBoxItalic.SetBinding(CheckBox.IsCheckedProperty, nameof(vm.CurrentItalic));
         var stackItalic = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -327,7 +352,7 @@ public class NOcrDbEditPage : ContentPage
                 checkBoxItalic,
             },
         };
-        gridMatch.Add(stackItalic, 0, 3);
+        grid.Add(stackItalic, 0, 3);
 
         var buttonUpdate = new Button
         {
@@ -347,102 +372,6 @@ public class NOcrDbEditPage : ContentPage
             Command = vm.DeleteMatchCommand,
         }.BindDynamicTheme();
 
-
-        var labelNumberOfLines = new Label
-        {
-            Text = "Number of lines to auto draw",
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(5),
-        };
-        var pickerNumberOfLines=  new Picker
-        {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Center,
-        }.BindDynamicTheme().Bind(nameof(vm.NoOfLinesToAutoDrawList), nameof(vm.SelectedNoOfLinesToAutoDraw));
-        var stackNumberOfLines = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Children =
-            {
-                labelNumberOfLines,
-                pickerNumberOfLines,
-            },
-        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNewMatch));
-
-        var buttonAddBetterMatch = new Button
-        {
-            Text = "Add better match",
-            Margin = new Thickness(0, 10, 0, 0),
-            Command = vm.AddBetterMatchCommand,
-        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsAddBetterMatchVisible));
-
-        var buttonDrawAll = new Button
-        {
-            Text = "Auto draw all",
-            Margin = new Thickness(0, 10, 0, 0),
-            Command = vm.DrawAutoAllCommand,
-        }.BindDynamicTheme();
-        var buttonDrawBackground = new Button
-        {
-            Text = "Auto draw background",
-            Margin = new Thickness(10, 10, 0, 0),
-            Command = vm.DrawAutoBackgroundCommand,
-        }.BindDynamicTheme();
-        var buttonDrawForeground = new Button
-        {
-            Text = "Auto draw foreground",
-            Margin = new Thickness(10, 10, 0, 0),
-            Command = vm.DrawAutoForegroundCommand,
-        }.BindDynamicTheme();
-        var stackDrawButtons = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 0, 0),
-            Children =
-            {
-                buttonDrawAll,
-                buttonDrawBackground,
-                buttonDrawForeground,
-            },
-        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNewMatch));
-
-        var buttonClearAll = new Button
-        {
-            Text = "Clear all",
-            Margin = new Thickness(0, 10, 0, 0),
-            Command = vm.DrawClearAllCommand,
-        }.BindDynamicTheme();
-        var buttonClearBackground = new Button
-        {
-            Text = "Clear background",
-            Margin = new Thickness(10, 10, 0, 0),
-            Command = vm.DrawClearBackgroundCommand,
-        }.BindDynamicTheme();
-        var buttonClearForeground = new Button
-        {
-            Text = "Clear foreground",
-            Margin = new Thickness(10, 10, 0, 0),
-            Command = vm.DrawClearForegroundCommand,
-        }.BindDynamicTheme();
-        var stackClearButtons = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(0, 0, 0, 0),
-            Children =
-            {
-                buttonClearAll,
-                buttonClearBackground,
-                buttonClearForeground,
-            },
-        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNewMatch));
-
         var stackButtons = new StackLayout
         {
             Orientation = StackOrientation.Vertical,
@@ -452,19 +381,11 @@ public class NOcrDbEditPage : ContentPage
             Children =
             {
                 buttonDelete,
-                buttonAddBetterMatch,
-                stackNumberOfLines,
-                stackDrawButtons,
-                stackClearButtons,
             },
         }.BindDynamicTheme();
-        gridMatch.Add(stackButtons, 1, 1);
+        grid.Add(stackButtons, 1, 1);
 
-        gridMatch.Add(buttonUpdate, 1, 2);
-
-
-        grid.Add(PackIntoScrollViewAndBorder(gridCurrentImage), 0);
-        grid.Add(PackIntoScrollViewAndBorder(gridMatch), 1);
+        grid.Add(buttonUpdate, 1, 2);
 
         return grid;
     }
