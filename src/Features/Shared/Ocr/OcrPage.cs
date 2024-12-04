@@ -68,7 +68,7 @@ public class OcrPage : ContentPage
             Text = "...",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
-            Margin = new Thickness(15, 0, 0, 0),
+            Margin = new Thickness(5, 0, 0, 0),
             Command = vm.NOcrActionCommand,
         }.BindDynamicTheme().BindIsVisible(nameof(vm.IsNOcrVisible));
 

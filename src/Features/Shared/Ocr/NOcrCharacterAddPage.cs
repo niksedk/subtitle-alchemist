@@ -80,6 +80,7 @@ public class NOcrCharacterAddPage : ContentPage
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             Aspect = Aspect.AspectFit,
+            MaximumHeightRequest = 300,
         };
         image.SetBinding(Image.SourceProperty, nameof(vm.SentenceImageSource));
         pageGrid.Add(image, 0, 1);
@@ -222,31 +223,8 @@ public class NOcrCharacterAddPage : ContentPage
             {
                 labelIsNewTextItalic,
                 checkBoxIsNewTextItalic,
-                new Button
-                {
-                    Text = "-",
-                    Command = vm.ZoomOutCommand,
-                    Margin = new Thickness(25, 0, 0, 0),
-                }.BindDynamicTheme(),
-                new Button
-                {
-                    Text = "+",
-                    Command = vm.ZoomInCommand,
-                    Margin = new Thickness(10, 0, 0, 0),
-                }.BindDynamicTheme(),
             },
         }.BindDynamicTheme();
-
-
-        var drawingCanvas = new NOcrDrawingCanvasView
-        {
-            VerticalOptions = LayoutOptions.Start,
-            HorizontalOptions = LayoutOptions.Start,
-            WidthRequest = 200,
-            HeightRequest = 200,
-        };
-        drawingCanvas.SetStrokeWidth(1);
-        vm.NOcrDrawingCanvas = drawingCanvas;
 
 
         var stackMiddle = new StackLayout
@@ -261,7 +239,6 @@ public class NOcrCharacterAddPage : ContentPage
                 labelNewText,
                 entryNewText,
                 stackItalic,
-                drawingCanvas,
             },
         }.BindDynamicTheme();
 
@@ -276,6 +253,7 @@ public class NOcrCharacterAddPage : ContentPage
             Orientation = StackOrientation.Vertical,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(20, 0, 0, 0),
             Children =
             {
                 new Label { Text = "#Lines to draw" }.BindDynamicTheme(),
@@ -299,34 +277,56 @@ public class NOcrCharacterAddPage : ContentPage
 
         grid.Add(stackRight, 1);
 
+        var stackZoom = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Children =
+            {
+                new Button
+                {
+                    Text = "-",
+                    Command = vm.ZoomOutCommand,
+                    Margin = new Thickness(25, 0, 0, 0),
+                }.BindDynamicTheme(),
+                new Button
+                {
+                    Text = "+",
+                    Command = vm.ZoomInCommand,
+                    Margin = new Thickness(10, 0, 0, 0),
+                }.BindDynamicTheme(),
+            },
+        }.BindDynamicTheme();
+
+        var drawingCanvas = new NOcrDrawingCanvasView
+        {
+            VerticalOptions = LayoutOptions.Start,
+            HorizontalOptions = LayoutOptions.Start,
+            WidthRequest = 200,
+            HeightRequest = 200,
+        };
+        drawingCanvas.SetStrokeWidth(1);
+        vm.NOcrDrawingCanvas = drawingCanvas;
+
+        var stackDrawing = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(10, 0, 0, 0),
+            Children =
+            {
+                stackZoom,
+                drawingCanvas,
+            },
+        }.BindDynamicTheme();
+
+        grid.Add(stackDrawing, 2);
+
         return grid;
     }
     
-    private static View PackIntoScrollViewAndBorder(View view)
-    {
-        var scrollView = new ScrollView
-        {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Content = view,
-        }.BindDynamicTheme();
-
-        var borderSettings = new Border
-        {
-            StrokeThickness = 1,
-            Padding = new Thickness(10, 5, 10, 5),
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            StrokeShape = new RoundRectangle
-            {
-                CornerRadius = new CornerRadius(5)
-            },
-            Content = scrollView,
-        }.BindDynamicTheme();
-
-        return borderSettings;
-    }
-
     protected override void OnDisappearing()
     {
         _vm.OnDisappearing();

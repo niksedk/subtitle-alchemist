@@ -159,42 +159,45 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
         var runOcr = false;
 
-        MainThread.BeginInvokeOnMainThread(async () =>
+        if (page == nameof(MainPage))
         {
-            await CheckAndUnpackOcrFiles();
-        });
-
-        if (query.ContainsKey("FileName") && query["FileName"] is string fileName)
-        {
-            _fileName = fileName;
-        }
-
-        if (query["Subtitle"] is List<BluRaySupParser.PcsData> bluRaySup && OcrSubtitleItems.Count == 0)
-        {
-            _ocrSubtitle = new BluRayPcsDataList(bluRaySup); ;
-            OcrSubtitleItems = new ObservableCollection<OcrSubtitleItem>(_ocrSubtitle.MakeOcrSubtitleItems());
-            StartFromNumbers = new ObservableCollection<int>(Enumerable.Range(1, _ocrSubtitle.Count));
-            SelectedStartFromNumber = 1;
-
-            foreach (var s in NOcrDb.GetDatabases().OrderBy(p => p))
+            MainThread.BeginInvokeOnMainThread(async () =>
             {
-                NOcrDatabases.Add(s);
-            }
-            SelectedNOcrDatabase = NOcrDb.GetDatabases().FirstOrDefault();
-
-            // load all images in the background
-            Task.Run(() =>
-            {
-                Parallel.ForEach(OcrSubtitleItems, item =>
-                {
-                    if (_cancellationTokenSource.Token.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    item.GetBitmap();
-                });
+                await CheckAndUnpackOcrFiles();
             });
+
+            if (query.ContainsKey("FileName") && query["FileName"] is string fileName)
+            {
+                _fileName = fileName;
+            }
+
+            if (query["Subtitle"] is List<BluRaySupParser.PcsData> bluRaySup && OcrSubtitleItems.Count == 0)
+            {
+                _ocrSubtitle = new BluRayPcsDataList(bluRaySup); ;
+                OcrSubtitleItems = new ObservableCollection<OcrSubtitleItem>(_ocrSubtitle.MakeOcrSubtitleItems());
+                StartFromNumbers = new ObservableCollection<int>(Enumerable.Range(1, _ocrSubtitle.Count));
+                SelectedStartFromNumber = 1;
+
+                foreach (var s in NOcrDb.GetDatabases().OrderBy(p => p))
+                {
+                    NOcrDatabases.Add(s);
+                }
+                SelectedNOcrDatabase = NOcrDb.GetDatabases().FirstOrDefault();
+
+                // load all images in the background
+                Task.Run(() =>
+                {
+                    Parallel.ForEach(OcrSubtitleItems, item =>
+                    {
+                        if (_cancellationTokenSource.Token.IsCancellationRequested)
+                        {
+                            return;
+                        }
+
+                        item.GetBitmap();
+                    });
+                });
+            }
         }
 
         var runOnce = false;
@@ -218,9 +221,12 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             OcrSubtitleItems = new ObservableCollection<OcrSubtitleItem>(ocrSubtitleItems);
         }
 
-        if (query.ContainsKey("StartFromNumber") && query["StartFromNumber"] is int startFromNumber)
+        int? startFromNumber = null;
+        if (query.ContainsKey("StartFromNumber") && query["StartFromNumber"] is int startFrom)
         {
-            SelectedStartFromNumber = startFromNumber;
+            _selectedStartFromNumber = startFrom;
+            SelectedStartFromNumber = startFrom;
+            startFromNumber = startFrom;
         }
 
         if (query.ContainsKey("ItalicOn") && query["ItalicOn"] is bool toolsItalicOn)
@@ -241,7 +247,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 if (runOcr)
                 {
                     _isRunningOcr = false;
-                    RunOcr();
+                    RunOcr(startFromNumber);
                 }
             });
             return false;
@@ -305,7 +311,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
-    private void RunOcr()
+    private void RunOcr(int? startFrom)
     {
         if (_isRunningOcr)
         {
@@ -315,7 +321,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         SaveSettings();
         _cancellationTokenSource = new CancellationTokenSource();
         _isRunningOcr = true;
-        var startFromIndex = SelectedStartFromNumber - 1;
+        var startFromIndex = (startFrom ?? SelectedStartFromNumber) - 1;
         IsProgressVisible = true;
         ProgressText = "Running OCR...";
         ProgressValue = 0d;
