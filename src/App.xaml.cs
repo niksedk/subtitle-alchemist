@@ -11,13 +11,11 @@ namespace SubtitleAlchemist
             InitializeComponent();
 
             Se.LoadSettings();
-
-            MainPage = new AppShell();
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            var window = base.CreateWindow(activationState);
+            var window = new Window(new AppShell());
             MainPageModel.Window = window;
             return window;
         }

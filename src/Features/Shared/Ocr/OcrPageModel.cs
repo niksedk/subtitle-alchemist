@@ -254,7 +254,6 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         int? startFromNumber = null;
         if (query.ContainsKey("StartFromNumber") && query["StartFromNumber"] is int startFrom)
         {
-            _selectedStartFromNumber = startFrom;
             SelectedStartFromNumber = startFrom;
             startFromNumber = startFrom;
         }
