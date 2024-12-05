@@ -26,6 +26,9 @@ public class Se
     public static string AutoBackupFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "AutoBackup");
     public static string TtsFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "TTS");
     public static string OcrFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "OCR");
+    public static string TesseractFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "Tesseract550");
+    public static string TesseractModelFolder => Path.Combine(TesseractFolder, "tessdata");
+    public static string FfmpegFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "ffmpeg");
 
     public Se()
     {

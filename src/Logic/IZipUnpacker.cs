@@ -25,4 +25,11 @@ public interface IZipUnpacker
     /// <param name="zipStream">Zip data.</param>
     /// <param name="outputPath">Where to unpack.</param>
     void UnpackZipStream(Stream zipStream, string outputPath);
+
+    /// <summary>
+    /// Unpacks a file name in a zip stream to an UTF8 string
+    /// </summary>
+    /// <param name="zipStream">Zip data.</param>
+    /// <param name="fileName">File name to return as UTF8 text.</param>
+    string? UnpackTextFileFromZipStream(Stream zipStream, string fileName);
 }

@@ -7,6 +7,9 @@ public class SeOcr
     public int NOcrMaxWrongPixels { get; set; }
     public int NOcrPixelsAreSpace { get; set; }
     public bool NOcrDrawUnknownText { get; set; }
+    public List<string> OllamaModels { get; set; }
+    public string OllamaModel { get; set; }
+    public string OllamaLanguage { get; set; }
 
     public SeOcr()
     {
@@ -16,5 +19,8 @@ public class SeOcr
         NOcrMaxWrongPixels = 20;
         NOcrPixelsAreSpace = 12;
         NOcrDrawUnknownText = true;
+
+        OllamaModels = new List<string>() { "llama3.2-vision", "llava-phi3", "moondream", "minicpm-v" };
+        OllamaLanguage = "English";
     }
 }

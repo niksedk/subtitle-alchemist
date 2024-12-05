@@ -20,11 +20,10 @@ public class OllamaOcr
         _httpClient.Timeout = TimeSpan.FromMinutes(25);
     }
 
-    public async Task<string> Ocr(SKBitmap bitmap, string language, CancellationToken cancellationToken)
+    public async Task<string> Ocr(SKBitmap bitmap, string model, string language, CancellationToken cancellationToken)
     {
         try
         {
-            var model = "llama3.2-vision";
             var modelJson = "\"model\": \"" + model + "\",";
 
             var prompt = string.Format("Get the text (use '\\n' for new line) from this image in {0}. Return only the text - no commnts or notes. For new line, use '\\n'.", language);
@@ -72,15 +71,8 @@ public class OllamaOcr
 
     private string GetBase64StringFromImage(SKBitmap bitmap)
     {
-        using (var image = SKImage.FromBitmap(bitmap))
-        using (var data = image.Encode(SKEncodedImageFormat.Png, 100)) // Using PNG format with 100% quality
-        {
-            if (data == null)
-            {
-                return string.Empty;
-            }
-
-            return Convert.ToBase64String(data.ToArray());
-        }
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data == null ? string.Empty : Convert.ToBase64String(data.ToArray());
     }
 }

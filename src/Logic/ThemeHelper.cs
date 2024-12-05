@@ -242,6 +242,12 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static Picker BindIsEnabled(this Picker control, string bindName)
+        {
+            control.SetBinding(VisualElement.IsEnabledProperty, bindName);
+            return control;
+        }
+
         public static Button BindIsVisible(this Button control, string bindName)
         {
             control.SetBinding(VisualElement.IsVisibleProperty, bindName);

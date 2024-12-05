@@ -5,6 +5,7 @@ using SubtitleAlchemist.Services;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Timers;
+using SubtitleAlchemist.Logic.Config;
 using Timer = System.Timers.Timer;
 
 namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
@@ -111,7 +112,7 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
 
         public static string GetFfmpegFolder()
         {
-            return Path.Combine(FileSystem.Current.AppDataDirectory, "ffmpeg");
+            return Se.FfmpegFolder;
         }
 
         public static string GetFfmpegFileName()

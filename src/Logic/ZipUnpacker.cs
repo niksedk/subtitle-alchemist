@@ -61,4 +61,25 @@ public class ZipUnpacker : IZipUnpacker
             }
         }
     }
+
+    public string? UnpackTextFileFromZipStream(Stream zipStream, string fileName)
+    {
+        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
+
+        foreach (var entry in archive.Entries)
+        {
+            if (entry.FullName != fileName)
+            {
+                continue;
+            }
+
+            using var entryStream = entry.Open();
+            using var outStream = new MemoryStream();
+            entryStream.CopyTo(outStream);
+
+            return System.Text.Encoding.UTF8.GetString(outStream.ToArray());
+        }
+
+        return null;
+    }
 }

@@ -1111,12 +1111,11 @@ public partial class TranslatePageModel : ObservableObject, IQueryAttributable
     public async Task PickApiUrl()
     {
         var result = await _popupService.ShowPopupAsync<PickerPopupModel>(
-        onPresenting: vm =>
-        {
-            vm.SetItems(_apiUrls, EntryApiUrl.Text);
-            vm.SetSelectedItem(EntryApiUrl.Text);
-        },
-        CancellationToken.None);
+            onPresenting: vm =>
+            {
+                vm.SetItems(_apiUrls, EntryApiUrl.Text);
+                vm.SetSelectedItem(EntryApiUrl.Text);
+            }, CancellationToken.None);
 
         if (result is string s)
         {

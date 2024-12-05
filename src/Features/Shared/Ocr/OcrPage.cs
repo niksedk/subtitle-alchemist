@@ -46,6 +46,71 @@ public class OcrPage : ContentPage
         pickerOcrEngine.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedOcrEngine));
         pickerOcrEngine.SelectedIndexChanged += vm.OnOcrEngineChanged;
 
+        var labelTesseractDictionaryItems = new Label
+        {
+            Text = "Model",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsTesseractVisible));
+
+        var pickerTesseractDictionaryItems = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsTesseractVisible)).Bind(nameof(vm.TesseractDictionaryItems), nameof(vm.SelectedTesseractDictionaryItem));
+
+        var buttonTesseractDictionaryDownload = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 0, 0),
+            Command = vm.TesseractDictionaryDownloadCommand,
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsTesseractVisible));
+
+        var labelOllamaModel = new Label
+        {
+            Text = "Model",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsOllamaOcrVisible));
+
+        var entryOllamaModel = new Entry
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsOllamaOcrVisible)).BindText(nameof(vm.OllamaModel));
+
+        var buttonOllamaModel = new Button
+        {
+            Text = "...",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 0, 0),
+            Command = vm.OllamaModelPickCommand,
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsOllamaOcrVisible));
+
+        var labelOllamaLanguage = new Label
+        {
+            Text = "Language",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsOllamaOcrVisible));
+
+        var pickerOllamaLanguage = new Picker
+        {
+            ItemsSource = vm.OllamaLanguages,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsOllamaOcrVisible)).Bind(nameof(vm.OllamaLanguages), nameof(vm.OllamaLanguage));
+
+
         var labelNOcrDatabase = new Label
         {
             Text = "nOcr database",
@@ -109,6 +174,14 @@ public class OcrPage : ContentPage
             {
                 labelTitle,
                 pickerOcrEngine,
+                labelTesseractDictionaryItems,
+                pickerTesseractDictionaryItems,
+                buttonTesseractDictionaryDownload,
+                labelOllamaModel,
+                entryOllamaModel,
+                buttonOllamaModel,
+                labelOllamaLanguage,
+                pickerOllamaLanguage,
                 labelNOcrDatabase,
                 pickerNOcrDatabase,
                 buttonNOcrAction,
