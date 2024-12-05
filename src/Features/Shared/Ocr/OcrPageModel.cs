@@ -200,7 +200,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
             if (query["Subtitle"] is List<BluRaySupParser.PcsData> bluRaySup && OcrSubtitleItems.Count == 0)
             {
-                _ocrSubtitle = new BluRayPcsDataList(bluRaySup); ;
+                _ocrSubtitle = new BluRayPcsDataList(bluRaySup); 
                 OcrSubtitleItems = new ObservableCollection<OcrSubtitleItem>(_ocrSubtitle.MakeOcrSubtitleItems());
                 StartFromNumbers = new ObservableCollection<int>(Enumerable.Range(1, _ocrSubtitle.Count));
                 SelectedStartFromNumber = 1;
@@ -603,7 +603,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                     }
                 }
 
-                item.Text = sb.ToString().Trim().Replace(Environment.NewLine, " ");
+                item.Text = sb.ToString().Trim();
 
                 var scrollToIndex = i;
                 MainThread.BeginInvokeOnMainThread(() =>
