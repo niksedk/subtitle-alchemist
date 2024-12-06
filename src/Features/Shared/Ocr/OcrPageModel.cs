@@ -878,7 +878,9 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     private async Task<bool> CheckAndDownloadTesseract()
     {
-        if (!Directory.Exists(Se.TesseractFolder)) //TODO: check executable file name
+        var tesseractExe = Path.Combine(Se.TesseractFolder, "tesseract.exe");
+
+        if (!File.Exists(tesseractExe)) //TODO: check for mac/Linux executable on mac/Linux
         {
             var answer = await Page!.DisplayAlert(
                 "Download Tesseract OCR?",
@@ -896,6 +898,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             {
                 return true;
             }
+
+            return false;
         }
 
         return true;
