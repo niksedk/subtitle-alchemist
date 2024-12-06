@@ -15,15 +15,7 @@ public class NOcrDb
     public NOcrDb(string fileName)
     {
         FileName = fileName;
-
-        var start = System.Diagnostics.Stopwatch.GetTimestamp();
         LoadOcrCharacters();
-        var end = System.Diagnostics.Stopwatch.GetTimestamp();
-        var ts = TimeSpan.FromTicks(end - start);
-
-        // write to file ts to file
-        var path = Path.Combine(Se.OcrFolder, "loadtimes.txt");
-        File.AppendAllText(path, $"{fileName} {ts.TotalMilliseconds}{Environment.NewLine}");
     }
 
     public NOcrDb(NOcrDb db, string fileName)
