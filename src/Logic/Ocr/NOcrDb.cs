@@ -15,7 +15,15 @@ public class NOcrDb
     public NOcrDb(string fileName)
     {
         FileName = fileName;
+
+        var start = System.Diagnostics.Stopwatch.GetTimestamp();
         LoadOcrCharacters();
+        var end = System.Diagnostics.Stopwatch.GetTimestamp();
+        var ts = TimeSpan.FromTicks(end - start);
+
+        // write to file ts to file
+        var path = Path.Combine(Se.OcrFolder, "loadtimes.txt");
+        File.AppendAllText(path, $"{fileName} {ts.TotalMilliseconds}{Environment.NewLine}");
     }
 
     public NOcrDb(NOcrDb db, string fileName)
@@ -60,6 +68,7 @@ public class NOcrDb
             return;
         }
 
+        byte[] buffer;
         using (var stream = new MemoryStream())
         {
             using (var gz = new GZipStream(File.OpenRead(FileName), CompressionMode.Decompress))
@@ -67,34 +76,28 @@ public class NOcrDb
                 gz.CopyTo(stream);
             }
 
-            stream.Position = 0;
-            var versionBuffer = new byte[Version.Length];
-            stream.Read(versionBuffer, 0, versionBuffer.Length);
-            var isVersion2 = Encoding.ASCII.GetString(versionBuffer) == Version;
-            stream.Position = 0;
-            var done = false;
-            if (isVersion2)
+            buffer = stream.ToArray();
+        }
+
+        var position = 2;
+        var done = false;
+        while (!done)
+        {
+            var ocrChar = new NOcrChar(ref position, buffer);
+            if (ocrChar.LoadedOk)
             {
-                stream.Read(versionBuffer, 0, versionBuffer.Length);
-            }
-            while (!done)
-            {
-                var ocrChar = new NOcrChar(stream, isVersion2);
-                if (ocrChar.LoadedOk)
+                if (ocrChar.ExpandCount > 0)
                 {
-                    if (ocrChar.ExpandCount > 0)
-                    {
-                        listExpanded.Add(ocrChar);
-                    }
-                    else
-                    {
-                        list.Add(ocrChar);
-                    }
+                    listExpanded.Add(ocrChar);
                 }
                 else
                 {
-                    done = true;
+                    list.Add(ocrChar);
                 }
+            }
+            else
+            {
+                done = true;
             }
         }
 

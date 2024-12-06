@@ -86,7 +86,7 @@ public partial class NOcrDbEditPageModel : ObservableObject, IQueryAttributable
 
     private void UpdateNumberOfElements()
     {
-        NumberOfElements = $"{_nOcrDb.OcrCharacters.Count:#,###} elements";
+        NumberOfElements = $"{(_nOcrDb.OcrCharacters.Count + _nOcrDb.OcrCharactersExpanded.Count):#,###} elements";
     }
 
     private void LoadUiData()
