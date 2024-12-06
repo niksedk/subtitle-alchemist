@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using SkiaSharp;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
@@ -24,11 +25,7 @@ public class TesseractOcr
         }
 
         var tempImage = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".png");
-        using (var image = SKImage.FromBitmap(bitmap))
-        using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
-        {
-            await File.WriteAllBytesAsync(tempImage, data.ToArray(), cancellationToken);
-        }
+        await File.WriteAllBytesAsync(tempImage, bitmap.ToPngArray(), cancellationToken);
 
         var tempTextFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         var process = new Process
@@ -45,7 +42,9 @@ public class TesseractOcr
             },
         };
 
+#pragma warning disable CA1416 // Validate platform compatibility
         process.Start();
+#pragma warning restore CA1416 // Validate platform compatibility;
         await process.WaitForExitAsync(cancellationToken);
 
         if (process.ExitCode != 0)

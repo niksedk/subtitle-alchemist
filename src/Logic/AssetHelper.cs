@@ -1,10 +1,12 @@
-﻿namespace SubtitleAlchemist.Logic;
+﻿using SubtitleAlchemist.Logic.Config;
+
+namespace SubtitleAlchemist.Logic;
 
 public static class AssetHelper
 {
     public static void CopyToAppData(string name)
     {
-        var targetFile = Path.Combine(FileSystem.Current.AppDataDirectory, name);
+        var targetFile = Path.Combine(Se.BaseFolder, name);
         if (File.Exists(targetFile))
         {
             return;
@@ -14,13 +16,12 @@ public static class AssetHelper
         using var fs = FileSystem.Current.OpenAppPackageFileAsync(name).Result;
         using var writer = new BinaryWriter(outputStream);
         using var reader = new BinaryReader(fs);
-        var bytesRead = 0;
-        var bufferSize = 1024;
-        var buffer = new byte[bufferSize];
+        int bytesRead;
+        const int bufferSize = 1024;
 
         do
         {
-            buffer = reader.ReadBytes(bufferSize);
+            var buffer = reader.ReadBytes(bufferSize);
             bytesRead = buffer.Length;
             writer.Write(buffer);
         }

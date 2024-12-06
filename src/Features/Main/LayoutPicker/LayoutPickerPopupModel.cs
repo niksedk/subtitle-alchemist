@@ -3,7 +3,6 @@ using SharpHook;
 using SharpHook.Native;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
-using SubtitleAlchemist.Logic.Media;
 
 namespace SubtitleAlchemist.Features.Main.LayoutPicker
 {
@@ -93,8 +92,8 @@ namespace SubtitleAlchemist.Features.Main.LayoutPicker
                 var bytes = File.ReadAllBytes(Path.Combine(imagePath, $"layout_{(i + 1):00}.png"));
                 _images.Add(bytes);
 
-                var grayscaledBitmap = ImageHelper.ConvertToGrayscale(bytes);
-                var greyMs = ImageHelper.BitmapToPngStream(grayscaledBitmap);
+                var grayscaledBitmap = SkBitmapExtensions.ConvertToGrayscale(bytes);
+                var greyMs = SkBitmapExtensions.BitmapToPngStream(grayscaledBitmap);
                 _grayscaleImages.Add(greyMs.ToArray());
 
                 MouseOutLayout(i);
@@ -188,8 +187,8 @@ namespace SubtitleAlchemist.Features.Main.LayoutPicker
         public void HighlightLayout(int i)
         {
             var bytes = _images[i];
-            var bitmap = ImageHelper.MakeImageBrighter(bytes, 0.5f);
-            bytes = ImageHelper.BitmapToPngStream(bitmap).ToArray();
+            var bitmap = SkBitmapExtensions.MakeImageBrighter(bytes, 0.5f);
+            bytes = SkBitmapExtensions.BitmapToPngStream(bitmap).ToArray();
             SetImageSource(i, bytes);
         }
 

@@ -11,6 +11,7 @@ using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Logic.Ocr;
 using System.Collections.ObjectModel;
 using System.Text;
+using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 

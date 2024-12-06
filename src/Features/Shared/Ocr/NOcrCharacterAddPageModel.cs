@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SkiaSharp;
 using SubtitleAlchemist.Controls.DrawingCanvasControl;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Logic.Ocr;

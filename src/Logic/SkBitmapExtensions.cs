@@ -1,8 +1,8 @@
 ﻿using SkiaSharp;
 
-namespace SubtitleAlchemist.Logic.Media;
+namespace SubtitleAlchemist.Logic;
 
-internal static class ImageHelper
+internal static class SkBitmapExtensions
 {
     public static SKBitmap ConvertToGrayscale(SKBitmap originalBitmap)
     {
@@ -115,11 +115,23 @@ internal static class ImageHelper
 
     public static ImageSource ToImageSource(this SKBitmap bitmap)
     {
-        using (var image = SKImage.FromBitmap(bitmap))
-        using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
-        {
-            var stream = new MemoryStream(data.ToArray());
-            return ImageSource.FromStream(() => stream);
-        }
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        var stream = new MemoryStream(data.ToArray());
+        return ImageSource.FromStream(() => stream);
+    }
+
+    public static string ToBase64String(this SKBitmap bitmap)
+    {
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data == null ? string.Empty : Convert.ToBase64String(data.ToArray());
+    }
+
+    public static byte[] ToPngArray(this SKBitmap bitmap)
+    {
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data.ToArray();
     }
 }
