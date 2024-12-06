@@ -111,6 +111,42 @@ public class OcrPage : ContentPage
         }.BindDynamicTheme().BindIsVisible(nameof(vm.IsOllamaOcrVisible)).Bind(nameof(vm.OllamaLanguages), nameof(vm.OllamaLanguage));
 
 
+        var labelGoogleVisionLanguage = new Label
+        {
+            Text = "Language",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsGoogleVisionVisible));
+
+        var pickerGoogleVisionLanguage = new Picker
+        {
+            ItemsSource = vm.GoogleVisionLanguages,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 0, 0),
+        }
+        .BindDynamicTheme()
+        .BindIsVisible(nameof(vm.IsGoogleVisionVisible))
+        .Bind(nameof(vm.GoogleVisionLanguages), nameof(vm.SelectedGoogleVisionLanguage));
+
+        var labelGoogleVisionApiKey = new Label
+        {
+            Text = "API Key",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsGoogleVisionVisible));
+
+        var entryGoogleVisionApiKey = new Entry
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 0, 0),
+            MinimumWidthRequest = 200,
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsGoogleVisionVisible)).BindText(nameof(vm.GoogleVisionApiKey));
+
+
         var labelNOcrDatabase = new Label
         {
             Text = "nOcr database",
@@ -182,6 +218,10 @@ public class OcrPage : ContentPage
                 buttonOllamaModel,
                 labelOllamaLanguage,
                 pickerOllamaLanguage,
+                labelGoogleVisionLanguage,
+                pickerGoogleVisionLanguage,
+                labelGoogleVisionApiKey,
+                entryGoogleVisionApiKey,
                 labelNOcrDatabase,
                 pickerNOcrDatabase,
                 buttonNOcrAction,

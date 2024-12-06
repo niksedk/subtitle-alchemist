@@ -1,4 +1,3 @@
-using Microsoft.Maui.Controls.Shapes;
 using SubtitleAlchemist.Controls.DrawingCanvasControl;
 using SubtitleAlchemist.Logic;
 

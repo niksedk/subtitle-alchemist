@@ -10,6 +10,8 @@ public class SeOcr
     public List<string> OllamaModels { get; set; }
     public string OllamaModel { get; set; }
     public string OllamaLanguage { get; set; }
+    public string GoogleVisionApiKey { get; set; }
+    public string GoogleVisionLanguage { get; set; }
 
     public SeOcr()
     {
@@ -20,8 +22,11 @@ public class SeOcr
         NOcrPixelsAreSpace = 12;
         NOcrDrawUnknownText = true;
 
-        OllamaModels = new List<string>() { "llama3.2-vision", "llava-phi3", "moondream", "minicpm-v" };
+        OllamaModels = new List<string> { "llama3.2-vision", "llava-phi3", "moondream", "minicpm-v" };
         OllamaLanguage = "English";
         OllamaModel = OllamaModels.First();
+
+        GoogleVisionApiKey = "";
+        GoogleVisionLanguage = "en";
     }
 }

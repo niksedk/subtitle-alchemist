@@ -8,7 +8,6 @@ using System.Runtime.Serialization;
 using System.Text;
 using SkiaSharp;
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Media;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -41,7 +40,7 @@ public class GoogleVisionOcr
         return 16;
     }
 
-    public List<OcrLanguage> GetLanguages()
+    public static List<OcrLanguage> GetLanguages()
     {
         // Currently (Sep 1, 2022) supported and experimental languages from https://cloud.google.com/vision/docs/languages
         var list = new List<OcrLanguage>();

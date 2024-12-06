@@ -5,7 +5,6 @@ using SkiaSharp;
 using SubtitleAlchemist.Controls.DrawingCanvasControl;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
-using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Logic.Ocr;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;

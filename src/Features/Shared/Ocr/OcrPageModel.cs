@@ -7,10 +7,10 @@ using SubtitleAlchemist.Controls.PickerControl;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic.BluRaySup;
 using SubtitleAlchemist.Logic.Config;
-using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Logic.Ocr;
 using System.Collections.ObjectModel;
 using System.Text;
+using Nikse.SubtitleEdit.Core.VobSub.Ocr.Service;
 using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
@@ -99,6 +99,18 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     private string _ollamaLanguage;
 
     [ObservableProperty]
+    private ObservableCollection<OcrLanguage> _googleVisionLanguages;
+
+    [ObservableProperty]
+    private OcrLanguage? _selectedGoogleVisionLanguage;
+
+    [ObservableProperty]
+    private string _googleVisionApiKey;
+
+    [ObservableProperty]
+    private string _googleVisionLanguage;
+
+    [ObservableProperty]
     private bool _isNOcrVisible;
 
     [ObservableProperty]
@@ -106,6 +118,9 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     [ObservableProperty]
     private bool _isTesseractVisible;
+
+    [ObservableProperty]
+    private bool _isGoogleVisionVisible;
 
     [ObservableProperty]
     private ObservableCollection<TesseractDictionary> _tesseractDictionaryItems;
@@ -158,6 +173,9 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             .Select(p => p.EnglishName)
             .OrderBy(p => p));
         _ollamaLanguage = "English";
+        _googleVisionLanguages = new ObservableCollection<OcrLanguage>();
+        _googleVisionApiKey = string.Empty;
+        _googleVisionLanguage = string.Empty;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -195,7 +213,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
             if (query["Subtitle"] is List<BluRaySupParser.PcsData> bluRaySup && OcrSubtitleItems.Count == 0)
             {
-                _ocrSubtitle = new BluRayPcsDataList(bluRaySup); 
+                _ocrSubtitle = new BluRayPcsDataList(bluRaySup);
                 OcrSubtitleItems = new ObservableCollection<OcrSubtitleItem>(_ocrSubtitle.MakeOcrSubtitleItems());
                 StartFromNumbers = new ObservableCollection<int>(Enumerable.Range(1, _ocrSubtitle.Count));
                 SelectedStartFromNumber = 1;
@@ -207,7 +225,9 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 SelectedNOcrDatabase = NOcrDb.GetDatabases().FirstOrDefault();
 
                 TesseractDictionaryItems = new ObservableCollection<TesseractDictionary>(LoadActiveTesseractDictionaries());
+
                 SelectedTesseractDictionaryItem = TesseractDictionaryItems.FirstOrDefault();
+                GoogleVisionLanguages = new ObservableCollection<OcrLanguage>(GoogleVisionOcr.GetLanguages().OrderBy(p => p.ToString()));
 
                 // load all images in the background
                 Task.Run(() =>
@@ -327,6 +347,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         SelectedNOcrPixelsAreSpace = ocr.NOcrPixelsAreSpace;
         OllamaModel = ocr.OllamaModel;
         OllamaLanguage = ocr.OllamaLanguage;
+        GoogleVisionApiKey = ocr.GoogleVisionApiKey;
+        SelectedGoogleVisionLanguage = GoogleVisionLanguages.FirstOrDefault(p => p.Code == ocr.GoogleVisionLanguage);
     }
 
     private void SaveSettings()
@@ -339,6 +361,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         ocr.NOcrPixelsAreSpace = SelectedNOcrPixelsAreSpace;
         ocr.OllamaModel = OllamaModel;
         ocr.OllamaLanguage = OllamaLanguage;
+        ocr.GoogleVisionApiKey = GoogleVisionApiKey;
+        ocr.GoogleVisionLanguage = SelectedGoogleVisionLanguage?.Code ?? "en";
         Se.SaveSettings();
     }
 
@@ -424,6 +448,10 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         else if (ocrEngine.EngineType == OcrEngineType.Ollama)
         {
             RunOllamaOcr(startFromIndex);
+        }
+        else if (ocrEngine.EngineType == OcrEngineType.Ollama)
+        {
+            RunGoogleVisionOcr(startFromIndex);
         }
     }
 
@@ -512,6 +540,67 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
 
                 var text = await ollamaOcr.Ocr(bitmap, OllamaModel, OllamaLanguage, _cancellationTokenSource.Token);
+                item.Text = text;
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (SelectedOcrSubtitleItem == item)
+                    {
+                        CurrentText = text;
+                    }
+                });
+            }
+
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                SelectedStartFromNumber = OcrSubtitleItems.Count;
+                await Pause();
+            });
+        });
+    }
+
+    private void RunGoogleVisionOcr(int startFromIndex)
+    {
+        var googleVisionOcr = new GoogleVisionOcr();
+
+        if (SelectedGoogleVisionLanguage is not { } language)
+        {
+            return;
+        }
+
+        if (GoogleVisionApiKey is not { } apiKey)
+        {
+            return;
+        }
+
+        _ = Task.Run(async () =>
+        {
+            for (var i = startFromIndex; i < OcrSubtitleItems.Count; i++)
+            {
+                if (_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                ProgressValue = i / (double)OcrSubtitleItems.Count;
+                ProgressText = $"Running OCR... {i + 1}/{OcrSubtitleItems.Count}";
+                SelectedStartFromNumber = i + 1;
+
+                var item = OcrSubtitleItems[i];
+                var bitmap = item.GetBitmap();
+
+                var scrollToIndex = i;
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ListView.ScrollTo(scrollToIndex, -1, ScrollToPosition.MakeVisible, false);
+                    SelectedOcrSubtitleItem = item;
+                    ListView.Focus();
+                    ListView.SelectedItem = item;
+                    ListView.UpdateSelectedItems(new List<object> { item });
+                });
+
+
+                var text = await googleVisionOcr.Ocr(bitmap, apiKey, language.Code, _cancellationTokenSource.Token);
                 item.Text = text;
 
                 MainThread.BeginInvokeOnMainThread(() =>
@@ -868,6 +957,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             IsTesseractVisible = engine.EngineType == OcrEngineType.Tesseract;
             IsInspectVisible = engine.EngineType == OcrEngineType.nOcr;
             IsOllamaOcrVisible = engine.EngineType == OcrEngineType.Ollama;
+            IsGoogleVisionVisible = engine.EngineType == OcrEngineType.GoogleVision;
 
             if (engine.EngineType == OcrEngineType.nOcr)
             {
