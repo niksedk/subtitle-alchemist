@@ -18,6 +18,7 @@ public partial class NOcrDbEditPageModel : ObservableObject, IQueryAttributable
     public Label LabelStatusText { get; set; } = new();
 
     [ObservableProperty] private string _title;
+    [ObservableProperty] private string _numberOfElements;
     [ObservableProperty] private ObservableCollection<string> _characterList;
     [ObservableProperty] private string? _selectedCharacter;
     [ObservableProperty] private ObservableCollection<NOcrChar> _nOcrCharList;
@@ -39,6 +40,7 @@ public partial class NOcrDbEditPageModel : ObservableObject, IQueryAttributable
     public NOcrDbEditPageModel()
     {
         _title = string.Empty;
+        _numberOfElements = string.Empty;
         _characterList = new ObservableCollection<string>();
         _nOcrCharList = new ObservableCollection<NOcrChar>();
         _currentImageResolution = string.Empty;
@@ -68,6 +70,7 @@ public partial class NOcrDbEditPageModel : ObservableObject, IQueryAttributable
             _nOcrDb = nOcrDb;
 
             Title = $"Edit nOCR database \"{Path.GetFileNameWithoutExtension(nOcrDb.FileName)}\"";
+            UpdateNumberOfElements();
 
             LoadUiData();
         }
@@ -79,6 +82,11 @@ public partial class NOcrDbEditPageModel : ObservableObject, IQueryAttributable
             });
             return false;
         });
+    }
+
+    private void UpdateNumberOfElements()
+    {
+        NumberOfElements = $"{_nOcrDb.OcrCharacters.Count:#,###} elements";
     }
 
     private void LoadUiData()
@@ -106,6 +114,7 @@ public partial class NOcrDbEditPageModel : ObservableObject, IQueryAttributable
             SelectedNOcrChar = null;
             SelectedLetterItemChanged();
             ShowStatus("nOCR char deleted");
+            UpdateNumberOfElements();
         }
     }
 
@@ -237,7 +246,7 @@ public partial class NOcrDbEditPageModel : ObservableObject, IQueryAttributable
         {
             CurrentText = nOcrChar.Text;
             CurrentItalic = nOcrChar.Italic;
-            CurrentImageResolution = $"{nOcrChar.Width}x{nOcrChar.Height}";
+            CurrentImageResolution = $"{nOcrChar.Width}x{nOcrChar.Height}, margin top: {nOcrChar.MarginTop}";
 
             NOcrDrawingCanvas.ZoomFactor = 1;
             NOcrDrawingCanvas.BackgroundImage = new SKBitmap(nOcrChar.Width, nOcrChar.Height);

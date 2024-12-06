@@ -43,7 +43,27 @@ public class NOcrDbEditPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 10),
         }.AsTitle().BindText(nameof(vm.Title));
-        pageGrid.Add(title, 0);
+
+        var labelNumberOfElements = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(15, 0, 0, 15),
+        }.BindDynamicTheme().BindText(nameof(vm.NumberOfElements));
+
+        var stackTitle = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                title,
+                labelNumberOfElements,
+            },
+        }.BindDynamicTheme();
+
+        pageGrid.Add(stackTitle, 0);
 
         var labelCharacters = new Label
         {

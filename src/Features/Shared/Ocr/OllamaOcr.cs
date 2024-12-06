@@ -2,6 +2,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using SkiaSharp;
+using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
