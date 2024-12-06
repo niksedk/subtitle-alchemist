@@ -192,6 +192,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     [RelayCommand]
     private async Task UseOnce()
     {
+        NOcrChar.Text = NewText;
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(NOcrCharacterAddPage) },
@@ -200,7 +201,9 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "StartFromNumber", _startFromNumber },
             { "ItalicOn", IsNewTextItalic },
             { "UseOnce", true },
+            { "LetterIndex", _letters.IndexOf(_splitItem) },
             { "Abort", false },
+            { "Skip", false },
         });
     }
 
@@ -215,6 +218,8 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "StartFromNumber", _startFromNumber },
             { "ItalicOn", IsNewTextItalic },
             { "Skip", true },
+            { "UseOnce", false },
+            { "LetterIndex", _letters.IndexOf(_splitItem) },
             { "Abort", false },
         });
     }
@@ -230,6 +235,8 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "StartFromNumber", _startFromNumber },
             { "ItalicOn", IsNewTextItalic },
             { "Abort", true },
+            { "Skip", true },
+            { "UseOnce", false },
         });
     }
 
@@ -246,6 +253,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             { "OcrSubtitleItems", _ocrSubtitleItems },
             { "StartFromNumber", _startFromNumber },
             { "ItalicOn", IsNewTextItalic },
+            { "Skip", false },
             { "UseOnce", false },
             { "Abort", false },
         });

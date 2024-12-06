@@ -138,7 +138,9 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     private CancellationTokenSource _cancellationTokenSource;
     private NOcrDb? _nOcrDb;
     private bool _toolsItalicOn;
-    private IPopupService _popupService;
+    private readonly IPopupService _popupService;
+    private readonly List<SkipOnceChar> _runOnceChars;
+    private readonly List<SkipOnceChar> _skipOnceChars;
 
     public OcrPageModel(INOcrCaseFixer nOcrCaseFixer, IPopupService popupService)
     {
@@ -176,6 +178,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         _googleVisionLanguages = new ObservableCollection<OcrLanguage>();
         _googleVisionApiKey = string.Empty;
         _googleVisionLanguage = string.Empty;
+        _runOnceChars = new List<SkipOnceChar>();
+        _skipOnceChars = new List<SkipOnceChar>();
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -245,32 +249,59 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             }
         }
 
-        var runOnce = false;
-        if (query.ContainsKey("RunOnce") && query["RunOnce"] is bool onlyRunOnce)
-        {
-            runOnce = onlyRunOnce;
-        }
-
-        if (query.ContainsKey("NOcrChar") && query["NOcrChar"] is NOcrChar nOcrChar)
-        {
-            if (!runOnce)
-            {
-                _nOcrDb?.Add(nOcrChar);
-                _nOcrDb?.Save();
-            }
-            runOcr = true;
-        }
-
-        if (query.ContainsKey("OcrSubtitleItems") && query["OcrSubtitleItems"] is List<OcrSubtitleItem> ocrSubtitleItems)
-        {
-            OcrSubtitleItems = new ObservableCollection<OcrSubtitleItem>(ocrSubtitleItems);
-        }
-
         int? startFromNumber = null;
         if (query.ContainsKey("StartFromNumber") && query["StartFromNumber"] is int startFrom)
         {
             SelectedStartFromNumber = startFrom;
             startFromNumber = startFrom;
+        }
+
+        int? letterIndex = null;
+        if (query.ContainsKey("LetterIndex") && query["LetterIndex"] is int letterIndexValue)
+        {
+            letterIndex = letterIndexValue;
+        }
+
+        NOcrChar? nOcrChar = null;
+        if (query.ContainsKey("NOcrChar") && query["NOcrChar"] is NOcrChar nOcrCharValue)
+        {
+            nOcrChar = nOcrCharValue;
+            runOcr = true;
+        }
+
+        var useOnce = false;
+        if (query.ContainsKey("UseOnce") && query["UseOnce"] is bool useOnceValue &&
+            letterIndex != null &&
+            startFromNumber != null)
+        {
+            useOnce = useOnceValue;
+            if (useOnce && nOcrChar != null)
+            {
+                _runOnceChars.Add(new SkipOnceChar(startFromNumber.Value - 1, letterIndex.Value, nOcrChar.Text));
+            }
+        }
+
+        var skipOnce = false;
+        if (query.ContainsKey("Skip") && query["Skip"] is bool doSkip &&
+            letterIndex != null &&
+            startFromNumber != null)
+        {
+            skipOnce = doSkip;
+            if (skipOnce)
+            {
+                _skipOnceChars.Add(new SkipOnceChar(startFromNumber.Value - 1, letterIndex.Value));
+            }
+        }
+
+        if (!useOnce && !skipOnce && nOcrChar != null)
+        {
+            _nOcrDb?.Add(nOcrChar);
+            _nOcrDb?.Save();
+        }
+
+        if (query.ContainsKey("OcrSubtitleItems") && query["OcrSubtitleItems"] is List<OcrSubtitleItem> ocrSubtitleItems)
+        {
+            OcrSubtitleItems = new ObservableCollection<OcrSubtitleItem>(ocrSubtitleItems);
         }
 
         if (query.ContainsKey("ItalicOn") && query["ItalicOn"] is bool toolsItalicOn)
@@ -664,13 +695,28 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
                         if (NOcrDrawUnknownText && match == null)
                         {
+                            var letterIndex = list.IndexOf(splitterItem);
+
+                            if (_skipOnceChars.Any(p => p.LetterIndex == letterIndex && p.LineIndex == i))
+                            {
+                                sb.Append("*");
+                                continue;
+                            }
+
+                            var runOnceChar = _runOnceChars.FirstOrDefault(p => p.LetterIndex == letterIndex && p.LineIndex == i);
+                            if (runOnceChar != null)
+                            {
+                                sb.Append(runOnceChar.Text);
+                                continue;
+                            }
+
                             MainThread.BeginInvokeOnMainThread(async () =>
                             {
                                 await Pause();
                                 await Shell.Current.GoToAsync(nameof(NOcrCharacterAddPage), new Dictionary<string, object>
                                     {
                                     { "Page", nameof(OcrPage) },
-                                    { "Bitmap", bitmap },
+                                    { "Bitmap", nBmp.GetBitmap() },
                                     { "Letters", list },
                                     { "Item", splitterItem },
                                     { "OcrSubtitleItems", OcrSubtitleItems.ToList() },
@@ -692,6 +738,9 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 {
                     ListView.ScrollTo(scrollToIndex, -1, ScrollToPosition.MakeVisible, false);
                 });
+
+                _runOnceChars.Clear();
+                _skipOnceChars.Clear();
             }
 
             MainThread.BeginInvokeOnMainThread(async () =>
