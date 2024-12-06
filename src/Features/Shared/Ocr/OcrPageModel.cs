@@ -9,7 +9,6 @@ using SubtitleAlchemist.Logic.BluRaySup;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Logic.Ocr;
-using SubtitleAlchemist.Services;
 using System.Collections.ObjectModel;
 using System.Text;
 
@@ -119,25 +118,21 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     private bool _isRunningOcr;
     private IOcrSubtitle _ocrSubtitle;
     private readonly INOcrCaseFixer _nOcrCaseFixer;
-    private string _language;
     private string _fileName;
-    private bool _loading;
     private CancellationTokenSource _cancellationTokenSource;
     private NOcrDb? _nOcrDb;
     private bool _toolsItalicOn;
     private IPopupService _popupService;
-    private ITesseractDownloadService _tesseractDownloadService;
 
-    public OcrPageModel(INOcrCaseFixer nOcrCaseFixer, IPopupService popupService, ITesseractDownloadService tesseractDownloadService)
+    public OcrPageModel(INOcrCaseFixer nOcrCaseFixer, IPopupService popupService)
     {
+        _ollamaModel = string.Empty;
         _nOcrCaseFixer = nOcrCaseFixer;
         _popupService = popupService;
-        _tesseractDownloadService = tesseractDownloadService;
         _ocrEngines = new ObservableCollection<OcrEngineItem>(OcrEngineItem.GetOcrEngines());
         _selectedOcrEngine = _ocrEngines.FirstOrDefault();
         _ocrSubtitle = new BluRayPcsDataList(new List<BluRaySupParser.PcsData>());
         _ocrSubtitleItems = new ObservableCollection<OcrSubtitleItem>();
-        _language = "eng";
         _currentBitmapInfo = string.Empty;
         _currentText = string.Empty;
         _startFromNumbers = new ObservableCollection<int>(Enumerable.Range(1, 2));
@@ -149,7 +144,6 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         _progressText = string.Empty;
         _progressValue = 0d;
         _isProgressVisible = false;
-        _loading = true;
         _cancellationTokenSource = new CancellationTokenSource();
         _isRunningOcr = false;
         _nOcrDb = null;
@@ -267,7 +261,6 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         {
             MainThread.BeginInvokeOnMainThread(async () =>
             {
-                _loading = false;
                 IsRunActive = true;
                 LoadSettings();
 
@@ -656,7 +649,11 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 if (nOcrDbFileName != null)
                 {
                     File.Delete(nOcrDbFileName);
-                    NOcrDatabases.Remove(SelectedNOcrDatabase);
+                    if (SelectedNOcrDatabase != null)
+                    {
+                        NOcrDatabases.Remove(SelectedNOcrDatabase);
+                    }
+
                     SelectedNOcrDatabase = NOcrDatabases.FirstOrDefault();
                     if (NOcrDatabases.Count == 0)
                     {

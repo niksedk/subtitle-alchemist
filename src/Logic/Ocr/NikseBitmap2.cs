@@ -103,7 +103,7 @@ namespace SubtitleAlchemist.Logic.Ocr
             Height = inputBitmap.Height;
 
             // Convert to BGRA8888 (equivalent to Format32bppArgb) if necessary
-            SKBitmap convertedBitmap = null;
+            SKBitmap? convertedBitmap = null;
             var needsDisposal = false;
 
             if (inputBitmap.ColorType != SKColorType.Bgra8888)
@@ -129,29 +129,6 @@ namespace SubtitleAlchemist.Logic.Ocr
             {
                 convertedBitmap.Dispose();
             }
-
-            //Width = inputBitmap.Width;
-            //Height = inputBitmap.Height;
-            //bool createdNewBitmap = false;
-            //if (inputBitmap.PixelFormat != PixelFormat.Format32bppArgb)
-            //{
-            //    var newBitmap = new Bitmap(inputBitmap.Width, inputBitmap.Height, PixelFormat.Format32bppArgb);
-            //    using (var gr = Graphics.FromImage(newBitmap))
-            //    {
-            //        gr.DrawImage(inputBitmap, 0, 0);
-            //    }
-            //    inputBitmap = newBitmap;
-            //    createdNewBitmap = true;
-            //}
-
-            //var bitmapData = inputBitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            //_bitmapData = new byte[bitmapData.Stride * Height];
-            //Marshal.Copy(bitmapData.Scan0, _bitmapData, 0, _bitmapData.Length);
-            //inputBitmap.UnlockBits(bitmapData);
-            //if (createdNewBitmap)
-            //{
-            //    inputBitmap.Dispose();
-            //}
         }
 
         public NikseBitmap2(NikseBitmap2 input)

@@ -21,14 +21,30 @@ public class Se
     public SeOcr Ocr { get; set; } = new();
     public static SeLanguage Language { get; set; } = new();
     public static Se Settings { get; set; } = new();
-    
-    public static string DictionariesFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "Dictionaries");
-    public static string AutoBackupFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "AutoBackup");
-    public static string TtsFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "TTS");
-    public static string OcrFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "OCR");
-    public static string TesseractFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "Tesseract550");
+
+    private static string _baseFolder = string.Empty;
+    public static string BaseFolder
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_baseFolder))
+            {
+                _baseFolder = AppContext.BaseDirectory;
+               //baseFolder = FileSystem.Current.AppDataDirectory;
+            }
+
+            return _baseFolder;
+        }
+    }
+
+    public static string DictionariesFolder => Path.Combine(BaseFolder, "Dictionaries");
+    public static string AutoBackupFolder => Path.Combine(BaseFolder, "AutoBackup");
+    public static string TtsFolder => Path.Combine(BaseFolder, "TTS");
+    public static string OcrFolder => Path.Combine(BaseFolder, "OCR");
+    public static string TesseractFolder => Path.Combine(BaseFolder, "Tesseract550");
     public static string TesseractModelFolder => Path.Combine(TesseractFolder, "tessdata");
-    public static string FfmpegFolder => Path.Combine(FileSystem.Current.AppDataDirectory, "ffmpeg");
+    public static string FfmpegFolder => Path.Combine(BaseFolder, "ffmpeg");
+    public static string WhisperFolder => Path.Combine(BaseFolder, "Whisper");
 
     public Se()
     {
@@ -46,7 +62,7 @@ public class Se
 
     public static void SaveSettings()
     {
-        var settingsFileName = Path.Combine(FileSystem.Current.AppDataDirectory, "Settings.json");
+        var settingsFileName = Path.Combine(BaseFolder, "Settings.json");
         SaveSettings(settingsFileName);
     }
 
@@ -61,7 +77,7 @@ public class Se
 
     public static void LoadSettings()
     {
-        var settingsFileName = Path.Combine(FileSystem.Current.AppDataDirectory, "Settings.json");
+        var settingsFileName = Path.Combine(BaseFolder, "Settings.json");
         LoadSettings(settingsFileName);
     }
 
@@ -182,7 +198,7 @@ public class Se
 
     public static string GetWhisperLogFilePath()
     {
-        return Path.Combine(FileSystem.Current.AppDataDirectory, "whisper_log.txt");
+        return Path.Combine(BaseFolder, "whisper_log.txt");
     }
 
     private static void UpdateLibSeSettings()

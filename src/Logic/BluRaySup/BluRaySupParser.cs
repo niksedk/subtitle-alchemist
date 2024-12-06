@@ -170,7 +170,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             /// <returns>bitmap of the decoded caption</returns>
             public static SKBitmap DecodeImage(PcsObject pcs, IList<OdsData> data, List<PaletteInfo> palettes)
             {
-                if (pcs == null || data == null || data.Count == 0)
+                if (data.Count == 0 || data[0].Fragment?.ImageBuffer == null)
                 {
                     return new SKBitmap(1, 1);
                 }
@@ -178,7 +178,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                 var w = data[0].Width;
                 var h = data[0].Height;
 
-                if (w <= 0 || h <= 0 || data[0].Fragment!.ImageBuffer.Length == 0)
+                if (w <= 0 || h <= 0 || data[0].Fragment?.ImageBuffer?.Length == 0)
                 {
                     return new SKBitmap(1, 1);
                 }
@@ -199,7 +199,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                     var ofs = 0;
                     var xpos = 0;
 
-                    for (var index = 0; index < buf.Length;)
+                    for (var index = 0; index < buf!.Length;)
                     {
                         var b = buf[index++] & 0xff;
 
@@ -401,6 +401,19 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             {
                 Message = string.Empty;
             }
+        }
+
+        public class ImageObjectFragment
+        {
+            /// <summary>
+            /// size of this part of the RLE buffer
+            /// </summary>
+            public int ImagePacketSize { get; set; }
+
+            /// <summary>
+            /// Buffer for raw image data fragment
+            /// </summary>
+            public byte[]? ImageBuffer { get; set; }
         }
 
         public class OdsData
@@ -830,16 +843,17 @@ namespace SubtitleAlchemist.Logic.BluRaySup
 #endif
                                 if (!latestPcs.PaletteUpdate)
                                 {
-                                    List<OdsData> odsList;
+                                    List<OdsData> odsList = new();
                                     if (ods.IsFirst)
                                     {
-                                        odsList = new List<OdsData> { ods };
+                                        odsList.Add(ods);
                                         bitmapObjects[ods.ObjectId] = odsList;
                                     }
                                     else
                                     {
-                                        if (bitmapObjects.TryGetValue(ods.ObjectId, out odsList))
+                                        if (bitmapObjects.TryGetValue(ods.ObjectId, out var odsList2))
                                         {
+                                            odsList = odsList2;
                                             odsList.Add(ods);
                                         }
                                         else
@@ -975,7 +989,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
                         var offset = 0;
                         foreach (var ods in odsList)
                         {
-                            Buffer.BlockCopy(ods.Fragment!.ImageBuffer, 0, buf, offset, ods.Fragment.ImagePacketSize);
+                            Buffer.BlockCopy(ods.Fragment!.ImageBuffer!, 0, buf, offset, ods.Fragment.ImagePacketSize);
                             offset += ods.Fragment.ImagePacketSize;
                         }
                         odsList[0].Fragment!.ImageBuffer = buf;
@@ -1145,7 +1159,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             public int Index { get; set; }
         }
 
-        private static bool ByteArraysEqual(byte[] b1, byte[] b2)
+        private static bool ByteArraysEqual(byte[]? b1, byte[]? b2)
         {
             if (b1 == b2)
             {

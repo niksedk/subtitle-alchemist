@@ -2,6 +2,7 @@
 using SharpHook;
 using SharpHook.Native;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Media;
 
 namespace SubtitleAlchemist.Features.Main.LayoutPicker
@@ -81,7 +82,7 @@ namespace SubtitleAlchemist.Features.Main.LayoutPicker
         public LayoutPickerPopupModel()
         {
             var selectedLayout = 0;
-            var imagePath = FileSystem.Current.AppDataDirectory;
+            var imagePath = Se.BaseFolder;
 
             _images = new List<byte[]>();
             _grayscaleImages = new List<byte[]>();

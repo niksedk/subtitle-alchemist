@@ -592,7 +592,7 @@ public class NikseBitmapImageSplitter2
     /// </summary>
     public static List<ImageSplitterItem2> SplitToLinesNew(ImageSplitterItem2 item, int minLineHeight, double averageLineHeight = -1)
     {
-        var bmp = new NikseBitmap2(item.NikseBitmap);
+        var bmp = new NikseBitmap2(item.NikseBitmap!);
         var parts = new List<ImageSplitterItem2>();
         var started = false;
         var splitLines = new Dictionary<int, List<NiksePoint>>();
@@ -824,7 +824,7 @@ public class NikseBitmapImageSplitter2
 
     private static IEnumerable<ImageSplitterItem2> SplitHorizontalNew(ImageSplitterItem2 lineSplitterItem, int xOrMorePixelsMakesSpace)
     {
-        var bmp = new NikseBitmap2(lineSplitterItem.NikseBitmap);
+        var bmp = new NikseBitmap2(lineSplitterItem.NikseBitmap!);
         bmp.AddTransparentLineRight();
         var parts = new List<ImageSplitterItem2>();
         var startX = 0;

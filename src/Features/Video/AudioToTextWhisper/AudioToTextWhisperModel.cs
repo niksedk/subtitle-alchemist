@@ -68,7 +68,6 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
     public bool Loading { get; set; } = true;
 
-    private bool _runningOnCuda;
     private bool _unknownArgument;
     private bool _cudaOutOfMemory;
     private bool _incompleteModel;
@@ -1107,10 +1106,10 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             _cudaOutOfMemory = true;
         }
-        if (outLine.Data.Contains("running on: CUDA", StringComparison.OrdinalIgnoreCase))
-        {
-            _runningOnCuda = true;
-        }
+        //if (outLine.Data.Contains("running on: CUDA", StringComparison.OrdinalIgnoreCase))
+        //{
+        //    _runningOnCuda = true;
+        //}
 
         LogToConsole(outLine.Data.Trim() + Environment.NewLine);
 

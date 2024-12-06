@@ -528,7 +528,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             var item = previousStepResult[index];
             var p = item.Paragraph;
             var next = index + 1 < previousStepResult.Length ? previousStepResult[index + 1] : null;
-            var outputFileName1 = Path.Combine(Path.GetDirectoryName(item.CurrentFileName), Guid.NewGuid() + ".wav");
+            var outputFileName1 = Path.Combine(Path.GetDirectoryName(item.CurrentFileName)!, Guid.NewGuid() + ".wav");
             var trimProcess = VideoPreviewGenerator.TrimSilenceStartAndEnd(item.CurrentFileName, outputFileName1);
 #pragma warning disable CA1416 // Validate platform compatibility
             _ = trimProcess.Start();

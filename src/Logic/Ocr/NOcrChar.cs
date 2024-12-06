@@ -56,6 +56,10 @@ public class NOcrChar
 
     public NOcrChar(Stream stream, bool isVersion2)
     {
+        Text = string.Empty;
+        LinesForeground = new List<NOcrLine>();
+        LinesBackground = new List<NOcrLine>();
+
         try
         {
             if (isVersion2)
@@ -90,7 +94,7 @@ public class NOcrChar
                 if (textLen > 0)
                 {
                     buffer = new byte[textLen];
-                    stream.Read(buffer, 0, buffer.Length);
+                    stream.ReadExactly(buffer, 0, buffer.Length);
                     Text = System.Text.Encoding.UTF8.GetString(buffer);
                 }
                 else
@@ -141,7 +145,7 @@ public class NOcrChar
                 if (textLen > 0)
                 {
                     buffer = new byte[textLen];
-                    stream.Read(buffer, 0, buffer.Length);
+                    stream.ReadExactly(buffer, 0, buffer.Length);
                     Text = System.Text.Encoding.UTF8.GetString(buffer);
                 }
                 else
@@ -175,7 +179,7 @@ public class NOcrChar
         var buffer = new byte[8];
         for (var i = 0; i < length; i++)
         {
-            stream.Read(buffer, 0, buffer.Length);
+            stream.ReadExactly(buffer, 0, buffer.Length);
             var point = new NOcrLine
             {
                 Start = new OcrPoint(buffer[0] << 8 | buffer[1], buffer[2] << 8 | buffer[3]),
@@ -193,7 +197,7 @@ public class NOcrChar
         var buffer = new byte[4];
         for (var i = 0; i < length; i++)
         {
-            stream.Read(buffer, 0, buffer.Length);
+            stream.ReadExactly(buffer, 0, buffer.Length);
             var point = new NOcrLine
             {
                 Start = new OcrPoint(buffer[0], buffer[1]),

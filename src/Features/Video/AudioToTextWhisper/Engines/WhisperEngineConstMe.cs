@@ -1,4 +1,5 @@
 ﻿using Nikse.SubtitleEdit.Core.AudioToText;
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Engines;
 
@@ -36,7 +37,7 @@ public class WhisperEngineConstMe : IWhisperEngine
 
     public string GetAndCreateWhisperFolder()
     {
-        var baseFolder = Path.Combine(FileSystem.Current.AppDataDirectory, "Whisper");
+        var baseFolder = Se.WhisperFolder;
         if (!Directory.Exists(baseFolder))
         {
             Directory.CreateDirectory(baseFolder);

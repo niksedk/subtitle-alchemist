@@ -22,5 +22,6 @@ public class SeOcr
 
         OllamaModels = new List<string>() { "llama3.2-vision", "llava-phi3", "moondream", "minicpm-v" };
         OllamaLanguage = "English";
+        OllamaModel = OllamaModels.First();
     }
 }

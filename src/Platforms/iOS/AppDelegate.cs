@@ -1,5 +1,4 @@
 ﻿using Foundation;
-using SubtitleAlchemist;
 
 namespace SubtitleAlchemist.Platforms.iOS
 {

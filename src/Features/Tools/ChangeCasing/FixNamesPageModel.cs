@@ -206,7 +206,7 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
                 }
             }
 
-            if (text != p.Text)
+            if (text != p.Text && p.Text != null && text != null)
             {
                 var hit = new FixNameHitItem(p.Text, p.Number, p.Text, text, true);
                 hits.Add(hit);

@@ -99,7 +99,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
         /// <summary>
         /// List of (list of) palette info - there are up to 8 palettes per epoch, each can be updated several times
         /// </summary>
-        public List<List<PaletteInfo>> Palettes { get; set; }
+        public List<List<PaletteInfo>> Palettes { get; set; } = new List<List<PaletteInfo>>();
 
         /// <summary>
         /// Create RLE buffer from bitmap
