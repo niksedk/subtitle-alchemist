@@ -28,7 +28,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
 
     public NOcrCharacterInspectPage? Page { get; set; }
     public NOcrDrawingCanvasView NOcrDrawingCanvas { get; set; }
-    public Label LabelStatusText { get; set; } = new();
+    public Label LabelStatusText { get; set; }
 
 
     [ObservableProperty] private ObservableCollection<LetterItem> _letterItems;
@@ -37,6 +37,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
     [ObservableProperty] private string _currentImageResolution;
     [ObservableProperty] private string _matchText;
     [ObservableProperty] private bool _matchIsItalic;
+    [ObservableProperty] private string _matchInfo;
     [ObservableProperty] private string _statusText;
     [ObservableProperty] private ObservableCollection<int> _noOfLinesToAutoDrawList;
     [ObservableProperty] private int _selectedNoOfLinesToAutoDraw;
@@ -63,6 +64,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
         _statusText = string.Empty;
         _isAddBetterMatchVisible = true;
         _newMatch = new NOcrChar(string.Empty);
+        _matchInfo = string.Empty;
 
         const int maxLines = 500;
         _noOfLinesToAutoDrawList = new ObservableCollection<int>();
@@ -308,7 +310,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
             if (letterItem.Item.NikseBitmap is { } bitmap)
             {
                 CurrentImageSource = bitmap.GetBitmap().ToImageSource();
-                CurrentImageResolution = $"{bitmap.Width}x{bitmap.Height}";
+                CurrentImageResolution = $"{bitmap.Width}x{bitmap.Height}, margin top: {letterItem.Item.Top}";
 
                 NOcrDrawingCanvas.BackgroundImage = bitmap.GetBitmap();
                 NOcrDrawingCanvas.ZoomFactor = 4.0f;
@@ -323,6 +325,14 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
             {
                 MatchText = match.Text;
                 MatchIsItalic = match.Italic;
+                if (match.Width == 0 && match.Height == 0)
+                {
+                    MatchInfo = match.Text == " " ? "Space" : string.Empty;
+                }
+                else
+                {
+                    MatchInfo = $"{match.Width}x{match.Height}, margin top: {match.MarginTop}";
+                }
 
                 NOcrDrawingCanvas.HitPaths = match.LinesForeground;
                 NOcrDrawingCanvas.MissPaths = match.LinesBackground;
@@ -332,6 +342,7 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
             {
                 MatchText = string.Empty;
                 MatchIsItalic = false;
+                MatchInfo = string.Empty;
                 NOcrDrawingCanvas.HitPaths = new List<NOcrLine>();
                 NOcrDrawingCanvas.MissPaths = new List<NOcrLine>();
                 NOcrDrawingCanvas.InvalidateSurface();

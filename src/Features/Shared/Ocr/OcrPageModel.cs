@@ -691,7 +691,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                     }
                     else
                     {
-                        var match = _nOcrDb!.GetMatch(splitterItem.NikseBitmap, splitterItem.Top, true, SelectedNOcrMaxWrongPixels);
+                        var match = _nOcrDb!.GetMatch(nBmp, list, splitterItem, splitterItem.Top, true, SelectedNOcrMaxWrongPixels);
 
                         if (NOcrDrawUnknownText && match == null)
                         {
@@ -925,7 +925,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
                 if (letter.NikseBitmap != null)
                 {
-                    match = _nOcrDb!.GetMatch(letter.NikseBitmap, letter.Top, true, SelectedNOcrMaxWrongPixels);
+                    match = _nOcrDb!.GetMatch(nBmp, list, letter, letter.Top, true, SelectedNOcrMaxWrongPixels);
                     if (match == null)
                     {
                         match = new NOcrChar(letter.SpecialCharacter ?? "*");

@@ -18,7 +18,7 @@ public class SeOcr
         Engine = "nOCR";
 
         NOcrDatabase = "Latin";
-        NOcrMaxWrongPixels = 20;
+        NOcrMaxWrongPixels = 25;
         NOcrPixelsAreSpace = 12;
         NOcrDrawUnknownText = true;
 

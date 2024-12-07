@@ -225,7 +225,14 @@ public class NOcrCharacterAddPage : ContentPage
             },
         }.BindDynamicTheme();
 
+        var labelResolutionAndTopMargin = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 5, 0, 10),
+        }.BindDynamicTheme().BindText(nameof(vm.ResolutionAndTopMargin));
 
+        
         var stackMiddle = new StackLayout
         {
             Orientation = StackOrientation.Vertical,
@@ -238,6 +245,7 @@ public class NOcrCharacterAddPage : ContentPage
                 labelNewText,
                 entryNewText,
                 stackItalic,
+                labelResolutionAndTopMargin,
             },
         }.BindDynamicTheme();
 

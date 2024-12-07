@@ -329,6 +329,15 @@ public class NOcrCharacterInspectPage : ContentPage
         };
         gridMatch.Add(stackItalic, 0, 3);
 
+        var labelMatchInfo = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5),
+        };
+        labelMatchInfo.SetBinding(Label.TextProperty, nameof(NOcrCharacterInspectPageModel.MatchInfo));
+        gridMatch.Add(labelMatchInfo, 0, 4);
+
         var buttonUpdate = new Button
         {
             Text = "Update",

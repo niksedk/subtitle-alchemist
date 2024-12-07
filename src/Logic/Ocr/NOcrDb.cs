@@ -1,4 +1,6 @@
-﻿using System.IO.Compression;
+﻿using System.Collections.Generic;
+using System;
+using System.IO.Compression;
 using System.Text;
 using SubtitleAlchemist.Logic.Config;
 
@@ -316,7 +318,18 @@ public class NOcrDb
         return new OcrPoint(maximumX - minimumX, maximumY - minimumY);
     }
 
-    public NOcrChar? GetMatch(NikseBitmap2 bitmap, int topMargin, bool deepSeek, int maxWrongPixels)
+    public NOcrChar? GetMatch(NikseBitmap2 parentBitmap, List<ImageSplitterItem2> list, ImageSplitterItem2 item, int topMargin, bool deepSeek, int maxWrongPixels)
+    {
+        var expandedResult = GetMatchExpanded(parentBitmap, item, list.IndexOf(item), list);
+        if (expandedResult != null)
+        {
+            return expandedResult;
+        }
+
+        return GetMatchSingle(item.NikseBitmap, topMargin, deepSeek, maxWrongPixels);
+    }
+
+    public NOcrChar? GetMatchSingle(NikseBitmap2 bitmap, int topMargin, bool deepSeek, int maxWrongPixels)
     {
         // only very very accurate matches
         foreach (var oc in OcrCharacters)

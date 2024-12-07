@@ -20,6 +20,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     [ObservableProperty] private bool _isNewLinesForegroundActive;
     [ObservableProperty] private bool _isNewLinesBackgroundActive;
     [ObservableProperty] private string _newText;
+    [ObservableProperty] private string _resolutionAndTopMargin;
     [ObservableProperty] private bool _isNewTextItalic;
     [ObservableProperty] private bool _submitOnFirstLetter;
     [ObservableProperty] private ImageSource? _sentenceImageSource;
@@ -41,6 +42,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     public NOcrCharacterAddPageModel()
     {
         _newText = string.Empty;
+        _resolutionAndTopMargin = string.Empty;
         _linesForeground = new ObservableCollection<NOcrLine>();
         _linesBackground = new ObservableCollection<NOcrLine>();
         _isNewLinesForegroundActive = true;
@@ -83,6 +85,8 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
                 NOcrDrawingCanvas.BackgroundImage = _splitItem.NikseBitmap.GetBitmap();
                 NOcrDrawingCanvas.ZoomFactor = 4;
                 AutoGuessLines();
+
+                ResolutionAndTopMargin = $"{NOcrChar.Width}x{NOcrChar.Height}, top margin: {NOcrChar.MarginTop}";
             }
         }
 
