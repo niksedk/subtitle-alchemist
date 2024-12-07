@@ -27,8 +27,8 @@
 		<ApplicationId>dk.nikse.subtitlealchemist</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-		<ApplicationVersion>1</ApplicationVersion>
+		<ApplicationDisplayVersion>0.0.2</ApplicationDisplayVersion>
+		<ApplicationVersion>0.0.2</ApplicationVersion>
 
 		<WindowsPackageType>None</WindowsPackageType>
 
@@ -71,7 +71,6 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	</PropertyGroup>
 
