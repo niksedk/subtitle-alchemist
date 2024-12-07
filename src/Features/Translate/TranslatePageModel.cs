@@ -917,22 +917,17 @@ public partial class TranslatePageModel : ObservableObject, IQueryAttributable
     {
         var installedLanguages = new List<string>(); // Get installed languages
 
-#if WINDOWS
-        foreach (var x in Windows.Globalization.ApplicationLanguages.ManifestLanguages)
+        var currentCulture = CultureInfo.CurrentCulture;
+        var currentLanguage = currentCulture.Name.Split('-').LastOrDefault();
+        if (!string.IsNullOrEmpty(currentLanguage))
         {
-            if (x is string s)
+            var cultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
+            var cultureByName = cultures.FirstOrDefault(p => p.Name.EndsWith(currentLanguage));
+            if (cultureByName != null)
             {
-                if (s.Contains('-'))
-                {
-                    installedLanguages.Add(s.Split('-')[0]);
-                }
-                else
-                {
-                    installedLanguages.Add(s);
-                }
+                installedLanguages.Add(cultureByName.TwoLetterISOLanguageName);
             }
         }
-#endif
 
         var uiCultureTargetLanguage = Configuration.Settings.Tools.GoogleTranslateLastTargetLanguage;
         if (uiCultureTargetLanguage == defaultSourceLanguage)
