@@ -518,7 +518,15 @@ public class OcrPage : ContentPage
             Command = vm.RunOcrCommand,
             Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
-        buttonRunOcr.SetBinding(IsEnabledProperty, nameof(vm.IsRunActive));
+        buttonRunOcr.SetBinding(IsVisibleProperty, nameof(vm.IsRunActive));
+
+        var buttonPause = new Button
+        {
+            Text = "Pause",
+            Command = vm.PauseCommand,
+            Margin = new Thickness(10, 0, 10, 0),
+        }.BindDynamicTheme();
+        buttonPause.SetBinding(IsVisibleProperty, nameof(vm.IsPauseActive));
 
         var labelFromNumber = new Label
         {
@@ -536,20 +544,13 @@ public class OcrPage : ContentPage
         pickerFromNumber.SetBinding(Picker.ItemsSourceProperty, nameof(vm.StartFromNumbers));
         pickerFromNumber.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedStartFromNumber));
 
-        var buttonPause = new Button
-        {
-            Text = "Pause",
-            Command = vm.PauseCommand,
-            Margin = new Thickness(10, 0, 10, 0),
-        }.BindDynamicTheme();
-        buttonPause.SetBinding(IsEnabledProperty, nameof(vm.IsPauseActive));
 
         var boxSeparatorInspect = new BoxView
         {
             WidthRequest = 1,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Fill,
-            Margin = new Thickness(5),
+            Margin = new Thickness(10, 5, 0, 5),
             Opacity = 0.5,
             BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BorderColor],
         };
@@ -573,9 +574,9 @@ public class OcrPage : ContentPage
             Children =
             {
                 buttonRunOcr,
+                buttonPause,
                 labelFromNumber,
                 pickerFromNumber,
-                buttonPause,
                 boxSeparatorInspect,
                 buttonInspect,
             }
