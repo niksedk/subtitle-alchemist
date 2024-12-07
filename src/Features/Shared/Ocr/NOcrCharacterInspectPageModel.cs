@@ -43,6 +43,8 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
     [ObservableProperty] private int _selectedNoOfLinesToAutoDraw;
     [ObservableProperty] private bool _isNewMatch;
     [ObservableProperty] private bool _isAddBetterMatchVisible;
+    [ObservableProperty] private ObservableCollection<NOcrDrawModeItem> _drawModes;
+    [ObservableProperty] private NOcrDrawModeItem _selectedDrawMode;
 
     private NOcrChar _newMatch;
     private ImageSplitterItem2 _splitItem;
@@ -65,6 +67,8 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
         _isAddBetterMatchVisible = true;
         _newMatch = new NOcrChar(string.Empty);
         _matchInfo = string.Empty;
+        _drawModes = new ObservableCollection<NOcrDrawModeItem>(NOcrDrawModeItem.Items);
+        _selectedDrawMode = NOcrDrawModeItem.ForegroundItem;
 
         const int maxLines = 500;
         _noOfLinesToAutoDrawList = new ObservableCollection<int>();
@@ -348,5 +352,28 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
                 NOcrDrawingCanvas.InvalidateSurface();
             }
         }
+    }
+
+    [RelayCommand]
+    private void ZoomIn()
+    {
+        if (NOcrDrawingCanvas.ZoomFactor < 10)
+        {
+            NOcrDrawingCanvas.ZoomFactor++;
+        }
+    }
+
+    [RelayCommand]
+    private void ZoomOut()
+    {
+        if (NOcrDrawingCanvas.ZoomFactor > 1)
+        {
+            NOcrDrawingCanvas.ZoomFactor--;
+        }
+    }
+
+    public void PickerDrawMode_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        NOcrDrawingCanvas.NewLinesAreHits = SelectedDrawMode == NOcrDrawModeItem.ForegroundItem;
     }
 }

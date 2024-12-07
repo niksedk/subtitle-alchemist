@@ -476,7 +476,7 @@ public class GoogleVisionOcr
             {
                 image = new Image(imageContent);
                 imageContext = new ImageContext(new List<string>() { language, "en" }); // English as fallback
-                features = new List<Feature> { new Feature("TEXT_DETECTION", 1) };
+                features = new List<Feature> { new("TEXT_DETECTION", 1) };
             }
 
             [DataContract, Serializable]

@@ -17,6 +17,8 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     [ObservableProperty] private NOcrLine? _selectedLineForeground;
     [ObservableProperty] private ObservableCollection<NOcrLine> _linesBackground;
     [ObservableProperty] private NOcrLine? _selectedLineBackground;
+    [ObservableProperty] private ObservableCollection<NOcrDrawModeItem> _drawModes;
+    [ObservableProperty] private NOcrDrawModeItem _selectedDrawMode;
     [ObservableProperty] private bool _isNewLinesForegroundActive;
     [ObservableProperty] private bool _isNewLinesBackgroundActive;
     [ObservableProperty] private string _newText;
@@ -52,6 +54,8 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         _letters = new List<ImageSplitterItem2>();
         _splitItem = new ImageSplitterItem2(0, 0, new NikseBitmap2(1, 1));
         EntryNewText = new Entry();
+        _drawModes = new ObservableCollection<NOcrDrawModeItem>(NOcrDrawModeItem.Items);
+        _selectedDrawMode = _drawModes[0];
 
         const int maxLines = 500;
         _noOfLinesToAutoDrawList = new ObservableCollection<int>();
@@ -324,5 +328,10 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             return false;
         });
 
+    }
+
+    public void PickerDrawMode_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        NOcrDrawingCanvas.NewLinesAreHits = SelectedDrawMode == NOcrDrawModeItem.ForegroundItem;
     }
 }

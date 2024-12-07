@@ -284,6 +284,14 @@ public class NOcrCharacterAddPage : ContentPage
 
         grid.Add(stackRight, 1);
 
+        var pickerDrawMode = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicTheme().Bind(nameof(vm.DrawModes), nameof(vm.SelectedDrawMode));
+        pickerDrawMode.SelectedIndexChanged += vm.PickerDrawMode_SelectedIndexChanged;
+
         var stackZoom = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -303,6 +311,7 @@ public class NOcrCharacterAddPage : ContentPage
                     Command = vm.ZoomInCommand,
                     Margin = new Thickness(10, 0, 0, 0),
                 }.BindDynamicTheme(),
+                pickerDrawMode,
             },
         }.BindDynamicTheme();
 

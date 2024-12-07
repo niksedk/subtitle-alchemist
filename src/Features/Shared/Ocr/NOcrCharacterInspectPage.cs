@@ -257,7 +257,40 @@ public class NOcrCharacterInspectPage : ContentPage
             VerticalOptions = LayoutOptions.End,
             Margin = new Thickness(5),
         }.BindDynamicTheme();
-        gridMatch.Add(labelMatch, 0);
+
+        var pickerDrawMode = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicTheme().Bind(nameof(vm.DrawModes), nameof(vm.SelectedDrawMode));
+        pickerDrawMode.SelectedIndexChanged += vm.PickerDrawMode_SelectedIndexChanged;
+
+        var stackZoom = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Children =
+            {
+                labelMatch,
+                new Button
+                {
+                    Text = "-",
+                    Command = vm.ZoomOutCommand,
+                    Margin = new Thickness(25, 0, 0, 0),
+                }.BindDynamicTheme(),
+                new Button
+                {
+                    Text = "+",
+                    Command = vm.ZoomInCommand,
+                    Margin = new Thickness(10, 0, 0, 0),
+                }.BindDynamicTheme(),
+                pickerDrawMode,
+            },
+        }.BindDynamicTheme();
+
+        gridMatch.Add(stackZoom, 0);
 
         var drawingCanvas = new NOcrDrawingCanvasView
         {
