@@ -828,7 +828,10 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             }
         };
 
+
+#pragma warning disable CA1416
         _ = process.Start();
+#pragma warning restore CA1416
         process.WaitForExit();
         try
         {

@@ -129,7 +129,6 @@ public partial class RadialView : ContentView
         {
             paint.IsAntialias = true;
             paint.Color = SKColor.Parse("#ff555555");
-            paint.FilterQuality = SKFilterQuality.High;
             canvas.DrawCircle(centerX, centerY, Math.Min(centerX, centerY), paint);
         }
 
@@ -137,7 +136,6 @@ public partial class RadialView : ContentView
         {
             paint.IsAntialias = true;
             paint.Color = SKColor.Parse("#ff222222");
-            paint.FilterQuality = SKFilterQuality.High;
             canvas.DrawCircle(centerX, centerY, Math.Min(centerX, centerY) / 3.0f, paint);
         }
 
@@ -149,7 +147,6 @@ public partial class RadialView : ContentView
                 var angle = _rotationAngle * -1;
                 using var rotated = Rotate(bitmap, angle);
                 using var paint = new SKPaint();
-                paint.FilterQuality = SKFilterQuality.High;
                 paint.IsAntialias = true;
                 var left = centerX - rotated.Width / 2.0f;
                 var top = centerY - rotated.Height / 2.0f;
@@ -181,7 +178,6 @@ public partial class RadialView : ContentView
                 using var bitmap = SKBitmap.Decode(_elements[i].ImageUrl);
                 imageHeight = bitmap.Height;
                 using var paint = new SKPaint();
-                paint.FilterQuality = SKFilterQuality.High;
                 var destRect = new SKRect(x - 25, y - 25, x + 25, y + 25);
                 canvas.DrawBitmap(bitmap, destRect, paint);
 
@@ -191,11 +187,8 @@ public partial class RadialView : ContentView
             // Set up the font and paint for text
             using var paintText = new SKPaint
             {
-                TextSize = 15.0f,
                 IsAntialias = true,
-                FilterQuality = SKFilterQuality.High,
                 Color = SKColors.WhiteSmoke,
-                TextAlign = SKTextAlign.Center
             };
 
             // Measure the text width to center it
@@ -203,8 +196,9 @@ public partial class RadialView : ContentView
             var textY = y + imageHeight + 9; // 9 pixels below the image
 
             // Draw the text
-            canvas.DrawText(_elements[i].Text, textX, textY, paintText);
-
+            var textAlign = new SKTextAlign();
+            var textFont = new SKFont(SKTypeface.Default, 18);
+            canvas.DrawText(_elements[i].Text, textX, textY, textAlign, textFont, paintText);
         }
     }
 }

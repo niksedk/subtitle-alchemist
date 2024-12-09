@@ -354,7 +354,10 @@ public class VideoPreviewGenerator
             }
         };
 
-        process.Start();
+#pragma warning disable CA1416
+        _ = process.Start();
+#pragma warning restore CA1416
+
         process.WaitForExit();
         return outputFileName;
     }
@@ -374,7 +377,9 @@ public class VideoPreviewGenerator
             }
         };
 
-        process.Start();
+#pragma warning disable CA1416
+        _ = process.Start();
+#pragma warning restore CA1416
         process.WaitForExit();
         return Directory.GetFiles(outputFolder, "*.png").OrderBy(p => p).ToArray();
     }

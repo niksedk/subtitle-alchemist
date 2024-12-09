@@ -206,7 +206,6 @@ public class AudioVisualizer : SKCanvasView
         StrokeWidth = 1,
         IsAntialias = true,
         Style = SKPaintStyle.Stroke,
-        TextSize = 14,
     };
 
     private readonly SKFont _fontText = new()
@@ -1684,15 +1683,15 @@ public class AudioVisualizer : SKCanvasView
         if (Configuration.Settings.VideoControls.WaveformUnwrapText)
         {
             text = string.Join("  ", arr);
-            _canvas.DrawText(text, currentRegionLeft + 3, 14, _paintText);
+            _canvas.DrawText(text, currentRegionLeft + 3, 14, _textAlignText, _fontText, _paintText);
         }
         else
         {
             float addY = 0f;
             foreach (var line in arr)
             {
-                _canvas.DrawText(line, currentRegionLeft + 3, 14 + addY, _paintText);
-                var fontMetrics = _paintText.FontMetrics;
+                _canvas.DrawText(line, currentRegionLeft + 3, 14 + addY, _textAlignText, _fontText, _paintText);
+                var fontMetrics = _fontText.Metrics;
                 float height = fontMetrics.Descent - fontMetrics.Ascent;
                 addY += height;
             }
