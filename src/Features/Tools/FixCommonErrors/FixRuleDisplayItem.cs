@@ -100,9 +100,9 @@ public partial class FixRuleDisplayItem : ObservableObject
 
     private static int CalcPixelWidth(string arg)
     {
-        using var paint = new SKPaint();
-        paint.TextSize = 14;
-        var width = paint.MeasureText(arg);
+        using var typeface = SKTypeface.Default;
+        using var font = new SKFont(typeface, 14);
+        var width = font.MeasureText(arg);
         return (int)Math.Round(width, MidpointRounding.AwayFromZero);
     }
 }

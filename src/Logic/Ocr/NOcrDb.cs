@@ -320,6 +320,11 @@ public class NOcrDb
 
     public NOcrChar? GetMatch(NikseBitmap2 parentBitmap, List<ImageSplitterItem2> list, ImageSplitterItem2 item, int topMargin, bool deepSeek, int maxWrongPixels)
     {
+        if (item.NikseBitmap == null)
+        {
+            return null;
+        }
+
         var expandedResult = GetMatchExpanded(parentBitmap, item, list.IndexOf(item), list);
         if (expandedResult != null)
         {

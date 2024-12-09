@@ -209,6 +209,14 @@ public class AudioVisualizer : SKCanvasView
         TextSize = 14,
     };
 
+    private readonly SKFont _fontText = new()
+    {
+        Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyleWeight.Normal, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright),
+        Size = 14,
+    };
+
+    private readonly SKTextAlign _textAlignText = SKTextAlign.Left;
+    
     private readonly SKPaint _paintGridColor = new()
     {
         Color = SKColor.Parse("#ff222222"),
