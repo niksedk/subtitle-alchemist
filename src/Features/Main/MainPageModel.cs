@@ -37,9 +37,11 @@ using SubtitleAlchemist.Logic.Media;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.Text;
 using System.Timers;
+using Nikse.SubtitleEdit.Core.ContainerFormats.Matroska;
 using SharpHook.Native;
 using SubtitleAlchemist.Features.Main.LayoutPicker;
 using SubtitleAlchemist.Features.Tools.BatchConvert;
@@ -52,6 +54,10 @@ using SharpCompress.Common;
 using SkiaSharp;
 using SubtitleAlchemist.Features.Shared.Ocr;
 using SubtitleAlchemist.Features.Tools.ChangeCasing;
+using Color = Microsoft.Maui.Graphics.Color;
+using System.Reflection.Metadata;
+using System;
+using SubtitleAlchemist.Features.Shared.PickMatroskaTrack;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -1171,6 +1177,13 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        if (IsMatroskaFileFast(subtitleFileName) && FileUtil.IsMatroskaFile(subtitleFileName))
+        {
+            ImportSubtitleFromMatroskaFile(subtitleFileName, videoFileName);
+            return;
+        }
+
+
         if (ext == ".sup" && FileUtil.IsBluRaySup(subtitleFileName))
         {
             var log = new StringBuilder();
@@ -1246,6 +1259,229 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
             _timer.Start();
             _timerAutoBackup.Start();
         }
+    }
+
+    private void ImportSubtitleFromMatroskaFile(string fileName, string? videoFileName)
+    {
+        var matroska = new MatroskaFile(fileName);
+        var subtitleList = matroska.GetTracks(true);
+        if (subtitleList.Count == 0)
+        {
+            matroska.Dispose();
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await MainPage!.DisplayAlert(
+                    "No subtitle found",
+                    "The Matroska file does not seem to contain any subtitles.",
+                    "OK");
+            });
+            return;
+        }
+
+        if (subtitleList.Count > 1)
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                var result = await _popupService.ShowPopupAsync<PickMatroskaTrackPopupModel>(onPresenting: viewModel => viewModel.Initialize(subtitleList, fileName), CancellationToken.None);
+
+                if (result is MatroskaTrackInfo track && MainPage != null)
+                {
+                    if (LoadMatroskaSubtitle(track, matroska))
+                    {
+                        // load video?
+                    }
+                }
+
+                matroska.Dispose();
+            });
+        }
+        else
+        {
+            var ext = Path.GetExtension(matroska.Path).ToLowerInvariant();
+            if (LoadMatroskaSubtitle(subtitleList[0], matroska))
+            {
+                if (!Configuration.Settings.General.DisableVideoAutoLoading)
+                {
+                    if (ext == ".mkv")
+                    {
+                        //VideoOpen(matroska.Path);
+                    }
+                    else
+                    {
+                        //TryToFindAndOpenVideoFile(Path.Combine(Path.GetDirectoryName(matroska.Path),
+                        //    Path.GetFileNameWithoutExtension(matroska.Path)));
+                    }
+                }
+            }
+
+            matroska.Dispose();
+        }
+    }
+
+    private bool LoadMatroskaSubtitle(MatroskaTrackInfo matroskaSubtitleInfo, MatroskaFile matroska)
+    {
+        if (matroskaSubtitleInfo.CodecId.Equals("S_HDMV/PGS", StringComparison.OrdinalIgnoreCase))
+        {
+            return LoadBluRaySubFromMatroska(matroskaSubtitleInfo, matroska);
+        }
+
+        //if (matroskaSubtitleInfo.CodecId.Equals("S_HDMV/TEXTST", StringComparison.OrdinalIgnoreCase))
+        //{
+        //    return LoadTextSTFromMatroska(matroskaSubtitleInfo, matroska, batchMode);
+        //}
+
+        //if (matroskaSubtitleInfo.CodecId.Equals("S_DVBSUB", StringComparison.OrdinalIgnoreCase))
+        //{
+        //    return LoadDvbFromMatroska(matroskaSubtitleInfo, matroska, batchMode);
+        //}
+
+        var sub = matroska.GetSubtitle(matroskaSubtitleInfo.TrackNumber, null);
+        var subtitle = new Subtitle();
+        var format = Utilities.LoadMatroskaTextSubtitle(matroskaSubtitleInfo, matroska, sub, subtitle);
+        subtitle.Renumber();
+        Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+        //SelectedSubtitleFormat = format.Name;
+
+        //        ShowStatus(_language.SubtitleImportedFromMatroskaFile);
+        //_subtitle.Renumber();
+        //if (matroska.Path.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) || matroska.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+        //{
+        //    _fileName = matroska.Path.Remove(matroska.Path.Length - 4) + format.Extension;
+        //}
+
+        //SetTitle();
+        //_fileDateTime = new DateTime();
+        //_converted = true;
+
+        //if (batchMode)
+        //{
+        //    return true;
+        //}
+
+        //_subtitleListViewIndex = -1;
+        //UpdateSourceView();
+        //SubtitleListview1.Fill(_subtitle, _subtitleOriginal);
+        //SubtitleListview1.SelectIndexAndEnsureVisible(0, true);
+        //RefreshSelectedParagraph();
+        return true;
+    }
+
+    private bool LoadBluRaySubFromMatroska(MatroskaTrackInfo matroskaSubtitleInfo, MatroskaFile matroska)
+    {
+        if (matroskaSubtitleInfo.ContentEncodingType == 1)
+        {
+            //    MessageBox.Show(_language.NoSupportEncryptedVobSub);
+        }
+
+        //       ShowStatus(_language.ParsingMatroskaFile);
+
+        var sub = matroska.GetSubtitle(matroskaSubtitleInfo.TrackNumber, null);
+
+
+        int noOfErrors = 0;
+        string lastError = string.Empty;
+
+        _subtitle.Paragraphs.Clear();
+        var subtitles = new List<BluRaySupParser.PcsData>();
+        var log = new StringBuilder();
+        var clusterStream = new MemoryStream();
+        var lastPalettes = new Dictionary<int, List<PaletteInfo>>();
+        var lastBitmapObjects = new Dictionary<int, List<BluRaySupParser.OdsData>>();
+        foreach (var p in sub)
+        {
+            byte[] buffer = p.GetData(matroskaSubtitleInfo);
+            if (buffer != null && buffer.Length > 2)
+            {
+                clusterStream.Write(buffer, 0, buffer.Length);
+                if (ContainsBluRayStartSegment(buffer))
+                {
+                    if (subtitles.Count > 0 && subtitles[subtitles.Count - 1].StartTime == subtitles[subtitles.Count - 1].EndTime)
+                    {
+                        subtitles[subtitles.Count - 1].EndTime = (long)((p.Start - 1) * 90.0);
+                    }
+
+                    clusterStream.Position = 0;
+                    var list = BluRaySupParser.ParseBluRaySup(clusterStream, log, true, lastPalettes, lastBitmapObjects);
+                    foreach (var sup in list)
+                    {
+                        sup.StartTime = (long)((p.Start - 1) * 90.0);
+                        sup.EndTime = (long)((p.End - 1) * 90.0);
+                        subtitles.Add(sup);
+
+                        // fix overlapping
+                        if (subtitles.Count > 1 && sub[subtitles.Count - 2].End > sub[subtitles.Count - 1].Start)
+                        {
+                            subtitles[subtitles.Count - 2].EndTime = subtitles[subtitles.Count - 1].StartTime - 1;
+                        }
+                    }
+
+                    clusterStream = new MemoryStream();
+                }
+            }
+            else if (subtitles.Count > 0)
+            {
+                var lastSub = subtitles[subtitles.Count - 1];
+                if (lastSub.StartTime == lastSub.EndTime)
+                {
+                    lastSub.EndTime = (long)((p.Start - 1) * 90.0);
+                    if (lastSub.EndTime - lastSub.StartTime > 1000000)
+                    {
+                        lastSub.EndTime = lastSub.StartTime;
+                    }
+                }
+            }
+        }
+
+        if (noOfErrors > 0)
+        {
+            // MessageBox.Show(string.Format("{0} error(s) occurred during extraction of bdsup\r\n\r\n{1}", noOfErrors, lastError));
+        }
+
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await Shell.Current.GoToAsync(nameof(OcrPage), new Dictionary<string, object>
+            {
+                { "Page", nameof(MainPage) },
+                { "Subtitle", subtitles },
+                { "FileName", "subtitleFileName" },
+            });
+        });
+
+
+        return true;
+    }
+
+    private static bool ContainsBluRayStartSegment(byte[] buffer)
+    {
+        const int epochStart = 0x80;
+        var position = 0;
+        while (position + 3 <= buffer.Length)
+        {
+            var segmentType = buffer[position];
+            if (segmentType == epochStart)
+            {
+                return true;
+            }
+
+            var length = BluRaySupParser.BigEndianInt16(buffer, position + 1) + 3;
+            position += length;
+        }
+
+        return false;
+    }
+
+    public static bool IsMatroskaFileFast(string fileName)
+    {
+        using var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        var buffer = new byte[4];
+        var bytesRead = fs.Read(buffer, 0, buffer.Length);
+        if (bytesRead < 4)
+        {
+            return false;
+        }
+
+        // 1a 45 df a3
+        return buffer[0] == 0x1a && buffer[1] == 0x45 && buffer[2] == 0xdf && buffer[3] == 0xa3;
     }
 
     private static void SetTitle(string subtitleFileName)

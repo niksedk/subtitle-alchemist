@@ -36,11 +36,10 @@ public class NOcrCharacterAddPage : ContentPage
 
         var title = new Label
         {
-            Text = "nOCR character",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(0, 0, 0, 10),
-        }.AsTitle();
+        }.AsTitle().BindText(nameof(vm.Title));
         pageGrid.Add(title, 0);
 
         var buttonCollapse = new Button

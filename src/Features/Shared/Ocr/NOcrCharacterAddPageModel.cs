@@ -13,6 +13,7 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
 {
     public NOcrCharacterAddPage? Page { get; set; }
 
+    [ObservableProperty] private string _title;
     [ObservableProperty] private ObservableCollection<NOcrLine> _linesForeground;
     [ObservableProperty] private NOcrLine? _selectedLineForeground;
     [ObservableProperty] private ObservableCollection<NOcrLine> _linesBackground;
@@ -34,15 +35,19 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
 
     private List<ImageSplitterItem2> _letters;
     private ImageSplitterItem2 _splitItem;
+    private SKBitmap _sentenceBitmap;
     public NOcrChar NOcrChar { get; private set; }
     public NOcrDrawingCanvasView NOcrDrawingCanvas { get; set; }
     public Entry EntryNewText { get; set; }
 
     private List<OcrSubtitleItem> _ocrSubtitleItems;
     private int _startFromNumber;
+    private int _maxWrongPixels;
+    private NOcrDb _nOcrDb;
 
     public NOcrCharacterAddPageModel()
     {
+        _title = string.Empty;
         _newText = string.Empty;
         _resolutionAndTopMargin = string.Empty;
         _linesForeground = new ObservableCollection<NOcrLine>();
@@ -68,46 +73,31 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
         NOcrChar = new NOcrChar();
         NOcrDrawingCanvas = new NOcrDrawingCanvasView();
         _ocrSubtitleItems = new List<OcrSubtitleItem>();
+        _nOcrDb = new NOcrDb(string.Empty);
+        _sentenceBitmap = new SKBitmap(1, 1);
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query["Item"] is ImageSplitterItem2 item)
         {
-            _splitItem = item;
-            if (_splitItem.NikseBitmap != null)
-            {
-                ItemImageSource = _splitItem.NikseBitmap.GetBitmap().ToImageSource();
-
-                NOcrChar = new NOcrChar
-                {
-                    Width = _splitItem.NikseBitmap.Width,
-                    Height = _splitItem.NikseBitmap.Height,
-                    MarginTop = _splitItem.Top,
-                };
-
-                NOcrDrawingCanvas.BackgroundImage = _splitItem.NikseBitmap.GetBitmap();
-                NOcrDrawingCanvas.ZoomFactor = 4;
-                AutoGuessLines();
-
-                ResolutionAndTopMargin = $"{NOcrChar.Width}x{NOcrChar.Height}, top margin: {NOcrChar.MarginTop}";
-            }
+            InitSplitItem(item);
         }
 
         if (query["Bitmap"] is SKBitmap bitmap)
         {
-            if (_splitItem.NikseBitmap != null)
-            {
-                var bmp = DrawActiveRectangle(bitmap,
-                    new SKRect(_splitItem.X, _splitItem.Y,
-                        _splitItem.X + _splitItem.NikseBitmap.Width, _splitItem.Y + _splitItem.NikseBitmap.Height));
-                SentenceImageSource = bmp.ToImageSource();
-            }
+            _sentenceBitmap = bitmap;
+            InitSentenceBitmap();
         }
 
         if (query["Letters"] is List<ImageSplitterItem2> letters)
         {
             _letters = letters;
+        }
+
+        if (query["nOcrDb"] is NOcrDb nOcrDb)
+        {
+            _nOcrDb = nOcrDb;
         }
 
         if (query["OcrSubtitleItems"] is List<OcrSubtitleItem> ocrSubtitleItems)
@@ -120,10 +110,17 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             _startFromNumber = startFromNumber;
         }
 
+        if (query["MaxWrongPixels"] is int maxWrongPixels)
+        {
+            _maxWrongPixels = maxWrongPixels;
+        }
+
         if (query["ItalicOn"] is bool italicOn)
         {
             IsNewTextItalic = italicOn;
         }
+
+        SetTitle();
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
@@ -134,6 +131,52 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
             });
             return false;
         });
+    }
+
+    private void InitSentenceBitmap()
+    {
+        if (_splitItem.NikseBitmap != null)
+        {
+            var bmp = DrawActiveRectangle(_sentenceBitmap,
+                new SKRect(_splitItem.X, _splitItem.Y,
+                    _splitItem.X + _splitItem.NikseBitmap.Width, _splitItem.Y + _splitItem.NikseBitmap.Height));
+            SentenceImageSource = bmp.ToImageSource();
+        }
+        else
+        {
+            SentenceImageSource = null;
+        }
+    }
+
+    private void InitSplitItem(ImageSplitterItem2 item)
+    {
+        _splitItem = item;
+        if (_splitItem.NikseBitmap != null)
+        {
+            ItemImageSource = _splitItem.NikseBitmap.GetBitmap().ToImageSource();
+
+            NOcrChar = new NOcrChar
+            {
+                Width = _splitItem.NikseBitmap.Width,
+                Height = _splitItem.NikseBitmap.Height,
+                MarginTop = _splitItem.Top,
+            };
+
+            NOcrDrawingCanvas.BackgroundImage = _splitItem.NikseBitmap.GetBitmap();
+            NOcrDrawingCanvas.ZoomFactor = 4;
+            AutoGuessLines();
+
+            ResolutionAndTopMargin = $"{NOcrChar.Width}x{NOcrChar.Height}, top margin: {NOcrChar.MarginTop}";
+        }
+        else
+        {
+            ItemImageSource = null;
+        }
+    }
+
+    private void SetTitle()
+    {
+        Title = $"Add nOCR character for line  {_startFromNumber}, character {_letters.IndexOf(_splitItem) + 1} of {_letters.Count} using database \"{Path.GetFileNameWithoutExtension(_nOcrDb.FileName)}\"";
     }
 
     public static SKBitmap DrawActiveRectangle(
@@ -253,11 +296,31 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
     {
         NOcrChar.Text = NewText;
         NOcrChar.Italic = IsNewTextItalic;
+        _nOcrDb.Add(NOcrChar);
+        _nOcrDb.Save();
+
+        var idx = _letters.IndexOf(_splitItem) + 1;
+        if (idx < _letters.Count)
+        {
+            for (var i = 0; i < _letters.Count; i++)
+            {
+                var item = _letters[i];
+                var match = _nOcrDb.GetMatch(item.NikseBitmap!, _letters, item, item.Top, true, _maxWrongPixels);
+                if (match == null && string.IsNullOrEmpty(item.SpecialCharacter))
+                {
+                    InitSplitItem(item);
+                    InitSentenceBitmap();
+                    SetTitle();
+                    NewText = string.Empty;
+                    EntryNewText.Focus();
+                    return;
+                }
+            }
+        }
 
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(NOcrCharacterAddPage) },
-            { "NOcrChar", NOcrChar },
             { "OcrSubtitleItems", _ocrSubtitleItems },
             { "StartFromNumber", _startFromNumber },
             { "ItalicOn", IsNewTextItalic },

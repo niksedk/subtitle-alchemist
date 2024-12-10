@@ -293,12 +293,6 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             }
         }
 
-        if (!useOnce && !skipOnce && nOcrChar != null)
-        {
-            _nOcrDb?.Add(nOcrChar);
-            _nOcrDb?.Save();
-        }
-
         if (query.ContainsKey("OcrSubtitleItems") && query["OcrSubtitleItems"] is List<OcrSubtitleItem> ocrSubtitleItems)
         {
             OcrSubtitleItems = new ObservableCollection<OcrSubtitleItem>(ocrSubtitleItems);
@@ -722,6 +716,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                                     { "OcrSubtitleItems", OcrSubtitleItems.ToList() },
                                     { "StartFromNumber", SelectedStartFromNumber },
                                     { "ItalicOn", _toolsItalicOn },
+                                    { "nOcrDb", _nOcrDb },
+                                    { "MaxWrongPixels", SelectedNOcrMaxWrongPixels },
                                     });
                             });
                             return;

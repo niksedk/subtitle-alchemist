@@ -45,6 +45,7 @@ using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
 using EditShortcutPopupModel = SubtitleAlchemist.Features.Options.Settings.EditShortcutPopupModel;
 using SubtitleAlchemist.Features.Tools.ChangeCasing;
 using OcrPageModel = SubtitleAlchemist.Features.Shared.Ocr.OcrPageModel;
+using SubtitleAlchemist.Features.Shared.PickMatroskaTrack;
 
 namespace SubtitleAlchemist;
 
@@ -166,6 +167,7 @@ public static class MauiProgram
         builder.Services.AddTransientPopup<NOcrDbActionPopup, NOcrDbActionPopupModel>();
         builder.Services.AddTransientPopup<TesseractDownloadPopup, TesseractDownloadPopupModel>();
         builder.Services.AddTransientPopup<TesseractDictionaryDownloadPopup, TesseractDictionaryDownloadPopupModel>();
+        builder.Services.AddTransientPopup<PickMatroskaTrackPopup, PickMatroskaTrackPopupModel>();
 
         builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
         builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();

@@ -1204,7 +1204,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             }
         }
 
-        private static int BigEndianInt16(byte[] buffer, int index)
+        public static int BigEndianInt16(byte[] buffer, int index)
         {
             if (buffer.Length < 2)
             {
