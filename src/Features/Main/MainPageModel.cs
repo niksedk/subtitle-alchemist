@@ -1282,7 +1282,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
         {
             MainThread.BeginInvokeOnMainThread(async () =>
             {
-                var result = await _popupService.ShowPopupAsync<PickMatroskaTrackPopupModel>(onPresenting: viewModel => viewModel.Initialize(subtitleList, fileName), CancellationToken.None);
+                var result = await _popupService.ShowPopupAsync<PickMatroskaTrackPopupModel>(onPresenting: viewModel => viewModel.Initialize(matroska, subtitleList, fileName), CancellationToken.None);
 
                 if (result is MatroskaTrackInfo track && MainPage != null)
                 {

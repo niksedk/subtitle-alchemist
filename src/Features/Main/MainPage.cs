@@ -13,9 +13,7 @@ public class MainPage : ContentPage
     {
         _pageModel = vm;
 
-        var themeName = Nikse.SubtitleEdit.Core.Common.Configuration.Settings.General.UseDarkTheme
-            ? "Dark"
-            : "Light";
+        var themeName = Se.Settings.Appearance.Theme;
         ICollection<ResourceDictionary>? mergedDictionaries = Application.Current?.Resources?.MergedDictionaries;
         if (mergedDictionaries != null)
         {

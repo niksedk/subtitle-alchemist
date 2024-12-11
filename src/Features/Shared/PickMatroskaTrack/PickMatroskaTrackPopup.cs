@@ -16,35 +16,47 @@ public sealed class PickMatroskaTrackPopup : Popup
         {
             RowDefinitions =
             {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Star },
-                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto }, // Title
+                new RowDefinition { Height = GridLength.Auto }, // File name
+                new RowDefinition { Height = GridLength.Star }, // Track list + track info
+                new RowDefinition { Height = GridLength.Auto }, // buttons
             },
             ColumnDefinitions =
             {
                 new ColumnDefinition { Width = GridLength.Star },
             },
-            Margin = new Thickness(2),
+            Margin = new Thickness(0),
             Padding = new Thickness(30, 20, 30, 10),
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            WidthRequest = 700,
+            WidthRequest = 900,
             HeightRequest = 500,
         }.BindDynamicTheme();
 
+        var row = 0;
         var labelTitle = new Label
+        {
+            Text = "Pick Matroska Track",
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+            Margin = new Thickness(0, 0, 0, 25),
+        }.AsTitle();
+        grid.Add(labelTitle, 0, row++);
+
+        var labelFileName = new Label
         {
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
-            FontSize = 20,
-            FontAttributes = FontAttributes.Bold,
-            Margin = new Thickness(0, 0, 0, 25),
+            FontSize = 16,
+            Margin = new Thickness(0, 0, 0, 10),
         }.BindDynamicTheme();
-        labelTitle.SetBinding(Label.TextProperty, nameof(vm.Title));
-        grid.Add(labelTitle, 0);
+        labelFileName.SetBinding(Label.TextProperty, nameof(vm.FileNameInfo));
 
-        var videoGrid =  MakeSubtitleListGrid(vm);
-        grid.Add(videoGrid, 0, 1);
+        grid.Add(labelFileName, 0, row++);
+
+        var videoGrid =  MakeTrackListGrid(vm);
+        grid.Add(videoGrid, 0, row++);
 
 
         var buttonOk = new Button
@@ -77,7 +89,7 @@ public sealed class PickMatroskaTrackPopup : Popup
             },
         };
 
-        grid.Add(buttonBar, 0, 2);
+        grid.Add(buttonBar, 0, row);
 
 
         var windowBorder = new Border
@@ -101,74 +113,73 @@ public sealed class PickMatroskaTrackPopup : Popup
         vm.Popup = this;
     }
 
-    private static Border MakeSubtitleListGrid(PickMatroskaTrackPopupModel vm)
+    private static Border MakeTrackListGrid(PickMatroskaTrackPopupModel vm)
     {
-
         var grid = new Grid
         {
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
             },
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Star }, // Track list
+                new ColumnDefinition { Width = GridLength.Auto }, // Track list
                 new ColumnDefinition { Width = GridLength.Star }, // Selected track details
             },
             Margin = new Thickness(0, 0, 0, 10),
             Padding = new Thickness(0, 0, 0, 10),
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            HeightRequest = 240,
         }.BindDynamicTheme();
 
         var collectionView = new CollectionView
         {
             SelectionMode = SelectionMode.Single,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            HeightRequest = 240,
             ItemTemplate = new DataTemplate(() =>
             {
-                var gridItem = new Grid
-                {
-                    RowDefinitions =
-                    {
-                        new RowDefinition { Height = GridLength.Auto },
-                    },
-                    ColumnDefinitions =
-                    {
-                        new ColumnDefinition { Width = GridLength.Star },
-                    },
-                    Margin = new Thickness(0, 0, 0, 10),
-                    Padding = new Thickness(0, 0, 0, 10),
-                    HorizontalOptions = LayoutOptions.Fill,
-                    VerticalOptions = LayoutOptions.Fill,
-                }.BindDynamicTheme();
                 var label = new Label
                 {
                     HorizontalOptions = LayoutOptions.Fill,
-                    VerticalOptions = LayoutOptions.Center,
-                    FontSize = 16,
-                    FontAttributes = FontAttributes.Bold,
-                    Margin = new Thickness(0, 0, 0, 0),
+                    VerticalOptions = LayoutOptions.Start,
+                    Margin = new Thickness(0, 0, 10, 10),
                 }.BindDynamicTheme();
                 label.SetBinding(Label.TextProperty, nameof(MatroskaTrackItem.DisplayName));
-                gridItem.Add(label, 0);
-                return gridItem;
+                return label;
             }),
         }.BindDynamicTheme();
         collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.TrackItems));
         collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedTrackItem));
         collectionView.SelectionChanged += vm.OnTrackSelected;
-        grid.Add(collectionView, 0);
+
+        grid.Add(new Label { Text = "Tracks", FontAttributes = FontAttributes.Bold, Margin = new Thickness(10)}, 0);
+        grid.Add(collectionView, 0, 1);
 
         var editor = new Editor
         {
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
             IsReadOnly = true,
             Margin = new Thickness(10, 0, 0, 0),
+            AutoSize = EditorAutoSizeOption.TextChanges,
         }.BindDynamicTheme();
         editor.SetBinding(Editor.TextProperty, new Binding(nameof(vm.TrackInfo)));
 
-        grid.Add(editor, 1);
+        var scrollViewEditor = new ScrollView
+        {
+            Content = editor,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(10, 0, 0, 0),
+            HeightRequest = 240,
+        };
+
+        grid.Add(new Label { Text = "Selected track info", FontAttributes = FontAttributes.Bold, Margin = new Thickness(20, 10, 10, 10) }, 1);
+        grid.Add(scrollViewEditor, 1, 1);
 
 
         var border = new Border
