@@ -74,6 +74,16 @@ public sealed class PickMatroskaTrackPopup : Popup
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             Command = vm.CancelCommand,
+            Margin = new Thickness(0, 0, 10, 0),
+        }.BindDynamicTheme();
+
+        var buttonExport = new Button
+        {
+            Text = "Export",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Command = vm.ExportCommand,
+            Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
 
         var buttonBar = new StackLayout
@@ -86,6 +96,7 @@ public sealed class PickMatroskaTrackPopup : Popup
             {
                 buttonOk,
                 buttonCancel,
+                buttonExport,
             },
         };
 
@@ -159,6 +170,7 @@ public sealed class PickMatroskaTrackPopup : Popup
         grid.Add(new Label { Text = "Tracks", FontAttributes = FontAttributes.Bold, Margin = new Thickness(10)}, 0);
         grid.Add(collectionView, 0, 1);
 
+        
         var editor = new Editor
         {
             HorizontalOptions = LayoutOptions.Fill,
@@ -166,12 +178,42 @@ public sealed class PickMatroskaTrackPopup : Popup
             IsReadOnly = true,
             Margin = new Thickness(10, 0, 0, 0),
             AutoSize = EditorAutoSizeOption.TextChanges,
+            MinimumWidthRequest = 400
         }.BindDynamicTheme();
         editor.SetBinding(Editor.TextProperty, new Binding(nameof(vm.TrackInfo)));
 
-        var scrollViewEditor = new ScrollView
+        var listViewImages = new ListView
         {
-            Content = editor,
+            ItemTemplate = new DataTemplate(() =>
+            {
+                var image = new Image();
+                image.SetBinding(Image.SourceProperty, ".");
+                image.Margin = new Thickness(0, 5, 0, 5);
+                return new ViewCell { View = image };
+            }),
+            HeightRequest = 150,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(10, 0, 0, 0),
+            
+        };
+        listViewImages.SetBinding(ListView.ItemsSourceProperty, new Binding(nameof(vm.SelectedTrackImages)));
+
+        var stackEditorAndImages = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Children =
+            {
+                editor,
+                listViewImages,
+            },
+        };
+
+        var scrollViewEditorAndImages = new ScrollView
+        {
+            Content = stackEditorAndImages,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(10, 0, 0, 0),
@@ -179,7 +221,7 @@ public sealed class PickMatroskaTrackPopup : Popup
         };
 
         grid.Add(new Label { Text = "Selected track info", FontAttributes = FontAttributes.Bold, Margin = new Thickness(20, 10, 10, 10) }, 1);
-        grid.Add(scrollViewEditor, 1, 1);
+        grid.Add(scrollViewEditorAndImages, 1, 1);
 
 
         var border = new Border
