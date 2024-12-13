@@ -311,5 +311,48 @@ namespace SubtitleAlchemist.Logic.Media
 
             return string.Empty;
         }
+
+        public async Task<string> SaveStreamAs(Stream stream, string title, string fileName, string extension, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var customFileType = new FilePickerFileType(
+                    new Dictionary<DevicePlatform, IEnumerable<string>>
+                    {
+                        { DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // UTType values
+                        { DevicePlatform.Android, new[] { "application/text" } }, // MIME type
+                        { DevicePlatform.WinUI, new [] { extension } }, // file extension
+                        { DevicePlatform.Tizen, new[] { "*/*" } },
+                        { DevicePlatform.macOS, new[] { extension.TrimStart('.') } }, // UTType values
+                    });
+
+                var pickOptions = new PickOptions
+                {
+                    FileTypes = customFileType,
+                    PickerTitle = title,
+                };
+
+                var suggestedFileName = string.Empty;
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    var folderName = Path.GetDirectoryName(fileName);
+                    if (folderName != null)
+                    {
+                        suggestedFileName = Path.Combine(folderName, Path.GetFileNameWithoutExtension(fileName) + extension);
+                    }
+                }
+
+#pragma warning disable CA1416 // Validate platform compatibility
+                var fileLocation = await FileSaver.Default.SaveAsync(suggestedFileName, stream, cancellationToken);
+#pragma warning restore CA1416 // Validate platform compatibility
+                return fileLocation.FilePath ?? string.Empty;
+            }
+            catch
+            {
+                // The user canceled or something went wrong
+            }
+
+            return string.Empty;
+        }
     }
 }

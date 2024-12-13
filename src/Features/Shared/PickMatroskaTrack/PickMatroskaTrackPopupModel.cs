@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
@@ -14,15 +15,19 @@ public partial class PickMatroskaTrackPopupModel : ObservableObject
 {
     public PickMatroskaTrackPopup? Popup { get; set; }
     public CollectionView TrackList { get; set; }
+    public Label LabelStatusText { get; set; }
+
 
     [ObservableProperty] private string _fileNameInfo;
     [ObservableProperty] private ObservableCollection<MatroskaTrackItem> _trackItems;
     [ObservableProperty] private MatroskaTrackItem? _selectedTrackItem;
     [ObservableProperty] private string _trackInfo;
     [ObservableProperty] private ObservableCollection<ImageSource> _selectedTrackImages;
+    [ObservableProperty] private string _statusText;
 
     private MatroskaFile? _matroskaFile;
     private string _fileName;
+    private bool _closing;
 
     public PickMatroskaTrackPopupModel()
     {
@@ -32,12 +37,15 @@ public partial class PickMatroskaTrackPopupModel : ObservableObject
         _selectedTrackItem = null;
         _trackInfo = string.Empty;
         _selectedTrackImages = new ObservableCollection<ImageSource>();
-        _fileName = string.Empty;   
+        _fileName = string.Empty;
+        _statusText = string.Empty;
+        LabelStatusText = new Label();
     }
 
     [RelayCommand]
     private void Ok()
     {
+        _closing = true;
         MainThread.BeginInvokeOnMainThread(() =>
         {
             Popup?.Close(SelectedTrackItem?.MatroskaTrackInfo);
@@ -47,6 +55,7 @@ public partial class PickMatroskaTrackPopupModel : ObservableObject
     [RelayCommand]
     private void Cancel()
     {
+        _closing = true;
         MainThread.BeginInvokeOnMainThread(() =>
         {
             Popup?.Close();
@@ -66,29 +75,137 @@ public partial class PickMatroskaTrackPopupModel : ObservableObject
 
         if (trackItem.CodecId == MatroskaTrackType.BluRay && subtitles != null && _matroskaFile != null)
         {
-            SaveBluRaySup(subtitles);
+            await SaveBluRaySup(subtitles, trackItem);
             return;
         }
 
         if (trackItem.CodecId == MatroskaTrackType.SubRip && subtitles != null)
         {
-            await SaveTextContent(SelectedTrackItem, subtitles, new SubRip());
+            await SaveTextSubtitle(SelectedTrackItem, subtitles, new SubRip());
         }
         else if (trackItem.CodecId == MatroskaTrackType.SubStationAlpha && subtitles != null)
         {
-            await SaveTextContent(SelectedTrackItem, subtitles, new SubStationAlpha());
+            await SaveTextSubtitle(SelectedTrackItem, subtitles, new SubStationAlpha());
         }
         else if (trackItem.CodecId == MatroskaTrackType.AdvancedSubStationAlpha && subtitles != null)
         {
-            await SaveTextContent(SelectedTrackItem, subtitles, new AdvancedSubStationAlpha());
+            await SaveTextSubtitle(SelectedTrackItem, subtitles, new AdvancedSubStationAlpha());
         }
     }
 
-    private void SaveBluRaySup(List<MatroskaSubtitle> subtitles)
+    private async Task SaveBluRaySup(List<MatroskaSubtitle> sub, MatroskaTrackInfo matroskaTrackInfo)
     {
+        var subtitles = new List<BluRaySupParser.PcsData>();
+        var log = new StringBuilder();
+        var clusterStream = new MemoryStream();
+        var lastPalettes = new Dictionary<int, List<PaletteInfo>>();
+        var lastBitmapObjects = new Dictionary<int, List<BluRaySupParser.OdsData>>();
+        foreach (var p in sub)
+        {
+            var buffer = p.GetData(matroskaTrackInfo);
+
+            if (buffer != null && buffer.Length > 2)
+            {
+                clusterStream.Write(buffer, 0, buffer.Length);
+                if (ContainsBluRayStartSegment(buffer))
+                {
+                    if (subtitles.Count > 0 && subtitles[subtitles.Count - 1].StartTime == subtitles[subtitles.Count - 1].EndTime)
+                    {
+                        subtitles[subtitles.Count - 1].EndTime = (long)((p.Start - 1) * 90.0);
+                    }
+
+                    clusterStream.Position = 0;
+                    var list = BluRaySupParser.ParseBluRaySup(clusterStream, log, true, lastPalettes, lastBitmapObjects);
+                    foreach (var sup in list)
+                    {
+                        sup.StartTime = (long)((p.Start - 1) * 90.0);
+                        sup.EndTime = (long)((p.End - 1) * 90.0);
+                        subtitles.Add(sup);
+
+                        // fix overlapping
+                        if (subtitles.Count > 1 && sub[subtitles.Count - 2].End > sub[subtitles.Count - 1].Start)
+                        {
+                            subtitles[subtitles.Count - 2].EndTime = subtitles[subtitles.Count - 1].StartTime - 1;
+                        }
+                    }
+
+                    clusterStream = new MemoryStream();
+                }
+            }
+            else if (subtitles.Count > 0)
+            {
+                var lastSub = subtitles[subtitles.Count - 1];
+                if (lastSub.StartTime == lastSub.EndTime)
+                {
+                    lastSub.EndTime = (long)((p.Start - 1) * 90.0);
+                    if (lastSub.EndTime - lastSub.StartTime > 1000000)
+                    {
+                        lastSub.EndTime = lastSub.StartTime;
+                    }
+                }
+            }
+        }
+
+        using var ms = new MemoryStream();
+        for (var index = 0; index < subtitles.Count; index++)
+        {
+            var p = subtitles[index];
+            var brSub = new BluRaySupPicture
+            {
+                StartTime = p.StartTime,
+                EndTime = p.EndTime,
+                Width = 1920,
+                Height = 1080,
+                IsForced = p.IsForced,
+                CompositionNumber = index * 2,
+            };
+
+            var bitmap = p.GetBitmap();
+            var position = p.GetPosition();
+            var buffer = BluRaySupPicture.CreateSupFrame(brSub, bitmap, 25, 0, 0, BluRayContentAlignment.BottomCenter, new BluRayPoint(position.Left, position.Top) );
+            ms.Write(buffer, 0, buffer.Length);
+        }
+
+        var fileHelper = new FileHelper();
+        var subtitleFileName =
+            await fileHelper.SaveStreamAs(ms, "Save BluRay sup (PGS)", _fileName, ".sup", CancellationToken.None);
+        if (!string.IsNullOrEmpty(subtitleFileName))
+        {
+            ShowStatus($"Saved subtitle file {subtitleFileName}");
+        }
     }
 
-    private async Task SaveTextContent(MatroskaTrackItem trackItem, List<MatroskaSubtitle> subtitles, SubtitleFormat format)
+    private static bool ContainsBluRayStartSegment(byte[] buffer)
+    {
+        const int epochStart = 0x80;
+        var position = 0;
+        while (position + 3 <= buffer.Length)
+        {
+            var segmentType = buffer[position];
+            if (segmentType == epochStart)
+            {
+                return true;
+            }
+
+            var length = BigEndianInt16(buffer, position + 1) + 3;
+            position += length;
+        }
+
+        return false;
+    }
+
+    public static int BigEndianInt16(byte[] buffer, int index)
+    {
+        if (buffer.Length < 2)
+        {
+            return 0;
+        }
+
+        return buffer[index + 1] | (buffer[index] << 8);
+    }
+
+
+    private async Task SaveTextSubtitle(MatroskaTrackItem trackItem, List<MatroskaSubtitle> subtitles, SubtitleFormat format)
     {
         var sub = new Subtitle();
         Utilities.LoadMatroskaTextSubtitle(trackItem.MatroskaTrackInfo, _matroskaFile, subtitles, sub);
@@ -100,12 +217,10 @@ public partial class PickMatroskaTrackPopupModel : ObservableObject
             format,
             sub);
 
-        if (string.IsNullOrEmpty(subtitleFileName))
+        if (!string.IsNullOrEmpty(subtitleFileName))
         {
-            return;
+            ShowStatus($"Saved subtitle file {subtitleFileName}");
         }
-
-        await File.WriteAllTextAsync(subtitleFileName, format.ToText(sub, string.Empty));
     }
 
     public void Initialize(MatroskaFile matroskaFile, List<MatroskaTrackInfo> tracks, string fileName)
@@ -178,4 +293,29 @@ public partial class PickMatroskaTrackPopupModel : ObservableObject
         TrackInfo += $"Format: {format.Name}" + Environment.NewLine;
         TrackInfo += Environment.NewLine + raw;
     }
+
+    private void ShowStatus(string statusText)
+    {
+        LabelStatusText.Opacity = 0;
+        StatusText = statusText;
+        LabelStatusText.FadeTo(1, 200);
+
+        Popup?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(6_000), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (_closing)
+                {
+                    return;
+                }
+
+                if (StatusText == statusText)
+                {
+                    LabelStatusText.FadeTo(0, 200);
+                }
+            });
+            return false;
+        });
+    }
+
 }

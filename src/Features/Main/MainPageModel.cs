@@ -37,12 +37,10 @@ using SubtitleAlchemist.Logic.Media;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.Text;
 using System.Timers;
 using Nikse.SubtitleEdit.Core.ContainerFormats.Matroska;
-using SharpHook.Native;
 using SubtitleAlchemist.Features.Main.LayoutPicker;
 using SubtitleAlchemist.Features.Tools.BatchConvert;
 using Path = System.IO.Path;
@@ -50,13 +48,9 @@ using SpellCheckDictionary = SubtitleAlchemist.Features.SpellCheck.SpellCheckDic
 using SubtitleAlchemist.Features.Video.TransparentSubtitles;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.BluRaySup;
-using SharpCompress.Common;
-using SkiaSharp;
 using SubtitleAlchemist.Features.Shared.Ocr;
 using SubtitleAlchemist.Features.Tools.ChangeCasing;
 using Color = Microsoft.Maui.Graphics.Color;
-using System.Reflection.Metadata;
-using System;
 using SubtitleAlchemist.Features.Shared.PickMatroskaTrack;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -2579,7 +2573,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
         SubtitleList.BatchCommit();
     }
 
-    private object _keyLock = new object();
+    private readonly Lock _keyLock = new();
 
     public void KeyPressed(object? sender, KeyboardHookEventArgs e)
     {

@@ -86,6 +86,15 @@ public sealed class PickMatroskaTrackPopup : Popup
             Margin = new Thickness(0, 0, 10, 0),
         }.BindDynamicTheme();
 
+        var labelStatusText = new Label
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 10, 0),
+        }.BindDynamicTheme();
+        labelStatusText.SetBinding(Label.TextProperty, nameof(vm.StatusText));
+        vm.LabelStatusText = labelStatusText;
+
         var buttonBar = new StackLayout
         {
             Orientation = StackOrientation.Horizontal,
@@ -97,6 +106,7 @@ public sealed class PickMatroskaTrackPopup : Popup
                 buttonOk,
                 buttonCancel,
                 buttonExport,
+                labelStatusText,
             },
         };
 
