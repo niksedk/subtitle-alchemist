@@ -484,6 +484,7 @@ public partial class SettingsPageModel : ObservableObject
 
         SettingItem? lastCategory = null;
         SettingItem? lastSubCategory = null;
+        var showNextFooter = false;
         foreach (var setting in AllSettings)
         {
             if (setting.Type == SettingItemType.Category)
@@ -494,6 +495,12 @@ public partial class SettingsPageModel : ObservableObject
             else if (setting.Type == SettingItemType.SubCategory)
             {
                 lastSubCategory = setting;
+            }
+            else if (setting.Type == SettingItemType.Footer && showNextFooter)
+            {
+                setting.Show();
+                showNextFooter = false;
+                continue;
             }
 
             if (string.IsNullOrWhiteSpace(SearchText))
@@ -507,6 +514,7 @@ public partial class SettingsPageModel : ObservableObject
                 if (lastCategory != null)
                 {
                     lastCategory.WholeView.IsVisible = true;
+                    showNextFooter = true;
                 }
                 if (lastSubCategory != null)
                 {

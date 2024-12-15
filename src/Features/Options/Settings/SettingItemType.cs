@@ -5,4 +5,5 @@ public enum SettingItemType
     Category,
     SubCategory,
     Setting,
+    Footer,
 }
