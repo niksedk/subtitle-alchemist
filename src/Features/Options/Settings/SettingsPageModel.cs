@@ -9,6 +9,8 @@ using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Markup.LeftToRight;
+using CommunityToolkit.Maui.Markup.RightToLeft;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
 
@@ -605,8 +607,12 @@ public partial class SettingsPageModel : ObservableObject
         }
     }
 
-    public void Scrolled(object? sender, ScrolledEventArgs e)
+    public void OnSizeAllocated(double width, double height)
     {
-        
+        var newWidth = Math.Max(100, width - 330);
+        SettingListScrollView.WidthRequest = newWidth;
+
+        var newHeight = Math.Max(100, height - 100);
+        SettingListScrollView.HeightRequest = newHeight;
     }
 }

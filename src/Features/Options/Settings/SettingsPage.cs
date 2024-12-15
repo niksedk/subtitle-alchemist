@@ -161,7 +161,6 @@ public class SettingsPage : ContentPage
             VerticalScrollBarVisibility = ScrollBarVisibility.Always,
             Margin = new Thickness(0,10,0,10),
         };
-        scrollView.Scrolled += vm.Scrolled;
 
         vm.SettingList = grid;
         vm.SettingListScrollView = scrollView;
@@ -1077,5 +1076,11 @@ public class SettingsPage : ContentPage
         vm.AllSettings.Add(new SettingItem("Color if gap too short", textWidth, string.Empty, switchColorGapTooShort));
 
         vm.AllSettings.Add(SettingItem.MakeFooter(SectionName.SyntaxColoring));
+    }
+
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+        _vm?.OnSizeAllocated(width, height);
     }
 }
