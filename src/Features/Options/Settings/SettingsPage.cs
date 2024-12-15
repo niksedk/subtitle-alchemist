@@ -211,6 +211,7 @@ public class SettingsPage : ContentPage
             Keyboard = Keyboard.Numeric,
             BindingContext = vm,
             WidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         entrySingleLineMaxWidth.SetBinding(Entry.TextProperty, nameof(vm.SubtitleLineMaximumLength), BindingMode.TwoWay);
 
@@ -223,6 +224,7 @@ public class SettingsPage : ContentPage
             Keyboard = Keyboard.Numeric,
             BindingContext = vm,
             WidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         entryOptimalCharsSec.SetBinding(Entry.TextProperty, nameof(vm.SubtitleOptimalCharactersPerSeconds), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Optimal chars/sec", ruleTextWidth, string.Empty, entryOptimalCharsSec));
@@ -234,6 +236,7 @@ public class SettingsPage : ContentPage
             Keyboard = Keyboard.Numeric,
             BindingContext = vm,
             WidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         entryMaxCharsSec.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumCharactersPerSeconds), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Max chars/sec", ruleTextWidth, string.Empty, entryMaxCharsSec));
@@ -245,6 +248,7 @@ public class SettingsPage : ContentPage
             Keyboard = Keyboard.Numeric,
             BindingContext = vm,
             WidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         entryMaxWordsMin.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumWordsPerMinute), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Max words/min", ruleTextWidth, string.Empty, entryMaxWordsMin));
@@ -256,6 +260,7 @@ public class SettingsPage : ContentPage
             Keyboard = Keyboard.Numeric,
             BindingContext = vm,
             WidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         entryMinDuration.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMinimumDisplayMilliseconds), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Min duration in milliseconds", ruleTextWidth, string.Empty, entryMinDuration));
@@ -267,6 +272,7 @@ public class SettingsPage : ContentPage
             Keyboard = Keyboard.Numeric,
             BindingContext = vm,
             WidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         entryMaxDuration.SetBinding(Entry.TextProperty, nameof(vm.SubtitleMaximumDisplayMilliseconds), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Max duration in milliseconds", ruleTextWidth, string.Empty, entryMaxDuration));
@@ -278,6 +284,7 @@ public class SettingsPage : ContentPage
             Keyboard = Keyboard.Numeric,
             BindingContext = vm,
             WidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         entryMinGap.SetBinding(Entry.TextProperty, nameof(vm.MinimumMillisecondsBetweenLines), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Min gap between subtitles in milliseconds", ruleTextWidth, string.Empty,
@@ -288,6 +295,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             WidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerMaxLines.SetBinding(Picker.ItemsSourceProperty, nameof(vm.MaxNumberOfLines));
         pickerMaxLines.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedMaxNumberOfLines));
@@ -300,6 +308,7 @@ public class SettingsPage : ContentPage
             Keyboard = Keyboard.Numeric,
             BindingContext = vm,
             WidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         entryUnbreakShorterThan.SetBinding(Entry.TextProperty, nameof(vm.MergeLinesShorterThan), BindingMode.TwoWay);
         vm.AllSettings.Add(new SettingItem("Unbreak subtitles shorter than", ruleTextWidth, string.Empty,
@@ -310,6 +319,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerDialogStyle.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DialogStyles));
         pickerDialogStyle.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDialogStyle));
@@ -320,6 +330,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerContinuationStyle.SetBinding(Picker.ItemsSourceProperty, nameof(vm.ContinuationStyles));
         pickerContinuationStyle.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedContinuationStyle));
@@ -330,6 +341,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerCpsLineLength.SetBinding(Picker.ItemsSourceProperty, nameof(vm.CpsLineLengthStrategies));
         pickerCpsLineLength.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedCpsLineLengthStrategy));
@@ -343,6 +355,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerDefaultFrameRate.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DefaultFrameRates));
         pickerDefaultFrameRate.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultFrameRate));
@@ -354,6 +367,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerDefaultFileEncoding.SetBinding(Picker.ItemsSourceProperty, nameof(vm.DefaultFileEncodings));
         pickerDefaultFileEncoding.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultFileEncoding));
@@ -364,7 +378,7 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchAutoDetectAnsiEncoding.SetBinding(Switch.IsToggledProperty, nameof(vm.AutodetectAnsiEncoding));
         vm.AllSettings.Add(new SettingItem("Auto detect ANSI encoding", ruleTextWidth, string.Empty, switchAutoDetectAnsiEncoding));
@@ -398,7 +412,7 @@ public class SettingsPage : ContentPage
         {
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchPromptForDeleteLines.SetBinding(Switch.IsToggledProperty, nameof(vm.PromptForDeleteLines));
         vm.AllSettings.Add(new SettingItem("Prompt for delete lines", ruleTextWidth, string.Empty, switchPromptForDeleteLines));
@@ -408,6 +422,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerTimeCodeMode.SetBinding(Picker.ItemsSourceProperty, nameof(vm.TimeCodeModes));
         pickerTimeCodeMode.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedTimeCodeMode));
@@ -419,6 +434,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerSplitBehavior.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SplitBehaviors));
         pickerSplitBehavior.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedSplitBehavior));
@@ -429,6 +445,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerSubtitleListDoubleClickAction.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SubtitleListDoubleClickActions));
         pickerSubtitleListDoubleClickAction.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedSubtitleListDoubleClickAction));
@@ -440,6 +457,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerAutoBackupInterval.SetBinding(Picker.ItemsSourceProperty, nameof(vm.AutoBackupIntervals));
         pickerAutoBackupInterval.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedAutoBackupInterval));
@@ -450,6 +468,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = controlWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerAutoBackupDeletAfter.SetBinding(Picker.ItemsSourceProperty, nameof(vm.AutoBackupDeleteOptions));
         pickerAutoBackupDeletAfter.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedAutoBackupDeleteOption));
@@ -468,6 +487,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = textWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerDefaultSubtitleFormat.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SubtitleFormats));
         pickerDefaultSubtitleFormat.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultSubtitleFormat));
@@ -478,6 +498,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
             MinimumWidthRequest = textWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerDefaultSaveAsFormat.SetBinding(Picker.ItemsSourceProperty, nameof(vm.SubtitleSaveAsSubtitleFormats));
         pickerDefaultSaveAsFormat.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedDefaultSaveAsSubtitleFormat));
@@ -539,6 +560,7 @@ public class SettingsPage : ContentPage
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
 
         AddShortcuts(vm, area, gridShortcuts);
@@ -567,6 +589,7 @@ public class SettingsPage : ContentPage
             ColumnSpacing = 10,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
 
         AddShortcuts(vm, area, gridShortcuts);
@@ -588,6 +611,7 @@ public class SettingsPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             FontAttributes = FontAttributes.Bold,
             WidthRequest = descriptionWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         gridShortcuts.Add(labelHeaderDescription, 0, 0);
 
@@ -598,6 +622,7 @@ public class SettingsPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             FontAttributes = FontAttributes.Bold,
             WidthRequest = shortcutWidth,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         gridShortcuts.Add(labelHeaderShortcut, 1, 0);
 
@@ -607,6 +632,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center,
             FontAttributes = FontAttributes.Bold,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         gridShortcuts.Add(labelActions, 2, 0);
 
@@ -621,6 +647,7 @@ public class SettingsPage : ContentPage
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
                 WidthRequest = descriptionWidth,
+                BackgroundColor = Colors.Transparent,
             }.BindDynamicTheme();
             gridShortcuts.Add(labelDescription, 0, row);
 
@@ -630,6 +657,7 @@ public class SettingsPage : ContentPage
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
                 WidthRequest = shortcutWidth,
+                BackgroundColor = Colors.Transparent,
             }.BindDynamicTheme();
             gridShortcuts.Add(labelShortcut, 1, row);
 
@@ -638,6 +666,7 @@ public class SettingsPage : ContentPage
                 Text = "Edit",
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
+                BackgroundColor = Colors.Transparent,
             }.WithLinkLabel(new Command(async () => { await vm.EditShortcut(shortcut); }));
             gridShortcuts.Add(labelLinkEdit, 2, row);
         }
@@ -655,6 +684,7 @@ public class SettingsPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             FontAttributes = FontAttributes.Bold,
             WidthRequest = 200,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
 
         var labelAction = new Label
@@ -664,6 +694,7 @@ public class SettingsPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             FontAttributes = FontAttributes.Bold,
             WidthRequest = 200,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
 
         var stackHeader = new StackLayout
@@ -672,6 +703,7 @@ public class SettingsPage : ContentPage
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(5),
+            BackgroundColor = Colors.Transparent,
             Children =
             {
                 labelHeader,
@@ -690,6 +722,7 @@ public class SettingsPage : ContentPage
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
                 WidthRequest = 200,
+                BackgroundColor = Colors.Transparent,
             }.BindDynamicTheme();
             var labelLinkRemove = new Label
             {
@@ -697,6 +730,7 @@ public class SettingsPage : ContentPage
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
                 Margin = new Thickness(0, 0, 10, 0),
+                BackgroundColor = Colors.Transparent,
             }.WithLinkLabel(new Command(() =>
             {
                 vm.RemoveFavoriteSubtitleFormat(favorite);
@@ -707,6 +741,7 @@ public class SettingsPage : ContentPage
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
                 Margin = new Thickness(0, 0, 10, 0),
+                BackgroundColor = Colors.Transparent,
             }.WithLinkLabel(new Command(() =>
             {
                 vm.MoveFavoriteSubtitleFormatUp(favorite);
@@ -718,6 +753,7 @@ public class SettingsPage : ContentPage
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Center,
                 Margin = new Thickness(0, 0, 10, 0),
+                BackgroundColor = Colors.Transparent,
             }.WithLinkLabel(new Command(() =>
             {
                 vm.MoveFavoriteSubtitleFormatDown(favorite);
@@ -728,6 +764,7 @@ public class SettingsPage : ContentPage
                 HorizontalOptions = LayoutOptions.Start,
                 VerticalOptions = LayoutOptions.Start,
                 Margin = new Thickness(5),
+                BackgroundColor = Colors.Transparent,
                 Children =
                 {
                     labelName,
@@ -751,14 +788,14 @@ public class SettingsPage : ContentPage
         var switchAssa = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Advanced Sub Station Alpha (.ass)", textWidth, string.Empty, switchAssa));
 
         var switchSrt = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
 
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("SubRip (.srt)", textWidth, string.Empty, switchSrt));
@@ -766,35 +803,35 @@ public class SettingsPage : ContentPage
         var switchStl = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("EBU STL (.stl)", textWidth, string.Empty, switchStl));
 
         var switchDfxp = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Distribution Format Exchange Profile (.dfxp)", textWidth, string.Empty, switchDfxp));
 
         var switchVtt = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("WebVTT (.vtt)", textWidth, string.Empty, switchVtt));
 
         var switchSami = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("SAMI (.smi)", textWidth, string.Empty, switchSami));
 
         var switchSsa = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Sub Station Alpha (.ssa)", textWidth, string.Empty, switchSsa));
 
@@ -821,7 +858,7 @@ public class SettingsPage : ContentPage
         var switchFileNew = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchFileNew.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowFileNew));
         vm.AllSettings.Add(new SettingItem("File new", textWidth, string.Empty, switchFileNew));
@@ -829,7 +866,7 @@ public class SettingsPage : ContentPage
         var switchFileOpen = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchFileOpen.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowFileOpen));
         vm.AllSettings.Add(new SettingItem("File open", textWidth, string.Empty, switchFileOpen));
@@ -837,7 +874,7 @@ public class SettingsPage : ContentPage
         var switchVideoFileOpen = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchVideoFileOpen.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowVideoFileOpen));
         vm.AllSettings.Add(new SettingItem("Video file open", textWidth, string.Empty, switchVideoFileOpen));
@@ -845,7 +882,7 @@ public class SettingsPage : ContentPage
         var switchSave = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchSave.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowSave));
         vm.AllSettings.Add(new SettingItem("Save", textWidth, string.Empty, switchSave));
@@ -853,7 +890,7 @@ public class SettingsPage : ContentPage
         var switchSaveAs = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchSaveAs.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowSaveAs));
         vm.AllSettings.Add(new SettingItem("Save as", textWidth, string.Empty, switchSaveAs));
@@ -861,7 +898,7 @@ public class SettingsPage : ContentPage
         var switchFind = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchFind.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowFind));
         vm.AllSettings.Add(new SettingItem("Find", textWidth, string.Empty, switchFind));
@@ -869,7 +906,7 @@ public class SettingsPage : ContentPage
         var switchReplace = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchReplace.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowReplace));
         vm.AllSettings.Add(new SettingItem("Replace", textWidth, string.Empty, switchReplace));
@@ -877,7 +914,7 @@ public class SettingsPage : ContentPage
         var switchFixCommonErrors = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchFixCommonErrors.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowFixCommonErrors));
         vm.AllSettings.Add(new SettingItem("Fix common errors", textWidth, string.Empty, switchFixCommonErrors));
@@ -885,7 +922,7 @@ public class SettingsPage : ContentPage
         var switchSpellCheck = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchSpellCheck.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowSpellCheck));
         vm.AllSettings.Add(new SettingItem("Spell check", textWidth, string.Empty, switchSpellCheck));
@@ -893,7 +930,7 @@ public class SettingsPage : ContentPage
         var switchHelp = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchHelp.SetBinding(Switch.IsToggledProperty, nameof(vm.ToolbarShowHelp));
         vm.AllSettings.Add(new SettingItem("Help", textWidth, string.Empty, switchHelp));
@@ -921,6 +958,7 @@ public class SettingsPage : ContentPage
             ItemsSource = new List<string> { "Light", "Dark", "Custom" },
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         pickerTheme.SetBinding(Picker.SelectedItemProperty, nameof(vm.Theme));
         vm.AllSettings.Add(new SettingItem("Theme", textWidth, string.Empty, pickerTheme));
@@ -932,6 +970,7 @@ public class SettingsPage : ContentPage
             ItemsSource = new List<string> { "Arial", "Courier New", "Times New Roman" },
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Font name", textWidth, string.Empty, pickerFontName));
 
@@ -940,6 +979,7 @@ public class SettingsPage : ContentPage
             Placeholder = "Enter subtitle list view font size",
             HorizontalOptions = LayoutOptions.Start,
             BindingContext = vm,
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Subtitle list view font size", textWidth, string.Empty, entrySubtitleListViewFontSize));
 
@@ -979,7 +1019,7 @@ public class SettingsPage : ContentPage
         var switchColorDurationTooShort = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchColorDurationTooShort.SetBinding(Switch.IsToggledProperty, nameof(vm.ColorDurationTooShort));
         vm.AllSettings.Add(new SettingItem("Color if duration is too short", textWidth, string.Empty, switchColorDurationTooShort));
@@ -987,7 +1027,7 @@ public class SettingsPage : ContentPage
         var switchColorDurationTooLong = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchColorDurationTooLong.SetBinding(Switch.IsToggledProperty, nameof(vm.ColorDurationTooLong));
         vm.AllSettings.Add(new SettingItem("Color if duration is too long", textWidth, string.Empty, switchColorDurationTooLong));
@@ -997,7 +1037,7 @@ public class SettingsPage : ContentPage
         var switchColorTextTooLong = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchColorTextTooLong.SetBinding(Switch.IsToggledProperty, nameof(vm.ColorTextTooLong));
         vm.AllSettings.Add(new SettingItem("Color text if too long", textWidth, string.Empty, switchColorTextTooLong));
@@ -1005,7 +1045,7 @@ public class SettingsPage : ContentPage
         var switchColorTextTooWide = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchColorTextTooWide.SetBinding(Switch.IsToggledProperty, nameof(vm.ColorTextTooWide));
         vm.AllSettings.Add(new SettingItem("Color if text is too wide", textWidth, string.Empty, switchColorTextTooWide));
@@ -1013,7 +1053,7 @@ public class SettingsPage : ContentPage
         var switchColorTextTooManyLines = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         switchColorTextTooManyLines.SetBinding(Switch.IsToggledProperty, nameof(vm.ColorTextTooManyLines));
         vm.AllSettings.Add(new SettingItem("Color text if more than x lines", textWidth, string.Empty, switchColorTextTooManyLines));
@@ -1024,14 +1064,14 @@ public class SettingsPage : ContentPage
         var switchColorTimeCodeOverlap = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
         vm.AllSettings.Add(new SettingItem("Color if time code overlap", textWidth, string.Empty, switchColorTimeCodeOverlap));
 
         var switchColorGapTooShort = new Switch
         {
             HorizontalOptions = LayoutOptions.Start,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.SecondaryBackgroundColor],
+            BackgroundColor = Colors.Transparent,
         }.BindDynamicTheme();
 
         vm.AllSettings.Add(new SettingItem("Color if gap too short", textWidth, string.Empty, switchColorGapTooShort));
