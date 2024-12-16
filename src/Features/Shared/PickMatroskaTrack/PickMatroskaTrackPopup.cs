@@ -12,6 +12,8 @@ public sealed class PickMatroskaTrackPopup : Popup
 
         CanBeDismissedByTappingOutsideOfPopup = false;
 
+        Resources.Add(ThemeHelper.GetGridSelectionStyle());
+
         var grid = new Grid
         {
             RowDefinitions =
@@ -31,7 +33,7 @@ public sealed class PickMatroskaTrackPopup : Popup
             VerticalOptions = LayoutOptions.Fill,
             WidthRequest = 900,
             HeightRequest = 500,
-        }.BindDynamicTheme();
+        };
 
         var row = 0;
         var labelTitle = new Label
@@ -153,7 +155,7 @@ public sealed class PickMatroskaTrackPopup : Popup
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
             HeightRequest = 240,
-        }.BindDynamicTheme();
+        };
 
         var collectionView = new CollectionView
         {
@@ -168,7 +170,7 @@ public sealed class PickMatroskaTrackPopup : Popup
                     HorizontalOptions = LayoutOptions.Fill,
                     VerticalOptions = LayoutOptions.Start,
                     Margin = new Thickness(0, 0, 10, 10),
-                }.BindDynamicTheme();
+                }.BindDynamicThemeTextColorOnly();
                 label.SetBinding(Label.TextProperty, nameof(MatroskaTrackItem.DisplayName));
                 return label;
             }),

@@ -196,8 +196,16 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         }
 
         if (query.ContainsKey("Abort") && query["Abort"] is true)
-        {
+        {          
             _cancellationTokenSource.Cancel();
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                var scrollToIndex = SelectedStartFromNumber - 1;
+                ListView.ScrollTo(scrollToIndex, -1, ScrollToPosition.Center, true);
+                ListView.Focus();
+            });
+
             return;
         }
 

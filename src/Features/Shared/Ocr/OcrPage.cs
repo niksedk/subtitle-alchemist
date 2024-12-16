@@ -27,7 +27,7 @@ public class OcrPage : ContentPage
                 new() { Width = GridLength.Star },
             },
             Margin = new Thickness(20, 20, 20, 20)
-        };
+        }.BindDynamicTheme();
 
         var row = 0;
         var labelTitle = new Label
@@ -230,7 +230,7 @@ public class OcrPage : ContentPage
                 labelNOcrPixelsAreSpace,
                 pickerPixelsAreSpace,
             }
-        };
+        }.BindDynamicTheme();
         grid.Add(stackOcrEngine, 0, row);
         grid.SetColumnSpan(stackOcrEngine, 2);
 
@@ -367,7 +367,7 @@ public class OcrPage : ContentPage
                         new ColumnDefinition { Width = 100 }, // duration
                         new ColumnDefinition { Width = GridLength.Star }, // text
                     },
-                }.BindDynamicTheme();
+                };
 
                 var labelNumber = new Label
                 {
