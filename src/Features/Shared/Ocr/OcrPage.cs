@@ -10,6 +10,7 @@ public class OcrPage : ContentPage
     public OcrPage(OcrPageModel vm)
     {
         BindingContext = vm;
+        Resources.Clear();
         Resources.Add(ThemeHelper.GetGridSelectionStyle());
 
         var grid = new Grid

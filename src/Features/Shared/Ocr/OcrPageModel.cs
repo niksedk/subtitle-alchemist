@@ -196,7 +196,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         }
 
         if (query.ContainsKey("Abort") && query["Abort"] is true)
-        {          
+        {
             _cancellationTokenSource.Cancel();
 
             MainThread.BeginInvokeOnMainThread(() =>
@@ -318,7 +318,9 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 IsRunActive = true;
                 LoadSettings();
 
-                SelectedOcrSubtitleItem = OcrSubtitleItems.FirstOrDefault();
+                ListView.Focus();
+                ListView.SelectedItem = OcrSubtitleItems.FirstOrDefault();
+                ListView.SelectedItem = OcrSubtitleItems.FirstOrDefault();
 
                 if (runOcr)
                 {
