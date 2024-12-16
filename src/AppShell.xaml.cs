@@ -24,7 +24,7 @@ namespace SubtitleAlchemist
         {
             InitializeComponent();
 
-            var types = new List<Type>
+            var types = new Type[]
             {
                 typeof(AdjustAllTimesPage),
                 typeof(AdjustDurationPage),

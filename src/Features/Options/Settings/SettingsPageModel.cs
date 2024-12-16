@@ -9,8 +9,6 @@ using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Markup.LeftToRight;
-using CommunityToolkit.Maui.Markup.RightToLeft;
 
 namespace SubtitleAlchemist.Features.Options.Settings;
 

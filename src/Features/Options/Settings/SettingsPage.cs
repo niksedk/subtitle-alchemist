@@ -48,7 +48,7 @@ public class SettingsPage : ContentPage
 
         var searchBar = new SearchBar
         {
-            Placeholder = "Search text",
+            Placeholder = "Find a setting",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Fill,
             WidthRequest = 400,
