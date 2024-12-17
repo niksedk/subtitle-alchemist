@@ -15,6 +15,7 @@ using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export;
 using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
 using SubtitleAlchemist.Features.Files.ExportBinary.PacExport;
+using SubtitleAlchemist.Features.Files.ExportImage;
 using SubtitleAlchemist.Features.Help.About;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Features.Main.LayoutPicker;
@@ -42,10 +43,9 @@ using SubtitleAlchemist.Logic.Dictionaries;
 using SubtitleAlchemist.Logic.Media;
 using SubtitleAlchemist.Services;
 using SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts;
-using EditShortcutPopupModel = SubtitleAlchemist.Features.Options.Settings.EditShortcutPopupModel;
 using SubtitleAlchemist.Features.Tools.ChangeCasing;
-using OcrPageModel = SubtitleAlchemist.Features.Shared.Ocr.OcrPageModel;
 using SubtitleAlchemist.Features.Shared.PickMatroskaTrack;
+using SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
 
 namespace SubtitleAlchemist;
 
@@ -116,6 +116,10 @@ public static class MauiProgram
         builder.Services.AddTransient<OcrPageModel>();
         builder.Services.AddTransient<NOcrDbEditPage>();
         builder.Services.AddTransient<NOcrDbEditPageModel>();
+        builder.Services.AddTransient<ExportImagePage>();
+        builder.Services.AddTransient<ExportImagePageModel>();
+        builder.Services.AddTransient<RemoveTextForHiPage>();
+        builder.Services.AddTransient<RemoveTextForHiPageModel>();
 
         builder.Services.AddTransient<TaskbarList>();
         builder.Services.AddTransient<ISpellCheckManager, SpellCheckManager>();

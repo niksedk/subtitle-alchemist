@@ -32,8 +32,8 @@ public sealed class PickMatroskaTrackPopup : Popup
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             WidthRequest = 900,
-            HeightRequest = 500,
-        };
+            HeightRequest = 700,
+        }.BindDynamicTheme();
 
         var row = 0;
         var labelTitle = new Label
@@ -154,7 +154,7 @@ public sealed class PickMatroskaTrackPopup : Popup
             Padding = new Thickness(0, 0, 0, 10),
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
-            HeightRequest = 240,
+            HeightRequest = 440,
         };
 
         var collectionView = new CollectionView
@@ -162,7 +162,7 @@ public sealed class PickMatroskaTrackPopup : Popup
             SelectionMode = SelectionMode.Single,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Start,
-            HeightRequest = 240,
+            HeightRequest = 440,
             ItemTemplate = new DataTemplate(() =>
             {
                 var label = new Label
@@ -174,7 +174,7 @@ public sealed class PickMatroskaTrackPopup : Popup
                 label.SetBinding(Label.TextProperty, nameof(MatroskaTrackItem.DisplayName));
                 return label;
             }),
-        }.BindDynamicTheme();
+        };
         collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.TrackItems));
         collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedTrackItem));
         collectionView.SelectionChanged += vm.OnTrackSelected;
@@ -203,7 +203,7 @@ public sealed class PickMatroskaTrackPopup : Popup
                 image.Margin = new Thickness(0, 5, 0, 5);
                 return new ViewCell { View = image };
             }),
-            HeightRequest = 150,
+            HeightRequest = 450,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(10, 0, 0, 0),
@@ -229,7 +229,7 @@ public sealed class PickMatroskaTrackPopup : Popup
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(10, 0, 0, 0),
-            HeightRequest = 240,
+            HeightRequest = 440,
         };
 
         grid.Add(new Label { Text = "Selected track info", FontAttributes = FontAttributes.Bold, Margin = new Thickness(20, 10, 10, 10) }, 1);

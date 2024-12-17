@@ -44,7 +44,7 @@ internal static class InitMenuBar
             };
             vm.MenuFlyoutItemReopen.Add(reopenItem);
         }
-        
+
 
         menu.Add(new MenuFlyoutItem
         {
@@ -90,6 +90,11 @@ internal static class InitMenuBar
         {
             Text = "Export",
         };
+        exportMenuItem.Add(new MenuFlyoutItem
+        {
+            Text = "Blu-ray .sup",
+            Command = vm.ExportBluRaySupCommand,
+        });
         //TODO: wait for libse 4.0.9
         //exportMenuItem.Add(new MenuFlyoutItem
         //{
@@ -174,7 +179,7 @@ internal static class InitMenuBar
         var replace = new MenuFlyoutItem
         {
             Text = "Replace",
-            Command= vm.ReplaceShowCommand,
+            Command = vm.ReplaceShowCommand,
         };
         find.KeyboardAccelerators.Add(new KeyboardAccelerator
         {
@@ -221,6 +226,11 @@ internal static class InitMenuBar
             Command = vm.FixCommonErrorsShowCommand,
         });
 
+        menu.Add(new MenuFlyoutItem
+        {
+            Text = "Remove text for hearing impaired...",
+            Command = vm.RemoveTextForHearingImpairedShowCommand,
+        });
 
         menu.Add(new MenuFlyoutItem
         {

@@ -33,6 +33,12 @@ namespace SubtitleAlchemist.Logic
             return control;
         }
 
+        public static Entry BindDynamicThemeTextOnly(this Entry control)
+        {
+            control.SetDynamicResource(Entry.TextColorProperty, ThemeNames.TextColor);
+            return control;
+        }
+
         public static Label BindDynamicTheme(this Label control)
         {
             control.SetDynamicResource(VisualElement.BackgroundColorProperty, ThemeNames.BackgroundColor);
@@ -180,6 +186,12 @@ namespace SubtitleAlchemist.Logic
         public static Switch BindDynamicThemeTextColorOnly(this Switch control)
         {
             //control.SetDynamicResource(Switch.property.TextColorProperty, ThemeNames.TextColor);
+            return control;
+        }
+
+        public static Picker BindDynamicThemeTextColorOnly(this Picker control)
+        {
+            control.SetDynamicResource(Picker.TextColorProperty, ThemeNames.TextColor);
             return control;
         }
 

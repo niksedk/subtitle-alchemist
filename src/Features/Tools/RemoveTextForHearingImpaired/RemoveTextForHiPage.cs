@@ -1,0 +1,731 @@
+﻿using Microsoft.Maui.Controls.Shapes;
+using SubtitleAlchemist.Features.Files;
+using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Constants;
+
+namespace SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
+
+public class RemoveTextForHiPage : ContentPage
+{
+    private const int LeftMenuWidth = 400;
+
+    public RemoveTextForHiPage(RemoveTextForHiPageModel vm)
+    {
+        this.BindDynamicTheme();
+        Padding = new Thickness(10);
+        vm.Page = this;
+        BindingContext = vm;
+
+        Resources.Add(ThemeHelper.GetGridSelectionStyle());
+
+        var grid = new Grid
+        {
+            Padding = new Thickness(20),
+            RowSpacing = 20,
+            ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto }, // Title
+                new RowDefinition { Height = GridLength.Star }, // Options + fixes
+                new RowDefinition { Height = GridLength.Auto }, // Buttons
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            }
+        }.BindDynamicTheme();
+
+        var titleLabel = new Label
+        {
+            Text = "Remove text for hearing impaired",
+        }.AsTitle();
+        grid.Add(titleLabel, 0, 0);
+        Grid.SetColumnSpan(titleLabel, 2);
+
+
+        var optionsView = MakeOptions(vm);
+        var fixesView = MakeCollectionView(vm);
+
+        grid.Add(optionsView, 0, 1);
+        grid.Add(fixesView, 1, 1);
+
+
+        var buttonOk = new Button
+        {
+            Text = "OK",
+            Command = vm.OkCommand,
+            Margin = new Thickness(0, 0, 10, 0),
+        }.BindDynamicTheme();
+
+        var buttonCancel = new Button
+        {
+            Text = "Cancel",
+            Command = vm.CancelCommand,
+        }.BindDynamicTheme();
+
+        var buttonBar = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.End,
+            Children =
+            {
+                buttonOk,
+                buttonCancel,
+            }
+        }.BindDynamicTheme();
+
+        grid.Add(buttonBar, 0, 2);
+        Grid.SetColumnSpan(buttonBar, 2);
+
+        Content = grid;
+    }
+
+    private Border MakeCollectionView(RemoveTextForHiPageModel vm)
+    {
+        var headerGrid = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Apply
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Line#
+                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Before
+                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // After
+            },
+        };
+
+        var labelApply = new Label
+        {
+            Text = "Apply",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        headerGrid.Add(labelApply, 0, 0);
+
+        var labelLine = new Label
+        {
+            Text = "Line#",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        headerGrid.Add(labelLine, 1, 0);
+
+        var labelBefore = new Label
+        {
+            Text = "Before",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        headerGrid.Add(labelBefore, 2, 0);
+
+        var labelAfter = new Label
+        {
+            Text = "After",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        headerGrid.Add(labelAfter, 3, 0);
+
+        var collectionView = new CollectionView
+        {
+            SelectionMode = SelectionMode.Single,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            ItemTemplate = new DataTemplate(() =>
+            {
+                var rulesItemsGrid = new Grid
+                {
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Apply
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Line#
+                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Before
+                        new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // After
+                    },
+                };
+
+                var switchApply = new Switch
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicThemeTextColorOnly();
+                switchApply.SetBinding(Switch.IsToggledProperty, nameof(RemoveItem.Apply));
+                rulesItemsGrid.Add(switchApply, 0, 0);
+
+                var labelLineNumber = new Label
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicThemeTextColorOnly();
+                labelLineNumber.SetBinding(Label.TextProperty, nameof(RemoveItem.Index));
+                rulesItemsGrid.Add(labelLineNumber, 1, 0);
+
+                var labelBefore = new Label
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicThemeTextColorOnly();
+                labelBefore.SetBinding(Label.TextProperty, nameof(RemoveItem.Before));
+                rulesItemsGrid.Add(labelBefore, 2, 0);
+
+                var labelAfter = new Label
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                }.BindDynamicThemeTextColorOnly();
+                labelAfter.SetBinding(Label.TextProperty, nameof(RemoveItem.After));
+                rulesItemsGrid.Add(labelAfter, 3, 0);
+
+                return rulesItemsGrid;
+            }),
+        };
+
+        collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Fixes));
+
+
+        var gridHeaderAndCollectionView = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+            }
+        };
+
+        gridHeaderAndCollectionView.Add(headerGrid, 0, 0);
+        gridHeaderAndCollectionView.Add(collectionView, 0, 1);
+
+        var border = new Border
+        {
+            Padding = new Thickness(10),
+            StrokeThickness = 1,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Content = gridHeaderAndCollectionView,
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
+            Margin = new Thickness(0, 0, 0, 15),
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+        }.BindDynamicTheme();
+
+        return border;
+    }
+
+    private static ScrollView MakeOptions(RemoveTextForHiPageModel vm)
+    {
+        var grid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
+            WidthRequest = LeftMenuWidth,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+            }
+        };
+
+        var viewRemoveBetween = MakeGridRemoveBetween(vm);
+        grid.Add(viewRemoveBetween, 0);
+
+        var viewRemoveBeforeColon = MakeViewRemoveBeforeColon(vm);
+        grid.Add(viewRemoveBeforeColon, 0, 1);
+
+        var viewRemoveIfTextContains = MakeRemoveIfTextContains(vm);
+        grid.Add(viewRemoveIfTextContains, 0, 2);
+
+        var viewRemoveIf = MakeRemoveIfOnlyMusicSymbols(vm);
+        grid.Add(viewRemoveIf, 0, 3);
+
+        var viewInterjections = MakeInterjections(vm);
+        grid.Add(viewInterjections, 0, 4);
+
+        var scrollView = new ScrollView
+        {
+            Content = grid,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        };
+
+        return scrollView;
+    }
+
+    private static Border MakeInterjections(RemoveTextForHiPageModel vm)
+    {
+        var grid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            WidthRequest = LeftMenuWidth,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            }
+        };
+
+        var row = 0;
+
+        var labelOnlyTextContains = new Label
+        {
+            Text = "Interjections",
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(labelOnlyTextContains, 0, row);
+        grid.SetColumnSpan(labelOnlyTextContains, 2);
+
+        var pickerLanguage = new Picker
+        {
+            Title = "Language",
+            HorizontalOptions = LayoutOptions.Fill,
+        }.BindDynamicThemeTextColorOnly();
+        pickerLanguage.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Languages));
+        pickerLanguage.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedLanguage));
+
+        var buttonEditLanguage = new Button
+        {
+            Text = "Edit",
+            HorizontalOptions = LayoutOptions.End,
+        }.BindDynamicTheme();
+
+        var stackPickerAndButton = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            Children =
+            {
+                pickerLanguage,
+                buttonEditLanguage,
+            }
+        };
+
+        grid.Add(stackPickerAndButton, 1, row++);
+
+        var labelRemoveInterjections = new Label
+        {
+            Text = "Remove interjections",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(labelRemoveInterjections, 0, row);
+
+        var switchRemoveInterjections = new Switch
+        {
+            IsToggled = vm.IsRemoveInterjectionsOn,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(switchRemoveInterjections, 1, row++);
+
+        var labelOnlyIfSeparateLine = new Label
+        {
+            Text = "Only if separate line",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(labelOnlyIfSeparateLine, 0, row);
+
+        var switchOnlyIfSeparateLine = new Switch
+        {
+            IsToggled = vm.IsInterjectionsSeparateLineOn,
+            Margin = new Thickness(10, 0, 0, 0),
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(switchOnlyIfSeparateLine, 1, row++);
+
+        var border = new Border
+        {
+            Padding = new Thickness(10),
+            StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Content = grid,
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
+            Margin = new Thickness(0, 0, 0, 15),
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+        }.BindDynamicTheme();
+        return border;
+    }
+
+    private static Border MakeRemoveIfTextContains(RemoveTextForHiPageModel vm)
+    {
+        var grid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            WidthRequest = LeftMenuWidth,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            }
+        };
+
+        var row = 0;
+
+        var labelOnlyTextContains = new Label
+        {
+            Text = "Remove if text contains",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(labelOnlyTextContains, 0, row);
+
+        var switchRemoveIfTextContains = new Switch
+        {
+            IsToggled = vm.IsRemoveTextContainsOn,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+
+        var entryContains = new Entry
+        {
+            Placeholder = "Contains",
+            HorizontalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(10,0,0,10),
+        }.BindDynamicThemeTextOnly();
+        entryContains.SetBinding(Entry.TextProperty, nameof(vm.TextContains));
+
+        var stackSwitchAndEntry = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            Children =
+            {
+                entryContains,
+                switchRemoveIfTextContains,
+            }
+        };
+
+        grid.Add(stackSwitchAndEntry, 1, row++);
+
+        var border = new Border
+        {
+            Padding = new Thickness(10),
+            StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Content = grid,
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
+            Margin = new Thickness(0, 0, 0, 15),
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+        }.BindDynamicTheme();
+        return border;
+    }
+
+    private static Border MakeRemoveIfOnlyMusicSymbols(RemoveTextForHiPageModel vm)
+    {
+        var grid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            WidthRequest = LeftMenuWidth,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            }
+        };
+
+        var row = 0;
+
+        var labelRemoveIfOnlyMusicSymbols = new Label
+        {
+            Text = "Remove if only music symbols",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(labelRemoveIfOnlyMusicSymbols, 0, row);
+
+        var switchRemoveIfOnlyMusicSymbols = new Switch
+        {
+            IsToggled = vm.IsRemoveOnlyMusicSymbolsOn,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(switchRemoveIfOnlyMusicSymbols, 1, row++);
+
+        var border = new Border
+        {
+            Padding = new Thickness(10),
+            StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Content = grid,
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
+            Margin = new Thickness(0, 0, 0, 15),
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+        }.BindDynamicTheme();
+        return border;
+    }
+
+    private static Border MakeViewRemoveBeforeColon(RemoveTextForHiPageModel vm)
+    {
+        var grid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            WidthRequest = LeftMenuWidth,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            }
+        };
+
+        var row = 0;
+        var labelRemoveTextBeforeColon = new Label
+        {
+            Text = "Remove text before colon",
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(labelRemoveTextBeforeColon, 0, row);
+
+        var switchRemoveTextBeforeColon = new Switch
+        {
+            IsToggled = vm.IsRemoveTextBeforeColonOn,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(switchRemoveTextBeforeColon, 1, row++);
+
+        var labelOnlyTextUppercase = new Label
+        {
+            Text = "Only if text is uppercase",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(labelOnlyTextUppercase, 0, row);
+
+        var switchOnlyTextUppercase = new Switch
+        {
+            IsToggled = vm.IsRemoveTextUppercaseLineOn,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(switchOnlyTextUppercase, 1, row++);
+
+        var labelOnlyIfSeparateLine = new Label
+        {
+            Text = "Only if separate line",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(labelOnlyIfSeparateLine, 0, row);
+
+        var switchOnlyIfSeparateLine = new Switch
+        {
+            IsToggled = vm.IsOnlySeparateLine,
+            Margin = new Thickness(10, 0, 0, 0),
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(switchOnlyIfSeparateLine, 1, row++);
+
+        var borderRemoveBeforeColon = new Border
+        {
+            Padding = new Thickness(10),
+            StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Content = grid,
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
+            Margin = new Thickness(0, 0, 0, 15),
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+        }.BindDynamicTheme();
+        return borderRemoveBeforeColon;
+    }
+
+    private static Border MakeGridRemoveBetween(RemoveTextForHiPageModel vm)
+    {
+        var gridRemoveBetween = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            WidthRequest = LeftMenuWidth,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            }
+        };
+
+        var row = 0;
+
+        var labelRemoveTextBetween = new Label
+        {
+            Text = "Remove text between",
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+        }.BindDynamicThemeTextColorOnly();
+        gridRemoveBetween.Add(labelRemoveTextBetween, 0, row++);
+
+
+        var labelRemoveBrackets = new Label
+        {
+            Text = "Remove brackets",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        gridRemoveBetween.Add(labelRemoveBrackets, 0, row);
+
+        var switchBrackets = new Switch
+        {
+            IsToggled = vm.IsRemoveBracketsOn,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        gridRemoveBetween.Add(switchBrackets, 1, row++);
+
+        var labelRemoveCurly = new Label
+        {
+            Text = "Remove curly brackets",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        gridRemoveBetween.Add(labelRemoveCurly, 0, row);
+
+        var switchCurlyBrackets = new Switch
+        {
+            IsToggled = vm.IsRemoveCurlyBracketsOn,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        gridRemoveBetween.Add(switchCurlyBrackets, 1, row++);
+
+
+        var labelParentheses = new Label
+        {
+            Text = "Remove parentheses",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        gridRemoveBetween.Add(labelParentheses, 0, row);
+
+        var switchParentheses = new Switch
+        {
+            IsToggled = vm.IsRemoveParenthesesOn,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        gridRemoveBetween.Add(switchParentheses, 1, row++);
+
+
+        var entryCustomStart = new Entry
+        {
+            Placeholder = "Start",
+            HorizontalOptions = LayoutOptions.Fill,
+        }.BindDynamicThemeTextOnly();
+        entryCustomStart.SetBinding(Entry.TextProperty, nameof(RemoveTextForHiPageModel.CustomStart));
+
+        var labelAnd = new Label
+        {
+            Text = "and",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+
+        var entryCustomEnd = new Entry
+        {
+            Placeholder = "End",
+            HorizontalOptions = LayoutOptions.Fill,
+        }.BindDynamicThemeTextOnly();
+        entryCustomEnd.SetBinding(Entry.TextProperty, nameof(RemoveTextForHiPageModel.CustomEnd));
+
+        var stackCustom = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            Children =
+            {
+                entryCustomStart,
+                labelAnd,
+                entryCustomEnd,
+            }
+        };
+        gridRemoveBetween.Add(stackCustom, 0, row);
+
+        var switchCustom = new Switch
+        {
+            IsToggled = vm.IsRemoveCustomOn,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        gridRemoveBetween.Add(switchCustom, 1, row++);
+
+
+        var labelOnlySeparateLines = new Label
+        {
+            Text = "Only separate lines",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        gridRemoveBetween.Add(labelOnlySeparateLines, 0, row);
+
+        var switchOnlySeparateLines = new Switch
+        {
+            IsToggled = vm.IsOnlySeparateLine,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        gridRemoveBetween.Add(switchOnlySeparateLines, 1, row++);
+
+        var borderRemoveBetween = new Border
+        {
+            Padding = new Thickness(10),
+            StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Content = gridRemoveBetween,
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
+            Margin = new Thickness(0, 0, 0, 15),
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+        }.BindDynamicTheme();
+
+        return borderRemoveBetween;
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+    }
+}

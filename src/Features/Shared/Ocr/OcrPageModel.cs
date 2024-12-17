@@ -318,9 +318,11 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 IsRunActive = true;
                 LoadSettings();
 
+
+                await Task.Delay(50);
                 ListView.Focus();
-                ListView.SelectedItem = OcrSubtitleItems.FirstOrDefault();
-                ListView.SelectedItem = OcrSubtitleItems.FirstOrDefault();
+                SelectedOcrSubtitleItem = OcrSubtitleItems.FirstOrDefault();
+                OnPropertyChanged(nameof(SelectedOcrSubtitleItem));
 
                 if (runOcr)
                 {

@@ -2,11 +2,11 @@
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
 
-namespace SubtitleAlchemist.Features.Files;
+namespace SubtitleAlchemist.Features.Files.ExportImage;
 
-public class RestoreAutoBackupPage : ContentPage
+public class ExportImagePage : ContentPage
 {
-    public RestoreAutoBackupPage(RestoreAutoBackupPageModel vm)
+    public ExportImagePage(ExportImagePageModel vm)
     {
         this.BindDynamicTheme();
         Padding = new Thickness(10);
@@ -38,7 +38,9 @@ public class RestoreAutoBackupPage : ContentPage
         var titleLabel = new Label
         {
             Text = "Restore auto-back",
-        }.AsTitle();
+            FontAttributes = FontAttributes.Bold,
+            FontSize = 18,
+        }.BindDynamicTheme();
         grid.Add(titleLabel, 0, 0);
         Grid.SetColumnSpan(titleLabel, 2);
 
@@ -121,7 +123,7 @@ public class RestoreAutoBackupPage : ContentPage
         Content = grid;
     }
 
-    private CollectionView MakeCollectionView(RestoreAutoBackupPageModel vm)
+    private CollectionView MakeCollectionView(ExportImagePageModel vm)
     {
         var collectionView = new CollectionView
         {
@@ -181,7 +183,7 @@ public class RestoreAutoBackupPage : ContentPage
         return collectionView;
     }
 
-    private static Grid MakeHeader(RestoreAutoBackupPageModel vm)
+    private static Grid MakeHeader(ExportImagePageModel vm)
     {
         // Create the header grid
         var gridHeader = new Grid

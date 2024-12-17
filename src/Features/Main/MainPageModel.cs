@@ -5,6 +5,7 @@ using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.ContainerFormats.Matroska;
 using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SharpHook;
 using SubtitleAlchemist.Controls.AudioVisualizerControl;
@@ -16,22 +17,32 @@ using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export;
 using SubtitleAlchemist.Features.Files.ExportBinary.EbuExport;
 using SubtitleAlchemist.Features.Files.ExportBinary.PacExport;
+using SubtitleAlchemist.Features.Files.ExportImage;
 using SubtitleAlchemist.Features.Help.About;
+using SubtitleAlchemist.Features.Main.LayoutPicker;
 using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Features.Options.Settings;
+using SubtitleAlchemist.Features.Shared.Ocr;
+using SubtitleAlchemist.Features.Shared.PickMatroskaTrack;
 using SubtitleAlchemist.Features.SpellCheck;
 using SubtitleAlchemist.Features.Sync.AdjustAllTimes;
 using SubtitleAlchemist.Features.Sync.ChangeFrameRate;
 using SubtitleAlchemist.Features.Sync.ChangeSpeed;
 using SubtitleAlchemist.Features.Tools.AdjustDuration;
+using SubtitleAlchemist.Features.Tools.BatchConvert;
+using SubtitleAlchemist.Features.Tools.ChangeCasing;
 using SubtitleAlchemist.Features.Tools.FixCommonErrors;
+using SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
 using SubtitleAlchemist.Features.Translate;
 using SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 using SubtitleAlchemist.Features.Video.BurnIn;
 using SubtitleAlchemist.Features.Video.OpenFromUrl;
 using SubtitleAlchemist.Features.Video.TextToSpeech;
+using SubtitleAlchemist.Features.Video.TransparentSubtitles;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.BluRaySup;
 using SubtitleAlchemist.Logic.Config;
+using SubtitleAlchemist.Logic.Constants;
 using SubtitleAlchemist.Logic.Dictionaries;
 using SubtitleAlchemist.Logic.Media;
 using System.Collections;
@@ -40,18 +51,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Timers;
-using Nikse.SubtitleEdit.Core.ContainerFormats.Matroska;
-using SubtitleAlchemist.Features.Main.LayoutPicker;
-using SubtitleAlchemist.Features.Tools.BatchConvert;
+using Color = Microsoft.Maui.Graphics.Color;
 using Path = System.IO.Path;
 using SpellCheckDictionary = SubtitleAlchemist.Features.SpellCheck.SpellCheckDictionary;
-using SubtitleAlchemist.Features.Video.TransparentSubtitles;
-using SubtitleAlchemist.Logic.Constants;
-using SubtitleAlchemist.Logic.BluRaySup;
-using SubtitleAlchemist.Features.Shared.Ocr;
-using SubtitleAlchemist.Features.Tools.ChangeCasing;
-using Color = Microsoft.Maui.Graphics.Color;
-using SubtitleAlchemist.Features.Shared.PickMatroskaTrack;
 
 namespace SubtitleAlchemist.Features.Main;
 
@@ -993,6 +995,19 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
             MainPage.MakeLayout(SelectedLayout);
             Se.SaveSettings();
         }
+    }
+
+    [RelayCommand]
+    public async Task ExportBluRaySup()
+    {
+        await Shell.Current.GoToAsync(nameof(ExportImagePage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
+            { "SubtitleFileName", _subtitleFileName },
+            { "VideoFileName", _videoFileName },
+            { "TargetFormat", "BluRaySup" }, //TODO: enum or class
+        });
     }
 
     [RelayCommand]
@@ -2137,6 +2152,19 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
             { "Page", nameof(MainPage) },
             { "Subtitle", UpdatedSubtitle },
             { "Encoding", CurrentEncoding },
+            { "Format", CurrentSubtitleFormat },
+        });
+    }
+
+
+    [RelayCommand]
+    private async Task RemoveTextForHearingImpairedShow()
+    {
+        await DictionaryLoader.UnpackIfNotFound();
+        await Shell.Current.GoToAsync(nameof(RemoveTextForHiPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(MainPage) },
+            { "Subtitle", UpdatedSubtitle },
             { "Format", CurrentSubtitleFormat },
         });
     }
