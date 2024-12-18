@@ -328,10 +328,10 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchRemoveInterjections = new Switch
         {
-            IsToggled = vm.IsRemoveInterjectionsOn,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicThemeTextColorOnly();
+        switchRemoveInterjections.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveInterjectionsOn));
         grid.Add(switchRemoveInterjections, 1, row++);
 
         var labelOnlyIfSeparateLine = new Label
@@ -343,10 +343,10 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchOnlyIfSeparateLine = new Switch
         {
-            IsToggled = vm.IsInterjectionsSeparateLineOn,
             Margin = new Thickness(10, 0, 0, 0),
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicThemeTextColorOnly();
+        switchOnlyIfSeparateLine.SetBinding(Switch.IsToggledProperty, nameof(vm.IsInterjectionsSeparateLineOn));
         grid.Add(switchOnlyIfSeparateLine, 1, row++);
 
         var border = new Border
@@ -396,10 +396,10 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchRemoveIfTextContains = new Switch
         {
-            IsToggled = vm.IsRemoveTextContainsOn,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicThemeTextColorOnly();
+        switchRemoveIfTextContains.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveTextContainsOn));
 
         var entryContains = new Entry
         {
@@ -468,10 +468,10 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchRemoveIfOnlyMusicSymbols = new Switch
         {
-            IsToggled = vm.IsRemoveOnlyMusicSymbolsOn,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicThemeTextColorOnly();
+        switchRemoveIfOnlyMusicSymbols.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveOnlyMusicSymbolsOn));
         grid.Add(switchRemoveIfOnlyMusicSymbols, 1, row++);
 
         var border = new Border
@@ -521,10 +521,10 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchRemoveTextBeforeColon = new Switch
         {
-            IsToggled = vm.IsRemoveTextBeforeColonOn,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicThemeTextColorOnly();
+        switchRemoveTextBeforeColon.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveTextBeforeColonOn));
         grid.Add(switchRemoveTextBeforeColon, 1, row++);
 
         var labelOnlyTextUppercase = new Label
@@ -536,9 +536,9 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchOnlyTextUppercase = new Switch
         {
-            IsToggled = vm.IsRemoveTextUppercaseLineOn,
             Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicThemeTextColorOnly();
+        switchOnlyTextUppercase.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveTextBeforeColonUppercaseOn));
         grid.Add(switchOnlyTextUppercase, 1, row++);
 
         var labelOnlyIfSeparateLine = new Label
@@ -550,10 +550,10 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchOnlyIfSeparateLine = new Switch
         {
-            IsToggled = vm.IsOnlySeparateLine,
             Margin = new Thickness(10, 0, 0, 0),
             VerticalOptions = LayoutOptions.Center,
         }.BindDynamicThemeTextColorOnly();
+        switchOnlyIfSeparateLine.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveTextBeforeColonSeparateLineOn));
         grid.Add(switchOnlyIfSeparateLine, 1, row++);
 
         var borderRemoveBeforeColon = new Border
@@ -612,10 +612,10 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchBrackets = new Switch
         {
-            IsToggled = vm.IsRemoveBracketsOn,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicThemeTextColorOnly();
+        switchBrackets.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveBracketsOn));
         gridRemoveBetween.Add(switchBrackets, 1, row++);
 
         var labelRemoveCurly = new Label
@@ -627,10 +627,10 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchCurlyBrackets = new Switch
         {
-            IsToggled = vm.IsRemoveCurlyBracketsOn,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicThemeTextColorOnly();
+        switchCurlyBrackets.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveCurlyBracketsOn));
         gridRemoveBetween.Add(switchCurlyBrackets, 1, row++);
 
 
@@ -643,10 +643,10 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchParentheses = new Switch
         {
-            IsToggled = vm.IsRemoveParenthesesOn,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicThemeTextColorOnly();
+        switchParentheses.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveParenthesesOn));
         gridRemoveBetween.Add(switchParentheses, 1, row++);
 
 
@@ -684,10 +684,10 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchCustom = new Switch
         {
-            IsToggled = vm.IsRemoveCustomOn,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicThemeTextColorOnly();
+        switchCustom.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveCustomOn));
         gridRemoveBetween.Add(switchCustom, 1, row++);
 
 
@@ -700,10 +700,10 @@ public class RemoveTextForHiPage : ContentPage
 
         var switchOnlySeparateLines = new Switch
         {
-            IsToggled = vm.IsOnlySeparateLine,
             VerticalOptions = LayoutOptions.Center,
             Margin = new Thickness(10, 0, 0, 0),
         }.BindDynamicThemeTextColorOnly();
+        switchOnlySeparateLines.SetBinding(Switch.IsToggledProperty, nameof(vm.IsOnlySeparateLine));
         gridRemoveBetween.Add(switchOnlySeparateLines, 1, row++);
 
         var borderRemoveBetween = new Border
