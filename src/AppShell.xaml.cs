@@ -34,6 +34,7 @@ namespace SubtitleAlchemist
                 typeof(BatchConvertPage),
                 typeof(BurnInPage),
                 typeof(ChangeCasingPage),
+                typeof(EditInterjectionsPage),
                 typeof(ExportEbuPage),
                 typeof(ExportImagePage),
                 typeof(FixCommonErrorsPage),

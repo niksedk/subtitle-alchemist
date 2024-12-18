@@ -120,6 +120,8 @@ public static class MauiProgram
         builder.Services.AddTransient<ExportImagePageModel>();
         builder.Services.AddTransient<RemoveTextForHiPage>();
         builder.Services.AddTransient<RemoveTextForHiPageModel>();
+        builder.Services.AddTransient<EditInterjectionsPage>();
+        builder.Services.AddTransient<EditInterjectionsPageModel>();
 
         builder.Services.AddTransient<TaskbarList>();
         builder.Services.AddTransient<ISpellCheckManager, SpellCheckManager>();

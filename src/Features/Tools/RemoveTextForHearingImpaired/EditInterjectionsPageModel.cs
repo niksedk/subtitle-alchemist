@@ -9,7 +9,7 @@ using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
 
-public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttributable
+public partial class EditInterjectionsPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty] private bool _isRemoveBracketsOn;
     [ObservableProperty] private bool _isRemoveCurlyBracketsOn;
@@ -40,13 +40,13 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
 
     [ObservableProperty] private ObservableCollection<RemoveItem> _fixes;
 
-    public RemoveTextForHiPage? Page { get; set; }
+    public EditInterjectionsPage? Page { get; set; }
 
     private Subtitle _subtitle;
     private RemoveTextForHI? _removeTextForHiLib;
     private readonly System.Timers.Timer _timer;
 
-    public RemoveTextForHiPageModel()
+    public EditInterjectionsPageModel()
     {
         _customStart = "?";
         _customEnd = "?";
