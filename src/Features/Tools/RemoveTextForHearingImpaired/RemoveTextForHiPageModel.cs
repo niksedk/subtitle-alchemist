@@ -3,11 +3,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.Constants;
+using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
 
-public partial class RemoveTextForHiPageModel : ObservableObject
+public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty] private bool _isRemoveBracketsOn;
     [ObservableProperty] private bool _isRemoveCurlyBracketsOn;
@@ -63,85 +63,84 @@ public partial class RemoveTextForHiPageModel : ObservableObject
     [RelayCommand]
     public async Task Ok()
     {
-        if (SelectedFile is not { } file || Page == null)
-        {
-            return;
-        }
-
-        var answer = await Page.DisplayAlert(
-            "Restore auto-backup file?",
-            $"Do you want to restore \"{file.FileName}\" from {file.DateAndTime}?",
-            "Yes",
-            "No");
-
-        if (!answer)
-        {
-            return;
-        }
+        SaveSettings();
 
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
-            { "Page", nameof(RestoreAutoBackupPage) },
-            { "SubtitleFileName", file.FullPath },
+            { "Page", nameof(RemoveTextForHiPage) },
+    //        { "SubtitleFileName", file.FullPath },
         });
     }
 
-    public void Initialize()
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        foreach (var fileName in _autoBackup.GetAutoBackupFiles())
-        {
-            var fileInfo = new FileInfo(fileName);
+        var page = query["Page"].ToString();
 
-            var path = Path.GetFileName(fileName);
-            if (string.IsNullOrEmpty(path))
-            {
-                continue;
-            }
-
-            var displayDate = path[..19].Replace('_', ' ');
-            displayDate = displayDate.Remove(13, 1).Insert(13, ":");
-            displayDate = displayDate.Remove(16, 1).Insert(16, ":");
-
-//            Files.Add(new DisplayFile(fileName, displayDate, Utilities.FormatBytesToDisplayFileSize(fileInfo.Length)));
-        }
-
-  //      Files = new ObservableCollection<DisplayFile>(Files.OrderByDescending(f => f.DateAndTime));
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                //if (Files.Count > 0)
-                //{
-                //    SelectedFile = Files[0];
-                //}
+                LoadSettings();
             });
             return false;
         });
     }
 
-    public void OpenContainingFolderTapped()
+    private void LoadSettings()
     {
-        if (SelectedFile is not { } file)
-        {
-            return;
-        }
+        var settings = Se.Settings.Tools.RemoveTextForHi;
 
-        UiUtil.OpenFolderFromFileName(file.FullPath);
+        IsRemoveBracketsOn = settings.IsRemoveBracketsOn;
+        IsRemoveCurlyBracketsOn = settings.IsRemoveCurlyBracketsOn;
+        IsRemoveParenthesesOn = settings.IsRemoveParenthesesOn;
+        IsRemoveCustomOn = settings.IsRemoveCustomOn;
+        CustomStart = settings.CustomStart;
+        CustomEnd = settings.CustomEnd;
+        IsOnlySeparateLine = settings.IsOnlySeparateLine;
+
+        IsRemoveTextBeforeColonOn = settings.IsRemoveTextBeforeColonOn;
+        IsRemoveTextBeforeColonUppercaseOn = settings.IsRemoveTextBeforeColonUppercaseOn;
+        IsRemoveTextBeforeColonSeparateLineOn = settings.IsRemoveTextBeforeColonSeparateLineOn;
+
+        IsRemoveTextUppercaseLineOn = settings.IsRemoveTextUppercaseLineOn;
+
+        IsRemoveTextContainsOn = settings.IsRemoveTextContainsOn;
+        TextContains = settings.TextContains;
+
+        IsRemoveOnlyMusicSymbolsOn = settings.IsRemoveOnlyMusicSymbolsOn;
+
+        IsRemoveInterjectionsOn = settings.IsRemoveInterjectionsOn;
+        IsInterjectionsSeparateLineOn = settings.IsInterjectionsSeparateLineOn;
     }
 
-    public void OpenContainingFolderPointerEntered(object? sender, PointerEventArgs e)
+    private void SaveSettings()
     {
-        LabelOpenFolder.TextColor = (Color)Application.Current!.Resources[ThemeNames.LinkColor];
-    }
+        var settings = Se.Settings.Tools.RemoveTextForHi;
 
-    public void OpenContainingFolderPointerExited(object? sender, PointerEventArgs e)
-    {
-        LabelOpenFolder.TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
-    }
+        settings.IsRemoveBracketsOn = IsRemoveBracketsOn;
+        settings.IsRemoveCurlyBracketsOn = IsRemoveCurlyBracketsOn;
+        settings.IsRemoveParenthesesOn = IsRemoveParenthesesOn;
+        settings.IsRemoveCustomOn = IsRemoveCustomOn;
+        settings.CustomStart = CustomStart;
+        settings.CustomEnd = CustomEnd;
+        settings.IsOnlySeparateLine = IsOnlySeparateLine;
 
-    public void SelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        //IsOkButtonEnabled = e.CurrentSelection.FirstOrDefault() is DisplayFile;
+        settings.IsRemoveTextBeforeColonOn = IsRemoveTextBeforeColonOn;
+        settings.IsRemoveTextBeforeColonUppercaseOn = IsRemoveTextBeforeColonUppercaseOn;
+        settings.IsRemoveTextBeforeColonSeparateLineOn = IsRemoveTextBeforeColonSeparateLineOn;
+
+        settings.IsRemoveTextUppercaseLineOn = IsRemoveTextUppercaseLineOn;
+
+        settings.IsRemoveTextContainsOn = IsRemoveTextContainsOn;
+        settings.TextContains = TextContains;
+
+        settings.IsRemoveOnlyMusicSymbolsOn = IsRemoveOnlyMusicSymbolsOn;
+
+        settings.IsRemoveInterjectionsOn = IsRemoveInterjectionsOn;
+        settings.IsInterjectionsSeparateLineOn = IsInterjectionsSeparateLineOn;
+
+        Se.SaveSettings();
     }
 }
