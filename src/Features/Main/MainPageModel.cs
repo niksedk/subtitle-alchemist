@@ -264,6 +264,20 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
             }
         }
 
+        if (page == nameof(RemoveTextForHiPage))
+        {
+            MakeHistoryForUndo("Before \"Remove text for hearing impaired\"");
+
+            
+
+            if (query["Subtitle"] is Subtitle subtitle)
+            {
+                Paragraphs = new ObservableCollection<DisplayParagraph>(subtitle.Paragraphs.Select(p => new DisplayParagraph(p)));
+                ShowStatus($"{Paragraphs.Count} lines generated from Whisper");
+                SelectParagraph(0);
+            }
+        }
+
         if (page == nameof(FixCommonErrorsPage))
         {
             MakeHistoryForUndo($"Before Fix common errors");

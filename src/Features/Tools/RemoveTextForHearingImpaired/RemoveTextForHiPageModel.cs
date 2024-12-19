@@ -84,12 +84,38 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
     [RelayCommand]
     public async Task Ok()
     {
+        _timer.Stop();
         SaveSettings();
+
+        foreach (var fix in Fixes)
+        {
+            fix.Paragraph.Text = fix.After;
+        }
+
+        var i = _subtitle.Paragraphs.Count - 1;
+        while (i >= 0)
+        {
+            var fix = Fixes
+                .FirstOrDefault(p =>
+                    p.Paragraph == _subtitle.Paragraphs[i] &&
+                    p.Apply &&
+                    string.IsNullOrEmpty(p.After));
+
+            if (fix != null)
+            {
+                _subtitle.Paragraphs.RemoveAt(i);
+            }
+
+            i++;
+        }
+
+        _subtitle.Renumber();
 
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(RemoveTextForHiPage) },
-    //        { "SubtitleFileName", file.FullPath },
+            { "Subtitle", _subtitle },
+            { "Count", Fixes.Count(p=>p.Apply ) },
         });
     }
 
@@ -163,7 +189,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
             for (var i = 0; i < newFixes.Count; i++)
             {
                 if (newFixes[i].Index != Fixes[i].Index ||
-                    newFixes[i].Before != Fixes[i].Before || 
+                    newFixes[i].Before != Fixes[i].Before ||
                     newFixes[i].After != Fixes[i].After)
                 {
                     same = false;
