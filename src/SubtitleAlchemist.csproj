@@ -117,20 +117,21 @@
 		<None Remove="Resources\Raw\layout_12.png" />
 		<None Remove="Resources\Raw\PurfviewFasterWhisper.txt" />
 		<None Remove="Resources\Raw\PurfviewFasterWhisperXXL.txt" />
+		<None Remove="Resources\Raw\WhisperConstMe.txt" />
 		<None Remove="Resources\Raw\WhisperCpp.txt" />
 		<None Remove="Resources\Raw\WhisperOpenAi.txt" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="10.0.0" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="9.1.1" />
 		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="5.1.0" />
-		<PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="5.0.0" />
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="4.1.2" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
 		<PackageReference Include="HunspellSharp" Version="1.0.2" />
 		<PackageReference Include="libse" Version="4.0.8" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.21" />
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.21" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.12" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.12" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
 		<PackageReference Include="Plugin.Maui.Audio" Version="3.0.1" />
 		<PackageReference Include="SharpCompress" Version="0.38.0" />
@@ -141,9 +142,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Reference Include="Microsoft.MacCatalyst">
-	    <HintPath>..\..\..\Program Files\dotnet\packs\Microsoft.MacCatalyst.Ref.net8.0_17.5\17.5.8030\ref\net8.0\Microsoft.MacCatalyst.dll</HintPath>
-	  </Reference>
+		<Reference Include="Microsoft.MacCatalyst">
+			<HintPath>..\..\..\Program Files\dotnet\packs\Microsoft.MacCatalyst.Ref.net8.0_17.5\17.5.8030\ref\net8.0\Microsoft.MacCatalyst.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -343,13 +344,13 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</MauiAsset>
 		<MauiAsset Update="Resources\Raw\WhisperConstMe.txt">
-		  <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+			<LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
 		</MauiAsset>
 		<MauiAsset Update="Resources\Raw\WhisperOpenAI.txt">
-		  <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+			<LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
 		</MauiAsset>
 		<MauiAsset Update="Resources\Raw\PurfviewFasterWhisperXXL.txt">
-		  <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+			<LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
 		</MauiAsset>
 		<None Update="Resources\Images\Menu\Add.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -480,18 +481,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="Platforms\Android\TaskbarList.cs">
-	    <ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
-	  </Compile>
-	  <Compile Update="Platforms\iOS\TaskbarList.cs">
-	    <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
-	  </Compile>
-	  <Compile Update="Platforms\MacCatalyst\TaskbarList.cs">
-	    <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
-	  </Compile>
-	  <Compile Update="Platforms\Tizen\TaskbarList.cs">
-	    <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
-	  </Compile>
+		<Compile Update="Platforms\Android\TaskbarList.cs">
+			<ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
+		</Compile>
+		<Compile Update="Platforms\iOS\TaskbarList.cs">
+			<ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+		</Compile>
+		<Compile Update="Platforms\MacCatalyst\TaskbarList.cs">
+			<ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+		</Compile>
+		<Compile Update="Platforms\Tizen\TaskbarList.cs">
+			<ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+		</Compile>
 	</ItemGroup>
 
 </Project>
