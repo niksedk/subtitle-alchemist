@@ -117,7 +117,6 @@
 		<None Remove="Resources\Raw\layout_12.png" />
 		<None Remove="Resources\Raw\PurfviewFasterWhisper.txt" />
 		<None Remove="Resources\Raw\PurfviewFasterWhisperXXL.txt" />
-		<None Remove="Resources\Raw\WhisperConst-me.txt" />
 		<None Remove="Resources\Raw\WhisperCpp.txt" />
 		<None Remove="Resources\Raw\WhisperOpenAi.txt" />
 	</ItemGroup>
@@ -343,7 +342,7 @@
 		<MauiAsset Update="Resources\Raw\layout_09.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</MauiAsset>
-		<MauiAsset Update="Resources\Raw\WhisperConst-me.txt">
+		<MauiAsset Update="Resources\Raw\WhisperConstMe.txt">
 		  <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
 		</MauiAsset>
 		<MauiAsset Update="Resources\Raw\WhisperOpenAI.txt">
