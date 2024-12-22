@@ -16,19 +16,16 @@ public class WhisperAdvancedPage : ContentPage
         this.BindDynamicTheme();
 
         vm.WhisperEngines.Add(WhisperEngineCpp.StaticName, MakeEnginePage(new WhisperEngineCpp(), vm.EditorCppHelpText, vm.ScrollViewCppHelpText));
-        vm.WhisperEngines.Add(WhisperEnginePurfviewFasterWhisper.StaticName, MakeEnginePage(new WhisperEnginePurfviewFasterWhisper(), vm.EditorPurfviewHelpText, vm.ScrollViewPurfviewHelpText));
         vm.WhisperEngines.Add(WhisperEnginePurfviewFasterWhisperXxl.StaticName, MakeEnginePage(new WhisperEnginePurfviewFasterWhisperXxl(), vm.EditorPurfviewXxlHelpText, vm.ScrollViewPurfviewXxlHelpText));
         vm.WhisperEngines.Add(WhisperEngineOpenAi.StaticName, MakeEnginePage(new WhisperEngineOpenAi(), vm.EditorOpenAiHelpText, vm.ScrollViewOpenAiHelpText));
         vm.WhisperEngines.Add(WhisperEngineConstMe.StaticName, MakeEnginePage(new WhisperEngineConstMe(), vm.EditorConstMeHelpText, vm.ScrollViewConstMeHelpText));
 
         vm.WhisperHelpText.Add(WhisperEngineCpp.StaticName, vm.EditorCppHelpText);
-        vm.WhisperHelpText.Add(WhisperEnginePurfviewFasterWhisper.StaticName, vm.EditorPurfviewHelpText);
         vm.WhisperHelpText.Add(WhisperEnginePurfviewFasterWhisperXxl.StaticName, vm.EditorPurfviewXxlHelpText);
         vm.WhisperHelpText.Add(WhisperEngineOpenAi.StaticName, vm.EditorOpenAiHelpText);
         vm.WhisperHelpText.Add(WhisperEngineConstMe.StaticName, vm.EditorConstMeHelpText);
 
         vm.WhisperScrollViews.Add(WhisperEngineCpp.StaticName, vm.ScrollViewCppHelpText);
-        vm.WhisperScrollViews.Add(WhisperEnginePurfviewFasterWhisper.StaticName, vm.ScrollViewPurfviewHelpText);
         vm.WhisperScrollViews.Add(WhisperEnginePurfviewFasterWhisperXxl.StaticName, vm.ScrollViewPurfviewXxlHelpText);
         vm.WhisperScrollViews.Add(WhisperEngineOpenAi.StaticName, vm.ScrollViewOpenAiHelpText);
         vm.WhisperScrollViews.Add(WhisperEngineConstMe.StaticName, vm.ScrollViewConstMeHelpText);
@@ -132,7 +129,6 @@ public class WhisperAdvancedPage : ContentPage
             Children =
             {
                 MakeLeftMenuItem(vm, WhisperEngineCpp.StaticName),
-                MakeLeftMenuItem(vm, WhisperEnginePurfviewFasterWhisper.StaticName),
                 MakeLeftMenuItem(vm, WhisperEnginePurfviewFasterWhisperXxl.StaticName),
                 MakeLeftMenuItem(vm, WhisperEngineOpenAi.StaticName),
                 MakeLeftMenuItem(vm, WhisperEngineConstMe.StaticName),
@@ -244,8 +240,7 @@ public class WhisperAdvancedPage : ContentPage
         scrollView.BindDynamicTheme();
         grid.Add(scrollView, 0, 1);
 
-        if (engine.Name == WhisperEnginePurfviewFasterWhisper.StaticName ||
-            engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName)
+        if (engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName)
         {
             var buttonBar = new StackLayout
             {

@@ -95,12 +95,11 @@ internal static class InitMenuBar
             Text = "Blu-ray .sup",
             Command = vm.ExportBluRaySupCommand,
         });
-        //TODO: wait for libse 4.0.9
-        //exportMenuItem.Add(new MenuFlyoutItem
-        //{
-        //    Text = new CapMakerPlus().Name,
-        //    Command = vm.ExportCapMakerPlusCommand,
-        //});
+        exportMenuItem.Add(new MenuFlyoutItem
+        {
+            Text = new CapMakerPlus().Name,
+            Command = vm.ExportCapMakerPlusCommand,
+        });
         exportMenuItem.Add(new MenuFlyoutItem
         {
             Text = Cavena890.NameOfFormat,

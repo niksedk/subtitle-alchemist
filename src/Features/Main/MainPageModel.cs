@@ -1025,19 +1025,18 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
-    public void ExportCapMakerPlus()
+    public async Task ExportCapMakerPlus()
     {
-        //TODO: wait for libse 4.0.9
-        //var format = new CapMakerPlus();
-        //using var ms = new MemoryStream();
-        //format.Save(_subtitleFileName, ms, UpdatedSubtitle, false);
+        var format = new CapMakerPlus();
+        using var ms = new MemoryStream();
+        format.Save(_subtitleFileName, ms, UpdatedSubtitle, false);
 
-        //var fileHelper = new FileHelper();
-        //var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {CurrentSubtitleFormat.Name} file as", _videoFileName, format);
-        //if (!string.IsNullOrEmpty(subtitleFileName))
-        //{
-        //    ShowStatus($"File exported in format {format.Name} to {subtitleFileName}");
-        //}
+        var fileHelper = new FileHelper();
+        var subtitleFileName = await fileHelper.SaveStreamAs(ms, $"Save {CurrentSubtitleFormat.Name} file as", _videoFileName, format);
+        if (!string.IsNullOrEmpty(subtitleFileName))
+        {
+            ShowStatus($"File exported in format {format.Name} to {subtitleFileName}");
+        }
     }
 
     [RelayCommand]

@@ -7,7 +7,7 @@ public class WhisperEnginePurfviewFasterWhisperXxl : IWhisperEngine
 {
     public static string StaticName => "Purfview Faster Whisper XXL";
     public string Name => StaticName;
-    public string Choice => WhisperChoice.PurfviewFasterWhisperXXL;
+    public string Choice => WhisperChoice.PurfviewFasterWhisperXxl;
     public string Url => "https://github.com/Purfview/whisper-standalone-win";
     public List<WhisperLanguage> Languages => WhisperLanguage.Languages.OrderBy(p => p.Name).ToList();
     public List<WhisperModel> Models

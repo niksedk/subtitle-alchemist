@@ -33,11 +33,6 @@ public class WhisperDownloadService : IWhisperDownloadService
         await DownloadHelper.DownloadFileAsync(_httpClient, DownloadUrlConstMe, stream, progress, cancellationToken);
     }
 
-    public async Task DownloadWhisperPurfviewFasterWhisper(Stream stream, IProgress<float>? progress, CancellationToken cancellationToken)
-    {
-        await DownloadHelper.DownloadFileAsync(_httpClient, DownloadUrlPurfviewFasterWhisper, stream, progress, cancellationToken);
-    }
-
     public async Task DownloadWhisperPurfviewFasterWhisperXxl(string destinationFileName, IProgress<float>? progress, CancellationToken cancellationToken)
     {
         var url = DownloadUrlPurfviewFasterWhisperXxl;

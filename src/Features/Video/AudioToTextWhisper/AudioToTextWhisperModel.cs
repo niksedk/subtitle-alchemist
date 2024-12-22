@@ -152,7 +152,6 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         _windowHandle = IntPtr.Zero;
 
         WhisperEngines.Add(new WhisperEngineCpp());
-        WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisper());
         WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisperXxl());
         WhisperEngines.Add(new WhisperEngineOpenAi());
         WhisperEngines.Add(new WhisperEngineConstMe());
@@ -588,8 +587,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             { "WhisperEngine", engine.Name },
         });
 
-        var isPurfview = engine.Name == WhisperEnginePurfviewFasterWhisper.StaticName ||
-                         engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName;
+        var isPurfview = engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName;
         if (isPurfview)
         {
             if (string.IsNullOrWhiteSpace(_settings.WhisperCustomCommandLineArguments))
@@ -812,10 +810,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
                                 FfmpegMediaInfo2.Parse(_videoFileName).HasFrontCenterAudio(_audioTrackNumber);
 
         //Delete invalid preprocessor_config.json file
-        if (_settings.WhisperChoice is
-              WhisperChoice.PurfviewFasterWhisper or
-              WhisperChoice.PurfviewFasterWhisperCuda or
-              WhisperChoice.PurfviewFasterWhisperXXL)
+        if (_settings.WhisperChoice is WhisperChoice.PurfviewFasterWhisperXxl)
         {
             var dir = Path.Combine(engine.GetAndCreateWhisperModelFolder(model.Model), model.Model.Folder);
             if (Directory.Exists(dir))
@@ -853,8 +848,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         var inputFile = waveFileName;
         if (!_useCenterChannelOnly &&
-            (engine.Name == WhisperEnginePurfviewFasterWhisper.StaticName ||
-             engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName) &&
+            (engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName) &&
             (videoFileName.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) ||
              videoFileName.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)) &&
             _audioTrackNumber <= 0)
@@ -884,7 +878,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
     {
         _settings.WhisperCustomCommandLineArguments = _settings.WhisperCustomCommandLineArguments.Trim();
         if (_settings.WhisperCustomCommandLineArguments == "--standard" &&
-            (engine.Name != WhisperEnginePurfviewFasterWhisper.StaticName && engine.Name != WhisperEnginePurfviewFasterWhisperXxl.StaticName))
+            (engine.Name != WhisperEnginePurfviewFasterWhisperXxl.StaticName))
         {
             _settings.WhisperCustomCommandLineArguments = string.Empty;
         }
@@ -894,7 +888,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         {
             language = "en";
             translateToEnglish = string.Empty;
-        }   
+        }
 
         if (_settings.WhisperChoice is WhisperChoice.Cpp or WhisperChoice.CppCuBlas)
         {
@@ -1350,8 +1344,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
 
         LoadSettings();
 
-        var isPurfview = engine.Name == WhisperEnginePurfviewFasterWhisper.StaticName ||
-                         engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName;
+        var isPurfview = engine.Name == WhisperEnginePurfviewFasterWhisperXxl.StaticName;
         if (isPurfview &&
             string.IsNullOrWhiteSpace(_settings.WhisperCustomCommandLineArguments) &&
             !_settings.WhisperCustomCommandLineArgumentsPurfviewBlank)

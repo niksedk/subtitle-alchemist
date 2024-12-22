@@ -239,10 +239,6 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
             {
                 _downloadTask = _whisperCppDownloadService.DownloadWhisperConstMe(_downloadStream, downloadProgress, _cancellationTokenSource.Token);
             }
-            else if (Engine is WhisperEnginePurfviewFasterWhisper)
-            {
-                _downloadTask = _whisperCppDownloadService.DownloadWhisperPurfviewFasterWhisper(_downloadStream, downloadProgress, _cancellationTokenSource.Token);
-            }
             else if (Engine is WhisperEnginePurfviewFasterWhisperXxl)
             {
                 var dir = Engine.GetAndCreateWhisperFolder();

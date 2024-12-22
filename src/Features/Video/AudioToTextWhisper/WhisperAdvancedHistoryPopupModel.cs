@@ -28,9 +28,7 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper
             Items.Clear();
             Items.Add(string.Empty);
 
-            if (_settings.WhisperChoice 
-                is WhisperChoice.PurfviewFasterWhisper or WhisperChoice.PurfviewFasterWhisperXXL 
-                && !items.Contains("--standard"))
+            if (_settings.WhisperChoice is WhisperChoice.PurfviewFasterWhisperXxl && !items.Contains("--standard"))
             {
                 Items.Add("--standard");
             }

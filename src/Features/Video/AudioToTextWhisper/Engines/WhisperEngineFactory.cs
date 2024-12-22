@@ -25,11 +25,6 @@ public static class WhisperEngineFactory
             return new WhisperEngineOpenAi();
         }
 
-        if (staticName == WhisperEnginePurfviewFasterWhisper.StaticName)
-        {
-            return new WhisperEnginePurfviewFasterWhisper();
-        }
-
         if (staticName == WhisperEnginePurfviewFasterWhisperXxl.StaticName)
         {
             return new WhisperEnginePurfviewFasterWhisperXxl();

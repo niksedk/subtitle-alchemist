@@ -107,7 +107,7 @@ public class WhisperEngineConstMe : IWhisperEngine
 
     public async Task<string> GetHelpText()
     {
-        var assetName = $"{StaticName.Replace(" ", string.Empty)}.txt";
+        var assetName = "WhisperConstMe.txt";
         await using var stream = await FileSystem.OpenAppPackageFileAsync(assetName);
         using var reader = new StreamReader(stream);
 
