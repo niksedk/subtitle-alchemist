@@ -1,11 +1,11 @@
-﻿using System.Collections.ObjectModel;
-using System.Timers;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Forms;
 using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Logic.Config;
+using System.Collections.ObjectModel;
+using System.Timers;
 
 namespace SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
 
@@ -106,7 +106,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
                 _subtitle.Paragraphs.RemoveAt(i);
             }
 
-            i++;
+            i--;
         }
 
         _subtitle.Renumber();
@@ -115,7 +115,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         {
             { "Page", nameof(RemoveTextForHiPage) },
             { "Subtitle", _subtitle },
-            { "Count", Fixes.Count(p=>p.Apply ) },
+            { "Count", Fixes.Count(p => p.Apply ) },
         });
     }
 
@@ -151,7 +151,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         _removeTextForHiLib.Settings = GetSettings(_subtitle);
         _removeTextForHiLib.Warnings = new List<int>();
 
-        //_removeTextForHiLib.ReloadInterjection(_interjectionsLanguage);
+        //_removeTextForHiLib.ReloadInterjection(SelectedLanguage);
 
         var newFixes = new List<RemoveItem>();
         for (var index = 0; index < _subtitle.Paragraphs.Count; index++)
@@ -210,18 +210,20 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
 
     public RemoveTextForHISettings GetSettings(Subtitle subtitle)
     {
+        var textContainsList = TextContains.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToList();
+
         var settings = new RemoveTextForHISettings(subtitle)
         {
             OnlyIfInSeparateLine = IsOnlySeparateLine,
             RemoveIfAllUppercase = IsRemoveTextUppercaseLineOn,
             RemoveTextBeforeColon = IsRemoveTextBeforeColonOn,
             RemoveTextBeforeColonOnlyUppercase = IsRemoveTextBeforeColonUppercaseOn,
-            //ColonSeparateLine = IsRemov,
+            ColonSeparateLine = IsRemoveTextBeforeColonSeparateLineOn,
             RemoveWhereContains = IsRemoveTextContainsOn,
-            RemoveIfTextContains = new List<string>(),
+            RemoveIfTextContains = textContainsList,
             RemoveTextBetweenCustomTags = IsRemoveCustomOn,
             RemoveInterjections = IsRemoveInterjectionsOn,
-            RemoveInterjectionsOnlySeparateLine = IsRemoveInterjectionsOn, // && checkBoxInterjectionOnlySeparateLine.Checked,
+            RemoveInterjectionsOnlySeparateLine = IsRemoveInterjectionsOn && IsInterjectionsSeparateLineOn,
             RemoveTextBetweenSquares = IsRemoveBracketsOn,
             RemoveTextBetweenBrackets = IsRemoveCurlyBracketsOn,
             RemoveTextBetweenQuestionMarks = false,

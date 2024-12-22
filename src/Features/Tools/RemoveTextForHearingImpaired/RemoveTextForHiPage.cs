@@ -1,5 +1,4 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
-using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Constants;
 
@@ -238,20 +237,24 @@ public class RemoveTextForHiPage : ContentPage
             }
         };
 
+        var row = 0;
         var viewRemoveBetween = MakeGridRemoveBetween(vm);
-        grid.Add(viewRemoveBetween, 0);
+        grid.Add(viewRemoveBetween, row++);
 
         var viewRemoveBeforeColon = MakeViewRemoveBeforeColon(vm);
-        grid.Add(viewRemoveBeforeColon, 0, 1);
+        grid.Add(viewRemoveBeforeColon, 0, row++);
+
+        var viewRemoveUppercase = MakeViewRemoveIfUppercase(vm);
+        grid.Add(viewRemoveUppercase, 0, row++);
 
         var viewRemoveIfTextContains = MakeRemoveIfTextContains(vm);
-        grid.Add(viewRemoveIfTextContains, 0, 2);
+        grid.Add(viewRemoveIfTextContains, 0, row++);
 
         var viewRemoveIf = MakeRemoveIfOnlyMusicSymbols(vm);
-        grid.Add(viewRemoveIf, 0, 3);
+        grid.Add(viewRemoveIf, 0, row++);
 
         var viewInterjections = MakeInterjections(vm);
-        grid.Add(viewInterjections, 0, 4);
+        grid.Add(viewInterjections, 0, row++);
 
         var scrollView = new ScrollView
         {
@@ -405,7 +408,7 @@ public class RemoveTextForHiPage : ContentPage
         {
             Placeholder = "Contains",
             HorizontalOptions = LayoutOptions.Fill,
-            Margin = new Thickness(10,0,0,10),
+            Margin = new Thickness(10, 0, 0, 10),
         }.BindDynamicThemeTextOnly();
         entryContains.SetBinding(Entry.TextProperty, nameof(vm.TextContains));
 
@@ -555,6 +558,57 @@ public class RemoveTextForHiPage : ContentPage
         }.BindDynamicThemeTextColorOnly();
         switchOnlyIfSeparateLine.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveTextBeforeColonSeparateLineOn));
         grid.Add(switchOnlyIfSeparateLine, 1, row++);
+
+        var borderRemoveBeforeColon = new Border
+        {
+            Padding = new Thickness(10),
+            StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            Content = grid,
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
+            Margin = new Thickness(0, 0, 0, 15),
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(5)
+            },
+        }.BindDynamicTheme();
+        return borderRemoveBeforeColon;
+    }
+
+    private static Border MakeViewRemoveIfUppercase(RemoveTextForHiPageModel vm)
+    {
+        var grid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            WidthRequest = LeftMenuWidth,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star },
+            },
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Auto },
+            }
+        };
+
+        var row = 0;
+        var labelOnlyTextUppercase = new Label
+        {
+            Text = "Only if text is uppercase",
+            VerticalOptions = LayoutOptions.Center,
+        }.BindDynamicThemeTextColorOnly();
+        grid.Add(labelOnlyTextUppercase, 0, row);
+
+        var switchOnlyTextUppercase = new Switch
+        {
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+        switchOnlyTextUppercase.SetBinding(Switch.IsToggledProperty, nameof(vm.IsRemoveTextUppercaseLineOn));
+        grid.Add(switchOnlyTextUppercase, 1, row++);
 
         var borderRemoveBeforeColon = new Border
         {
