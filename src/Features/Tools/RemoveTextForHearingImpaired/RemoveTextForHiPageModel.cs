@@ -5,12 +5,30 @@ using Nikse.SubtitleEdit.Core.Forms;
 using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Logic.Config;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Timers;
 
 namespace SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
 
 public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttributable
 {
+    public class LanguageItem
+    {
+        public CultureInfo Code { get; }
+        public string Name { get; }
+
+        public LanguageItem(CultureInfo code, string name)
+        {
+            Code = code;
+            Name = name;
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
     [ObservableProperty] public partial bool IsRemoveBracketsOn { get; set; }
     [ObservableProperty] private bool _isRemoveCurlyBracketsOn;
     [ObservableProperty] private bool _isRemoveParenthesesOn;
@@ -35,8 +53,8 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
 
     [ObservableProperty] private DisplayFile? _selectedFile;
 
-    [ObservableProperty] private ObservableCollection<string> _languages;
-    [ObservableProperty] private string? _selectedLanguage;
+    [ObservableProperty] private ObservableCollection<LanguageItem> _languages;
+    [ObservableProperty] private LanguageItem? _selectedLanguage;
 
     [ObservableProperty] private ObservableCollection<RemoveItem> _fixes;
 
@@ -51,7 +69,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         _customStart = "?";
         _customEnd = "?";
         _textContains = string.Empty;
-        _languages = new ObservableCollection<string> { "English" };
+        _languages = new ObservableCollection<LanguageItem>();
         _fixes = new ObservableCollection<RemoveItem>();
         _subtitle = new Subtitle();
 
@@ -81,7 +99,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         await Shell.Current.GoToAsync(nameof(EditInterjectionsPage), new Dictionary<string, object>
         {
             { "Page", nameof(RemoveTextForHiPage) },
-            { "Language", SelectedLanguage ?? string.Empty },
+            { "Language", SelectedLanguage ?.Code.TwoLetterISOLanguageName ?? "en" },
         });
     }
 
@@ -142,6 +160,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                InitializeLanguages();
                 LoadSettings();
                 _removeTextForHiLib = new RemoveTextForHI(GetSettings(_subtitle));
                 GeneratePreview();
@@ -149,6 +168,24 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
             });
             return false;
         });
+    }
+
+    private void InitializeLanguages()
+    {
+        var language = LanguageAutoDetect.AutoDetectGoogleLanguage(_subtitle);
+        foreach (var ci in Utilities.GetSubtitleLanguageCultures(true).OrderBy(p => p.EnglishName))
+        {
+            Languages.Add(new LanguageItem(ci, ci.EnglishName));
+            if (ci.TwoLetterISOLanguageName == language)
+            {
+                SelectedLanguage = Languages.LastOrDefault();
+            }
+        }
+
+        if (SelectedLanguage == null)
+        {
+            SelectedLanguage = Languages.FirstOrDefault();
+        }
     }
 
     private void GeneratePreview()
@@ -161,7 +198,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         _removeTextForHiLib.Settings = GetSettings(_subtitle);
         _removeTextForHiLib.Warnings = new List<int>();
 
-        //_removeTextForHiLib.ReloadInterjection(SelectedLanguage);
+        _removeTextForHiLib.ReloadInterjection(SelectedLanguage?.Code.TwoLetterISOLanguageName ?? "en");
 
         var newFixes = new List<RemoveItem>();
         for (var index = 0; index < _subtitle.Paragraphs.Count; index++)
@@ -177,7 +214,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
             //}
             //else
             //{
-            var newText = _removeTextForHiLib.RemoveTextFromHearImpaired(p.Text, _subtitle, index, SelectedLanguage ?? "en");
+            var newText = _removeTextForHiLib.RemoveTextFromHearImpaired(p.Text, _subtitle, index, SelectedLanguage == null ? "en" : SelectedLanguage.Code.TwoLetterISOLanguageName);
             if (p.Text.RemoveChar(' ') != newText.RemoveChar(' '))
             {
                 var apply = true;

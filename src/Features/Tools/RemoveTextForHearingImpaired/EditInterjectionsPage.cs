@@ -58,7 +58,7 @@ public class EditInterjectionsPage : ContentPage
         {
             Text = "Skip if source starts with"
         }.BindDynamicTheme();
-        grid.Add(labelTitleEdit, 1, row++);
+        grid.Add(labelSkipEdit, 1, row++);
 
         var editorInterjections = new Editor
         {

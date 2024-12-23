@@ -1,6 +1,8 @@
 ﻿using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using HunspellSharp;
+using Nikse.SubtitleEdit.Core.Common;
 using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
@@ -54,13 +56,24 @@ public partial class EditInterjectionsPageModel : ObservableObject, IQueryAttrib
         await Shell.Current.GoToAsync("..", new Dictionary<string, object>
         {
             { "Page", nameof(RemoveTextForHiPage) },
-    //        { "SubtitleFileName", file.FullPath },
         });
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         var page = query["Page"].ToString();
+
+        if (query.ContainsKey("Language"))
+        {
+            var twoLetterLanguageCode = query["Language"].ToString();
+            if (!string.IsNullOrEmpty(twoLetterLanguageCode))
+            {
+                var interjections = InterjectionsRepository.LoadInterjections(twoLetterLanguageCode);
+                Interjections = string.Join("\n", interjections.Interjections);
+                SkipList = string.Join("\n", interjections.SkipIfStartsWith);
+                Language = twoLetterLanguageCode;
+            }
+        }
 
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
