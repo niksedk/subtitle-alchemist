@@ -90,10 +90,12 @@ public class RemoveTextForHiPage : ContentPage
     {
         var headerGrid = new Grid
         {
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
+            Padding = new Thickness(10),
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Apply
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Line#
+                new ColumnDefinition { Width = 100 }, // Apply
+                new ColumnDefinition { Width = 100 }, // Line#
                 new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Before
                 new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // After
             },
@@ -136,10 +138,11 @@ public class RemoveTextForHiPage : ContentPage
             {
                 var rulesItemsGrid = new Grid
                 {
+                    Padding = new Thickness(10),
                     ColumnDefinitions =
                     {
-                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Apply
-                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Line#
+                        new ColumnDefinition { Width = 100 }, // Apply
+                        new ColumnDefinition { Width = 100 }, // Line#
                         new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Before
                         new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // After
                     },
@@ -191,7 +194,7 @@ public class RemoveTextForHiPage : ContentPage
             },
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star },
             }
         };
 
@@ -200,13 +203,12 @@ public class RemoveTextForHiPage : ContentPage
 
         var border = new Border
         {
-            Padding = new Thickness(10),
+            Margin = new Thickness(10),
             StrokeThickness = 1,
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Start,
             Content = gridHeaderAndCollectionView,
-            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.TableHeaderBackgroundColor],
-            Margin = new Thickness(0, 0, 0, 15),
+            MinimumWidthRequest = 700,
             StrokeShape = new RoundRectangle
             {
                 CornerRadius = new CornerRadius(5)
