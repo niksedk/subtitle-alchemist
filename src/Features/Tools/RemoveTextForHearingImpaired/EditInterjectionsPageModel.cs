@@ -1,9 +1,7 @@
 ﻿using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using HunspellSharp;
 using Nikse.SubtitleEdit.Core.Common;
-using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
 
@@ -15,31 +13,14 @@ public partial class EditInterjectionsPageModel : ObservableObject, IQueryAttrib
 
     public EditInterjectionsPage? Page { get; set; }
 
-    private readonly System.Timers.Timer _timer;
+    private string _twoLetterLanguageCode;
 
     public EditInterjectionsPageModel()
     {
         _interjections = string.Empty;
         _skipList = string.Empty;
-
-        _timer = new System.Timers.Timer(500);
-        _timer.Elapsed += TimerElapsed;
-    }
-
-    private void TimerElapsed(object? sender, ElapsedEventArgs e)
-    {
-        _timer.Stop();
-
-        try
-        {
-            MainThread.BeginInvokeOnMainThread(GeneratePreview);
-        }
-        catch
-        {
-            return;
-        }
-
-        _timer.Start();
+        _language = "en";
+        _twoLetterLanguageCode = "en";
     }
 
     [RelayCommand]
@@ -65,13 +46,19 @@ public partial class EditInterjectionsPageModel : ObservableObject, IQueryAttrib
 
         if (query.ContainsKey("Language"))
         {
-            var twoLetterLanguageCode = query["Language"].ToString();
+            var language = query["Language"].ToString();
+            if (!string.IsNullOrEmpty(language))
+            {
+                Language = language;
+            }
+        }
+
+        if (query.ContainsKey("TwoLetterLanguageCode"))
+        {
+            var twoLetterLanguageCode = query["TwoLetterLanguageCode"].ToString();
             if (!string.IsNullOrEmpty(twoLetterLanguageCode))
             {
-                var interjections = InterjectionsRepository.LoadInterjections(twoLetterLanguageCode);
-                Interjections = string.Join("\n", interjections.Interjections);
-                SkipList = string.Join("\n", interjections.SkipIfStartsWith);
-                Language = twoLetterLanguageCode;
+                _twoLetterLanguageCode = twoLetterLanguageCode;
             }
         }
 
@@ -80,25 +67,40 @@ public partial class EditInterjectionsPageModel : ObservableObject, IQueryAttrib
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 LoadSettings();
-                GeneratePreview();
-                _timer.Start();
             });
             return false;
         });
     }
 
-    private void GeneratePreview()
-    {
-    }
-
     private void LoadSettings()
     {
-        var settings = Se.Settings.Tools.RemoveTextForHi;
+        var interjections = InterjectionsRepository.LoadInterjections(_twoLetterLanguageCode);
+        Interjections = string.Join("\n", interjections.Interjections);
+        SkipList = string.Join("\n", interjections.SkipIfStartsWith);
     }
 
     private void SaveSettings()
     {
-        var settings = Se.Settings.Tools.RemoveTextForHi;
-        Se.SaveSettings();
+        var interjections = new List<string>();
+        foreach (var line in Interjections.SplitToLines())
+        {
+            var text = line.Trim();
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                interjections.Add(text);
+            }
+        }   
+
+        var skipList = new List<string>();
+        foreach (var line in SkipList.SplitToLines())
+        {
+            var text = line.Trim();
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                skipList.Add(text);
+            }
+        }
+
+        InterjectionsRepository.SaveInterjections(_twoLetterLanguageCode, interjections, skipList);
     }
 }

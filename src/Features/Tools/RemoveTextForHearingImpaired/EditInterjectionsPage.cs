@@ -65,16 +65,16 @@ public class EditInterjectionsPage : ContentPage
             WidthRequest = 250,
             HeightRequest = 500,
         }.BindDynamicTheme();
+        editorInterjections.SetBinding(Editor.TextProperty, nameof(vm.Interjections));
         grid.Add(editorInterjections, 0, row);
-
 
         var editorSkipList = new Editor
         {
             WidthRequest = 250,
             HeightRequest = 500,
         }.BindDynamicTheme();
+        editorSkipList.SetBinding(Editor.TextProperty, nameof(vm.SkipList));
         grid.Add(editorSkipList, 1, row++);
-
 
         var buttonOk = new Button
         {

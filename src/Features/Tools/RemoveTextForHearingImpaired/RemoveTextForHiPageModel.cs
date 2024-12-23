@@ -99,7 +99,8 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         await Shell.Current.GoToAsync(nameof(EditInterjectionsPage), new Dictionary<string, object>
         {
             { "Page", nameof(RemoveTextForHiPage) },
-            { "Language", SelectedLanguage ?.Code.TwoLetterISOLanguageName ?? "en" },
+            { "Language", SelectedLanguage?.Name ?? "English" },
+            { "TwoLetterLanguageCode", SelectedLanguage?.Code.TwoLetterISOLanguageName ?? "en" },
         });
     }
 
@@ -125,7 +126,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         {
             var fix = Fixes
                 .FirstOrDefault(p =>
-                    p.Paragraph == _subtitle.Paragraphs[i] &&
+                    p.Paragraph.Id == _subtitle.Paragraphs[i].Id &&
                     p.Apply &&
                     string.IsNullOrEmpty(p.After));
 
@@ -151,6 +152,13 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
     {
         var page = query["Page"].ToString();
 
+        if (page == nameof(EditInterjectionsPage))
+        {
+            Fixes.Clear();  
+            _timer.Start();
+            return;
+        }   
+
         if (query["Subtitle"] is Subtitle subtitle)
         {
             _subtitle = new Subtitle(subtitle, false);
@@ -172,6 +180,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
 
     private void InitializeLanguages()
     {
+        Languages.Clear();
         var language = LanguageAutoDetect.AutoDetectGoogleLanguage(_subtitle);
         foreach (var ci in Utilities.GetSubtitleLanguageCultures(true).OrderBy(p => p.EnglishName))
         {

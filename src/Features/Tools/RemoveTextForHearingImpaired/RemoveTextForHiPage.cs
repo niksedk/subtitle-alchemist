@@ -138,7 +138,7 @@ public class RemoveTextForHiPage : ContentPage
             {
                 var rulesItemsGrid = new Grid
                 {
-                    Padding = new Thickness(10),
+                    Padding = new Thickness(10, 2, 2, 2),
                     ColumnDefinitions =
                     {
                         new ColumnDefinition { Width = 100 }, // Apply
@@ -165,6 +165,7 @@ public class RemoveTextForHiPage : ContentPage
                 var labelBefore = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(10, 0, 0, 0),
                 }.BindDynamicThemeTextColorOnly();
                 labelBefore.SetBinding(Label.TextProperty, nameof(RemoveItem.Before));
                 rulesItemsGrid.Add(labelBefore, 2, 0);
@@ -172,6 +173,7 @@ public class RemoveTextForHiPage : ContentPage
                 var labelAfter = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(10, 0, 0, 0),
                 }.BindDynamicThemeTextColorOnly();
                 labelAfter.SetBinding(Label.TextProperty, nameof(RemoveItem.After));
                 rulesItemsGrid.Add(labelAfter, 3, 0);
@@ -302,6 +304,7 @@ public class RemoveTextForHiPage : ContentPage
         {
             Title = "Language",
             HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
         }.BindDynamicThemeTextColorOnly();
         pickerLanguage.SetBinding(Picker.ItemsSourceProperty, nameof(vm.Languages));
         pickerLanguage.SetBinding(Picker.SelectedItemProperty, nameof(vm.SelectedLanguage));
@@ -310,7 +313,10 @@ public class RemoveTextForHiPage : ContentPage
         {
             Text = "Edit",
             HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(10, 0, 0, 0),
             Command = vm.EditInterjectionsCommand,
+            BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor],
         }.BindDynamicTheme();
 
         var stackPickerAndButton = new StackLayout
