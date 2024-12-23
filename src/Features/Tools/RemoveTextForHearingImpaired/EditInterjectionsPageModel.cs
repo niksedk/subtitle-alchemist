@@ -1,59 +1,24 @@
-﻿using System.Collections.ObjectModel;
-using System.Timers;
+﻿using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Nikse.SubtitleEdit.Core.Common;
-using Nikse.SubtitleEdit.Core.Forms;
-using SubtitleAlchemist.Features.Files;
 using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
 
 public partial class EditInterjectionsPageModel : ObservableObject, IQueryAttributable
 {
-    [ObservableProperty] private bool _isRemoveBracketsOn;
-    [ObservableProperty] private bool _isRemoveCurlyBracketsOn;
-    [ObservableProperty] private bool _isRemoveParenthesesOn;
-    [ObservableProperty] private bool _isRemoveCustomOn;
-    [ObservableProperty] private string _customStart;
-    [ObservableProperty] private string _customEnd;
-    [ObservableProperty] private bool _isOnlySeparateLine;
-
-    [ObservableProperty] private bool _isRemoveTextBeforeColonOn;
-    [ObservableProperty] private bool _isRemoveTextBeforeColonUppercaseOn;
-    [ObservableProperty] private bool _isRemoveTextBeforeColonSeparateLineOn;
-
-    [ObservableProperty] private bool _isRemoveTextUppercaseLineOn;
-
-    [ObservableProperty] private bool _isRemoveTextContainsOn;
-    [ObservableProperty] private string _textContains;
-
-    [ObservableProperty] private bool _isRemoveOnlyMusicSymbolsOn;
-
-    [ObservableProperty] private bool _isRemoveInterjectionsOn;
-    [ObservableProperty] private bool _isInterjectionsSeparateLineOn;
-
-    [ObservableProperty] private DisplayFile? _selectedFile;
-
-    [ObservableProperty] private ObservableCollection<string> _languages;
-    [ObservableProperty] private string? _selectedLanguage;
-
-    [ObservableProperty] private ObservableCollection<RemoveItem> _fixes;
+    [ObservableProperty] private string _interjections;
+    [ObservableProperty] private string _skipList;
+    [ObservableProperty] private string _language;
 
     public EditInterjectionsPage? Page { get; set; }
 
-    private Subtitle _subtitle;
-    private RemoveTextForHI? _removeTextForHiLib;
     private readonly System.Timers.Timer _timer;
 
     public EditInterjectionsPageModel()
     {
-        _customStart = "?";
-        _customEnd = "?";
-        _textContains = string.Empty;
-        _languages = new ObservableCollection<string> { "English" };
-        _fixes = new ObservableCollection<RemoveItem>();
-        _subtitle = new Subtitle();
+        _interjections = string.Empty;
+        _skipList = string.Empty;
 
         _timer = new System.Timers.Timer(500);
         _timer.Elapsed += TimerElapsed;
@@ -97,17 +62,11 @@ public partial class EditInterjectionsPageModel : ObservableObject, IQueryAttrib
     {
         var page = query["Page"].ToString();
 
-        if (query["Subtitle"] is Subtitle subtitle)
-        {
-            _subtitle = new Subtitle(subtitle, false);
-        }
-
         Page?.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 LoadSettings();
-                _removeTextForHiLib = new RemoveTextForHI(GetSettings(_subtitle));
                 GeneratePreview();
                 _timer.Start();
             });
@@ -117,156 +76,16 @@ public partial class EditInterjectionsPageModel : ObservableObject, IQueryAttrib
 
     private void GeneratePreview()
     {
-        if (_removeTextForHiLib == null)
-        {
-            return;
-        }
-
-        _removeTextForHiLib.Settings = GetSettings(_subtitle);
-        _removeTextForHiLib.Warnings = new List<int>();
-
-        //_removeTextForHiLib.ReloadInterjection(_interjectionsLanguage);
-
-        var newFixes = new List<RemoveItem>();
-        for (var index = 0; index < _subtitle.Paragraphs.Count; index++)
-        {
-            var p = _subtitle.Paragraphs[index];
-            _removeTextForHiLib.WarningIndex = index - 1;
-            //if (_edited.Contains(p))
-            //{
-            //    count++;
-            //    var old = _editedOld.First(x => x.Id == p.Id);
-            //    AddToListView(old, p.Text);
-            //    _fixes.Add(old, p.Text);
-            //}
-            //else
-            //{
-            var newText = _removeTextForHiLib.RemoveTextFromHearImpaired(p.Text, _subtitle, index, SelectedLanguage ?? "en");
-            if (p.Text.RemoveChar(' ') != newText.RemoveChar(' '))
-            {
-                var apply = true;
-                var oldItem = Fixes.FirstOrDefault(f => f.Index == index);
-                if (oldItem != null)
-                {
-                    apply = oldItem.Apply;
-                }
-
-                var item = new RemoveItem(apply, index, p.Text, newText, p);
-                newFixes.Add(item);
-            }
-            //}
-        }
-
-        if (newFixes.Count == Fixes.Count)
-        {
-            var same = true;
-            for (var i = 0; i < newFixes.Count; i++)
-            {
-                if (newFixes[i].Index != Fixes[i].Index ||
-                    newFixes[i].Before != Fixes[i].Before || 
-                    newFixes[i].After != Fixes[i].After)
-                {
-                    same = false;
-                    break;
-                }
-            }
-
-            if (same)
-            {
-                return; // no changes
-            }
-        }
-
-        Fixes = new ObservableCollection<RemoveItem>(newFixes);
-
-        //groupBoxLinesFound.Text = string.Format(_language.LinesFoundX, count);
     }
-
-    public RemoveTextForHISettings GetSettings(Subtitle subtitle)
-    {
-        var settings = new RemoveTextForHISettings(subtitle)
-        {
-            OnlyIfInSeparateLine = IsOnlySeparateLine,
-            RemoveIfAllUppercase = IsRemoveTextUppercaseLineOn,
-            RemoveTextBeforeColon = IsRemoveTextBeforeColonOn,
-            RemoveTextBeforeColonOnlyUppercase = IsRemoveTextBeforeColonUppercaseOn,
-            //ColonSeparateLine = IsRemov,
-            RemoveWhereContains = IsRemoveTextContainsOn,
-            RemoveIfTextContains = new List<string>(),
-            RemoveTextBetweenCustomTags = IsRemoveCustomOn,
-            RemoveInterjections = IsRemoveInterjectionsOn,
-            RemoveInterjectionsOnlySeparateLine = IsRemoveInterjectionsOn, // && checkBoxInterjectionOnlySeparateLine.Checked,
-            RemoveTextBetweenSquares = IsRemoveBracketsOn,
-            RemoveTextBetweenBrackets = IsRemoveCurlyBracketsOn,
-            RemoveTextBetweenQuestionMarks = false,
-            RemoveTextBetweenParentheses = IsRemoveParenthesesOn,
-            RemoveIfOnlyMusicSymbols = IsRemoveOnlyMusicSymbolsOn,
-            CustomStart = CustomStart,
-            CustomEnd = CustomEnd,
-        };
-
-        foreach (var item in TextContains.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            settings.RemoveIfTextContains.Add(item.Trim());
-        }
-
-        return settings;
-    }
-
 
     private void LoadSettings()
     {
         var settings = Se.Settings.Tools.RemoveTextForHi;
-
-        IsRemoveBracketsOn = settings.IsRemoveBracketsOn;
-        IsRemoveCurlyBracketsOn = settings.IsRemoveCurlyBracketsOn;
-        IsRemoveParenthesesOn = settings.IsRemoveParenthesesOn;
-        IsRemoveCustomOn = settings.IsRemoveCustomOn;
-        CustomStart = settings.CustomStart;
-        CustomEnd = settings.CustomEnd;
-        IsOnlySeparateLine = settings.IsOnlySeparateLine;
-
-        IsRemoveTextBeforeColonOn = settings.IsRemoveTextBeforeColonOn;
-        IsRemoveTextBeforeColonUppercaseOn = settings.IsRemoveTextBeforeColonUppercaseOn;
-        IsRemoveTextBeforeColonSeparateLineOn = settings.IsRemoveTextBeforeColonSeparateLineOn;
-
-        IsRemoveTextUppercaseLineOn = settings.IsRemoveTextUppercaseLineOn;
-
-        IsRemoveTextContainsOn = settings.IsRemoveTextContainsOn;
-        TextContains = settings.TextContains;
-
-        IsRemoveOnlyMusicSymbolsOn = settings.IsRemoveOnlyMusicSymbolsOn;
-
-        IsRemoveInterjectionsOn = settings.IsRemoveInterjectionsOn;
-        IsInterjectionsSeparateLineOn = settings.IsInterjectionsSeparateLineOn;
     }
 
     private void SaveSettings()
     {
         var settings = Se.Settings.Tools.RemoveTextForHi;
-
-        settings.IsRemoveBracketsOn = IsRemoveBracketsOn;
-        settings.IsRemoveCurlyBracketsOn = IsRemoveCurlyBracketsOn;
-        settings.IsRemoveParenthesesOn = IsRemoveParenthesesOn;
-        settings.IsRemoveCustomOn = IsRemoveCustomOn;
-        settings.CustomStart = CustomStart;
-        settings.CustomEnd = CustomEnd;
-        settings.IsOnlySeparateLine = IsOnlySeparateLine;
-
-        settings.IsRemoveTextBeforeColonOn = IsRemoveTextBeforeColonOn;
-        settings.IsRemoveTextBeforeColonUppercaseOn = IsRemoveTextBeforeColonUppercaseOn;
-        settings.IsRemoveTextBeforeColonSeparateLineOn = IsRemoveTextBeforeColonSeparateLineOn;
-
-        settings.IsRemoveTextUppercaseLineOn = IsRemoveTextUppercaseLineOn;
-
-        settings.IsRemoveTextContainsOn = IsRemoveTextContainsOn;
-        settings.TextContains = TextContains;
-
-        settings.IsRemoveOnlyMusicSymbolsOn = IsRemoveOnlyMusicSymbolsOn;
-
-        settings.IsRemoveInterjectionsOn = IsRemoveInterjectionsOn;
-        settings.IsInterjectionsSeparateLineOn = IsInterjectionsSeparateLineOn;
-
         Se.SaveSettings();
     }
 }

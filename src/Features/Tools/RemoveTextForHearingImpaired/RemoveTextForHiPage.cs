@@ -308,6 +308,7 @@ public class RemoveTextForHiPage : ContentPage
         {
             Text = "Edit",
             HorizontalOptions = LayoutOptions.End,
+            Command = vm.EditInterjectionsCommand,
         }.BindDynamicTheme();
 
         var stackPickerAndButton = new StackLayout

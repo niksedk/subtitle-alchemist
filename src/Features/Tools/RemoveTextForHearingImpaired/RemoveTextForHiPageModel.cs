@@ -11,7 +11,7 @@ namespace SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
 
 public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttributable
 {
-    [ObservableProperty] private bool _isRemoveBracketsOn;
+    [ObservableProperty] public partial bool IsRemoveBracketsOn { get; set; }
     [ObservableProperty] private bool _isRemoveCurlyBracketsOn;
     [ObservableProperty] private bool _isRemoveParenthesesOn;
     [ObservableProperty] private bool _isRemoveCustomOn;
@@ -73,6 +73,16 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         }
 
         _timer.Start();
+    }
+
+    [RelayCommand]
+    public async Task EditInterjections()
+    {
+        await Shell.Current.GoToAsync(nameof(EditInterjectionsPage), new Dictionary<string, object>
+        {
+            { "Page", nameof(RemoveTextForHiPage) },
+            { "Language", SelectedLanguage ?? string.Empty },
+        });
     }
 
     [RelayCommand]
