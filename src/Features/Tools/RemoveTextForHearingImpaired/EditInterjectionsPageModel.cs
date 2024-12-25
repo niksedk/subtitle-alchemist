@@ -82,17 +82,17 @@ public partial class EditInterjectionsPageModel : ObservableObject, IQueryAttrib
     private void SaveSettings()
     {
         var interjections = new List<string>();
-        foreach (var line in Interjections.SplitToLines())
+        foreach (var line in Interjections.SplitToLines().OrderBy(p => p))
         {
             var text = line.Trim();
             if (!string.IsNullOrWhiteSpace(text))
             {
                 interjections.Add(text);
             }
-        }   
+        }
 
         var skipList = new List<string>();
-        foreach (var line in SkipList.SplitToLines())
+        foreach (var line in SkipList.SplitToLines().OrderBy(p => p))
         {
             var text = line.Trim();
             if (!string.IsNullOrWhiteSpace(text))

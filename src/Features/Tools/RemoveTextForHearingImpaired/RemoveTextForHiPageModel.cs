@@ -57,6 +57,9 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
     [ObservableProperty] private LanguageItem? _selectedLanguage;
 
     [ObservableProperty] private ObservableCollection<RemoveItem> _fixes;
+    [ObservableProperty] private RemoveItem _selectedFix;
+
+    [ObservableProperty] private string _fixText;
 
     public RemoveTextForHiPage? Page { get; set; }
 
@@ -352,5 +355,13 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         settings.IsInterjectionsSeparateLineOn = IsInterjectionsSeparateLineOn;
 
         Se.SaveSettings();
+    }
+
+    internal void FixSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection.FirstOrDefault() is RemoveItem item)
+        {
+            FixText = item.After;
+        }
     }
 }

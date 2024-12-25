@@ -50,11 +50,10 @@ public class RemoveTextForHiPage : ContentPage
 
 
         var optionsView = MakeOptions(vm);
-        var fixesView = MakeCollectionView(vm);
+        var fixesView = RemoveTextForHiPage.MakeFixesView(vm);
 
         grid.Add(optionsView, 0, 1);
         grid.Add(fixesView, 1, 1);
-
 
         var buttonOk = new Button
         {
@@ -86,7 +85,7 @@ public class RemoveTextForHiPage : ContentPage
         Content = grid;
     }
 
-    private Border MakeCollectionView(RemoveTextForHiPageModel vm)
+    private static View MakeFixesView(RemoveTextForHiPageModel vm)
     {
         var headerGrid = new Grid
         {
@@ -183,7 +182,8 @@ public class RemoveTextForHiPage : ContentPage
         };
 
         collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(vm.Fixes));
-
+        collectionView.SetBinding(SelectableItemsView.SelectedItemProperty, nameof(vm.SelectedFix));
+        collectionView.SelectionChanged += vm.FixSelectionChanged;
 
         var gridHeaderAndCollectionView = new Grid
         {
@@ -217,7 +217,35 @@ public class RemoveTextForHiPage : ContentPage
             },
         }.BindDynamicTheme();
 
-        return border;
+        var labelText = new Label
+        {
+            Text = "Text",
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+            Margin = new Thickness(10, 0, 0, 0),
+        }.BindDynamicThemeTextColorOnly();
+
+        var entryText = new Entry
+        {
+            Placeholder = "Text",
+            HorizontalOptions = LayoutOptions.Fill,
+            Margin = new Thickness(10, 0, 0, 0),
+            MaximumHeightRequest = 150,
+        }.BindDynamicThemeTextOnly();
+        entryText.SetBinding(Entry.TextProperty, nameof(vm.FixText));
+
+        var stackFixes = new StackLayout
+        {
+            Orientation = StackOrientation.Vertical,
+            Children =
+            {
+                border,
+                labelText,
+                entryText,
+            }
+        };
+
+        return stackFixes;
     }
 
     private static ScrollView MakeOptions(RemoveTextForHiPageModel vm)
