@@ -227,12 +227,13 @@ public class RemoveTextForHiPage : ContentPage
 
         var entryText = new Entry
         {
-            Placeholder = "Text",
+            Placeholder = string.Empty,
             HorizontalOptions = LayoutOptions.Fill,
             Margin = new Thickness(10, 0, 0, 0),
             MaximumHeightRequest = 150,
         }.BindDynamicThemeTextOnly();
         entryText.SetBinding(Entry.TextProperty, nameof(vm.FixText));
+        entryText.TextChanged += vm.FixTextChanged;
 
         var stackFixes = new StackLayout
         {

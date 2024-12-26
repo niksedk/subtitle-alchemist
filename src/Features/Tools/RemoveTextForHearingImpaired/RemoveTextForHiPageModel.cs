@@ -57,7 +57,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
     [ObservableProperty] private LanguageItem? _selectedLanguage;
 
     [ObservableProperty] private ObservableCollection<RemoveItem> _fixes;
-    [ObservableProperty] private RemoveItem _selectedFix;
+    [ObservableProperty] private RemoveItem? _selectedFix;
 
     [ObservableProperty] private string _fixText;
 
@@ -66,6 +66,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
     private Subtitle _subtitle;
     private RemoveTextForHI? _removeTextForHiLib;
     private readonly System.Timers.Timer _timer;
+    private readonly List<Paragraph> _edited;
 
     public RemoveTextForHiPageModel()
     {
@@ -75,7 +76,8 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         _languages = new ObservableCollection<LanguageItem>();
         _fixes = new ObservableCollection<RemoveItem>();
         _subtitle = new Subtitle();
-
+        _fixText = string.Empty;
+        _edited = new List<Paragraph>();
         _timer = new System.Timers.Timer(500);
         _timer.Elapsed += TimerElapsed;
     }
@@ -157,10 +159,10 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
 
         if (page == nameof(EditInterjectionsPage))
         {
-            Fixes.Clear();  
+            Fixes.Clear();
             _timer.Start();
             return;
-        }   
+        }
 
         if (query["Subtitle"] is Subtitle subtitle)
         {
@@ -212,23 +214,17 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
 
         _removeTextForHiLib.ReloadInterjection(SelectedLanguage?.Code.TwoLetterISOLanguageName ?? "en");
 
+        var count = 0;
         var newFixes = new List<RemoveItem>();
         for (var index = 0; index < _subtitle.Paragraphs.Count; index++)
         {
             var p = _subtitle.Paragraphs[index];
             _removeTextForHiLib.WarningIndex = index - 1;
-            //if (_edited.Contains(p))
-            //{
-            //    count++;
-            //    var old = _editedOld.First(x => x.Id == p.Id);
-            //    AddToListView(old, p.Text);
-            //    _fixes.Add(old, p.Text);
-            //}
-            //else
-            //{
-            var newText = _removeTextForHiLib.RemoveTextFromHearImpaired(p.Text, _subtitle, index, SelectedLanguage == null ? "en" : SelectedLanguage.Code.TwoLetterISOLanguageName);
-            if (p.Text.RemoveChar(' ') != newText.RemoveChar(' '))
+            if (_edited.Contains(p))
             {
+                var editedParagraph = _edited.First(x => x.Id == p.Id);
+                var newText = editedParagraph.Text;
+
                 var apply = true;
                 var oldItem = Fixes.FirstOrDefault(f => f.Index == index);
                 if (oldItem != null)
@@ -236,10 +232,27 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
                     apply = oldItem.Apply;
                 }
 
-                var item = new RemoveItem(apply, index, p.Text, newText, p);
-                newFixes.Add(item);
+                var item = new RemoveItem(apply,  index, p.Text, newText, p);
+                newFixes.Add(item); ;
+                count++;
             }
-            //}
+            else
+            {
+                var newText = _removeTextForHiLib.RemoveTextFromHearImpaired(p.Text, _subtitle, index, SelectedLanguage == null ? "en" : SelectedLanguage.Code.TwoLetterISOLanguageName);
+                if (p.Text.RemoveChar(' ') != newText.RemoveChar(' '))
+                {
+                    var apply = true;
+                    var oldItem = Fixes.FirstOrDefault(f => f.Index == index);
+                    if (oldItem != null)
+                    {
+                        apply = oldItem.Apply;
+                    }
+
+                    var item = new RemoveItem(apply, index, p.Text, newText, p);
+                    newFixes.Add(item);
+                    count++;
+                }
+            }
         }
 
         if (newFixes.Count == Fixes.Count)
@@ -362,6 +375,19 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         if (e.CurrentSelection.FirstOrDefault() is RemoveItem item)
         {
             FixText = item.After;
+        }
+    }
+
+    internal void FixTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (SelectedFix is RemoveItem item)
+        {
+            var p = new Paragraph(item.Paragraph, false);
+            if (!_edited.Contains(p) && FixText != item.After)
+            {
+                p.Text = FixText;
+                _edited.Add(p);
+            }
         }
     }
 }
