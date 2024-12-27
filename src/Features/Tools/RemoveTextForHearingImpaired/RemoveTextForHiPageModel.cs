@@ -60,6 +60,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
     [ObservableProperty] private RemoveItem? _selectedFix;
 
     [ObservableProperty] private string _fixText;
+    [ObservableProperty] private bool _fixTextEnabled;
 
     public RemoveTextForHiPage? Page { get; set; }
 
@@ -120,8 +121,9 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
     {
         _timer.Stop();
         SaveSettings();
+        GeneratePreview();
 
-        foreach (var fix in Fixes)
+        foreach (var fix in Fixes.Where(f => f.Apply))
         {
             fix.Paragraph.Text = fix.After;
         }
@@ -232,7 +234,7 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
                     apply = oldItem.Apply;
                 }
 
-                var item = new RemoveItem(apply,  index, p.Text, newText, p);
+                var item = new RemoveItem(apply, index, p.Text, newText, p);
                 newFixes.Add(item); ;
                 count++;
             }
@@ -375,6 +377,12 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
         if (e.CurrentSelection.FirstOrDefault() is RemoveItem item)
         {
             FixText = item.After;
+            FixTextEnabled = true;
+        }
+        else
+        {
+            FixText = string.Empty;
+            FixTextEnabled = false;
         }
     }
 

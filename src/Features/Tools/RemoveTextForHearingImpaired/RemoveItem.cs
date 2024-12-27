@@ -7,6 +7,7 @@ public class RemoveItem //: IEqualityComparer<RemoveItem>
 {
     public bool Apply { get; set; }
     public int Index { get; set; }
+    public int IndexDisplay { get; set; }
     public string Before { get; set; }
     public string After { get; set; }
     public Paragraph Paragraph { get; set; }
@@ -15,6 +16,7 @@ public class RemoveItem //: IEqualityComparer<RemoveItem>
     {
         Apply = apply;
         Index = index;
+        IndexDisplay = index + 1;
         Before = before;
         After = after;
         Paragraph = paragraph;

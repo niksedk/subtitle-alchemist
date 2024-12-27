@@ -158,7 +158,7 @@ public class RemoveTextForHiPage : ContentPage
                 {
                     VerticalOptions = LayoutOptions.Center,
                 }.BindDynamicThemeTextColorOnly();
-                labelLineNumber.SetBinding(Label.TextProperty, nameof(RemoveItem.Index));
+                labelLineNumber.SetBinding(Label.TextProperty, nameof(RemoveItem.IndexDisplay));
                 rulesItemsGrid.Add(labelLineNumber, 1, 0);
 
                 var labelBefore = new Label
@@ -233,6 +233,7 @@ public class RemoveTextForHiPage : ContentPage
             MaximumHeightRequest = 150,
         }.BindDynamicThemeTextOnly();
         entryText.SetBinding(Entry.TextProperty, nameof(vm.FixText));
+        entryText.SetBinding(Entry.IsEnabledProperty, nameof(vm.FixTextEnabled));
         entryText.TextChanged += vm.FixTextChanged;
 
         var stackFixes = new StackLayout
