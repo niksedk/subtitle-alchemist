@@ -81,7 +81,6 @@ public static class TextToImageGenerator
         canvas.DrawPath(translatedPath, paint);
     }
 
-
     public static SKBitmap AddShadowToBitmap(SKBitmap originalBitmap, int shadowWidth, SKColor shadowColor)
     {
         var offset = 2;

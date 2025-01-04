@@ -383,7 +383,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
             var bm = bmp.Copy();
            // bm.SetTransparentTo(Color.FromArgb(0, 0, 0, 0));
             var colorPalette = GetBitmapPalette(bm);
-            var pal = new SubtitleAlchemist.Logic.BluRaySup.BluRaySupPalette(colorPalette.Count);
+            var pal = new BluRaySupPalette(colorPalette.Count);
             for (var i = 0; i < colorPalette.Count; i++)
             {
                 pal.SetColor(i, colorPalette[i]);

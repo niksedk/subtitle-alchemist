@@ -343,6 +343,7 @@ public class BurnInPage : ContentPage
         {
             WidthRequest = 25,
             HeightRequest = 25,
+            HorizontalOptions = LayoutOptions.Start,
         };
         boxViewTextColor.SetBinding(BoxView.ColorProperty, nameof(vm.FontTextColor));
         var tapGestureRecognizerTextColor = new TapGestureRecognizer();
@@ -387,6 +388,7 @@ public class BurnInPage : ContentPage
         {
             WidthRequest = 25,
             HeightRequest = 25,
+            HorizontalOptions = LayoutOptions.Start,
         };
         boxViewOutlineColor.SetBinding(BoxView.ColorProperty, nameof(vm.FontOutlineColor));
         var tapGestureRecognizerOutlineColor = new TapGestureRecognizer();
@@ -431,6 +433,7 @@ public class BurnInPage : ContentPage
         {
             WidthRequest = 25,
             HeightRequest = 25,
+            HorizontalOptions = LayoutOptions.Start,
         };
         boxViewShadowColor.SetBinding(BoxView.ColorProperty, nameof(vm.FontShadowColor));
         var tapGestureRecognizerShadowColor = new TapGestureRecognizer();
