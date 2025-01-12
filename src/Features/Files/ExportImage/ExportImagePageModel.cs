@@ -54,9 +54,9 @@ public partial class ExportImagePageModel : ObservableObject, IQueryAttributable
     [ObservableProperty] public partial bool IsBold { get; set; }
     [ObservableProperty] public partial Color FontColor { get; set; }
     [ObservableProperty] public partial Color BorderColor { get; set; }
-    [ObservableProperty] public partial float BorderWith { get; set; }
+    [ObservableProperty] public partial float BorderWidth { get; set; }
     [ObservableProperty] public partial Color ShadowColor { get; set; }
-    [ObservableProperty] public partial float ShadowWith{ get; set; }
+    [ObservableProperty] public partial float ShadowWidth{ get; set; }
     [ObservableProperty] public partial int ShadowAlpha { get; set; }
 
     public ExportImagePage? Page { get; set; }
@@ -107,8 +107,8 @@ public partial class ExportImagePageModel : ObservableObject, IQueryAttributable
         FontColor = Colors.White;
         BorderColor = Colors.Black;
         ShadowColor = Colors.Black;
-        ShadowWith = 2;
-        BorderWith = 2;        
+        ShadowWidth = 2;
+        BorderWidth = 2;        
         ShadowAlpha = 200;
 
         _subtitle = new Subtitle();
@@ -198,7 +198,7 @@ public partial class ExportImagePageModel : ObservableObject, IQueryAttributable
         Se.Settings.File.ExportImages.BorderColor = BorderColor.ToHex();
         Se.Settings.File.ExportImages.BorderWidth = BorderWidth;
         Se.Settings.File.ExportImages.ShadowColor = ShadowColor.ToHex();
-        Se.Settings.File.ExportImages.ShadowWidth = ShadowWith;
+        Se.Settings.File.ExportImages.ShadowWidth = ShadowWidth;
         Se.Settings.File.ExportImages.ShadowAlpha = ShadowAlpha;
 
         Se.SaveSettings();
@@ -254,7 +254,7 @@ public partial class ExportImagePageModel : ObservableObject, IQueryAttributable
         FontColor = Color.FromArgb(settings.FontColor);
         BorderColor = Color.FromArgb(settings.BorderColor);
         ShadowColor = Color.FromArgb(settings.ShadowColor);
-        ShadowWith = settings.ShadowWidth;
+        ShadowWidth = settings.ShadowWidth;
         ShadowAlpha = settings.ShadowAlpha;
     }
 
