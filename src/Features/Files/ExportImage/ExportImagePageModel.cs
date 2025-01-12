@@ -49,11 +49,14 @@ public partial class ExportImagePageModel : ObservableObject, IQueryAttributable
     [ObservableProperty] public partial ObservableCollection<decimal> FrameRateItems { get; set; }
     [ObservableProperty] public partial decimal SelectedframeRateItem { get; set; }
 
+    [ObservableProperty] public partial decimal FontKerningExtra { get; set; }
+
     [ObservableProperty] public partial bool IsBold { get; set; }
     [ObservableProperty] public partial Color FontColor { get; set; }
     [ObservableProperty] public partial Color BorderColor { get; set; }
+    [ObservableProperty] public partial float BorderWith { get; set; }
     [ObservableProperty] public partial Color ShadowColor { get; set; }
-    [ObservableProperty] public partial int ShadowWith{ get; set; }
+    [ObservableProperty] public partial float ShadowWith{ get; set; }
     [ObservableProperty] public partial int ShadowAlpha { get; set; }
 
     public ExportImagePage? Page { get; set; }
@@ -105,6 +108,7 @@ public partial class ExportImagePageModel : ObservableObject, IQueryAttributable
         BorderColor = Colors.Black;
         ShadowColor = Colors.Black;
         ShadowWith = 2;
+        BorderWith = 2;        
         ShadowAlpha = 200;
 
         _subtitle = new Subtitle();
@@ -188,9 +192,11 @@ public partial class ExportImagePageModel : ObservableObject, IQueryAttributable
         Se.Settings.File.ExportImages.BottomMarginUnit = SelectedBottomMarginUnitItem;
         Se.Settings.File.ExportImages.LeftRightMargin = SelectedLeftRightMarginItem;
         Se.Settings.File.ExportImages.LeftRightMarginUnit = SelectedLeftRightMarginUnitItem;
+        Se.Settings.File.ExportImages.FontKerningExtra = FontKerningExtra;
         Se.Settings.File.ExportImages.FrameRate = SelectedframeRateItem;
         Se.Settings.File.ExportImages.FontColor = FontColor.ToHex();
         Se.Settings.File.ExportImages.BorderColor = BorderColor.ToHex();
+        Se.Settings.File.ExportImages.BorderWidth = BorderWidth;
         Se.Settings.File.ExportImages.ShadowColor = ShadowColor.ToHex();
         Se.Settings.File.ExportImages.ShadowWidth = ShadowWith;
         Se.Settings.File.ExportImages.ShadowAlpha = ShadowAlpha;
@@ -243,6 +249,7 @@ public partial class ExportImagePageModel : ObservableObject, IQueryAttributable
         SelectedBottomMarginUnitItem = settings.BottomMarginUnit;
         SelectedLeftRightMarginItem = settings.LeftRightMargin;
         SelectedLeftRightMarginUnitItem = settings.LeftRightMarginUnit;
+        FontKerningExtra = settings.FontKerningExtra;
         SelectedframeRateItem = settings.FrameRate;
         FontColor = Color.FromArgb(settings.FontColor);
         BorderColor = Color.FromArgb(settings.BorderColor);

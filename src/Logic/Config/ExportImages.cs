@@ -13,11 +13,14 @@ public class ExportImages
     public int BottomMarginUnit { get;  set; }
     public int LeftRightMargin { get;  set; }
     public int LeftRightMarginUnit { get;  set; }
-    public decimal FrameRate { get;  set; }
+    public decimal FontKerningExtra { get; set; }
+    public decimal FrameRate { get; set; }
     public string FontColor { get;  set; }
     public string BorderColor { get;  set; }
+    public float BorderWidth { get; set; }
+    public int BorderBoxCornerRadius { get; set; }
     public string ShadowColor { get;  set; }
-    public int ShadowWidth { get;  set; }
+    public float ShadowWidth { get; set; }
     public int ShadowAlpha { get;  set; }
     public bool IsBold { get;  set; }
 
@@ -34,6 +37,7 @@ public class ExportImages
         BottomMarginUnit = 0;
         LeftRightMargin = 0;
         LeftRightMarginUnit = 0;
+        FontKerningExtra = 0;
         FrameRate = 24;
         FontColor = Colors.White.ToHex();
         BorderColor = Colors.Black.ToHex();

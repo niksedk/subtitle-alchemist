@@ -1,5 +1,4 @@
 ﻿using SkiaSharp;
-using SkiaSharp.Views.Maui;
 using SubtitleAlchemist.Logic.BluRaySup;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Media;
@@ -24,8 +23,8 @@ public class BluRayExporter : IImageExporter
             {
                 StartTime = (long)Math.Round(line.Paragraph.StartTime.TotalMilliseconds, MidpointRounding.AwayFromZero),
                 EndTime = (long)Math.Round(line.Paragraph.EndTime.TotalMilliseconds, MidpointRounding.AwayFromZero),
-                Width = 1920, // settings.ScreenWidth,
-                Height = 1080, //param.ScreenHeight,
+                Width = settings.ResolutionWidth,
+                Height = settings.ResolutionHeight,
                 IsForced = line.Paragraph.Forced,
                 CompositionNumber = line.Paragraph.Number * 2,
             };
@@ -44,11 +43,23 @@ public class BluRayExporter : IImageExporter
             //    ? param.RightMargin
             //    : param.LeftMargin;
 
-            SKColor.TryParse(settings.FontColor, out var textColor);
-            SKColor.TryParse(settings.BorderColor, out var borderColor);
-            SKColor.TryParse(settings.ShadowColor, out var shadowColor);
-            var bitmap = TextToImageGenerator.GenerateImage(line.Paragraph.Text, settings.FontName, settings.FontSize, settings.IsBold, textColor, borderColor, shadowColor , SKColors.Transparent, 2, settings.ShadowWidth, 0);
+            if (!SKColor.TryParse(settings.FontColor, out var textColor))
+            {
+                textColor = SKColors.White;
+            }
 
+            if (!SKColor.TryParse(settings.BorderColor, out var borderColor))
+            {
+                borderColor = SKColors.Black;
+            }
+
+            if (!SKColor.TryParse(settings.ShadowColor, out var shadowColor))
+            {
+                shadowColor = SKColors.Black;
+            }
+
+            SKBitmap bitmap = TextToImageGenerator.GenerateImage(line.Paragraph.Text, settings.FontName, settings.FontSize, settings.IsBold, textColor, borderColor, shadowColor, SKColors.Transparent, settings.BorderWidth, settings.ShadowWidth, (float)settings.FontKerningExtra, settings.BorderBoxCornerRadius);
+            
             finalImages.Add(BluRaySupPicture.CreateSupFrame(brSub, bitmap, (double)settings.FrameRate, settings.BottomMargin, settings.LeftRightMargin, BluRayContentAlignment.BottomCenter, null));
 
             Interlocked.Increment(ref counter);
