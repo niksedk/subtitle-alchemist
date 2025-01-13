@@ -2,6 +2,7 @@
 using SubtitleAlchemist.Logic;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -17,9 +18,10 @@ public class PaddleOcr
 
     public async Task<string> Ocr(SKBitmap bitmap, string language, CancellationToken cancellationToken)
     {
+        var borderedBitmap = AddBorder(bitmap, 20);
         var tempImage = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".png");
-        await File.WriteAllBytesAsync(tempImage, bitmap.ToPngArray(), cancellationToken);
-        var parameters = $"paddleocr --image_dir \"{tempImage}\" --use_angle_cls true --lang {language} --show_log false";
+        await File.WriteAllBytesAsync(tempImage, borderedBitmap.ToPngArray(), cancellationToken);
+        var parameters = $"--image_dir \"{tempImage}\" --use_angle_cls true --lang {language} --show_log false";
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -36,13 +38,13 @@ public class PaddleOcr
         process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
         process.StartInfo.RedirectStandardOutput = true;
         process.OutputDataReceived += OutputHandler;
+        _textDetectionResults.Clear();
 
 #pragma warning disable CA1416 // Validate platform compatibility
         process.Start();
 #pragma warning restore CA1416 // Validate platform compatibility;
 
         process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
 
         await process.WaitForExitAsync(cancellationToken);
 
@@ -53,7 +55,83 @@ public class PaddleOcr
         }
 
         File.Delete(tempImage);
-        return string.Empty;
+
+        var result = MakeResult(_textDetectionResults);
+        return result;
+    }
+
+    public static SKBitmap AddBorder(SKBitmap originalBitmap, int borderWidth)
+    {
+        // Calculate new dimensions
+        int newWidth = originalBitmap.Width + 2 * borderWidth;
+        int newHeight = originalBitmap.Height + 2 * borderWidth;
+
+        // Create a new bitmap with the new dimensions
+        SKBitmap borderedBitmap = new SKBitmap(newWidth, newHeight);
+
+        // Create a canvas to draw on the new bitmap
+        using (var canvas = new SKCanvas(borderedBitmap))
+        {
+            // Fill the canvas with a border color (optional)
+            var borderColor = SKColors.Black; // Change this to your desired border color
+            canvas.Clear(borderColor);
+
+            // Draw the original bitmap onto the canvas, offset by the border width
+            canvas.DrawBitmap(originalBitmap, borderWidth, borderWidth);
+        }
+
+        return borderedBitmap;
+    }
+
+    private string MakeResult(List<PaddleOcrResultParser.TextDetectionResult> textDetectionResults)
+    {
+        var sb = new StringBuilder();
+        var lines = MakeLines(textDetectionResults);
+        foreach (var line in lines)
+        {
+            var text = string.Join(' ', line.Select(p => p.Text));
+            sb.AppendLine(text);
+        }
+
+        return sb.ToString().Trim().Replace(" " + Environment.NewLine, Environment.NewLine);
+    }
+
+    private List<List<PaddleOcrResultParser.TextDetectionResult>> MakeLines(List<PaddleOcrResultParser.TextDetectionResult> input)
+    {
+        var result = new List<List<PaddleOcrResultParser.TextDetectionResult>>();
+        var heightAverage = input.Average(p => p.BoundingBox.Height);
+        var sorted = input.OrderBy(p => p.BoundingBox.Center.Y);
+        var line = new List<PaddleOcrResultParser.TextDetectionResult>();
+        PaddleOcrResultParser.TextDetectionResult? last = null;
+        foreach (var element in sorted)
+        {
+            if (last == null)
+            {
+                line.Add(element);
+            }
+            else
+            {
+                if (element.BoundingBox.Center.Y > last.BoundingBox.TopLeft.Y + heightAverage)
+                {
+
+                    result.Add(line.OrderBy(p => p.BoundingBox.TopLeft.X).ToList());
+                    line = new List<PaddleOcrResultParser.TextDetectionResult>();
+                }
+                else
+                {
+                    line.Add(element);
+                }
+            }
+
+            last = element;
+        }
+
+        if (line.Count > 0)
+        {
+            result.Add(line.OrderBy(p => p.BoundingBox.TopLeft.X).ToList());
+        }
+
+        return result;
     }
 
     private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
@@ -63,12 +141,32 @@ public class PaddleOcr
             return;
         }
 
-        var parser = new PaddleOcrResultParser();
-        var x = parser.Parse(outLine.Data);
-        _textDetectionResults.Add(x);
+        if (!outLine.Data.Contains("ppocr INFO:"))
+        {
+            return;
+        }
+
+        var arr = outLine.Data.Split("ppocr INFO: ");
+        if (arr.Length < 2)
+        {
+            return;
+        }
+
+        var data = arr[1];
+
+        string pattern = @"\[\[\[\d+\.\d+,\s*\d+\.\d+],\s*\[\d+\.\d+,\s*\d+\.\d+],\s*\[\d+\.\d+,\s*\d+\.\d+],\s*\[\d+\.\d+,\s*\d+\.\d+]],\s*\('.*?',\s*\d+\.\d+\)\]";
+        var match = Regex.Match(data, pattern);
+        if (match.Success)
+        {
+            var parser = new PaddleOcrResultParser();
+            var x = parser.Parse(data);
+            _textDetectionResults.Add(x);
+        }
+
+        // Example: [[[92.0, 56.0], [735.0, 60.0], [734.0, 118.0], [91.0, 113.0]], ('My mommy always said', 0.9907816052436829)]
     }
 
-    public List<OcrLanguage2> ocrLanguage()
+    public static List<OcrLanguage2> GetLanguages()
     {
         return new List<OcrLanguage2>
         {

@@ -2,16 +2,16 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.VobSub.Ocr.Service;
 using SkiaSharp;
 using SubtitleAlchemist.Controls.PickerControl;
 using SubtitleAlchemist.Features.Main;
+using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.BluRaySup;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Ocr;
 using System.Collections.ObjectModel;
 using System.Text;
-using Nikse.SubtitleEdit.Core.VobSub.Ocr.Service;
-using SubtitleAlchemist.Logic;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
@@ -114,6 +114,9 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     private bool _isNOcrVisible;
 
     [ObservableProperty]
+    private bool _isPaddleOcrOcrVisible;
+
+    [ObservableProperty]
     private bool _isOllamaOcrVisible;
 
     [ObservableProperty]
@@ -127,6 +130,12 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     [ObservableProperty]
     private TesseractDictionary? _selectedTesseractDictionaryItem;
+
+    [ObservableProperty]
+    private ObservableCollection<OcrLanguage2> _paddleLanguageItems;
+
+    [ObservableProperty]
+    private OcrLanguage2? _selectedPaddleLanguageItem;
 
     public OcrPage? Page { get; set; }
     public CollectionView ListView { get; set; }
@@ -180,6 +189,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         _googleVisionLanguage = string.Empty;
         _runOnceChars = new List<SkipOnceChar>();
         _skipOnceChars = new List<SkipOnceChar>();
+        _paddleLanguageItems = new ObservableCollection<OcrLanguage2>(PaddleOcr.GetLanguages());
+        _selectedPaddleLanguageItem = _paddleLanguageItems.FirstOrDefault(p => p.Code == "en");
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -652,8 +663,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     private void RunPaddleOcr(int startFromIndex)
     {
-        var tesseractOcr = new PaddleOcr();
-        var language = SelectedTesseractDictionaryItem?.Code ?? "eng";
+        var ocrEngine = new PaddleOcr();
+        var language = SelectedPaddleLanguageItem?.Code ?? "en";
 
         _ = Task.Run(async () =>
         {
@@ -682,7 +693,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 });
 
 
-                var text = await tesseractOcr.Ocr(bitmap, language, _cancellationTokenSource.Token);
+                var text = await ocrEngine.Ocr(bitmap, language, _cancellationTokenSource.Token);
                 item.Text = text;
 
                 MainThread.BeginInvokeOnMainThread(() =>
@@ -1069,6 +1080,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
             IsNOcrVisible = engine.EngineType == OcrEngineType.nOcr;
             IsTesseractVisible = engine.EngineType == OcrEngineType.Tesseract;
             IsInspectVisible = engine.EngineType == OcrEngineType.nOcr;
+            IsPaddleOcrOcrVisible = engine.EngineType == OcrEngineType.PaddleOcr;
             IsOllamaOcrVisible = engine.EngineType == OcrEngineType.Ollama;
             IsGoogleVisionVisible = engine.EngineType == OcrEngineType.GoogleVision;
 

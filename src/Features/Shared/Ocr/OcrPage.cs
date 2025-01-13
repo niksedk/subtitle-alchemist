@@ -71,6 +71,21 @@ public class OcrPage : ContentPage
             Command = vm.TesseractDictionaryDownloadCommand,
         }.BindDynamicTheme().BindIsVisible(nameof(vm.IsTesseractVisible));
 
+        var labelPaddleModel = new Label
+        {
+            Text = "Model",
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(15, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsPaddleOcrOcrVisible));
+
+        var pickerPaddleModelItems = new Picker
+        {
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(5, 0, 0, 0),
+        }.BindDynamicTheme().BindIsVisible(nameof(vm.IsPaddleOcrOcrVisible)).Bind(nameof(vm.PaddleLanguageItems), nameof(vm.SelectedPaddleLanguageItem));
+
         var labelOllamaModel = new Label
         {
             Text = "Model",
@@ -214,6 +229,8 @@ public class OcrPage : ContentPage
                 labelTesseractDictionaryItems,
                 pickerTesseractDictionaryItems,
                 buttonTesseractDictionaryDownload,
+                labelPaddleModel,
+                pickerPaddleModelItems,
                 labelOllamaModel,
                 entryOllamaModel,
                 buttonOllamaModel,

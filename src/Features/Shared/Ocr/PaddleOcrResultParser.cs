@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr
 {
@@ -70,14 +71,14 @@ namespace SubtitleAlchemist.Features.Shared.Ocr
             var text = textMatch.Groups[1].Value;
 
             // Extract confidence using regex
-            var confidenceMatch = Regex.Match(input, @"(\d+\.\d+)");
-            var confidence = double.Parse(confidenceMatch.Groups[1].Value);
+            var confidenceMatch = Regex.Match(input, @"(\d+\.\d+)\)\]$");
+            var confidence = double.Parse(confidenceMatch.Groups[1].Value, CultureInfo.InvariantCulture);
 
             // Extract coordinates using regex
             var coordMatches = Regex.Matches(input, @"\[(\d+\.\d+),(\d+\.\d+)\]");
 
             var points = new Point[4];
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 var match = coordMatches[i];
                 points[i] = new Point(
