@@ -482,6 +482,10 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         {
             RunTesseractOcr(startFromIndex);
         }
+        else if (ocrEngine.EngineType == OcrEngineType.PaddleOcr)
+        {
+            RunPaddleOcr(startFromIndex);
+        }
         else if (ocrEngine.EngineType == OcrEngineType.Ollama)
         {
             RunOllamaOcr(startFromIndex);
@@ -490,6 +494,108 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         {
             RunGoogleVisionOcr(startFromIndex);
         }
+    }
+
+    private void RunNOcr(int startFromIndex)
+    {
+        if (!InitNOcrDb())
+        {
+            return;
+        }
+
+        _ = Task.Run(() =>
+        {
+            for (var i = startFromIndex; i < OcrSubtitleItems.Count; i++)
+            {
+                if (_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                ProgressValue = i / (double)OcrSubtitleItems.Count;
+                ProgressText = $"Running OCR... {i + 1}/{OcrSubtitleItems.Count}";
+                SelectedStartFromNumber = i + 1;
+
+                var item = OcrSubtitleItems[i];
+                var bitmap = item.GetBitmap();
+                var nBmp = new NikseBitmap2(bitmap);
+                nBmp.MakeTwoColor(200);
+                nBmp.CropTop(0, new SKColor(0, 0, 0, 0));
+                var list = NikseBitmapImageSplitter2.SplitBitmapToLettersNew(nBmp, SelectedNOcrPixelsAreSpace, false, true, 20, true);
+                var sb = new StringBuilder();
+                SelectedOcrSubtitleItem = item;
+
+                foreach (var splitterItem in list)
+                {
+                    if (splitterItem.NikseBitmap == null)
+                    {
+                        if (splitterItem.SpecialCharacter != null)
+                        {
+                            sb.Append(splitterItem.SpecialCharacter);
+                        }
+                    }
+                    else
+                    {
+                        var match = _nOcrDb!.GetMatch(nBmp, list, splitterItem, splitterItem.Top, true, SelectedNOcrMaxWrongPixels);
+
+                        if (NOcrDrawUnknownText && match == null)
+                        {
+                            var letterIndex = list.IndexOf(splitterItem);
+
+                            if (_skipOnceChars.Any(p => p.LetterIndex == letterIndex && p.LineIndex == i))
+                            {
+                                sb.Append("*");
+                                continue;
+                            }
+
+                            var runOnceChar = _runOnceChars.FirstOrDefault(p => p.LetterIndex == letterIndex && p.LineIndex == i);
+                            if (runOnceChar != null)
+                            {
+                                sb.Append(runOnceChar.Text);
+                                continue;
+                            }
+
+                            MainThread.BeginInvokeOnMainThread(async () =>
+                            {
+                                await Pause();
+                                await Shell.Current.GoToAsync(nameof(NOcrCharacterAddPage), new Dictionary<string, object>
+                                    {
+                                    { "Page", nameof(OcrPage) },
+                                    { "Bitmap", nBmp.GetBitmap() },
+                                    { "Letters", list },
+                                    { "Item", splitterItem },
+                                    { "OcrSubtitleItems", OcrSubtitleItems.ToList() },
+                                    { "StartFromNumber", SelectedStartFromNumber },
+                                    { "ItalicOn", _toolsItalicOn },
+                                    { "nOcrDb", _nOcrDb },
+                                    { "MaxWrongPixels", SelectedNOcrMaxWrongPixels },
+                                    });
+                            });
+                            return;
+                        }
+
+                        sb.Append(match != null ? _nOcrCaseFixer.FixUppercaseLowercaseIssues(splitterItem, match) : "*");
+                    }
+                }
+
+                item.Text = sb.ToString().Trim();
+
+                var scrollToIndex = i;
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ListView.ScrollTo(scrollToIndex, -1, ScrollToPosition.MakeVisible, false);
+                });
+
+                _runOnceChars.Clear();
+                _skipOnceChars.Clear();
+            }
+
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                SelectedStartFromNumber = OcrSubtitleItems.Count;
+                await Pause();
+            });
+        });
     }
 
     private void RunTesseractOcr(int startFromIndex)
@@ -542,8 +648,60 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 await Pause();
             });
         });
-
     }
+
+    private void RunPaddleOcr(int startFromIndex)
+    {
+        var tesseractOcr = new PaddleOcr();
+        var language = SelectedTesseractDictionaryItem?.Code ?? "eng";
+
+        _ = Task.Run(async () =>
+        {
+            for (var i = startFromIndex; i < OcrSubtitleItems.Count; i++)
+            {
+                if (_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                ProgressValue = i / (double)OcrSubtitleItems.Count;
+                ProgressText = $"Running OCR... {i + 1}/{OcrSubtitleItems.Count}";
+                SelectedStartFromNumber = i + 1;
+
+                var item = OcrSubtitleItems[i];
+                var bitmap = item.GetBitmap();
+
+                var scrollToIndex = i;
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ListView.ScrollTo(scrollToIndex, -1, ScrollToPosition.MakeVisible, false);
+                    SelectedOcrSubtitleItem = item;
+                    ListView.Focus();
+                    ListView.SelectedItem = item;
+                    ListView.UpdateSelectedItems(new List<object> { item });
+                });
+
+
+                var text = await tesseractOcr.Ocr(bitmap, language, _cancellationTokenSource.Token);
+                item.Text = text;
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (SelectedOcrSubtitleItem == item)
+                    {
+                        CurrentText = text;
+                    }
+                });
+            }
+
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                SelectedStartFromNumber = OcrSubtitleItems.Count;
+                await Pause();
+            });
+        });
+    }
+
 
     private void RunOllamaOcr(int startFromIndex)
     {
@@ -647,108 +805,6 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                         CurrentText = text;
                     }
                 });
-            }
-
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                SelectedStartFromNumber = OcrSubtitleItems.Count;
-                await Pause();
-            });
-        });
-    }
-
-    private void RunNOcr(int startFromIndex)
-    {
-        if (!InitNOcrDb())
-        {
-            return;
-        }
-
-        _ = Task.Run(() =>
-        {
-            for (var i = startFromIndex; i < OcrSubtitleItems.Count; i++)
-            {
-                if (_cancellationTokenSource.Token.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                ProgressValue = i / (double)OcrSubtitleItems.Count;
-                ProgressText = $"Running OCR... {i + 1}/{OcrSubtitleItems.Count}";
-                SelectedStartFromNumber = i + 1;
-
-                var item = OcrSubtitleItems[i];
-                var bitmap = item.GetBitmap();
-                var nBmp = new NikseBitmap2(bitmap);
-                nBmp.MakeTwoColor(200);
-                nBmp.CropTop(0, new SKColor(0, 0, 0, 0));
-                var list = NikseBitmapImageSplitter2.SplitBitmapToLettersNew(nBmp, SelectedNOcrPixelsAreSpace, false, true, 20, true);
-                var sb = new StringBuilder();
-                SelectedOcrSubtitleItem = item;
-
-                foreach (var splitterItem in list)
-                {
-                    if (splitterItem.NikseBitmap == null)
-                    {
-                        if (splitterItem.SpecialCharacter != null)
-                        {
-                            sb.Append(splitterItem.SpecialCharacter);
-                        }
-                    }
-                    else
-                    {
-                        var match = _nOcrDb!.GetMatch(nBmp, list, splitterItem, splitterItem.Top, true, SelectedNOcrMaxWrongPixels);
-
-                        if (NOcrDrawUnknownText && match == null)
-                        {
-                            var letterIndex = list.IndexOf(splitterItem);
-
-                            if (_skipOnceChars.Any(p => p.LetterIndex == letterIndex && p.LineIndex == i))
-                            {
-                                sb.Append("*");
-                                continue;
-                            }
-
-                            var runOnceChar = _runOnceChars.FirstOrDefault(p => p.LetterIndex == letterIndex && p.LineIndex == i);
-                            if (runOnceChar != null)
-                            {
-                                sb.Append(runOnceChar.Text);
-                                continue;
-                            }
-
-                            MainThread.BeginInvokeOnMainThread(async () =>
-                            {
-                                await Pause();
-                                await Shell.Current.GoToAsync(nameof(NOcrCharacterAddPage), new Dictionary<string, object>
-                                    {
-                                    { "Page", nameof(OcrPage) },
-                                    { "Bitmap", nBmp.GetBitmap() },
-                                    { "Letters", list },
-                                    { "Item", splitterItem },
-                                    { "OcrSubtitleItems", OcrSubtitleItems.ToList() },
-                                    { "StartFromNumber", SelectedStartFromNumber },
-                                    { "ItalicOn", _toolsItalicOn },
-                                    { "nOcrDb", _nOcrDb },
-                                    { "MaxWrongPixels", SelectedNOcrMaxWrongPixels },
-                                    });
-                            });
-                            return;
-                        }
-
-                        sb.Append(match != null ? _nOcrCaseFixer.FixUppercaseLowercaseIssues(splitterItem, match) : "*");
-                    }
-                }
-
-                item.Text = sb.ToString().Trim();
-
-                var scrollToIndex = i;
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    ListView.ScrollTo(scrollToIndex, -1, ScrollToPosition.MakeVisible, false);
-                });
-
-                _runOnceChars.Clear();
-                _skipOnceChars.Clear();
             }
 
             MainThread.BeginInvokeOnMainThread(async () =>
