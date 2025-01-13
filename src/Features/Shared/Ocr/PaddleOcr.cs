@@ -1,13 +1,14 @@
-﻿using System.Diagnostics;
-using System.Text;
-using SkiaSharp;
+﻿using SkiaSharp;
 using SubtitleAlchemist.Logic;
+using System.Diagnostics;
+using System.Text;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
 
 public class PaddleOcr
 {
     public string Error { get; set; }
+    private List<PaddleOcrResultParser.TextDetectionResult> _textDetectionResults = new();
 
     public PaddleOcr()
     {
@@ -61,6 +62,10 @@ public class PaddleOcr
         {
             return;
         }
+
+        var parser = new PaddleOcrResultParser();
+        var x = parser.Parse(outLine.Data);
+        _textDetectionResults.Add(x);
     }
 
     public List<OcrLanguage2> ocrLanguage()
