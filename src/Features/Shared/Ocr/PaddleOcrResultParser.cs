@@ -63,14 +63,12 @@ namespace SubtitleAlchemist.Features.Shared.Ocr
 
         public TextDetectionResult Parse(string input)
         {
-            // Remove all whitespace to make parsing easier
-            input = input.Replace(" ", string.Empty);
-
             // Extract text using regex
-            var textMatch = Regex.Match(input, @"'([^']+)'");
+            var textMatch = Regex.Match(input, @"\([""'](.*)[""'],");
             var text = textMatch.Groups[1].Value;
 
             // Extract confidence using regex
+            input = input.Replace(" ", string.Empty);
             var confidenceMatch = Regex.Match(input, @"(\d+\.\d+)\)\]$");
             var confidence = double.Parse(confidenceMatch.Groups[1].Value, CultureInfo.InvariantCulture);
 

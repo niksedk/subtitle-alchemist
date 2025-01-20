@@ -137,6 +137,9 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private OcrLanguage2? _selectedPaddleLanguageItem;
 
+    [ObservableProperty]
+    private bool _paddleUseGpu;
+
     public OcrPage? Page { get; set; }
     public CollectionView ListView { get; set; }
 
@@ -693,7 +696,7 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 });
 
 
-                var text = await ocrEngine.Ocr(bitmap, language, _cancellationTokenSource.Token);
+                var text = await ocrEngine.Ocr(bitmap, language, PaddleUseGpu, _cancellationTokenSource.Token);
                 item.Text = text;
 
                 MainThread.BeginInvokeOnMainThread(() =>

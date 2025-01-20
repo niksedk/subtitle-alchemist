@@ -1,5 +1,6 @@
 ﻿using SkiaSharp;
 using SubtitleAlchemist.Logic;
+using SubtitleAlchemist.Logic.Config;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -11,17 +12,142 @@ public class PaddleOcr
     public string Error { get; set; }
     private List<PaddleOcrResultParser.TextDetectionResult> _textDetectionResults = new();
 
+    private string _paddingOcrPath;
+    private string _clsPath;
+    private string _detPath;
+    private string _recPath;
+
+    private List<string> LatinLanguageCodes =
+    [
+        "af",
+        "az",
+        "bs",
+        "cs",
+        "cy",
+        "da",
+        "de",
+        "es",
+        "et",
+        "fr",
+        "ga",
+        "hr",
+        "hu",
+        "id",
+        "is",
+        "it",
+        "ku",
+        "la",
+        "lt",
+        "lv",
+        "mi",
+        "ms",
+        "mt",
+        "nl",
+        "no",
+        "oc",
+        "pi",
+        "pl",
+        "pt",
+        "ro",
+        "rs_latin",
+        "sk",
+        "sl",
+        "sq",
+        "sv",
+        "sw",
+        "tl",
+        "tr",
+        "uz",
+        "vi",
+        "french",
+        "german"
+    ];
+
+    private List<string> ArabicLanguageCodes = ["ar", "fa", "ug", "ur", "sa"];
+    private List<string> CyrillicLanguageCodes =
+    [
+        "ru",
+        "rs_cyrillic",
+        "be",
+        "bg",
+        "uk",
+        "mn",
+        "abq",
+        "ady",
+        "kbd",
+        "ava",
+        "dar",
+        "inh",
+        "che",
+        "lbe",
+        "lez",
+        "tab"
+    ];
+
+    private List<string> DevanagariLanguageCodes =
+    [
+        "hi",
+        "mr",
+        "ne",
+        "bh",
+        "mai",
+        "ang",
+        "bho",
+        "mah",
+        "sck",
+        "new",
+        "gom",
+        "bgc"
+    ];
+
     public PaddleOcr()
     {
         Error = string.Empty;
+        _paddingOcrPath = Se.PaddleOcrFolder;
+        _clsPath = Path.Combine(_paddingOcrPath, "cls");
+        _detPath = Path.Combine(_paddingOcrPath, "det");
+        _recPath = Path.Combine(_paddingOcrPath, "rec");
     }
 
-    public async Task<string> Ocr(SKBitmap bitmap, string language, CancellationToken cancellationToken)
+    public async Task<string> Ocr(SKBitmap bitmap, string language, bool useGpu, CancellationToken cancellationToken)
     {
+        var detFilePrefix = language;
+        if (language != "en" && language != "ch")
+        {
+            detFilePrefix = $"ml{Path.DirectorySeparatorChar}Multilingual";
+        }
+        else
+        {
+            detFilePrefix = $"{language}{Path.DirectorySeparatorChar}{language}";
+        }
+
+        var recFilePrefix = language;
+        if (LatinLanguageCodes.Contains(language))
+        {
+            recFilePrefix = $"latin{Path.DirectorySeparatorChar}latin";
+        }
+        else if (ArabicLanguageCodes.Contains(language))
+        {
+            recFilePrefix = $"arabic{Path.DirectorySeparatorChar}arabic";
+        }
+        else if (CyrillicLanguageCodes.Contains(language))
+        {
+            recFilePrefix = $"cyrillic{Path.DirectorySeparatorChar}cyrillic";
+        }
+        else if (DevanagariLanguageCodes.Contains(language))
+        {
+            recFilePrefix = $"devanagari{Path.DirectorySeparatorChar}devanagari";
+        }
+        else
+        {
+            recFilePrefix = $"{language}{Path.DirectorySeparatorChar}{language}";
+        }
+
+
         var borderedBitmap = AddBorder(bitmap, 20);
         var tempImage = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".png");
         await File.WriteAllBytesAsync(tempImage, borderedBitmap.ToPngArray(), cancellationToken);
-        var parameters = $"--image_dir \"{tempImage}\" --use_angle_cls true --lang {language} --show_log false";
+        var parameters = $"--image_dir \"{tempImage}\" --use_angle_cls true --use_gpu {useGpu.ToString().ToLowerInvariant()} --lang {language} --show_log false --det_model_dir \"{_detPath}\\{detFilePrefix}_PP-OCRv3_det_infer\" --rec_model_dir \"{_recPath}\\{recFilePrefix}_PP-OCRv3_rec_infer\" --cls_model_dir \"{_clsPath}\\ch_ppocr_mobile_v2.0_cls_infer\"";
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -37,6 +163,8 @@ public class PaddleOcr
 
         process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
         process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
+        process.StartInfo.EnvironmentVariables["PYTHONUTF8"] = "1";
         process.OutputDataReceived += OutputHandler;
         _textDetectionResults.Clear();
 
@@ -117,10 +245,8 @@ public class PaddleOcr
                     result.Add(line.OrderBy(p => p.BoundingBox.TopLeft.X).ToList());
                     line = new List<PaddleOcrResultParser.TextDetectionResult>();
                 }
-                else
-                {
-                    line.Add(element);
-                }
+
+                line.Add(element);
             }
 
             last = element;
@@ -184,7 +310,7 @@ public class PaddleOcr
             new OcrLanguage2("bs", "Bosnian"),
             new OcrLanguage2("bg", "Bulgarian"),
             new OcrLanguage2("ch", "Chinese and english"),
-            new OcrLanguage2("ch_tra", "Chinese traditional"),
+            new OcrLanguage2("chinese_cht", "Chinese traditional"),
             new OcrLanguage2("hr", "Croatian"),
             new OcrLanguage2("cs", "Czech"),
             new OcrLanguage2("da", "Danish"),
