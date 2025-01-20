@@ -498,6 +498,28 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         }
         else if (ocrEngine.EngineType == OcrEngineType.PaddleOcr)
         {
+            if (Page != null && !Directory.Exists(Se.PaddleOcrFolder))
+            {
+                var answer = await Page.DisplayAlert(
+                    "Download Paddle OCR models?",
+                    $"{Environment.NewLine}\"Paddle OCR\" requires AI model files.{Environment.NewLine}{Environment.NewLine}Download and use Paddle OCR models?",
+                    "Yes",
+                    "No");
+
+                if (!answer)
+                {
+                    await Pause();
+                    return;
+                }
+
+                var result = await _popupService.ShowPopupAsync<DownloadPaddleOcrModelsPopupModel>(CancellationToken.None);
+                if (result is not string)
+                {
+                    await Pause();
+                    return;
+                }
+            }
+
             RunPaddleOcr(startFromIndex);
         }
         else if (ocrEngine.EngineType == OcrEngineType.Ollama)

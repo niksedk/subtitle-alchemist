@@ -174,12 +174,14 @@ public static class MauiProgram
         builder.Services.AddTransientPopup<TesseractDownloadPopup, TesseractDownloadPopupModel>();
         builder.Services.AddTransientPopup<TesseractDictionaryDownloadPopup, TesseractDictionaryDownloadPopupModel>();
         builder.Services.AddTransientPopup<PickMatroskaTrackPopup, PickMatroskaTrackPopupModel>();
+        builder.Services.AddTransientPopup<DownloadPaddleOcrModelsPopup, DownloadPaddleOcrModelsPopupModel>();
 
         builder.Services.AddHttpClient<IFfmpegDownloadService, FfmpegDownloadService>();
         builder.Services.AddHttpClient<IWhisperDownloadService, WhisperDownloadService>();
         builder.Services.AddHttpClient<ISpellCheckDictionaryDownloadService, SpellCheckDictionaryDownloadService>();
         builder.Services.AddHttpClient<ITtsDownloadService, TtsDownloadService>();
         builder.Services.AddHttpClient<ITesseractDownloadService, TesseractDownloadService>();
+        builder.Services.AddHttpClient<IPaddleOcrDownloadService, PaddleOcrDownloadService>();
 
 #if DEBUG
         builder.Logging.AddDebug();
