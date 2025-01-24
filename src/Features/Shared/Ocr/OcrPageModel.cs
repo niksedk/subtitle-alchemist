@@ -11,6 +11,7 @@ using SubtitleAlchemist.Logic.BluRaySup;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Ocr;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Text;
 
 namespace SubtitleAlchemist.Features.Shared.Ocr;
@@ -520,7 +521,8 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
                 }
             }
 
-            RunPaddleOcr(startFromIndex);
+            //  RunPaddleOcr(startFromIndex);
+            RunPaddleOcrBatch(startFromIndex, 10);
         }
         else if (ocrEngine.EngineType == OcrEngineType.Ollama)
         {
@@ -738,6 +740,104 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
         });
     }
 
+    private Lock BatchLock = new Lock();
+
+    private void RunPaddleOcrBatch(int startFromIndex, int batchSize)
+    {
+        var ocrEngine = new PaddleOcr();
+        var language = SelectedPaddleLanguageItem?.Code ?? "en";
+        var batchImages = new List<PaddleOcrBatchInput>(batchSize);
+        var max = -1;
+
+        var ocrProgress = new Progress<PaddleOcrBatchProgress>(p =>
+        {
+            if (_cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                return;
+            }   
+
+            lock (BatchLock)
+            {
+                var number = p.Index;
+                if (max < number)
+                {
+                    max = number;
+                }
+                else
+                {
+                    return;
+                }
+
+                var percentage = (int)Math.Round(number * 100.0, MidpointRounding.AwayFromZero);
+                var pctString = percentage.ToString(CultureInfo.InvariantCulture);
+                ProgressValue = number / (double)OcrSubtitleItems.Count;
+                ProgressText = $"Running OCR... {number + 1}/{OcrSubtitleItems.Count}";
+
+                var scrollToIndex = number;
+                var item = p.Item;
+                if (item == null)
+                {
+                    item = OcrSubtitleItems[p.Index];
+                }
+
+                item.Text = p.Text;
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ListView.ScrollTo(scrollToIndex, -1, ScrollToPosition.MakeVisible, false);
+                    SelectedOcrSubtitleItem = item;
+                    ListView.Focus();
+                    ListView.SelectedItem = item;
+                    ListView.UpdateSelectedItems(new List<object> { item });
+                });
+            }
+        });
+
+        _ = Task.Run(async () =>
+        {
+            var i = startFromIndex;
+            for (; i < OcrSubtitleItems.Count; i++)
+            {
+                if (_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (batchImages.Count >= batchSize)
+                {
+                    await ocrEngine.OcrBatch(batchImages, language, PaddleUseGpu, ocrProgress, _cancellationTokenSource.Token);
+                    batchImages.Clear();
+                }
+
+                var item = OcrSubtitleItems[i];
+                var bitmap = item.GetBitmap();
+
+                if (item == null)
+                {
+                }
+                else
+                {
+                    var paddleOcrBatchInput = new PaddleOcrBatchInput()
+                    {
+                        Bitmap = bitmap,
+                        Index = i,
+                        Item = item,
+                    };
+                    batchImages.Add(paddleOcrBatchInput);
+                }
+            }
+
+            if (batchImages.Count > 0)
+            {
+                await ocrEngine.OcrBatch(batchImages, language, PaddleUseGpu, ocrProgress, _cancellationTokenSource.Token);
+            }
+
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                SelectedStartFromNumber = OcrSubtitleItems.Count;
+                await Pause();
+            });
+        });
+    }
 
     private void RunOllamaOcr(int startFromIndex)
     {
