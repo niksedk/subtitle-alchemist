@@ -125,19 +125,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="11.1.0" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
 		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="5.1.0" />
-		<PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="6.0.1" />
+		<PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="6.0.2" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="HunspellSharp" Version="1.0.2" />
+		<PackageReference Include="HunspellSharp" Version="1.0.3" />
 		<PackageReference Include="libse" Version="4.0.10" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.3" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.40" />
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.40" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.3" />
-		<PackageReference Include="Plugin.Maui.Audio" Version="3.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.60" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.60" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.4" />
+		<PackageReference Include="Plugin.Maui.Audio" Version="3.1.1" />
 		<PackageReference Include="SharpCompress" Version="0.39.0" />
-		<PackageReference Include="SharpHook" Version="5.3.8" />
+		<PackageReference Include="SharpHook" Version="5.3.9" />
 		<PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
 		<PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="3.116.1" />
 		<PackageReference Include="WeCantSpell.Hunspell" Version="6.0.0" />
