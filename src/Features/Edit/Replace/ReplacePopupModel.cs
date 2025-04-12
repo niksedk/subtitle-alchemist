@@ -7,23 +7,12 @@ namespace SubtitleAlchemist.Features.Edit.Replace;
 
 public partial class ReplacePopupModel : ObservableObject
 {
-    [ObservableProperty]
-    private string _searchText = string.Empty;
-
-    [ObservableProperty]
-    private string _replaceText = string.Empty;
-
-    [ObservableProperty]
-    private bool _wholeWord;
-
-    [ObservableProperty]
-    private bool _normal;
-
-    [ObservableProperty]
-    private bool _caseInsensitive;
-
-    [ObservableProperty]
-    private bool _regularExpression;
+    [ObservableProperty] public partial string SearchText { get; set; } = string.Empty;
+    [ObservableProperty] public partial string ReplaceText { get; set; } = string.Empty;
+    [ObservableProperty] public partial bool WholeWord { get; set; }
+    [ObservableProperty] public partial bool Normal { get; set; }
+    [ObservableProperty] public partial bool CaseInsensitive { get; set; }
+    [ObservableProperty] public partial bool RegularExpression { get; set; }
 
     public ReplacePopup? Popup { get; set; }
 

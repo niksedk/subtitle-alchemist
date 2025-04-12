@@ -9,11 +9,8 @@ public partial class UndoRedoHistoryPageModel : ObservableObject, IQueryAttribut
 {
     public UndoRedoHistoryPage? Page { get; set; }
 
-    [ObservableProperty]
-    private ObservableCollection<UndoRedoItemDisplay> _undoRedoItems = new();
-
-    [ObservableProperty]
-    private UndoRedoItemDisplay? _selectedUndoRedoItem;
+    [ObservableProperty] public partial ObservableCollection<UndoRedoItemDisplay> UndoRedoItems { get; set; } = new();
+    [ObservableProperty] public partial UndoRedoItemDisplay? SelectedUndoRedoItem { get; set; }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {

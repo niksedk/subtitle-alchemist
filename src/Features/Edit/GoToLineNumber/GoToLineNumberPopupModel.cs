@@ -9,8 +9,7 @@ namespace SubtitleAlchemist.Features.Edit.GoToLineNumber
         public GoToLineNumberPopup? Popup { get; set; }
         public Entry EntryLineNumber { get; set; } = new Entry();
 
-        [ObservableProperty]
-        private int _lineNumber;
+        [ObservableProperty] public partial int LineNumber { get; set; }
 
         public GoToLineNumberPopupModel()
         {

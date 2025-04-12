@@ -24,196 +24,69 @@ namespace SubtitleAlchemist.Features.Video.BurnIn;
 
 public partial class BurnInPageModel : ObservableObject, IQueryAttributable
 {
-    [ObservableProperty]
-    private string _videoFileName;
-
-    [ObservableProperty]
-    private string _videoFileSize;
-
-    [ObservableProperty]
-    private ObservableCollection<string> _fontNames;
-
-    [ObservableProperty]
-    private string _selectedFontName;
-
-    [ObservableProperty]
-    private ObservableCollection<double> _fontFactors;
-
-    [ObservableProperty]
-    private double _selectedFontFactor;
-
-    [ObservableProperty]
-    private string _fontSizeText;
-
-    [ObservableProperty]
-    private bool _fontIsBold;
-
-    [ObservableProperty]
-    private ObservableCollection<decimal> _fontOutlines;
-
-    [ObservableProperty]
-    private decimal _selectedFontOutline;
-
-    [ObservableProperty]
-    private string _fontOutlineText;
-
-    [ObservableProperty]
-    private ObservableCollection<decimal> _fontShadowWidths;
-
-    [ObservableProperty]
-    private decimal _selectedFontShadowWidth;
-
-    [ObservableProperty]
-    private string _fontShadowText;
-
-    [ObservableProperty]
-    private ObservableCollection<FontBoxItem> _fontBoxTypes;
-
-    [ObservableProperty]
-    private FontBoxItem _selectedFontBoxType;
-
-    [ObservableProperty]
-    private Color _fontTextColor;
-
-    [ObservableProperty]
-    private Color _fontBoxColor;
-
-    [ObservableProperty]
-    private Color _fontOutlineColor;
-
-    [ObservableProperty]
-    private Color _fontShadowColor;
-
-    [ObservableProperty]
-    private int _fontMarginHorizontal;
-
-    [ObservableProperty]
-    private int _fontMarginVertical;
-
-    [ObservableProperty]
-    private bool _fontFixRtl;
-
-    [ObservableProperty]
-    private ObservableCollection<AlignmentItem> _fontAlignments;
-
-    [ObservableProperty]
-    private AlignmentItem _selectedFontAlignment;
-
-    [ObservableProperty]
-    private string _fontAssaInfo;
-
-    [ObservableProperty]
-    private int _videoWidth;
-
-    [ObservableProperty]
-    private int _videoHeight;
-
-    [ObservableProperty]
-    private ObservableCollection<VideoEncodingItem> _videoEncodings;
-
-    [ObservableProperty]
-    private VideoEncodingItem _selectedVideoEncoding;
-
-    [ObservableProperty]
-    private ObservableCollection<PixelFormatItem> _videoPixelFormats;
-
-    [ObservableProperty]
-    private PixelFormatItem? _selectedVideoPixelFormat;
-
-    [ObservableProperty]
-    private ObservableCollection<string> _videoPresets;
-
-    [ObservableProperty]
-    private string? _selectedVideoPreset;
-
-    [ObservableProperty]
-    private string _videoPresetText;
-
-    [ObservableProperty]
-    private ObservableCollection<string> _videoCrf;
-
-    [ObservableProperty]
-    private string? _selectedVideoCrf;
-
-    [ObservableProperty]
-    private string _videoCrfText;
-
-    [ObservableProperty]
-    private string _videoCrfHint;
-
-    [ObservableProperty]
-    private ObservableCollection<string> _videoTuneFor;
-
-    [ObservableProperty]
-    private string? _selectedVideoTuneFor;
-
-    [ObservableProperty]
-    private ObservableCollection<string> _videoExtension;
-
-    [ObservableProperty]
-    private int _selectedVideoExtension;
-
-
-    [ObservableProperty]
-    private ObservableCollection<string> _audioEncodings;
-
-    [ObservableProperty]
-    private string _selectedAudioEncoding;
-
-    [ObservableProperty]
-    private bool _audioIsStereo;
-
-    [ObservableProperty]
-    private ObservableCollection<string> _audioSampleRates;
-
-    [ObservableProperty]
-    private string _selectedAudioSampleRate;
-
-    [ObservableProperty]
-    private ObservableCollection<string> _audioBitRates;
-
-    [ObservableProperty]
-    private string _selectedAudioBitRate;
-
-    [ObservableProperty]
-    private string _outputSourceFolder;
-
-    [ObservableProperty]
-    private bool _useOutputFolderVisible;
-
-    [ObservableProperty]
-    private bool _useSourceFolderVisible;
-
-    [ObservableProperty]
-    private bool _isCutActive;
-
-    [ObservableProperty]
-    private TimeSpan _cutFrom;
-
-    [ObservableProperty]
-    private TimeSpan _cutTo;
-
-
-    [ObservableProperty]
-    private bool _useTargetFileSize;
-
-    [ObservableProperty]
-    private int _targetFileSize;
-
-    [ObservableProperty]
-    private string _buttonModeText;
-
-    [ObservableProperty]
-    private string _progressText;
-
-    [ObservableProperty]
-    private double _progressValue;
-
-    [ObservableProperty]
-    private ObservableCollection<BurnInJobItem> _jobItems;
-
-    [ObservableProperty]
-    private BurnInJobItem? _selectedJobItem;
+    [ObservableProperty] public partial string VideoFileName { get; set; }
+    [ObservableProperty] public partial string VideoFileSize { get; set; }
+    [ObservableProperty] public partial ObservableCollection<string> FontNames { get; set; }
+    [ObservableProperty] public partial string SelectedFontName { get; set; }
+    [ObservableProperty] public partial ObservableCollection<double> FontFactors { get; set; }
+    [ObservableProperty] public partial double SelectedFontFactor { get; set; }
+    [ObservableProperty] public partial string FontSizeText { get; set; }
+    [ObservableProperty] public partial bool FontIsBold { get; set; }
+    [ObservableProperty] public partial ObservableCollection<decimal> FontOutlines { get; set; }
+    [ObservableProperty] public partial decimal SelectedFontOutline { get; set; }
+    [ObservableProperty] public partial string FontOutlineText { get; set; }
+    [ObservableProperty] public partial ObservableCollection<decimal> FontShadowWidths { get; set; }
+    [ObservableProperty] public partial decimal SelectedFontShadowWidth { get; set; }
+    [ObservableProperty] public partial string FontShadowText { get; set; }
+    [ObservableProperty] public partial ObservableCollection<FontBoxItem> FontBoxTypes { get; set; }
+    [ObservableProperty] public partial FontBoxItem SelectedFontBoxType { get; set; }
+    [ObservableProperty] public partial Color FontTextColor { get; set; }
+    [ObservableProperty] public partial Color FontBoxColor { get; set; }
+    [ObservableProperty] public partial Color FontOutlineColor { get; set; }
+    [ObservableProperty] public partial Color FontShadowColor { get; set; }
+    [ObservableProperty] public partial int FontMarginHorizontal { get; set; }
+    [ObservableProperty] public partial int FontMarginVertical { get; set; }
+    [ObservableProperty] public partial bool FontFixRtl { get; set; }
+    [ObservableProperty] public partial ObservableCollection<AlignmentItem> FontAlignments { get; set; }
+    [ObservableProperty] public partial AlignmentItem SelectedFontAlignment { get; set; }
+    [ObservableProperty] public partial string FontAssaInfo { get; set; }
+    [ObservableProperty] public partial int VideoWidth { get; set; }
+    [ObservableProperty] public partial int VideoHeight { get; set; }
+    [ObservableProperty] public partial ObservableCollection<VideoEncodingItem> VideoEncodings { get; set; }
+    [ObservableProperty] public partial VideoEncodingItem SelectedVideoEncoding { get; set; }
+    [ObservableProperty] public partial ObservableCollection<PixelFormatItem> VideoPixelFormats { get; set; }
+    [ObservableProperty] public partial PixelFormatItem? SelectedVideoPixelFormat { get; set; }
+    [ObservableProperty] public partial ObservableCollection<string> VideoPresets { get; set; }
+    [ObservableProperty] public partial string? SelectedVideoPreset { get; set; }
+    [ObservableProperty] public partial string VideoPresetText { get; set; }
+    [ObservableProperty] public partial ObservableCollection<string> VideoCrf { get; set; }
+    [ObservableProperty] public partial string? SelectedVideoCrf { get; set; }
+    [ObservableProperty] public partial string VideoCrfText { get; set; }
+    [ObservableProperty] public partial string VideoCrfHint { get; set; }
+    [ObservableProperty] public partial ObservableCollection<string> VideoTuneFor { get; set; }
+    [ObservableProperty] public partial string? SelectedVideoTuneFor { get; set; }
+    [ObservableProperty] public partial ObservableCollection<string> VideoExtension { get; set; }
+    [ObservableProperty] public partial int SelectedVideoExtension { get; set; }
+    [ObservableProperty] public partial ObservableCollection<string> AudioEncodings { get; set; }
+    [ObservableProperty] public partial string SelectedAudioEncoding { get; set; }
+    [ObservableProperty] public partial bool AudioIsStereo { get; set; }
+    [ObservableProperty] public partial ObservableCollection<string> AudioSampleRates { get; set; }
+    [ObservableProperty] public partial string SelectedAudioSampleRate { get; set; }
+    [ObservableProperty] public partial ObservableCollection<string> AudioBitRates { get; set; }
+    [ObservableProperty] public partial string SelectedAudioBitRate { get; set; }
+    [ObservableProperty] public partial string OutputSourceFolder { get; set; }
+    [ObservableProperty] public partial bool UseOutputFolderVisible { get; set; }
+    [ObservableProperty] public partial bool UseSourceFolderVisible { get; set; }
+    [ObservableProperty] public partial bool IsCutActive { get; set; }
+    [ObservableProperty] public partial TimeSpan CutFrom { get; set; }
+    [ObservableProperty] public partial TimeSpan CutTo { get; set; }
+    [ObservableProperty] public partial bool UseTargetFileSize { get; set; }
+    [ObservableProperty] public partial int TargetFileSize { get; set; }
+    [ObservableProperty] public partial string ButtonModeText { get; set; }
+    [ObservableProperty] public partial string ProgressText { get; set; }
+    [ObservableProperty] public partial double ProgressValue { get; set; }
+    [ObservableProperty] public partial ObservableCollection<BurnInJobItem> JobItems { get; set; }
+    [ObservableProperty] public partial BurnInJobItem? SelectedJobItem { get; set; }
 
     public BurnInPage? Page { get; set; }
     public MediaElement VideoPlayer { get; set; }
@@ -259,15 +132,15 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         _popupService = popupService;
         _fileHelper = fileHelper;
 
-        _fontBoxColor = Colors.Wheat;
-        _fontOutlineColor = Colors.Black;
-        _fontShadowColor = Colors.Black;
-        _videoCrfText = string.Empty;
-        _videoCrf = new();
-        _videoTuneFor = new();
-        _videoExtension = new();
-        _outputSourceFolder = string.Empty;
-        _progressText = string.Empty;
+        FontBoxColor = Colors.Wheat;
+        FontOutlineColor = Colors.Black;
+        FontShadowColor = Colors.Black;
+        VideoCrfText = string.Empty;
+        VideoCrf = new();
+        VideoTuneFor = new();
+        VideoExtension = new();
+        OutputSourceFolder = string.Empty;
+        ProgressText = string.Empty;
         VideoPlayer = new();
         ButtonGenerate = new();
         ButtonOk = new();
@@ -278,8 +151,8 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         ImagePreview = new();
         BatchView = new();
         LabelOutputFolder = new();
-        _videoFileName = string.Empty;
-        _videoFileSize = string.Empty;
+        VideoFileName = string.Empty;
+        VideoFileSize = string.Empty;
         EntryWidth = new();
         EntryHeight = new();
         LabelX = new();
@@ -288,61 +161,61 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
         FontAssaView = new();
         FontPropertiesView = new();
 
-        _fontNames = new ObservableCollection<string>(FontHelper.GetSystemFonts());
-        _selectedFontName = _fontNames.First();
+        FontNames = new ObservableCollection<string>(FontHelper.GetSystemFonts());
+        SelectedFontName = FontNames.First();
 
         // font factors between 0-1
-        _fontFactors = new ObservableCollection<double>(
+        FontFactors = new ObservableCollection<double>(
             Enumerable.Range(200, 1000)
             .Select(i => Math.Round(i * 0.0005, 3))
             .ToList().Distinct());
-        _selectedFontFactor = 0.4;
-        _fontSizeText = string.Empty;
+        SelectedFontFactor = 0.4;
+        FontSizeText = string.Empty;
 
-        _fontTextColor = Colors.WhiteSmoke;
+        FontTextColor = Colors.WhiteSmoke;
 
-        _fontOutlineText = "Outline";
-        _fontOutlines = new ObservableCollection<decimal>(Enumerable.Range(0, 50).Select(p => (decimal)p));
-        _selectedFontOutline = 2.0m;
+        FontOutlineText = "Outline";
+        FontOutlines = new ObservableCollection<decimal>(Enumerable.Range(0, 50).Select(p => (decimal)p));
+        SelectedFontOutline = 2.0m;
 
-        _fontShadowText = "Shadow";
-        _fontShadowWidths = new ObservableCollection<decimal>(Enumerable.Range(0, 50).Select(p => (decimal)p));
-        _selectedFontShadowWidth = 2.0m;
+        FontShadowText = "Shadow";
+        FontShadowWidths = new ObservableCollection<decimal>(Enumerable.Range(0, 50).Select(p => (decimal)p));
+        SelectedFontShadowWidth = 2.0m;
 
-        _fontBoxTypes = new ObservableCollection<FontBoxItem>
+        FontBoxTypes = new ObservableCollection<FontBoxItem>
         {
             new(FontBoxType.None, "None"),
             new(FontBoxType.OneBox, "One box"),
             new(FontBoxType.BoxPerLine, "Box per line"),
         };
-        _selectedFontBoxType = _fontBoxTypes[0];
+        SelectedFontBoxType = FontBoxTypes[0];
 
-        _fontMarginHorizontal = 10;
-        _fontMarginVertical = 10;
+        FontMarginHorizontal = 10;
+        FontMarginVertical = 10;
 
-        _fontAlignments = new ObservableCollection<AlignmentItem>(AlignmentItem.Alignments);
-        _selectedFontAlignment = AlignmentItem.Alignments[7];
+        FontAlignments = new ObservableCollection<AlignmentItem>(AlignmentItem.Alignments);
+        SelectedFontAlignment = AlignmentItem.Alignments[7];
 
-        _fontAssaInfo = string.Empty;
+        FontAssaInfo = string.Empty;
 
-        _videoWidth = 1920;
-        _videoHeight = 1080;
+        VideoWidth = 1920;
+        VideoHeight = 1080;
 
-        _videoEncodings = new ObservableCollection<VideoEncodingItem>(VideoEncodingItem.VideoEncodings);
-        _selectedVideoEncoding = _videoEncodings[0];
+        VideoEncodings = new ObservableCollection<VideoEncodingItem>(VideoEncodingItem.VideoEncodings);
+        SelectedVideoEncoding = VideoEncodings[0];
 
-        _videoPixelFormats = new ObservableCollection<PixelFormatItem>(PixelFormatItem.PixelFormats);
-        _selectedVideoPixelFormat = _videoPixelFormats[0];
+        VideoPixelFormats = new ObservableCollection<PixelFormatItem>(PixelFormatItem.PixelFormats);
+        SelectedVideoPixelFormat = VideoPixelFormats[0];
 
-        _videoPresetText = "Preset";
+        VideoPresetText = "Preset";
 
-        _videoCrfText = "CRF";
-        _videoCrfHint = string.Empty;
+        VideoCrfText = "CRF";
+        VideoCrfHint = string.Empty;
 
-        _videoPresets = new ObservableCollection<string>();
+        VideoPresets = new ObservableCollection<string>();
 
 
-        _audioEncodings = new ObservableCollection<string>
+        AudioEncodings = new ObservableCollection<string>
         {
             "copy",
             "aac",
@@ -351,9 +224,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             "opus",
             "vorbis",
         };
-        _selectedAudioEncoding = "copy";
+        SelectedAudioEncoding = "copy";
 
-        _audioSampleRates = new ObservableCollection<string>
+        AudioSampleRates = new ObservableCollection<string>
         {
             "44100 Hz",
             "48000 Hz",
@@ -361,9 +234,9 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             "96000 Hz",
             "192000 Hz",
         };
-        _selectedAudioSampleRate = _audioSampleRates[1];
+        SelectedAudioSampleRate = AudioSampleRates[1];
 
-        _audioBitRates = new ObservableCollection<string>
+        AudioBitRates = new ObservableCollection<string>
         {
             "64k",
             "96k",
@@ -373,15 +246,15 @@ public partial class BurnInPageModel : ObservableObject, IQueryAttributable
             "256k",
             "320k",
         };
-        _selectedAudioBitRate = _audioBitRates[2];
+        SelectedAudioBitRate = AudioBitRates[2];
 
 
         VideoInfoView = new Border();
         VideoSizeView = new Border();
 
-        _jobItems = new ObservableCollection<BurnInJobItem>();
+        JobItems = new ObservableCollection<BurnInJobItem>();
 
-        _buttonModeText = "Batch mode";
+        ButtonModeText = "Batch mode";
 
         _log = new StringBuilder();
 

@@ -5,25 +5,25 @@ namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 
 public partial class ReviewRow : ObservableObject
 {
-    [ObservableProperty] private bool _include;
-    [ObservableProperty] private int _number;
-    [ObservableProperty] private string _voice;
-    [ObservableProperty] private string _cps;
-    [ObservableProperty] private string _speed;
-    [ObservableProperty] private Color  _speedBackgroundColor;
-    [ObservableProperty] private string _text;
+    [ObservableProperty] public partial bool Include { get; set; }
+    [ObservableProperty] public partial int Number { get; set; }
+    [ObservableProperty] public partial string Voice { get; set; }
+    [ObservableProperty] public partial string Cps { get; set; }
+    [ObservableProperty] public partial string Speed { get; set; }
+    [ObservableProperty] public partial Color SpeedBackgroundColor { get; set; }
+    [ObservableProperty] public partial string Text { get; set; }
 
     public TtsStepResult StepResult { get; set; }
 
     public ReviewRow()
     {
-        _include = true;
-        _number = 0;
-        _voice = string.Empty;
-        _cps = string.Empty;
-        _speed = string.Empty;
-        _speedBackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
-        _text = string.Empty;
+        Include = true;
+        Number = 0;
+        Voice = string.Empty;
+        Cps = string.Empty;
+        Speed = string.Empty;
+        SpeedBackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+        Text = string.Empty;
         StepResult = new TtsStepResult();
     }
 }

@@ -9,26 +9,13 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.Cavena890Export
 {
     public partial class ExportCavena890PopupModel : ObservableObject
     {
-        [ObservableProperty]
-        private string _translatedTitle = string.Empty;
-
-        [ObservableProperty]
-        private string _originalTitle = string.Empty;
-
-        [ObservableProperty]
-        private string _translator = string.Empty;
-
-        [ObservableProperty]
-        private string _comment = string.Empty;
-
-        [ObservableProperty]
-        private string? _selectedLanguage;
-
-        [ObservableProperty]
-        private ObservableCollection<string>  _languages;
-
-        [ObservableProperty]
-        private TimeSpan _startTime;
+        [ObservableProperty] public partial string TranslatedTitle { get; set; } = string.Empty;
+        [ObservableProperty] public partial string OriginalTitle { get; set; } = string.Empty;
+        [ObservableProperty] public partial string Translator { get; set; }  = string.Empty;
+        [ObservableProperty] public partial string Comment { get; set; } = string.Empty;
+        [ObservableProperty] public partial string? SelectedLanguage { get; set; }
+        [ObservableProperty] public partial ObservableCollection<string> Languages { get; set; }
+        [ObservableProperty] public partial TimeSpan StartTime { get; set; }
 
         public ExportCavena890Popup? Popup { get; set; }
 

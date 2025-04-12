@@ -6,20 +6,11 @@ namespace SubtitleAlchemist.Features.Edit.Find
 {
     public partial class FindPopupModel : ObservableObject
     {
-        [ObservableProperty]
-        private string _searchText = string.Empty;
-
-        [ObservableProperty]
-        private bool _wholeWord;
-
-        [ObservableProperty]
-        private bool _normal;
-
-        [ObservableProperty]
-        private bool _caseInsensitive;
-
-        [ObservableProperty]
-        private bool _regularExpression;
+        [ObservableProperty] public partial string SearchText { get; set; } = string.Empty;
+        [ObservableProperty] public partial bool WholeWord { get; set; }
+        [ObservableProperty] public partial bool Normal { get; set; }
+        [ObservableProperty] public partial bool CaseInsensitive { get; set; }
+        [ObservableProperty] public partial bool RegularExpression { get; set; }
 
         public FindPopup? Popup { get; set; }
         public SearchBar SearchBar { get; set; } = new SearchBar();

@@ -5,26 +5,19 @@ namespace SubtitleAlchemist.Features.Edit.RedoUndoHistory;
 
 public partial class UndoRedoItemDisplay : ObservableObject
 {
-    [ObservableProperty]
-    private string _description;
-
-    [ObservableProperty]
-    private int _selectedLineNumber;
-
-    [ObservableProperty]
-    private int _numberOfLines;
-
-    [ObservableProperty]
-    private DateTime _created;
+    [ObservableProperty] public partial string Description { get; set; }
+    [ObservableProperty] public partial int SelectedLineNumber { get; set; }
+    [ObservableProperty] public partial int NumberOfLines { get; set; }
+    [ObservableProperty] public partial DateTime Created { get; set; }
 
     public UndoRedoItem Item { get; }
 
     public UndoRedoItemDisplay(UndoRedoItem item)
     {
-        _description = item.Description;
-        _selectedLineNumber = item.SelectedLines.First();
-        _created = item.Created;
-        _numberOfLines = item.Subtitle.Paragraphs.Count;
+        Description = item.Description;
+        SelectedLineNumber = item.SelectedLines.First();
+        Created = item.Created;
+        NumberOfLines = item.Subtitle.Paragraphs.Count;
         Item = item;
     }
 }

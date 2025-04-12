@@ -7,11 +7,8 @@ namespace SubtitleAlchemist.Controls.PickerControl;
 public partial class PickerPopupModel : ObservableObject
 {
 
-    [ObservableProperty] 
-    private ObservableCollection<string> _items = new();
-
-    [ObservableProperty] 
-    private string? _selectedItem;
+    [ObservableProperty] public partial ObservableCollection<string> Items { get; set; } = new();
+    [ObservableProperty] public partial string? SelectedItem { get; set; }
 
     public PickerPopup? Popup { get; set; }
     public Picker Picker { get; set; } = new();

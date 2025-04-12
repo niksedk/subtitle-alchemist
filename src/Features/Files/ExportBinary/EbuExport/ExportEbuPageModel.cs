@@ -13,147 +13,53 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
 {
     public partial class ExportEbuPageModel : ObservableObject, IQueryAttributable
     {
-
-        [ObservableProperty]
-        private ObservableCollection<CodePageNumberItem> _codePageNumbers;
-
-        [ObservableProperty]
-        private CodePageNumberItem? _selectedCodePageNumber;
-
-        [ObservableProperty]
-        private ObservableCollection<string> _diskFormatCodes;
-
-        [ObservableProperty]
-        private string _selectedDiskFormatCode = string.Empty;
-
-        [ObservableProperty]
-        private ObservableCollection<string> _frameRates;
-
-        [ObservableProperty]
-        private string _selectedFrameRate = string.Empty;
-
-        [ObservableProperty]
-        private ObservableCollection<string> _displayStandardCodes;
-
-        [ObservableProperty]
-        private string _selectedDisplayStandardCode = string.Empty;
-
-        [ObservableProperty]
-        private ObservableCollection<string> _characterTables;
-
-        [ObservableProperty]
-        private string _selectedCharacterTable = string.Empty;
-
-        [ObservableProperty]
-        private ObservableCollection<LanguageItem> _languageCodes;
-
-        [ObservableProperty]
-        private LanguageItem? _selectedLanguageCode;
-
-        [ObservableProperty]
-        private string _originalProgramTitle = string.Empty;
-
-        [ObservableProperty]
-        private string _originalEpisodeTitle = string.Empty;
-
-        [ObservableProperty]
-        private string _translatedProgramTitle = string.Empty;
-
-        [ObservableProperty]
-        private string _translatedEpisodeTitle = string.Empty;
-
-        [ObservableProperty]
-        private string _translatorName = string.Empty;
-
-        [ObservableProperty]
-        private string _subtitleListReferenceCode = string.Empty;
-
-        [ObservableProperty]
-        private string _countryOfOrigin = string.Empty;
-
-        [ObservableProperty]
-        private ObservableCollection<string> _timeCodeStatusList;
-
-        [ObservableProperty]
-        private string _selectedTimeCodeStatus = string.Empty;
-
-        [ObservableProperty]
-        private TimeSpan _startOfProgramme;
-
-        [ObservableProperty]
-        private ObservableCollection<int> _revisionNumbers;
-
-        [ObservableProperty]
-        private int _selectedRevisionNumber;
-
-        [ObservableProperty]
-        private ObservableCollection<int> _maximumCharactersPerRowList;
-
-        [ObservableProperty]
-        private int _selectedMaximumCharactersPerRow;
-
-        [ObservableProperty]
-        private ObservableCollection<int> _maximumRowsList;
-
-        [ObservableProperty]
-        private int _selectedMaximumRows;
-
-        [ObservableProperty]
-        private ObservableCollection<int> _discSequenceNumberList;
-
-        [ObservableProperty]
-        private int _selectedDiscSequenceNumber;
-
-        [ObservableProperty]
-        private ObservableCollection<int> _totalNumberOfDiscsList;
-
-        [ObservableProperty]
-        private int _selectedTotalNumberOfDiscs;
-
-        [ObservableProperty]
-        private ObservableCollection<string> _justificationCodes;
-
-        [ObservableProperty]
-        private string _selectedJustificationCode = string.Empty;
-
-        [ObservableProperty]
-        private ObservableCollection<int> _marginTopList;
-
-        [ObservableProperty]
-        private int _selectedMarginTop;
-
-        [ObservableProperty]
-        private ObservableCollection<int> _marginBottomList;
-
-        [ObservableProperty]
-        private int _selectedMarginBottom;
-
-        [ObservableProperty]
-        private ObservableCollection<int> _newLineRowsList;
-
-        [ObservableProperty]
-        private int _selectedNewLineRows;
-
-        [ObservableProperty]
-        private bool _teletextBox;
-
-        [ObservableProperty]
-        private bool _teletextDoubleHeight;
-
-        [ObservableProperty]
-        private string _errorLogTitle = "Errors";
-
-        [ObservableProperty]
-        private string _errorLog;
-
-        [ObservableProperty]
-        private Color _generalBackgroundColor;
-
-        [ObservableProperty]
-        private Color _textAndTimingBackgroundColor;
-
-        [ObservableProperty]
-        private Color _errorsBackgroundColor;
+        [ObservableProperty] public partial ObservableCollection<CodePageNumberItem> CodePageNumbers { get; set; }
+        [ObservableProperty] public partial CodePageNumberItem? SelectedCodePageNumber { get; set; }
+        [ObservableProperty] public partial ObservableCollection<string> DiskFormatCodes { get; set; }
+        [ObservableProperty] public partial string SelectedDiskFormatCode { get; set; } = string.Empty;
+        [ObservableProperty] public partial ObservableCollection<string> FrameRates { get; set; }
+        [ObservableProperty] public partial string SelectedFrameRate { get; set; } = string.Empty;
+        [ObservableProperty] public partial ObservableCollection<string> DisplayStandardCodes { get; set; }
+        [ObservableProperty] public partial string SelectedDisplayStandardCode { get; set; } = string.Empty;
+        [ObservableProperty] public partial ObservableCollection<string> CharacterTables { get; set; }
+        [ObservableProperty] public partial string SelectedCharacterTable { get; set; } = string.Empty;
+        [ObservableProperty] public partial ObservableCollection<LanguageItem> LanguageCodes { get; set; }
+        [ObservableProperty] public partial LanguageItem? SelectedLanguageCode { get; set; }
+        [ObservableProperty] public partial string OriginalProgramTitle { get; set; } = string.Empty;
+        [ObservableProperty] public partial string OriginalEpisodeTitle { get; set; } = string.Empty;
+        [ObservableProperty] public partial string TranslatedProgramTitle { get; set; } = string.Empty;
+        [ObservableProperty] public partial string TranslatedEpisodeTitle { get; set; } = string.Empty;
+        [ObservableProperty] public partial string TranslatorName { get; set; } = string.Empty;
+        [ObservableProperty] public partial string SubtitleListReferenceCode { get; set; } = string.Empty;
+        [ObservableProperty] public partial string CountryOfOrigin { get; set; } = string.Empty;
+        [ObservableProperty] public partial ObservableCollection<string> TimeCodeStatusList { get; set; }
+        [ObservableProperty] public partial string SelectedTimeCodeStatus { get; set; } = string.Empty;
+        [ObservableProperty] public partial TimeSpan StartOfProgramme { get; set; }
+        [ObservableProperty] public partial ObservableCollection<int> RevisionNumbers { get; set; }
+        [ObservableProperty] public partial int SelectedRevisionNumber { get; set; }
+        [ObservableProperty] public partial ObservableCollection<int> MaximumCharactersPerRowList { get; set; }
+        [ObservableProperty] public partial int SelectedMaximumCharactersPerRow { get; set; }
+        [ObservableProperty] public partial ObservableCollection<int> MaximumRowsList { get; set; }
+        [ObservableProperty] public partial int SelectedMaximumRows { get; set; }
+        [ObservableProperty] public partial ObservableCollection<int> DiscSequenceNumberList { get; set; }
+        [ObservableProperty] public partial int SelectedDiscSequenceNumber { get; set; }
+        [ObservableProperty] public partial ObservableCollection<int> TotalNumberOfDiscsList { get; set; }
+        [ObservableProperty] public partial int SelectedTotalNumberOfDiscs { get; set; }
+        [ObservableProperty] public partial ObservableCollection<string> JustificationCodes { get; set; }
+        [ObservableProperty] public partial string SelectedJustificationCode { get; set; } = string.Empty;
+        [ObservableProperty] public partial ObservableCollection<int> MarginTopList { get; set; }
+        [ObservableProperty] public partial int SelectedMarginTop { get; set; }
+        [ObservableProperty] public partial ObservableCollection<int> MarginBottomList { get; set; }
+        [ObservableProperty] public partial int SelectedMarginBottom { get; set; }
+        [ObservableProperty] public partial ObservableCollection<int> NewLineRowsList { get; set; }
+        [ObservableProperty] public partial int SelectedNewLineRows { get; set; }
+        [ObservableProperty] public partial bool TeletextBox { get; set; }
+        [ObservableProperty] public partial bool TeletextDoubleHeight { get; set; }
+        [ObservableProperty] public partial string ErrorLogTitle { get; set; } = "Errors";
+        [ObservableProperty] public partial string ErrorLog { get; set; }
+        [ObservableProperty] public partial Color GeneralBackgroundColor { get; set; }
+        [ObservableProperty] public partial Color TextAndTimingBackgroundColor { get; set; }
+        [ObservableProperty] public partial Color ErrorsBackgroundColor { get; set; }
 
         public ExportEbuPage? Page { get; set; }
         public Border GeneralView { get; set; } = new Border();
@@ -168,16 +74,16 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
 
         public ExportEbuPageModel(IFileHelper fileHelper)
         {
-            _errorLog = string.Empty;
+            ErrorLog = string.Empty;
             _fileHelper = fileHelper;
             GeneralBackgroundColor = (Color)Application.Current!.Resources[ThemeNames.ActiveBackgroundColor];
             TextAndTimingBackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
             ErrorsBackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
 
-            _codePageNumbers = new ObservableCollection<CodePageNumberItem>(CodePageNumberItem.GetCodePageNumberItems());
-            _selectedCodePageNumber = _codePageNumbers[0];
+            CodePageNumbers = new ObservableCollection<CodePageNumberItem>(CodePageNumberItem.GetCodePageNumberItems());
+            SelectedCodePageNumber = CodePageNumbers[0];
 
-            _diskFormatCodes = new ObservableCollection<string>
+            DiskFormatCodes = new ObservableCollection<string>
             {
                 "STL23.01 (non-standard)",
                 "STL24.01 (non-standard)",
@@ -186,7 +92,7 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
                 "STL30.01",
             };
 
-            _frameRates = new ObservableCollection<string>
+            FrameRates = new ObservableCollection<string>
             {
                 "23.976",
                 "24",
@@ -195,7 +101,7 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
                 "30",
             };
 
-            _displayStandardCodes = new ObservableCollection<string>
+            DisplayStandardCodes = new ObservableCollection<string>
             {
                "0 Open subtitling",
                "1 Level-1 teletext",
@@ -203,7 +109,7 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
                "Undefined",
             };
 
-            _characterTables = new ObservableCollection<string>
+            CharacterTables = new ObservableCollection<string>
             {
                 "Latin",
                 "Latin/Cyrillic",
@@ -212,7 +118,7 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
                 "Latin/Hebrew",
             };
 
-            _languageCodes = new ObservableCollection<LanguageItem>
+            LanguageCodes = new ObservableCollection<LanguageItem>
             {
                 new("00", ""),
                 new("01", "Albanian"),
@@ -319,13 +225,13 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
                 new("45", "Zulu"),
             };
 
-            _timeCodeStatusList = new ObservableCollection<string>
+            TimeCodeStatusList = new ObservableCollection<string>
             {
                 "Not intended for use",
                 "Intended for use",
             };
 
-            _justificationCodes = new ObservableCollection<string>
+            JustificationCodes = new ObservableCollection<string>
             {
                 "Unchanged presentation",
                 "Left-justified text",
@@ -333,21 +239,21 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.EbuExport
                 "Right-justified text",
             };
 
-            _revisionNumbers = new ObservableCollection<int>(Enumerable.Range(0, 100).ToList());
+            RevisionNumbers = new ObservableCollection<int>(Enumerable.Range(0, 100).ToList());
 
-            _maximumCharactersPerRowList = new ObservableCollection<int>(Enumerable.Range(0, 100).ToList());
+            MaximumCharactersPerRowList = new ObservableCollection<int>(Enumerable.Range(0, 100).ToList());
 
-            _maximumRowsList = new ObservableCollection<int>(Enumerable.Range(0, 100).ToList());
+            MaximumRowsList = new ObservableCollection<int>(Enumerable.Range(0, 100).ToList());
 
-            _discSequenceNumberList = new ObservableCollection<int>(Enumerable.Range(0, 10).ToList());
+            DiscSequenceNumberList = new ObservableCollection<int>(Enumerable.Range(0, 10).ToList());
 
-            _totalNumberOfDiscsList = new ObservableCollection<int>(Enumerable.Range(0, 10).ToList());
+            TotalNumberOfDiscsList = new ObservableCollection<int>(Enumerable.Range(0, 10).ToList());
 
-            _marginTopList = new ObservableCollection<int>(Enumerable.Range(0, 51).ToList());
+            MarginTopList = new ObservableCollection<int>(Enumerable.Range(0, 51).ToList());
 
-            _marginBottomList = new ObservableCollection<int>(Enumerable.Range(0, 51).ToList());
+            MarginBottomList = new ObservableCollection<int>(Enumerable.Range(0, 51).ToList());
 
-            _newLineRowsList = new ObservableCollection<int>(Enumerable.Range(0, 11).ToList());
+            NewLineRowsList = new ObservableCollection<int>(Enumerable.Range(0, 11).ToList());
         }
 
         [RelayCommand]

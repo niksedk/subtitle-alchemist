@@ -5,17 +5,10 @@ namespace SubtitleAlchemist.Features.Files;
 
 public partial class DisplayFile : ObservableObject
 {
-    [ObservableProperty]
-    private string _dateAndTime;
-
-    [ObservableProperty]
-    private string _fileName;
-
-    [ObservableProperty]
-    private string _extension;
-
-    [ObservableProperty] 
-    private string _size;
+    [ObservableProperty] public partial string DateAndTime { get; set; }
+    [ObservableProperty] public partial string FileName { get; set; }
+    [ObservableProperty] public partial string Extension { get; set; }
+    [ObservableProperty] public partial string Size { get; set; }
 
     public string FullPath { get; set; }
 
@@ -29,9 +22,9 @@ public partial class DisplayFile : ObservableObject
             displayName = displayName.Remove(0, 20);
         }
 
-        _dateAndTime = dateAndTime;
-        _fileName = displayName;
-        _extension = Path.GetExtension(fileName);
-        _size = size;
+        DateAndTime = dateAndTime;
+        FileName = displayName;
+        Extension = Path.GetExtension(fileName);
+        Size = size;
     }
 }
