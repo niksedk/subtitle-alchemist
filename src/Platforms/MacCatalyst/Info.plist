@@ -36,6 +36,21 @@
 		<key>XSAppIconAssets</key>
 		<string>Assets.xcassets/appicon.appiconset</string>
 
+
+		<!-- For network access -->
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<true/>
+		</dict>
+		
+		<!-- For file access -->
+		<key>UIFileSharingEnabled</key>
+		<true/>
+		<key>LSSupportsOpeningDocumentsInPlace</key>
+		<true/>
+
+		
 		<!-- File access. -->
 		<key>com.apple.security.assets.movies.read-write</key>
 		<true/>
