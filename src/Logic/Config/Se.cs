@@ -29,8 +29,8 @@ public class Se
         {
             if (string.IsNullOrEmpty(_baseFolder))
             {
-                _baseFolder = AppContext.BaseDirectory;
-               //baseFolder = FileSystem.Current.AppDataDirectory;
+               // _baseFolder = AppContext.BaseDirectory;
+                _baseFolder = FileSystem.Current.AppDataDirectory;
             }
 
             return _baseFolder;
