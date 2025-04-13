@@ -19,6 +19,8 @@ namespace SubtitleAlchemist.Logic.Media
                         { DevicePlatform.WinUI, new[] { ".srt", ".ass", ".sup", ".xml", ".sup", ".mkv", ".mks", ".ssa", ".ttml", ".stl" } }, // file extension
                         { DevicePlatform.Tizen, new[] { "*/*" } },
                         { DevicePlatform.macOS, new[] { "srt", "ass" } }, // UTType values
+                        //{ DevicePlatform.MacCatalyst, new[] { "public.text", "public.plain-text" } },
+                        { DevicePlatform.MacCatalyst, new[] { "srt", "ass" } }
                     });
 
                 var pickOptions = new PickOptions
@@ -30,8 +32,9 @@ namespace SubtitleAlchemist.Logic.Media
                 var result = await FilePicker.Default.PickAsync(pickOptions);
                 return result?.FullPath ?? string.Empty;
             }
-            catch
+            catch (Exception exception)
             {
+                Console.WriteLine(exception);   
                 // The user canceled or something went wrong
             }
 
@@ -61,8 +64,9 @@ namespace SubtitleAlchemist.Logic.Media
                 var result = await FilePicker.Default.PickMultipleAsync(pickOptions);
                 return result.Select(p => p.FullPath).ToArray();
             }
-            catch
+            catch (Exception exception)
             {
+                Console.WriteLine(exception);   
                 // The user canceled or something went wrong
             }
 
@@ -93,8 +97,9 @@ namespace SubtitleAlchemist.Logic.Media
                 var result = await FilePicker.Default.PickAsync(pickOptions);
                 return result?.FullPath ?? string.Empty;
             }
-            catch
+            catch (Exception exception)
             {
+                Console.WriteLine(exception);
                 // The user canceled or something went wrong
             }
 
