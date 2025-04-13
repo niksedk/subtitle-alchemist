@@ -11,27 +11,25 @@ namespace SubtitleAlchemist.Features.Tools.ChangeCasing;
 public partial class ChangeCasingPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private bool _toNormalCasing;
+    public partial bool ToNormalCasing { get; set; }
 
     [ObservableProperty]
-    private bool _fixNames;
+    public partial bool FixNames { get; set; }
 
     [ObservableProperty]
-    private bool _onlyChangeAllUppercaseLines;
+    public partial bool OnlyChangeAllUppercaseLines { get; set; }
 
     [ObservableProperty]
-    private bool _fixOnlyNames;
+    public partial bool FixOnlyNames { get; set; }
 
     [ObservableProperty]
-    private bool _toUppercase;
+    public partial bool ToUppercase { get; set; }
 
     [ObservableProperty]
-    private bool _toLowercase;
-
+    public partial bool ToLowercase { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<DisplayParagraph> _paragraphs;
-
+    public partial ObservableCollection<DisplayParagraph> Paragraphs { get; set; }
     public ChangeCasingPage? Page { get; set; }
 
     private Subtitle _subtitle;

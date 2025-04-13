@@ -9,23 +9,23 @@ namespace SubtitleAlchemist.Features.Video.BurnIn
         public OutputPropertiesPopup? Popup { get; set; }
 
         [ObservableProperty]
-        private bool _useSourceFolder;
+        public partial bool UseSourceFolder { get; set; }
 
         [ObservableProperty]
-        private bool _useOutputFolder;
+        public partial bool UseOutputFolder { get; set; }
 
         [ObservableProperty]
-        private string _outputFolder;
+        public partial string OutputFolder { get; set; }
 
         [ObservableProperty]
-        private string _outputSuffix;
+        public partial string OutputSuffix { get; set; }
 
         public OutputPropertiesPopupModel()
         {
-            _useSourceFolder = false;
-            _useOutputFolder = true;
-            _outputFolder = string.Empty;
-            _outputSuffix = string.Empty;
+            UseSourceFolder = false;
+            UseOutputFolder = true;
+            OutputFolder = string.Empty;
+            OutputSuffix = string.Empty;
         }
 
         [RelayCommand]

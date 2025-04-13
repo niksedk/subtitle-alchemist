@@ -9,22 +9,22 @@ namespace SubtitleAlchemist.Features.Tools.BatchConvert
         public BatchConvertOutputPropertiesPopup? Popup { get; set; }
 
         [ObservableProperty]
-        private bool _useSourceFolder;
+        public partial bool UseSourceFolder { get; set; }
 
         [ObservableProperty]
-        private bool _useOutputFolder;
+        public partial bool UseOutputFolder { get; set; }
 
         [ObservableProperty]
-        private string _outputFolder;
+        public partial string OutputFolder { get; set; }
 
         [ObservableProperty]
-        private bool _overwrite;
+        public partial bool Overwrite { get; set; }
 
         public BatchConvertOutputPropertiesPopupModel()
         {
-            _useSourceFolder = false;
-            _useOutputFolder = true;
-            _outputFolder = string.Empty;
+            UseSourceFolder = false;
+            UseOutputFolder = true;
+            OutputFolder = string.Empty;
         }
 
         [RelayCommand]

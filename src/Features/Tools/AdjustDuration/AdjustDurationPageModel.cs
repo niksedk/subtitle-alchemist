@@ -11,41 +11,40 @@ namespace SubtitleAlchemist.Features.Tools.AdjustDuration;
 public partial class AdjustDurationPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private ObservableCollection<DisplayParagraph> _paragraphs = new();
+    public partial ObservableCollection<DisplayParagraph> Paragraphs { get; set; } = new();
 
     [ObservableProperty]
-    private TimeSpan _adjustSeconds;
+    public partial TimeSpan AdjustSeconds { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _adjustViaItems;
+    public partial ObservableCollection<string> AdjustViaItems { get; set; }
 
     [ObservableProperty]
-    private string _selectedAdjustViaItem;
+    public partial string SelectedAdjustViaItem { get; set; }
 
     [ObservableProperty]
-    private int _adjustPercentage;
+    public partial int AdjustPercentage { get; set; }
 
     [ObservableProperty]
-    private decimal _adjustFixedValue;
+    public partial decimal AdjustFixedValue { get; set; }
 
     [ObservableProperty]
-    private decimal _adjustRecalculateMaximumCharacters;
+    public partial decimal AdjustRecalculateMaximumCharacters { get; set; }
 
     [ObservableProperty]
-    private decimal _adjustRecalculateOptimalCharacters;
+    public partial decimal AdjustRecalculateOptimalCharacters { get; set; }
 
     [ObservableProperty]
-    private bool _adjustRecalculateExtendOnly;
+    public partial bool AdjustRecalculateExtendOnly { get; set; }
 
     [ObservableProperty]
-    private bool _enforceDurationLimits;
+    public partial bool EnforceDurationLimits { get; set; }
 
     [ObservableProperty]
-    private bool _doNotExtendPastShotChanges;
+    public partial bool DoNotExtendPastShotChanges { get; set; }
 
     [ObservableProperty]
-    private string _previewInfo = string.Empty;
-
+    public partial string PreviewInfo { get; set; } = string.Empty;
     public AdjustDurationPage? Page { get; set; }
     public View ViewAdjustViaSeconds { get; set; }
     public View ViewAdjustViaPercent { get; set; }
@@ -60,15 +59,14 @@ public partial class AdjustDurationPageModel : ObservableObject, IQueryAttributa
 
     public AdjustDurationPageModel()
     {
-        _adjustViaItems = new ObservableCollection<string>
+        AdjustViaItems = new ObservableCollection<string>
         {
             "Seconds",
             "Percent",
             "Fixed",
             "Recalculate"
         };
-
-        _selectedAdjustViaItem = _adjustViaItems[0];
+        SelectedAdjustViaItem = AdjustViaItems[0];
 
         ViewAdjustViaSeconds = new BoxView();
         ViewAdjustViaPercent = new BoxView();

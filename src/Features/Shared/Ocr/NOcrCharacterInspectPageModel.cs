@@ -31,20 +31,47 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
     public Label LabelStatusText { get; set; }
 
 
-    [ObservableProperty] private ObservableCollection<LetterItem> _letterItems;
-    [ObservableProperty] private LetterItem? _selectedLetterItem;
-    [ObservableProperty] private ImageSource? _currentImageSource;
-    [ObservableProperty] private string _currentImageResolution;
-    [ObservableProperty] private string _matchText;
-    [ObservableProperty] private bool _matchIsItalic;
-    [ObservableProperty] private string _matchInfo;
-    [ObservableProperty] private string _statusText;
-    [ObservableProperty] private ObservableCollection<int> _noOfLinesToAutoDrawList;
-    [ObservableProperty] private int _selectedNoOfLinesToAutoDraw;
-    [ObservableProperty] private bool _isNewMatch;
-    [ObservableProperty] private bool _isAddBetterMatchVisible;
-    [ObservableProperty] private ObservableCollection<NOcrDrawModeItem> _drawModes;
-    [ObservableProperty] private NOcrDrawModeItem _selectedDrawMode;
+    [ObservableProperty]
+    public partial ObservableCollection<LetterItem> LetterItems { get; set; }
+
+    [ObservableProperty]
+    public partial LetterItem? SelectedLetterItem { get; set; }
+
+    [ObservableProperty]
+    public partial ImageSource? CurrentImageSource { get; set; }
+
+    [ObservableProperty]
+    public partial string CurrentImageResolution { get; set; }
+
+    [ObservableProperty]
+    public partial string MatchText { get; set; }
+
+    [ObservableProperty]
+    public partial bool MatchIsItalic { get; set; }
+
+    [ObservableProperty]
+    public partial string MatchInfo { get; set; }
+
+    [ObservableProperty]
+    public partial string StatusText { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<int> NoOfLinesToAutoDrawList { get; set; }
+
+    [ObservableProperty]
+    public partial int SelectedNoOfLinesToAutoDraw { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsNewMatch { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsAddBetterMatchVisible { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<NOcrDrawModeItem> DrawModes { get; set; }
+
+    [ObservableProperty]
+    public partial NOcrDrawModeItem SelectedDrawMode { get; set; }
 
     private NOcrChar _newMatch;
     private ImageSplitterItem2 _splitItem;
@@ -54,30 +81,30 @@ public partial class NOcrCharacterInspectPageModel : ObservableObject, IQueryAtt
 
     public NOcrCharacterInspectPageModel()
     {
-        _letterItems = new ObservableCollection<LetterItem>();
-        _matchText = string.Empty;
+        LetterItems = new ObservableCollection<LetterItem>();
+        MatchText = string.Empty;
         _splitItem = new ImageSplitterItem2(string.Empty);
         _nOcrChars = new List<NOcrChar>();
-        _currentImageResolution = string.Empty;
+        CurrentImageResolution = string.Empty;
         NOcrDrawingCanvas = new NOcrDrawingCanvasView();
         LabelStatusText = new Label();
         _nOcrDb = new NOcrDb(string.Empty);
         _closing = false;
-        _statusText = string.Empty;
-        _isAddBetterMatchVisible = true;
+        StatusText = string.Empty;
+        IsAddBetterMatchVisible = true;
         _newMatch = new NOcrChar(string.Empty);
-        _matchInfo = string.Empty;
-        _drawModes = new ObservableCollection<NOcrDrawModeItem>(NOcrDrawModeItem.Items);
-        _selectedDrawMode = NOcrDrawModeItem.ForegroundItem;
+        MatchInfo = string.Empty;
+        DrawModes = new ObservableCollection<NOcrDrawModeItem>(NOcrDrawModeItem.Items);
+        SelectedDrawMode = NOcrDrawModeItem.ForegroundItem;
 
         const int maxLines = 500;
-        _noOfLinesToAutoDrawList = new ObservableCollection<int>();
+        NoOfLinesToAutoDrawList = new ObservableCollection<int>();
         for (var i = 0; i <= maxLines; i++)
         {
-            _noOfLinesToAutoDrawList.Add(i);
+            NoOfLinesToAutoDrawList.Add(i);
         }
 
-        _selectedNoOfLinesToAutoDraw = 100;
+        SelectedNoOfLinesToAutoDraw = 100;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)

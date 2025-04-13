@@ -20,80 +20,79 @@ namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private ObservableCollection<ITtsEngine> _engines;
+    public partial ObservableCollection<ITtsEngine> Engines { get; set; }
 
     [ObservableProperty]
-    private ITtsEngine? _selectedEngine;
+    public partial ITtsEngine? SelectedEngine { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<Voice> _voices;
+    public partial ObservableCollection<Voice> Voices { get; set; }
 
     [ObservableProperty]
-    private Voice? _selectedVoice;
+    public partial Voice? SelectedVoice { get; set; }
 
     [ObservableProperty]
-    private bool _hasLanguageParameter;
+    public partial bool HasLanguageParameter { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<TtsLanguage> _languages;
+    public partial ObservableCollection<TtsLanguage> Languages { get; set; }
 
     [ObservableProperty]
-    private TtsLanguage? _selectedLanguage;
+    public partial TtsLanguage? SelectedLanguage { get; set; }
 
     [ObservableProperty]
-    private bool _hasApiKey;
+    public partial bool HasApiKey { get; set; }
 
     [ObservableProperty]
-    private string _apiKey;
+    public partial string ApiKey { get; set; }
 
     [ObservableProperty]
-    private bool _hasRegion;
+    public partial bool HasRegion { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _regions;
+    public partial ObservableCollection<string> Regions { get; set; }
 
     [ObservableProperty]
-    private string? _selectedRegion;
+    public partial string? SelectedRegion { get; set; }
 
     [ObservableProperty]
-    private bool _hasModel;
+    public partial bool HasModel { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _models;
+    public partial ObservableCollection<string> Models { get; set; }
 
     [ObservableProperty]
-    private string? _selectedModel;
+    public partial string? SelectedModel { get; set; }
 
     [ObservableProperty]
-    private int _voiceCount;
+    public partial int VoiceCount { get; set; }
 
     [ObservableProperty]
-    private string _voiceTestText;
+    public partial string VoiceTestText { get; set; }
 
     [ObservableProperty]
-    private bool _doReviewAudioClips;
+    public partial bool DoReviewAudioClips { get; set; }
 
     [ObservableProperty]
-    private bool _doGenerateVideoFile;
+    public partial bool DoGenerateVideoFile { get; set; }
 
     [ObservableProperty]
-    private bool _useCustomAudioEncoding;
+    public partial bool UseCustomAudioEncoding { get; set; }
 
     [ObservableProperty]
-    private bool _isGenerating;
+    public partial bool IsGenerating { get; set; }
 
     [ObservableProperty]
-    private bool _isEngineSettingsVisible;
+    public partial bool IsEngineSettingsVisible { get; set; }
 
     [ObservableProperty]
-    private string _progressText;
+    public partial string ProgressText { get; set; }
 
     [ObservableProperty]
-    private double _progressValue;
+    public partial double ProgressValue { get; set; }
 
     [ObservableProperty]
-    private string _doneOrCancelText;
-
+    public partial string DoneOrCancelText { get; set; }
     public TextToSpeechPage? Page { get; set; }
     public MediaElement Player { get; set; }
     public Label LabelAudioEncodingSettings { get; set; }
@@ -114,7 +113,7 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
     {
         _popupService = popupService;
         _fileHelper = fileHelper;
-        _engines = new ObservableCollection<ITtsEngine>
+        Engines = new ObservableCollection<ITtsEngine>
         {
             new Piper(ttsDownloadService),
             new AllTalk(ttsDownloadService),
@@ -122,15 +121,11 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
             new AzureSpeech(ttsDownloadService),
             new Murf(ttsDownloadService),
         };
-        _selectedEngine = _engines.FirstOrDefault();
-
-        _voices = new ObservableCollection<Voice>();
-
-        _languages = new ObservableCollection<TtsLanguage>();
-
-        _voiceTestText = "Hello, how are you doing?";
-
-        _progressText = string.Empty;
+        SelectedEngine = Engines.FirstOrDefault();
+        Voices = new ObservableCollection<Voice>();
+        Languages = new ObservableCollection<TtsLanguage>();
+        VoiceTestText = "Hello, how are you doing?";
+        ProgressText = string.Empty;
 
         _waveFolder = string.Empty;
         for (var i = 0; i < int.MaxValue; i++)
@@ -150,12 +145,10 @@ public partial class TextToSpeechPageModel : ObservableObject, IQueryAttributabl
         LabelAudioEncodingSettings = new();
         LabelEngineSettings = new();
         _wavePeakData = new WavePeakData(1, new List<WavePeak>());
-
-        _apiKey = string.Empty;
-        _regions = new ObservableCollection<string>();
-        _models = new ObservableCollection<string>();
-
-        _doneOrCancelText = "Done";
+        ApiKey = string.Empty;
+        Regions = new ObservableCollection<string>();
+        Models = new ObservableCollection<string>();
+        DoneOrCancelText = "Done";
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)

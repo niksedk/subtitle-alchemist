@@ -18,12 +18,23 @@ public partial class PickMatroskaTrackPopupModel : ObservableObject
     public Label LabelStatusText { get; set; }
 
 
-    [ObservableProperty] private string _fileNameInfo;
-    [ObservableProperty] private ObservableCollection<MatroskaTrackItem> _trackItems;
-    [ObservableProperty] private MatroskaTrackItem? _selectedTrackItem;
-    [ObservableProperty] private string _trackInfo;
-    [ObservableProperty] private ObservableCollection<ImageSource> _selectedTrackImages;
-    [ObservableProperty] private string _statusText;
+    [ObservableProperty]
+    public partial string FileNameInfo { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<MatroskaTrackItem> TrackItems { get; set; }
+
+    [ObservableProperty]
+    public partial MatroskaTrackItem? SelectedTrackItem { get; set; }
+
+    [ObservableProperty]
+    public partial string TrackInfo { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<ImageSource> SelectedTrackImages { get; set; }
+
+    [ObservableProperty]
+    public partial string StatusText { get; set; }
 
     private MatroskaFile? _matroskaFile;
     private string _fileName;
@@ -32,13 +43,13 @@ public partial class PickMatroskaTrackPopupModel : ObservableObject
     public PickMatroskaTrackPopupModel()
     {
         TrackList = new();
-        _fileNameInfo = string.Empty;
-        _trackItems = new ObservableCollection<MatroskaTrackItem>();
-        _selectedTrackItem = null;
-        _trackInfo = string.Empty;
-        _selectedTrackImages = new ObservableCollection<ImageSource>();
+        FileNameInfo = string.Empty;
+        TrackItems = new ObservableCollection<MatroskaTrackItem>();
+        SelectedTrackItem = null;
+        TrackInfo = string.Empty;
+        SelectedTrackImages = new ObservableCollection<ImageSource>();
         _fileName = string.Empty;
-        _statusText = string.Empty;
+        StatusText = string.Empty;
         LabelStatusText = new Label();
     }
 

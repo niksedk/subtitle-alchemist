@@ -17,26 +17,26 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
 {
 
     [ObservableProperty]
-    private float _progressValue;
+    public partial float ProgressValue { get; set; }
 
     [ObservableProperty]
-    private string _progress;
-
+    public partial string Progress { get; set; }
     public DownloadWhisperModelPopup? Popup { get; set; }
 
     public Picker ModelPicker { get; set; } = new();
     public ProgressBar ProgressBar { get; set; } = new();
     public ImageButton ButtonDownload { get; set; } = new();
 
-    [ObservableProperty] private ObservableCollection<AudioToTextWhisperModel.WhisperModelDisplay> _models = new();
+    [ObservableProperty]
+    public partial ObservableCollection<AudioToTextWhisperModel.WhisperModelDisplay> Models { get; set; } = new();
 
     [ObservableProperty]
-    private AudioToTextWhisperModel.WhisperModelDisplay? _selectedModel;
+    public partial AudioToTextWhisperModel.WhisperModelDisplay? SelectedModel { get; set; }
 
     private IWhisperEngine _whisperEngine = new WhisperEngineCpp();
 
     [ObservableProperty]
-    private string _error = string.Empty;
+    public partial string Error { get; set; } = string.Empty;
 
     private Task? _downloadTask;
     private readonly List<string> _downloadUrls = new();
@@ -55,7 +55,7 @@ public partial class DownloadWhisperModelPopupModel : ObservableObject
     public DownloadWhisperModelPopupModel(IWhisperDownloadService whisperCppDownloadService)
     {
         _whisperCppDownloadService = whisperCppDownloadService;
-        _progress = string.Empty;
+        Progress = string.Empty;
         ProgressValue = 0;
         _downloadModel = new WhisperModel();
     }

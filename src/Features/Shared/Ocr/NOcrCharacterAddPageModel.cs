@@ -13,25 +13,62 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
 {
     public NOcrCharacterAddPage? Page { get; set; }
 
-    [ObservableProperty] private string _title;
-    [ObservableProperty] private ObservableCollection<NOcrLine> _linesForeground;
-    [ObservableProperty] private NOcrLine? _selectedLineForeground;
-    [ObservableProperty] private ObservableCollection<NOcrLine> _linesBackground;
-    [ObservableProperty] private NOcrLine? _selectedLineBackground;
-    [ObservableProperty] private ObservableCollection<NOcrDrawModeItem> _drawModes;
-    [ObservableProperty] private NOcrDrawModeItem _selectedDrawMode;
-    [ObservableProperty] private bool _isNewLinesForegroundActive;
-    [ObservableProperty] private bool _isNewLinesBackgroundActive;
-    [ObservableProperty] private string _newText;
-    [ObservableProperty] private string _resolutionAndTopMargin;
-    [ObservableProperty] private bool _isNewTextItalic;
-    [ObservableProperty] private bool _submitOnFirstLetter;
-    [ObservableProperty] private ImageSource? _sentenceImageSource;
-    [ObservableProperty] private ImageSource? _itemImageSource;
-    [ObservableProperty] private bool _canShrink;
-    [ObservableProperty] private bool _canExpand;
-    [ObservableProperty] private ObservableCollection<int> _noOfLinesToAutoDrawList;
-    [ObservableProperty] private int _selectedNoOfLinesToAutoDraw;
+    [ObservableProperty]
+    public partial string Title { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<NOcrLine> LinesForeground { get; set; }
+
+    [ObservableProperty]
+    public partial NOcrLine? SelectedLineForeground { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<NOcrLine> LinesBackground { get; set; }
+
+    [ObservableProperty]
+    public partial NOcrLine? SelectedLineBackground { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<NOcrDrawModeItem> DrawModes { get; set; }
+
+    [ObservableProperty]
+    public partial NOcrDrawModeItem SelectedDrawMode { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsNewLinesForegroundActive { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsNewLinesBackgroundActive { get; set; }
+
+    [ObservableProperty]
+    public partial string NewText { get; set; }
+
+    [ObservableProperty]
+    public partial string ResolutionAndTopMargin { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsNewTextItalic { get; set; }
+
+    [ObservableProperty]
+    public partial bool SubmitOnFirstLetter { get; set; }
+
+    [ObservableProperty]
+    public partial ImageSource? SentenceImageSource { get; set; }
+
+    [ObservableProperty]
+    public partial ImageSource? ItemImageSource { get; set; }
+
+    [ObservableProperty]
+    public partial bool CanShrink { get; set; }
+
+    [ObservableProperty]
+    public partial bool CanExpand { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<int> NoOfLinesToAutoDrawList { get; set; }
+
+    [ObservableProperty]
+    public partial int SelectedNoOfLinesToAutoDraw { get; set; }
 
     private List<ImageSplitterItem2> _letters;
     private ImageSplitterItem2 _splitItem;
@@ -47,29 +84,29 @@ public partial class NOcrCharacterAddPageModel : ObservableObject, IQueryAttribu
 
     public NOcrCharacterAddPageModel()
     {
-        _title = string.Empty;
-        _newText = string.Empty;
-        _resolutionAndTopMargin = string.Empty;
-        _linesForeground = new ObservableCollection<NOcrLine>();
-        _linesBackground = new ObservableCollection<NOcrLine>();
-        _isNewLinesForegroundActive = true;
-        _isNewLinesBackgroundActive = false;
-        _isNewTextItalic = false;
-        _submitOnFirstLetter = false;
+        Title = string.Empty;
+        NewText = string.Empty;
+        ResolutionAndTopMargin = string.Empty;
+        LinesForeground = new ObservableCollection<NOcrLine>();
+        LinesBackground = new ObservableCollection<NOcrLine>();
+        IsNewLinesForegroundActive = true;
+        IsNewLinesBackgroundActive = false;
+        IsNewTextItalic = false;
+        SubmitOnFirstLetter = false;
         _letters = new List<ImageSplitterItem2>();
         _splitItem = new ImageSplitterItem2(0, 0, new NikseBitmap2(1, 1));
         EntryNewText = new Entry();
-        _drawModes = new ObservableCollection<NOcrDrawModeItem>(NOcrDrawModeItem.Items);
-        _selectedDrawMode = _drawModes[0];
+        DrawModes = new ObservableCollection<NOcrDrawModeItem>(NOcrDrawModeItem.Items);
+        SelectedDrawMode = DrawModes[0];
 
         const int maxLines = 500;
-        _noOfLinesToAutoDrawList = new ObservableCollection<int>();
+        NoOfLinesToAutoDrawList = new ObservableCollection<int>();
         for (var i = 0; i <= maxLines; i++)
         {
-            _noOfLinesToAutoDrawList.Add(i);
+            NoOfLinesToAutoDrawList.Add(i);
         }
 
-        _selectedNoOfLinesToAutoDraw = 100;
+        SelectedNoOfLinesToAutoDraw = 100;
         NOcrChar = new NOcrChar();
         NOcrDrawingCanvas = new NOcrDrawingCanvasView();
         _ocrSubtitleItems = new List<OcrSubtitleItem>();

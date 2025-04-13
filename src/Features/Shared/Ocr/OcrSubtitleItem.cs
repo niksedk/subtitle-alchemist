@@ -22,7 +22,8 @@ public partial class OcrSubtitleItem : ObservableObject
     public TimeSpan EndTime { get; set; }
     public TimeSpan Duration { get; set; }
 
-    [ObservableProperty] private string _text;
+    [ObservableProperty]
+    public partial string Text { get; set; }
 
     private readonly IOcrSubtitle _ocrSubtitle;
     private readonly int _index;
@@ -37,7 +38,7 @@ public partial class OcrSubtitleItem : ObservableObject
         StartTime = _ocrSubtitle.GetStartTime(index);
         EndTime = _ocrSubtitle.GetEndTime(index);
         Duration = EndTime - StartTime;
-        _text = string.Empty;
+        Text = string.Empty;
         _bitmap = null;
     }
 }

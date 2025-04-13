@@ -22,49 +22,49 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
     public Entry EntryWordNotFound { get; set; } = new();
 
     [ObservableProperty]
-    private ObservableCollection<DisplayParagraph> _paragraphs = new();
+    public partial ObservableCollection<DisplayParagraph> Paragraphs { get; set; } = new();
 
     [ObservableProperty]
-    private DisplayParagraph? _selectedParagraph;
+    public partial DisplayParagraph? SelectedParagraph { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _suggestions = new();
+    public partial ObservableCollection<string> Suggestions { get; set; } = new();
 
     [ObservableProperty]
-    private string? _selectedSuggestion;
+    public partial string? SelectedSuggestion { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<SpellCheckDictionaryDisplay> _languages = new();
+    public partial ObservableCollection<SpellCheckDictionaryDisplay> Languages { get; set; } = new();
 
     [ObservableProperty]
-    private SpellCheckDictionaryDisplay? _selectedLanguage;
+    public partial SpellCheckDictionaryDisplay? SelectedLanguage { get; set; }
 
     [ObservableProperty]
-    private bool _suggestionsAvailable;
+    public partial bool SuggestionsAvailable { get; set; }
 
     [ObservableProperty]
-    private bool _editWholeText;
+    public partial bool EditWholeText { get; set; }
 
     [ObservableProperty]
-    private bool _isPrompting;
+    public partial bool IsPrompting { get; set; }
 
     [ObservableProperty]
-    private string _wordNotFoundOriginal;
+    public partial string WordNotFoundOriginal { get; set; }
 
     [ObservableProperty]
-    private string _currentWord;
+    public partial string CurrentWord { get; set; }
 
     [ObservableProperty]
-    private string _currentText;
+    public partial string CurrentText { get; set; }
 
     [ObservableProperty]
-    private string _statusText;
+    public partial string StatusText { get; set; }
 
     [ObservableProperty]
-    private string _title;
+    public partial string Title { get; set; }
 
     [ObservableProperty]
-    private FormattedString _currentFormattedText;
+    public partial FormattedString CurrentFormattedText { get; set; }
 
     private bool _loading = true;
     private bool _closing;
@@ -87,12 +87,12 @@ public partial class SpellCheckerPageModel : ObservableObject, IQueryAttributabl
         _popupService = popupService;
 
         _currentSpellCheckWord = new SpellCheckWord();
-        _wordNotFoundOriginal = string.Empty;
-        _currentWord = string.Empty;
-        _currentText = string.Empty;
-        _currentFormattedText = new FormattedString();
-        _title = "Spell checker";
-        _statusText = string.Empty;
+        WordNotFoundOriginal = string.Empty;
+        CurrentWord = string.Empty;
+        CurrentText = string.Empty;
+        CurrentFormattedText = new FormattedString();
+        Title = "Spell checker";
+        StatusText = string.Empty;
         _currentParagraph = new Paragraph();
     }
 

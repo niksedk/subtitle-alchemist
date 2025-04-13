@@ -22,71 +22,70 @@ namespace SubtitleAlchemist.Features.Video.TextToSpeech;
 public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private ObservableCollection<ITtsEngine> _engines;
+    public partial ObservableCollection<ITtsEngine> Engines { get; set; }
 
     [ObservableProperty]
-    private ITtsEngine? _selectedEngine;
+    public partial ITtsEngine? SelectedEngine { get; set; }
 
     [ObservableProperty]
-    private bool _isEngineSettingsVisible;
+    public partial bool IsEngineSettingsVisible { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<Voice> _voices;
+    public partial ObservableCollection<Voice> Voices { get; set; }
 
     [ObservableProperty]
-    private Voice? _selectedVoice;
+    public partial Voice? SelectedVoice { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<ReviewRow> _lines;
+    public partial ObservableCollection<ReviewRow> Lines { get; set; }
 
     [ObservableProperty]
-    private ReviewRow? _selectedLine;
+    public partial ReviewRow? SelectedLine { get; set; }
 
     [ObservableProperty]
-    private bool _hasLanguageParameter;
+    public partial bool HasLanguageParameter { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<TtsLanguage> _languages;
+    public partial ObservableCollection<TtsLanguage> Languages { get; set; }
 
     [ObservableProperty]
-    private TtsLanguage? _selectedLanguage;
+    public partial TtsLanguage? SelectedLanguage { get; set; }
 
     [ObservableProperty]
-    private bool _hasStyleParameter;
+    public partial bool HasStyleParameter { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _styles;
+    public partial ObservableCollection<string> Styles { get; set; }
 
     [ObservableProperty]
-    private string? _selectedStyle;
+    public partial string? SelectedStyle { get; set; }
 
     [ObservableProperty]
-    private bool _hasRegion;
+    public partial bool HasRegion { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _regions;
+    public partial ObservableCollection<string> Regions { get; set; }
 
     [ObservableProperty]
-    private string? _selectedRegion;
+    public partial string? SelectedRegion { get; set; }
 
     [ObservableProperty]
-    private bool _hasModel;
+    public partial bool HasModel { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _models;
+    public partial ObservableCollection<string> Models { get; set; }
 
     [ObservableProperty]
-    private string? _selectedModel;
+    public partial string? SelectedModel { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<DisplayParagraph> _paragraphs;
+    public partial ObservableCollection<DisplayParagraph> Paragraphs { get; set; }
 
     [ObservableProperty]
-    private bool _autoContinue;
+    public partial bool AutoContinue { get; set; }
 
     [ObservableProperty]
-    private bool _isRegenerateEnabled;
-
+    public partial bool IsRegenerateEnabled { get; set; }
     public ReviewSpeechPage? Page { get; set; }
     public CollectionView CollectionView { get; set; }
     public AudioVisualizer AudioVisualizer { get; set; }
@@ -109,16 +108,16 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
 
     public ReviewSpeechPageModel(IPopupService popupService)
     {
-        _lines = new ObservableCollection<ReviewRow>();
-        _paragraphs = new ObservableCollection<DisplayParagraph>();
+        Lines = new ObservableCollection<ReviewRow>();
+        Paragraphs = new ObservableCollection<DisplayParagraph>();
         _popupService = popupService;
-        _voices = new ObservableCollection<Voice>();
+        Voices = new ObservableCollection<Voice>();
         _voice = new Voice(new object());
-        _engines = new ObservableCollection<ITtsEngine>();
-        _languages = new ObservableCollection<TtsLanguage>();
+        Engines = new ObservableCollection<ITtsEngine>();
+        Languages = new ObservableCollection<TtsLanguage>();
         CollectionView = new CollectionView();
         _stepResults = Array.Empty<TtsStepResult>();
-        _isRegenerateEnabled = true;
+        IsRegenerateEnabled = true;
         AudioVisualizer = new AudioVisualizer();
         Player = new MediaElement();
         Player.MediaEnded += PlayEnded;
@@ -128,11 +127,11 @@ public partial class ReviewSpeechPageModel : ObservableObject, IQueryAttributabl
         _waveFolder = Path.GetTempPath();
         _cancellationTokenSource = new CancellationTokenSource();
         _cancellationToken = _cancellationTokenSource.Token;
-        _regions = new ObservableCollection<string>();
-        _models = new ObservableCollection<string>();
+        Regions = new ObservableCollection<string>();
+        Models = new ObservableCollection<string>();
         _audioVisualizerTimer = new System.Timers.Timer(40);
         _videoFileName = string.Empty;
-        _styles = new ObservableCollection<string>();
+        Styles = new ObservableCollection<string>();
     }
 
     private void PlayEnded(object? sender, EventArgs e)

@@ -31,48 +31,40 @@ namespace SubtitleAlchemist.Features.Main.LayoutPicker
         private readonly List<byte[]> _grayscaleImages;
 
         [ObservableProperty]
-        private ImageSource? _layout1ImageSource;
+        public partial ImageSource? Layout1ImageSource { get; set; }
 
         [ObservableProperty]
-        private ImageSource? _layout2ImageSource;
+        public partial ImageSource? Layout2ImageSource { get; set; }
 
         [ObservableProperty]
-        private ImageSource? _layout3ImageSource;
+        public partial ImageSource? Layout3ImageSource { get; set; }
 
         [ObservableProperty]
-        private ImageSource? _layout4ImageSource;
-
-
-        [ObservableProperty]
-        private ImageSource? _layout5ImageSource;
-
+        public partial ImageSource? Layout4ImageSource { get; set; }
 
         [ObservableProperty]
-        private ImageSource? _layout6ImageSource;
-
-
-        [ObservableProperty]
-        private ImageSource? _layout7ImageSource;
-
+        public partial ImageSource? Layout5ImageSource { get; set; }
 
         [ObservableProperty]
-        private ImageSource? _layout8ImageSource;
-
-
-        [ObservableProperty]
-        private ImageSource? _layout9ImageSource;
-
+        public partial ImageSource? Layout6ImageSource { get; set; }
 
         [ObservableProperty]
-        private ImageSource? _layout10ImageSource;
-
-
-        [ObservableProperty]
-        private ImageSource? _layout11ImageSource;
-
+        public partial ImageSource? Layout7ImageSource { get; set; }
 
         [ObservableProperty]
-        private ImageSource? _layout12ImageSource;
+        public partial ImageSource? Layout8ImageSource { get; set; }
+
+        [ObservableProperty]
+        public partial ImageSource? Layout9ImageSource { get; set; }
+
+        [ObservableProperty]
+        public partial ImageSource? Layout10ImageSource { get; set; }
+
+        [ObservableProperty]
+        public partial ImageSource? Layout11ImageSource { get; set; }
+
+        [ObservableProperty]
+        public partial ImageSource? Layout12ImageSource { get; set; }
 
         private int _selectedLayout = -1;
 

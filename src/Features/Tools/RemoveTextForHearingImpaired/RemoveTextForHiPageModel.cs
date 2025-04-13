@@ -30,38 +30,71 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
     }
 
     [ObservableProperty] public partial bool IsRemoveBracketsOn { get; set; }
-    [ObservableProperty] private bool _isRemoveCurlyBracketsOn;
-    [ObservableProperty] private bool _isRemoveParenthesesOn;
-    [ObservableProperty] private bool _isRemoveCustomOn;
-    [ObservableProperty] private string _customStart;
-    [ObservableProperty] private string _customEnd;
-    [ObservableProperty] private bool _isOnlySeparateLine;
+    [ObservableProperty]
+    public partial bool IsRemoveCurlyBracketsOn { get; set; }
 
-    [ObservableProperty] private bool _isRemoveTextBeforeColonOn;
-    [ObservableProperty] private bool _isRemoveTextBeforeColonUppercaseOn;
-    [ObservableProperty] private bool _isRemoveTextBeforeColonSeparateLineOn;
+    [ObservableProperty]
+    public partial bool IsRemoveParenthesesOn { get; set; }
 
-    [ObservableProperty] private bool _isRemoveTextUppercaseLineOn;
+    [ObservableProperty]
+    public partial bool IsRemoveCustomOn { get; set; }
 
-    [ObservableProperty] private bool _isRemoveTextContainsOn;
-    [ObservableProperty] private string _textContains;
+    [ObservableProperty]
+    public partial string CustomStart { get; set; }
 
-    [ObservableProperty] private bool _isRemoveOnlyMusicSymbolsOn;
+    [ObservableProperty]
+    public partial string CustomEnd { get; set; }
 
-    [ObservableProperty] private bool _isRemoveInterjectionsOn;
-    [ObservableProperty] private bool _isInterjectionsSeparateLineOn;
+    [ObservableProperty]
+    public partial bool IsOnlySeparateLine { get; set; }
 
-    [ObservableProperty] private DisplayFile? _selectedFile;
+    [ObservableProperty]
+    public partial bool IsRemoveTextBeforeColonOn { get; set; }
 
-    [ObservableProperty] private ObservableCollection<LanguageItem> _languages;
-    [ObservableProperty] private LanguageItem? _selectedLanguage;
+    [ObservableProperty]
+    public partial bool IsRemoveTextBeforeColonUppercaseOn { get; set; }
 
-    [ObservableProperty] private ObservableCollection<RemoveItem> _fixes;
-    [ObservableProperty] private RemoveItem? _selectedFix;
+    [ObservableProperty]
+    public partial bool IsRemoveTextBeforeColonSeparateLineOn { get; set; }
 
-    [ObservableProperty] private string _fixText;
-    [ObservableProperty] private bool _fixTextEnabled;
+    [ObservableProperty]
+    public partial bool IsRemoveTextUppercaseLineOn { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsRemoveTextContainsOn { get; set; }
+
+    [ObservableProperty]
+    public partial string TextContains { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsRemoveOnlyMusicSymbolsOn { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsRemoveInterjectionsOn { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsInterjectionsSeparateLineOn { get; set; }
+
+    [ObservableProperty]
+    public partial DisplayFile? SelectedFile { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<LanguageItem> Languages { get; set; }
+
+    [ObservableProperty]
+    public partial LanguageItem? SelectedLanguage { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<RemoveItem> Fixes { get; set; }
+
+    [ObservableProperty]
+    public partial RemoveItem? SelectedFix { get; set; }
+
+    [ObservableProperty]
+    public partial string FixText { get; set; }
+
+    [ObservableProperty]
+    public partial bool FixTextEnabled { get; set; }
     public RemoveTextForHiPage? Page { get; set; }
 
     private Subtitle _subtitle;
@@ -71,13 +104,13 @@ public partial class RemoveTextForHiPageModel : ObservableObject, IQueryAttribut
 
     public RemoveTextForHiPageModel()
     {
-        _customStart = "?";
-        _customEnd = "?";
-        _textContains = string.Empty;
-        _languages = new ObservableCollection<LanguageItem>();
-        _fixes = new ObservableCollection<RemoveItem>();
+        CustomStart = "?";
+        CustomEnd = "?";
+        TextContains = string.Empty;
+        Languages = new ObservableCollection<LanguageItem>();
+        Fixes = new ObservableCollection<RemoveItem>();
         _subtitle = new Subtitle();
-        _fixText = string.Empty;
+        FixText = string.Empty;
         _edited = new List<Paragraph>();
         _timer = new System.Timers.Timer(500);
         _timer.Elapsed += TimerElapsed;

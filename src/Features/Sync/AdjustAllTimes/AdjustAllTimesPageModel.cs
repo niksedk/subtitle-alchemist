@@ -19,22 +19,22 @@ public partial class AdjustAllTimesPageModel : ObservableObject, IQueryAttributa
     public MediaElement VideoPlayer { get; set; } = new();
 
     [ObservableProperty]
-    private bool _allLines;
+    public partial bool AllLines { get; set; }
 
     [ObservableProperty]
-    private bool _selectedLinesOnly;
+    public partial bool SelectedLinesOnly { get; set; }
 
     [ObservableProperty]
-    private bool _selectedAndSubsequentLines;
+    public partial bool SelectedAndSubsequentLines { get; set; }
 
     [ObservableProperty]
-    private TimeSpan _adjustTime;
+    public partial TimeSpan AdjustTime { get; set; }
 
     [ObservableProperty]
-    private string _totalAdjustmentInfo = string.Empty;
+    public partial string TotalAdjustmentInfo { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private ObservableCollection<DisplayParagraph> _paragraphs = new();
+    public partial ObservableCollection<DisplayParagraph> Paragraphs { get; set; } = new();
 
     private long _totalAdjustmentMs;
     private readonly System.Timers.Timer _timer;

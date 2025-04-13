@@ -10,13 +10,13 @@ namespace SubtitleAlchemist.Features.Files;
 public partial class RestoreAutoBackupPageModel : ObservableObject
 {
     [ObservableProperty]
-    private bool _isOkButtonEnabled;
+    public partial bool IsOkButtonEnabled { get; set; }
 
     [ObservableProperty]
-    private DisplayFile? _selectedFile;
+    public partial DisplayFile? SelectedFile { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<DisplayFile> _files = new();
+    public partial ObservableCollection<DisplayFile> Files { get; set; } = new();
 
     public RestoreAutoBackupPage? Page { get; set; }
     public Label LabelOpenFolder { get; set; } = new();

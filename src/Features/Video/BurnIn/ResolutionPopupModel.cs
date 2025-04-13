@@ -11,14 +11,14 @@ public partial class ResolutionPopupModel : ObservableObject
     public ResolutionPopup? Popup { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<ResolutionItem> _resolutionItems;
+    public partial ObservableCollection<ResolutionItem> ResolutionItems { get; set; }
 
     [ObservableProperty]
-    private ResolutionItem? _selectedResolution;
+    public partial ResolutionItem? SelectedResolution { get; set; }
 
     public ResolutionPopupModel()
     {
-        _resolutionItems = new ObservableCollection<ResolutionItem>(ResolutionItem.GetResolutions());
+        ResolutionItems = new ObservableCollection<ResolutionItem>(ResolutionItem.GetResolutions());
     }
 
     [RelayCommand]

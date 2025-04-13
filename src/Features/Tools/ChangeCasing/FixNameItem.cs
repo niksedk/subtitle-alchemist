@@ -6,12 +6,13 @@ public partial class FixNameItem : ObservableObject
 {
     public string Name { get; set; }
 
-    [ObservableProperty] private bool _isChecked;
+    [ObservableProperty]
+    public partial bool IsChecked { get; set; }
 
     public FixNameItem(string name, bool isChecked)
     {
         Name = name;
-        _isChecked = isChecked;
+        IsChecked = isChecked;
     }
 
     public override string ToString()

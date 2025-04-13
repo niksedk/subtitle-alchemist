@@ -12,24 +12,24 @@ public partial class ResolutionItem : ObservableObject
     public int Height { get; set; }
 
     [ObservableProperty]
-    private Color _backgroundColor;
+    public partial Color BackgroundColor { get; set; }
 
     [ObservableProperty]
-    private Color _textColor;
+    public partial Color TextColor { get; set; }
 
     public ResolutionItem(string name, ResolutionItemType itemType)
     {
         DisplayName = string.Empty;
         Name = name;
         ItemType = itemType;
-        _backgroundColor = Colors.Transparent;
+        BackgroundColor = Colors.Transparent;
         if (itemType == ResolutionItemType.Separator)
         {
-            _textColor = (Color)Application.Current!.Resources[ThemeNames.BorderColor]; // disabled color?
+            TextColor = (Color)Application.Current!.Resources[ThemeNames.BorderColor]; // disabled color?
         }
         else
         {
-            _textColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+            TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
         }
 
         SetDisplayName(name, itemType);
@@ -47,8 +47,8 @@ public partial class ResolutionItem : ObservableObject
         Name = name;
         Width = width;
         Height = height;
-        _backgroundColor = Colors.Transparent;
-        _textColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
+        BackgroundColor = Colors.Transparent;
+        TextColor = (Color)Application.Current!.Resources[ThemeNames.TextColor];
         SetDisplayName(name, ResolutionItemType.Resolution);
     }
 

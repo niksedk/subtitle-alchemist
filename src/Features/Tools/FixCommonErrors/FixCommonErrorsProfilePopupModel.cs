@@ -9,16 +9,16 @@ public partial class FixCommonErrorsProfilePopupModel : ObservableObject
     public FixCommonErrorsProfilePopup? Popup { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _profileNames = new();
+    public partial ObservableCollection<string> ProfileNames { get; set; } = new();
 
     [ObservableProperty]
-    private string? _selectedProfileName;
+    public partial string? SelectedProfileName { get; set; }
 
     [ObservableProperty]
-    private string _editProfileName = string.Empty;
+    public partial string EditProfileName { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _status = string.Empty;
+    public partial string Status { get; set; } = string.Empty;
 
     [RelayCommand]
     private void Add()

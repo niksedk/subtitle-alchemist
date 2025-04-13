@@ -13,8 +13,8 @@ public partial class SettingItem : ObservableObject
     public string Hint { get; set; }
     public SettingItemType Type { get; set; }
 
-    [ObservableProperty] private View _wholeView;
-
+    [ObservableProperty]
+    public partial View WholeView { get; set; }
     public Label? Label { get; set; }
     public SettingsPage.SectionName? SectionName { get; set; }
 
@@ -22,7 +22,7 @@ public partial class SettingItem : ObservableObject
     {
         Text = string.Empty;
         Hint = string.Empty;
-        _wholeView = new Label();
+        WholeView = new Label();
     }
 
     public SettingItem(View wholeView, string text, int textWidth, string hint)

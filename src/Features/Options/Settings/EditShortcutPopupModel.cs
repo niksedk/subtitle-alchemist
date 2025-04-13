@@ -10,28 +10,28 @@ public partial class EditShortcutPopupModel : ObservableObject
     public EditShortcutPopup? Popup { get; set; }
 
     [ObservableProperty]
-    private bool _modifierCtrl;
+    public partial bool ModifierCtrl { get; set; }
 
     [ObservableProperty]
-    private bool _modifierAlt;
+    public partial bool ModifierAlt { get; set; }
 
     [ObservableProperty]
-    private bool _modifierShift;
+    public partial bool ModifierShift { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _keys;
+    public partial ObservableCollection<string> Keys { get; set; }
 
     [ObservableProperty]
-    private string _key1;
+    public partial string Key1 { get; set; }
 
     [ObservableProperty]
-    private string _key2;
+    public partial string Key2 { get; set; }
 
     [ObservableProperty]
-    private string _key3;
+    public partial string Key3 { get; set; }
 
     [ObservableProperty]
-    private string _title;
+    public partial string Title { get; set; }
 
     private readonly ShortcutDisplay _shortcut;
     private readonly string _none; 
@@ -42,13 +42,13 @@ public partial class EditShortcutPopupModel : ObservableObject
 
     public EditShortcutPopupModel()
     {
-        _title = string.Empty;
+        Title = string.Empty;
         _none = $"- {Se.Language.General.None} -";
         _shortcut = new ShortcutDisplay(ShortcutArea.General, string.Empty, ShortcutAction.GeneralMergeSelectedLines);
-        _keys = new ObservableCollection<string>(GetShortcutKeys());
-        _key1 = string.Empty;
-        _key2 = string.Empty;
-        _key3 = string.Empty;
+        Keys = new ObservableCollection<string>(GetShortcutKeys());
+        Key1 = string.Empty;
+        Key2 = string.Empty;
+        Key3 = string.Empty;
     }
 
     private List<string> GetShortcutKeys()

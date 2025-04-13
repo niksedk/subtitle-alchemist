@@ -11,20 +11,19 @@ namespace SubtitleAlchemist.Features.Tools.ChangeCasing;
 public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private ObservableCollection<FixNameItem> _names;
+    public partial ObservableCollection<FixNameItem> Names { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<FixNameHitItem> _hits;
+    public partial ObservableCollection<FixNameHitItem> Hits { get; set; }
 
     [ObservableProperty]
-    private string _namesCount;
+    public partial string NamesCount { get; set; }
 
     [ObservableProperty]
-    private string _hitCount;
+    public partial string HitCount { get; set; }
 
     [ObservableProperty]
-    private string _extraNames;
-
+    public partial string ExtraNames { get; set; }
     public FixNamesPage? Page { get; set; }
 
     private Subtitle _subtitle;
@@ -41,17 +40,17 @@ public partial class FixNamesPageModel : ObservableObject, IQueryAttributable
 
     public FixNamesPageModel()
     {
-        _names = new ObservableCollection<FixNameItem>();
-        _hits = new ObservableCollection<FixNameHitItem>();
+        Names = new ObservableCollection<FixNameItem>();
+        Hits = new ObservableCollection<FixNameHitItem>();
 
         _loading = true;
-        _namesCount = string.Empty;
-        _hitCount = string.Empty;
+        NamesCount = string.Empty;
+        HitCount = string.Empty;
         _nameListInclMulti = new List<string>();
         _language = "en_US";
         _subtitle = new Subtitle();
         _usedNames = new HashSet<string>();
-        _extraNames = string.Empty;
+        ExtraNames = string.Empty;
         _subtitleBefore = new Subtitle();
 
         _previewTimer = new System.Timers.Timer(500);

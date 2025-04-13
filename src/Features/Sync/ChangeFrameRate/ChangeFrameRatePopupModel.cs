@@ -11,13 +11,13 @@ namespace SubtitleAlchemist.Features.Sync.ChangeFrameRate
         public ChangeFrameRatePopup? Popup { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<double> _frameRates;
+        public partial ObservableCollection<double> FrameRates { get; set; }
 
         [ObservableProperty]
-        private double _selectedFromFrameRate;
+        public partial double SelectedFromFrameRate { get; set; }
 
         [ObservableProperty]
-        private double _selectedToFrameRate;
+        public partial double SelectedToFrameRate { get; set; }
 
         private Subtitle _subtitle = new();
         private readonly IFileHelper _fileHelper;
@@ -25,8 +25,7 @@ namespace SubtitleAlchemist.Features.Sync.ChangeFrameRate
         public ChangeFrameRatePopupModel(IFileHelper fileHelper)
         {
             _fileHelper = fileHelper;
-
-            _frameRates = new ObservableCollection<double>()
+            FrameRates = new ObservableCollection<double>()
             {
                 23.976,
                 24,

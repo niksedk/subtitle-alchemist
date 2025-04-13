@@ -14,10 +14,10 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper
         public Picker Picker { get; set; } = new();
 
         [ObservableProperty]
-        private ObservableCollection<string> _items = new();
+        public partial ObservableCollection<string> Items { get; set; } = new();
 
         [ObservableProperty]
-        private string? _selectedItem;
+        public partial string? SelectedItem { get; set; }
 
         private static readonly SeAudioToText _settings = Se.Settings.Tools.AudioToText;
 

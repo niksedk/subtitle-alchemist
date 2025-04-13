@@ -15,13 +15,26 @@ public partial class TesseractDictionaryDownloadPopupModel : ObservableObject
 
     private readonly ITesseractDownloadService _tesseractDownloadService;
 
-    [ObservableProperty] private ObservableCollection<TesseractDictionary> _tesseractDictionaryItems;
-    [ObservableProperty] private TesseractDictionary? _selectedTesseractDictionaryItem;
-    [ObservableProperty] private float _progressValue;
-    [ObservableProperty] private string _progress;
-    [ObservableProperty] private bool _isProgressVisible;
-    [ObservableProperty] private bool _isPickerAndDownloadButtonEnabled;
-    [ObservableProperty] private string _error;
+    [ObservableProperty]
+    public partial ObservableCollection<TesseractDictionary> TesseractDictionaryItems { get; set; }
+
+    [ObservableProperty]
+    public partial TesseractDictionary? SelectedTesseractDictionaryItem { get; set; }
+
+    [ObservableProperty]
+    public partial float ProgressValue { get; set; }
+
+    [ObservableProperty]
+    public partial string Progress { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsProgressVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsPickerAndDownloadButtonEnabled { get; set; }
+
+    [ObservableProperty]
+    public partial string Error { get; set; }
 
     private Task? _downloadTask;
     private readonly System.Timers.Timer _timer = new();
@@ -36,13 +49,11 @@ public partial class TesseractDictionaryDownloadPopupModel : ObservableObject
         _cancellationTokenSource = new CancellationTokenSource();
 
         _downloadStream = new MemoryStream();
-
-        _tesseractDictionaryItems = new ObservableCollection<TesseractDictionary>(TesseractDictionary.List().OrderBy(p => p.ToString()));
-        _selectedTesseractDictionaryItem = _tesseractDictionaryItems.FirstOrDefault(p => p.Code == "eng");
-
-        _progress = "Starting...";
-        _error = string.Empty;
-        _isPickerAndDownloadButtonEnabled = true;
+        TesseractDictionaryItems = new ObservableCollection<TesseractDictionary>(TesseractDictionary.List().OrderBy(p => p.ToString()));
+        SelectedTesseractDictionaryItem = TesseractDictionaryItems.FirstOrDefault(p => p.Code == "eng");
+        Progress = "Starting...";
+        Error = string.Empty;
+        IsPickerAndDownloadButtonEnabled = true;
 
         _timer.Interval = 500;
         _timer.Elapsed += OnTimerOnElapsed;

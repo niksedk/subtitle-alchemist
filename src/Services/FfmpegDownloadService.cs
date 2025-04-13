@@ -20,10 +20,9 @@ public class FfmpegDownloadService : IFfmpegDownloadService
             return WindowsUrl;
         }
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            return MacUrl;
-        }
+#if MACCATALYST
+        return MacUrl;
+#endif
 
         throw new PlatformNotSupportedException();
     }

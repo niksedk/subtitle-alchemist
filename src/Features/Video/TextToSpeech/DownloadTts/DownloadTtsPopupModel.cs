@@ -15,16 +15,16 @@ namespace SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts
         public DownloadTtsPopup? Popup { get; set; }
 
         [ObservableProperty]
-        private string _titleText;
+        public partial string TitleText { get; set; }
 
         [ObservableProperty]
-        private float _progressValue;
+        public partial float ProgressValue { get; set; }
 
         [ObservableProperty]
-        private string _progress;
+        public partial string Progress { get; set; }
 
         [ObservableProperty]
-        private string _error;
+        public partial string Error { get; set; }
 
         private Task? _downloadTask;
         private Task? _downloadTaskVoiceModel;
@@ -54,7 +54,7 @@ namespace SubtitleAlchemist.Features.Video.TextToSpeech.DownloadTts
 
             _modelFileName = string.Empty;
             _configFileName = string.Empty;
-            _titleText = string.Empty;
+            TitleText = string.Empty;
 
             Progress = "Starting...";
             Error = string.Empty;

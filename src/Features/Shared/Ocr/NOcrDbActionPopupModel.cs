@@ -7,17 +7,35 @@ namespace SubtitleAlchemist.Features.Shared.Ocr;
 
 public partial class NOcrDbActionPopupModel : ObservableObject
 {
-    [ObservableProperty] private string _title;
-    [ObservableProperty] private string _newName;
-    [ObservableProperty] private bool _isDeleteVisible;
-    [ObservableProperty] private bool _isEditVisible;
-    [ObservableProperty] private bool _isAddVisible;
-    [ObservableProperty] private bool _isNewVisible;
-    [ObservableProperty] private bool _isNewNameVisible;
-    [ObservableProperty] private bool _isOkVisible;
-    [ObservableProperty] private string _errorFileName;
-    [ObservableProperty] private bool _isErrorFileNameVisible;
+    [ObservableProperty]
+    public partial string Title { get; set; }
 
+    [ObservableProperty]
+    public partial string NewName { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsDeleteVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsEditVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsAddVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsNewVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsNewNameVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsOkVisible { get; set; }
+
+    [ObservableProperty]
+    public partial string ErrorFileName { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsErrorFileNameVisible { get; set; }
     public NOcrDbActionPopup? Popup { get; set; }
     public Entry EntryNewName { get; set; }
 
@@ -27,16 +45,16 @@ public partial class NOcrDbActionPopupModel : ObservableObject
     public NOcrDbActionPopupModel()
     {
         EntryNewName = new Entry();
-        _title = string.Empty;
-        _newName = string.Empty;
-        _isDeleteVisible = false;
-        _isEditVisible = false;
-        _isAddVisible = true;
-        _isOkVisible = false;
-        _isNewVisible = true;
-        _isNewNameVisible = false;
-        _isErrorFileNameVisible = false;
-        _errorFileName = string.Empty;
+        Title = string.Empty;
+        NewName = string.Empty;
+        IsDeleteVisible = false;
+        IsEditVisible = false;
+        IsAddVisible = true;
+        IsOkVisible = false;
+        IsNewVisible = true;
+        IsNewNameVisible = false;
+        IsErrorFileNameVisible = false;
+        ErrorFileName = string.Empty;
         _timer = new System.Timers.Timer(500);
         _timer.Elapsed += TimerElapsed;
     }

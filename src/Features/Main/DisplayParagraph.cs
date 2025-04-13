@@ -6,31 +6,30 @@ namespace SubtitleAlchemist.Features.Main;
 public partial class DisplayParagraph : ObservableObject
 {
     [ObservableProperty]
-    public TimeSpan _start;
+    public partial TimeSpan Start { get; set; }
 
     [ObservableProperty]
-    public TimeSpan _end;
+    public partial TimeSpan End { get; set; }
 
     [ObservableProperty]
-    public TimeSpan _duration;
+    public partial TimeSpan Duration { get; set; }
 
     [ObservableProperty]
-    private string _text;
+    public partial string Text { get; set; }
 
     [ObservableProperty]
-    private bool _isSelected;
+    public partial bool IsSelected { get; set; }
 
     [ObservableProperty]
-    private Color _backgroundColor;
+    public partial Color BackgroundColor { get; set; }
 
     [ObservableProperty]
-    private int _number;
-
+    public partial int Number { get; set; }
     public Paragraph P { get; set; }
 
     public DisplayParagraph(Paragraph paragraph)
     {
-        _backgroundColor = Colors.Transparent;
+        BackgroundColor = Colors.Transparent;
         P = paragraph;
         Start = paragraph.StartTime.TimeSpan;
         End = paragraph.EndTime.TimeSpan;
@@ -42,7 +41,7 @@ public partial class DisplayParagraph : ObservableObject
 
     public DisplayParagraph(DisplayParagraph paragraph)
     {
-        _backgroundColor = Colors.Transparent;
+        BackgroundColor = Colors.Transparent;
         P = paragraph.P;
         Start = paragraph.Start;
         End = paragraph.End;

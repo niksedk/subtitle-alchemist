@@ -16,25 +16,25 @@ public partial class GetDictionaryPopupModel : ObservableObject
     public GetDictionaryPopup? Popup { get; set; }
 
     [ObservableProperty]
-    private float _progressValue;
+    public partial float ProgressValue { get; set; }
 
     [ObservableProperty]
-    private string _progress;
+    public partial string Progress { get; set; }
 
     [ObservableProperty]
-    private string _error;
+    public partial string Error { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<SpellCheckDictionary> _dictionaries = new();
+    public partial ObservableCollection<SpellCheckDictionary> Dictionaries { get; set; } = new();
 
     [ObservableProperty]
-    private SpellCheckDictionary? _selectedDictionary;
+    public partial SpellCheckDictionary? SelectedDictionary { get; set; }
 
     [ObservableProperty]
-    private string _description = string.Empty;
+    public partial string Description { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private bool _isDownloading;
+    public partial bool IsDownloading { get; set; }
 
     private Task? _downloadTask;
     private readonly Timer _timer = new();

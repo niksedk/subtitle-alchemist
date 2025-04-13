@@ -10,7 +10,7 @@ namespace SubtitleAlchemist.Features.Video.OpenFromUrl
         public Entry EntryVideoUrl { get; set; } = new Entry();
 
         [ObservableProperty]
-        private string _videoUrl = string.Empty;
+        public partial string VideoUrl { get; set; } = string.Empty;
 
         [RelayCommand]
         private void Ok()

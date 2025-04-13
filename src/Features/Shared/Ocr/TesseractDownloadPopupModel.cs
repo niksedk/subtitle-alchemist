@@ -15,13 +15,13 @@ public partial class TesseractDownloadPopupModel : ObservableObject
     private readonly ITesseractDownloadService _tesseractDownloadService;
 
     [ObservableProperty]
-    private float _progressValue;
+    public partial float ProgressValue { get; set; }
 
     [ObservableProperty]
-    private string _progress;
+    public partial string Progress { get; set; }
 
     [ObservableProperty]
-    private string _error;
+    public partial string Error { get; set; }
 
     private Task? _downloadTask;
     private readonly System.Timers.Timer _timer = new();
@@ -38,9 +38,8 @@ public partial class TesseractDownloadPopupModel : ObservableObject
         _cancellationTokenSource = new CancellationTokenSource();
 
         _downloadStream = new MemoryStream();
-
-        _progress = "Starting...";
-        _error = string.Empty;
+        Progress = "Starting...";
+        Error = string.Empty;
 
         _timer.Interval = 500;
         _timer.Elapsed += OnTimerOnElapsed;

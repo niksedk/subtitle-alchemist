@@ -17,21 +17,50 @@ public partial class NOcrDbEditPageModel : ObservableObject, IQueryAttributable
     public NOcrDrawingCanvasView NOcrDrawingCanvas { get; set; }
     public Label LabelStatusText { get; set; } = new();
 
-    [ObservableProperty] private string _title;
-    [ObservableProperty] private string _numberOfElements;
-    [ObservableProperty] private ObservableCollection<string> _characterList;
-    [ObservableProperty] private string? _selectedCharacter;
-    [ObservableProperty] private ObservableCollection<NOcrChar> _nOcrCharList;
-    [ObservableProperty] private NOcrChar? _selectedNOcrChar;
-    [ObservableProperty] private ImageSource? _currentImageSource;
-    [ObservableProperty] private string _currentImageResolution;
-    [ObservableProperty] private string _currentText;
-    [ObservableProperty] private bool _currentItalic;
-    [ObservableProperty] private string _statusText;
-    [ObservableProperty] private ObservableCollection<int> _noOfLinesToAutoDrawList;
-    [ObservableProperty] private int _selectedNoOfLinesToAutoDraw;
-    [ObservableProperty] private bool _isNewMatch;
-    [ObservableProperty] private bool _isAddBetterMatchVisible;
+    [ObservableProperty]
+    public partial string Title { get; set; }
+
+    [ObservableProperty]
+    public partial string NumberOfElements { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<string> CharacterList { get; set; }
+
+    [ObservableProperty]
+    public partial string? SelectedCharacter { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<NOcrChar> NOcrCharList { get; set; }
+
+    [ObservableProperty]
+    public partial NOcrChar? SelectedNOcrChar { get; set; }
+
+    [ObservableProperty]
+    public partial ImageSource? CurrentImageSource { get; set; }
+
+    [ObservableProperty]
+    public partial string CurrentImageResolution { get; set; }
+
+    [ObservableProperty]
+    public partial string CurrentText { get; set; }
+
+    [ObservableProperty]
+    public partial bool CurrentItalic { get; set; }
+
+    [ObservableProperty]
+    public partial string StatusText { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<int> NoOfLinesToAutoDrawList { get; set; }
+
+    [ObservableProperty]
+    public partial int SelectedNoOfLinesToAutoDraw { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsNewMatch { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsAddBetterMatchVisible { get; set; }
 
     private NOcrChar _newMatch;
     private NOcrDb _nOcrDb;
@@ -39,28 +68,28 @@ public partial class NOcrDbEditPageModel : ObservableObject, IQueryAttributable
 
     public NOcrDbEditPageModel()
     {
-        _title = string.Empty;
-        _numberOfElements = string.Empty;
-        _characterList = new ObservableCollection<string>();
-        _nOcrCharList = new ObservableCollection<NOcrChar>();
-        _currentImageResolution = string.Empty;
+        Title = string.Empty;
+        NumberOfElements = string.Empty;
+        CharacterList = new ObservableCollection<string>();
+        NOcrCharList = new ObservableCollection<NOcrChar>();
+        CurrentImageResolution = string.Empty;
         NOcrDrawingCanvas = new NOcrDrawingCanvasView();
         LabelStatusText = new Label();
         _nOcrDb = new NOcrDb(string.Empty);
         _closing = false;
-        _statusText = string.Empty;
-        _isAddBetterMatchVisible = true;
+        StatusText = string.Empty;
+        IsAddBetterMatchVisible = true;
         _newMatch = new NOcrChar(string.Empty);
-        _currentText = string.Empty;
+        CurrentText = string.Empty;
 
         const int maxLines = 500;
-        _noOfLinesToAutoDrawList = new ObservableCollection<int>();
+        NoOfLinesToAutoDrawList = new ObservableCollection<int>();
         for (var i = 0; i <= maxLines; i++)
         {
-            _noOfLinesToAutoDrawList.Add(i);
+            NoOfLinesToAutoDrawList.Add(i);
         }
 
-        _selectedNoOfLinesToAutoDraw = 100;
+        SelectedNoOfLinesToAutoDraw = 100;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)

@@ -128,7 +128,7 @@ public partial class ExportImagePageModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
-    public async Task PickColor()
+    public void PickColor()
     {
     }
 

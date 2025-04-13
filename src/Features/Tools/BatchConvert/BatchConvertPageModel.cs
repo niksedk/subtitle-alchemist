@@ -15,69 +15,157 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
 {
     public BatchConvertPage? Page { get; set; }
 
-    [ObservableProperty] private string _outputFolder;
-    [ObservableProperty] private bool _saveInSourceFolder;
-    [ObservableProperty] private bool _useSourceFolderVisible;
-    [ObservableProperty] private bool _useOutputFolderVisible;
-    [ObservableProperty] private bool _overwrite;
-    [ObservableProperty] private string _targetFormatName;
-    [ObservableProperty] private string _targetEncoding;
-    [ObservableProperty] private ObservableCollection<BatchConvertItem> _batchItems;
-    [ObservableProperty] private BatchConvertItem? _selectedBatchItem;
-    [ObservableProperty] private string _batchItemsInfo;
+    [ObservableProperty]
+    public partial string OutputFolder { get; set; }
 
-    [ObservableProperty] private ObservableCollection<string> _targetFormats;
-    [ObservableProperty] private string? _selectedTargetFormat;
-    [ObservableProperty] private ObservableCollection<string> _targetEncodings;
-    [ObservableProperty] private string? _selectedTargetEncoding;
+    [ObservableProperty]
+    public partial bool SaveInSourceFolder { get; set; }
 
-    [ObservableProperty] private ObservableCollection<BatchConvertFunction> _batchFunctions;
-    [ObservableProperty] private BatchConvertFunction? _selectedBatchFunction;
+    [ObservableProperty]
+    public partial bool UseSourceFolderVisible { get; set; }
 
-    [ObservableProperty] private bool _isProgressVisible;
-    [ObservableProperty] private bool _isConverting;
-    [ObservableProperty] private bool _areControlsEnabled;
-    [ObservableProperty] private string _progressText;
-    [ObservableProperty] private double _progress;
+    [ObservableProperty]
+    public partial bool UseOutputFolderVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool Overwrite { get; set; }
+
+    [ObservableProperty]
+    public partial string TargetFormatName { get; set; }
+
+    [ObservableProperty]
+    public partial string TargetEncoding { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<BatchConvertItem> BatchItems { get; set; }
+
+    [ObservableProperty]
+    public partial BatchConvertItem? SelectedBatchItem { get; set; }
+
+    [ObservableProperty]
+    public partial string BatchItemsInfo { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<string> TargetFormats { get; set; }
+
+    [ObservableProperty]
+    public partial string? SelectedTargetFormat { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<string> TargetEncodings { get; set; }
+
+    [ObservableProperty]
+    public partial string? SelectedTargetEncoding { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<BatchConvertFunction> BatchFunctions { get; set; }
+
+    [ObservableProperty]
+    public partial BatchConvertFunction? SelectedBatchFunction { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsProgressVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsConverting { get; set; }
+
+    [ObservableProperty]
+    public partial bool AreControlsEnabled { get; set; }
+
+    [ObservableProperty]
+    public partial string ProgressText { get; set; }
+
+    [ObservableProperty]
+    public partial double Progress { get; set; }
 
     // Remove formatting
-    [ObservableProperty] private bool _formattingRemoveAll;
-    [ObservableProperty] private bool _formattingRemoveItalic;
-    [ObservableProperty] private bool _formattingRemoveBold;
-    [ObservableProperty] private bool _formattingRemoveUnderline;
-    [ObservableProperty] private bool _formattingRemoveFontTags;
-    [ObservableProperty] private bool _formattingRemoveAlignmentTags;
-    [ObservableProperty] private bool _formattingRemoveColors;
+    [ObservableProperty]
+    public partial bool FormattingRemoveAll { get; set; }
+
+    [ObservableProperty]
+    public partial bool FormattingRemoveItalic { get; set; }
+
+    [ObservableProperty]
+    public partial bool FormattingRemoveBold { get; set; }
+
+    [ObservableProperty]
+    public partial bool FormattingRemoveUnderline { get; set; }
+
+    [ObservableProperty]
+    public partial bool FormattingRemoveFontTags { get; set; }
+
+    [ObservableProperty]
+    public partial bool FormattingRemoveAlignmentTags { get; set; }
+
+    [ObservableProperty]
+    public partial bool FormattingRemoveColors { get; set; }
 
     // Offset time codes
-    [ObservableProperty] private bool _offsetTimeCodesForward;
-    [ObservableProperty] private bool _offsetTimeCodesBack;
-    [ObservableProperty] private TimeSpan _offsetTimeCodesTime;
+    [ObservableProperty]
+    public partial bool OffsetTimeCodesForward { get; set; }
+
+    [ObservableProperty]
+    public partial bool OffsetTimeCodesBack { get; set; }
+
+    [ObservableProperty]
+    public partial TimeSpan OffsetTimeCodesTime { get; set; }
 
     // Adjust display duration
-    [ObservableProperty] private ObservableCollection<AdjustDurationItem> _adjustTypes;
-    [ObservableProperty] private AdjustDurationItem _selectedAdjustType;
-    [ObservableProperty] private TimeSpan _adjustSeconds;
-    [ObservableProperty] private int _adjustPercentage;
-    [ObservableProperty] private TimeSpan _adjustFixedValue;
-    [ObservableProperty] private decimal _adjustRecalculateMaximumCharacters;
-    [ObservableProperty] private decimal _adjustRecalculateOptimalCharacters;
-    [ObservableProperty] private bool _adjustIsSecondsVisible;
-    [ObservableProperty] private bool _adjustIsPercentVisible;
-    [ObservableProperty] private bool _adjustIsFixedVisible;
-    [ObservableProperty] private bool _adjustIsRecalculateVisible;
+    [ObservableProperty]
+    public partial ObservableCollection<AdjustDurationItem> AdjustTypes { get; set; }
+
+    [ObservableProperty]
+    public partial AdjustDurationItem SelectedAdjustType { get; set; }
+
+    [ObservableProperty]
+    public partial TimeSpan AdjustSeconds { get; set; }
+
+    [ObservableProperty]
+    public partial int AdjustPercentage { get; set; }
+
+    [ObservableProperty]
+    public partial TimeSpan AdjustFixedValue { get; set; }
+
+    [ObservableProperty]
+    public partial decimal AdjustRecalculateMaximumCharacters { get; set; }
+
+    [ObservableProperty]
+    public partial decimal AdjustRecalculateOptimalCharacters { get; set; }
+
+    [ObservableProperty]
+    public partial bool AdjustIsSecondsVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool AdjustIsPercentVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool AdjustIsFixedVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool AdjustIsRecalculateVisible { get; set; }
 
     // Delete lines
-    [ObservableProperty] private ObservableCollection<int> _deleteLineNumbers;
-    [ObservableProperty] private int _deleteXFirstLines;
-    [ObservableProperty] private int _deleteXLastLines;
-    [ObservableProperty] private string _deleteLinesContains;
+    [ObservableProperty]
+    public partial ObservableCollection<int> DeleteLineNumbers { get; set; }
+
+    [ObservableProperty]
+    public partial int DeleteXFirstLines { get; set; }
+
+    [ObservableProperty]
+    public partial int DeleteXLastLines { get; set; }
+
+    [ObservableProperty]
+    public partial string DeleteLinesContains { get; set; }
 
     // Change frame rate
-    [ObservableProperty] private ObservableCollection<double> _frameRates;
-    [ObservableProperty] private double _selectedFromFrameRate;
-    [ObservableProperty] private double _selectedToFrameRate;
+    [ObservableProperty]
+    public partial ObservableCollection<double> FrameRates { get; set; }
 
+    [ObservableProperty]
+    public partial double SelectedFromFrameRate { get; set; }
+
+    [ObservableProperty]
+    public partial double SelectedToFrameRate { get; set; }
 
     public View ViewRemoveFormatting { get; set; }
     public View ViewOffsetTimeCodes { get; set; }
@@ -87,7 +175,8 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
 
     public Label LabelStatusText { get; set; }
 
-    [ObservableProperty] private string _statusText;
+    [ObservableProperty]
+    public partial string StatusText { get; set; }
 
     private readonly IFileHelper _fileHelper;
     private readonly IPopupService _popupService;
@@ -102,17 +191,15 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
         _fileHelper = fileHelper;
         _popupService = popupService;
         _batchConverter = batchConverter;
-        _outputFolder = string.Empty;
-        _saveInSourceFolder = true;
-        _targetFormatName = SubRip.NameOfFormat;
-        _targetEncoding = TextEncoding.Utf8WithBom;
-
-        _batchItems = new ObservableCollection<BatchConvertItem>();
-        _batchItemsInfo = string.Empty;
-        _targetFormats = new ObservableCollection<string>(SubtitleFormat.AllSubtitleFormats.Select(p => p.Name));
-        _targetEncodings = new ObservableCollection<string>(EncodingHelper.GetEncodings().Select(p => p.DisplayName).ToList());
-
-        _batchFunctions = new ObservableCollection<BatchConvertFunction>();
+        OutputFolder = string.Empty;
+        SaveInSourceFolder = true;
+        TargetFormatName = SubRip.NameOfFormat;
+        TargetEncoding = TextEncoding.Utf8WithBom;
+        BatchItems = new ObservableCollection<BatchConvertItem>();
+        BatchItemsInfo = string.Empty;
+        TargetFormats = new ObservableCollection<string>(SubtitleFormat.AllSubtitleFormats.Select(p => p.Name));
+        TargetEncodings = new ObservableCollection<string>(EncodingHelper.GetEncodings().Select(p => p.DisplayName).ToList());
+        BatchFunctions = new ObservableCollection<BatchConvertFunction>();
         ViewRemoveFormatting = new BoxView();
         ViewOffsetTimeCodes = new BoxView();
         ViewAdjustDuration = new BoxView();
@@ -120,25 +207,22 @@ public partial class BatchConvertPageModel : ObservableObject, IQueryAttributabl
         ViewChangeFrameRate = new BoxView();
 
         LabelStatusText = new Label();
-        _statusText = string.Empty;
-        _progressText = string.Empty;
-        _areControlsEnabled = true;
-
-        _adjustTypes = new ObservableCollection<AdjustDurationItem>
+        StatusText = string.Empty;
+        ProgressText = string.Empty;
+        AreControlsEnabled = true;
+        AdjustTypes = new ObservableCollection<AdjustDurationItem>
         {
             new(AdjustDurationType.Seconds, "Seconds"),
             new(AdjustDurationType.Percent, "Percent"),
             new(AdjustDurationType.Fixed, "Fixed"),
             new(AdjustDurationType.Recalculate, "Recalculate"),
         };
-
-        _selectedAdjustType = _adjustTypes.First();
-        _deleteLinesContains = string.Empty;
-        _deleteLineNumbers = new ObservableCollection<int>(Enumerable.Range(0, 100));
+        SelectedAdjustType = AdjustTypes.First();
+        DeleteLinesContains = string.Empty;
+        DeleteLineNumbers = new ObservableCollection<int>(Enumerable.Range(0, 100));
         _cancellationTokenSource = new CancellationTokenSource();
         _cancellationToken = _cancellationTokenSource.Token;
-
-        _frameRates = new ObservableCollection<double>
+        FrameRates = new ObservableCollection<double>
         {
             23.976,
             24,

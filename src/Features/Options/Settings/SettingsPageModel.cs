@@ -15,11 +15,10 @@ namespace SubtitleAlchemist.Features.Options.Settings;
 public partial class SettingsPageModel : ObservableObject
 {
     [ObservableProperty]
-    private ObservableCollection<SettingItem> _allSettings;
+    public partial ObservableCollection<SettingItem> AllSettings { get; set; }
 
     [ObservableProperty]
-    private string _searchText;
-
+    public partial string SearchText { get; set; }
     public VerticalStackLayout LeftMenu { get; set; }
     public Grid SettingList { get; set; }
     public SettingsPage? Page { get; set; }
@@ -29,134 +28,133 @@ public partial class SettingsPageModel : ObservableObject
     public SettingItem SettingsItemShortcutsGeneral { get; set; }
 
     [ObservableProperty]
-    private string _ffmpegPath = string.Empty;
+    public partial string FfmpegPath { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private bool _showRecentFiles;
+    public partial bool ShowRecentFiles { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _themes = new() { "Light", "Dark", "Custom" };
+    public partial ObservableCollection<string> Themes { get; set; } = new() { "Light", "Dark", "Custom" };
 
     [ObservableProperty]
-    private string _theme = "Dark";
+    public partial string Theme { get; set; } = "Dark";
 
     [ObservableProperty]
-    private int _subtitleLineMaximumLength;
+    public partial int SubtitleLineMaximumLength { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<int> _maxNumberOfLines;
+    public partial ObservableCollection<int> MaxNumberOfLines { get; set; }
 
     [ObservableProperty]
-    private int _selectedMaxNumberOfLines;
+    public partial int SelectedMaxNumberOfLines { get; set; }
 
     [ObservableProperty]
-    private int _maxNumberOfLinesPlusAbort;
+    public partial int MaxNumberOfLinesPlusAbort { get; set; }
 
     [ObservableProperty]
-    private int _mergeLinesShorterThan;
+    public partial int MergeLinesShorterThan { get; set; }
 
     [ObservableProperty]
-    private int _subtitleMinimumDisplayMilliseconds;
+    public partial int SubtitleMinimumDisplayMilliseconds { get; set; }
 
     [ObservableProperty]
-    private int _subtitleMaximumDisplayMilliseconds;
+    public partial int SubtitleMaximumDisplayMilliseconds { get; set; }
 
     [ObservableProperty]
-    private int _minimumMillisecondsBetweenLines;
+    public partial int MinimumMillisecondsBetweenLines { get; set; }
 
     [ObservableProperty]
-    private double _subtitleMaximumCharactersPerSeconds;
+    public partial double SubtitleMaximumCharactersPerSeconds { get; set; }
 
     [ObservableProperty]
-    private double _subtitleOptimalCharactersPerSeconds;
+    public partial double SubtitleOptimalCharactersPerSeconds { get; set; }
 
     [ObservableProperty]
-    private double _subtitleMaximumWordsPerMinute;
+    public partial double SubtitleMaximumWordsPerMinute { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<DialogStyleDisplay> _dialogStyles;
+    public partial ObservableCollection<DialogStyleDisplay> DialogStyles { get; set; }
 
     [ObservableProperty]
-    private DialogStyleDisplay _selectedDialogStyle;
+    public partial DialogStyleDisplay SelectedDialogStyle { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<ContinuationStyleDisplay> _continuationStyles;
+    public partial ObservableCollection<ContinuationStyleDisplay> ContinuationStyles { get; set; }
 
     [ObservableProperty]
-    private ContinuationStyleDisplay _selectedContinuationStyle;
+    public partial ContinuationStyleDisplay SelectedContinuationStyle { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<CpsLineLengthDisplay> _cpsLineLengthStrategies;
+    public partial ObservableCollection<CpsLineLengthDisplay> CpsLineLengthStrategies { get; set; }
 
     [ObservableProperty]
-    private CpsLineLengthDisplay _selectedCpsLineLengthStrategy;
+    public partial CpsLineLengthDisplay SelectedCpsLineLengthStrategy { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _defaultFrameRates;
+    public partial ObservableCollection<string> DefaultFrameRates { get; set; }
 
     [ObservableProperty]
-    private string _selectedDefaultFrameRate;
+    public partial string SelectedDefaultFrameRate { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _defaultFileEncodings;
+    public partial ObservableCollection<string> DefaultFileEncodings { get; set; }
 
     [ObservableProperty]
-    private string _selectedDefaultFileEncoding;
+    public partial string SelectedDefaultFileEncoding { get; set; }
 
     [ObservableProperty]
-    private bool _autodetectAnsiEncoding;
+    public partial bool AutodetectAnsiEncoding { get; set; }
 
     [ObservableProperty]
-    private string _languageFiltersDisplay;
+    public partial string LanguageFiltersDisplay { get; set; }
 
     [ObservableProperty]
-    private bool _promptForDeleteLines;
+    public partial bool PromptForDeleteLines { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<TimeCodeModeDisplay> _timeCodeModes;
+    public partial ObservableCollection<TimeCodeModeDisplay> TimeCodeModes { get; set; }
 
     [ObservableProperty]
-    private TimeCodeModeDisplay _selectedTimeCodeMode;
+    public partial TimeCodeModeDisplay SelectedTimeCodeMode { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<SplitBehaviorDisplay> _splitBehaviors;
+    public partial ObservableCollection<SplitBehaviorDisplay> SplitBehaviors { get; set; }
 
     [ObservableProperty]
-    private SplitBehaviorDisplay _selectedSplitBehavior;
+    public partial SplitBehaviorDisplay SelectedSplitBehavior { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<SubtitleListDoubleClickActionDisplay> _subtitleListDoubleClickActions;
+    public partial ObservableCollection<SubtitleListDoubleClickActionDisplay> SubtitleListDoubleClickActions { get; set; }
 
     [ObservableProperty]
-    private SubtitleListDoubleClickActionDisplay _selectedSubtitleListDoubleClickAction;
+    public partial SubtitleListDoubleClickActionDisplay SelectedSubtitleListDoubleClickAction { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<AutoBackupIntervalDisplay> _autoBackupIntervals;
+    public partial ObservableCollection<AutoBackupIntervalDisplay> AutoBackupIntervals { get; set; }
 
     [ObservableProperty]
-    private AutoBackupIntervalDisplay _selectedAutoBackupInterval;
+    public partial AutoBackupIntervalDisplay SelectedAutoBackupInterval { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<AutoBackupDeleteDisplay> _autoBackupDeleteOptions;
+    public partial ObservableCollection<AutoBackupDeleteDisplay> AutoBackupDeleteOptions { get; set; }
 
     [ObservableProperty]
-    private AutoBackupDeleteDisplay _selectedAutoBackupDeleteOption;
+    public partial AutoBackupDeleteDisplay SelectedAutoBackupDeleteOption { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _subtitleFormats;
+    public partial ObservableCollection<string> SubtitleFormats { get; set; }
 
     [ObservableProperty]
-    private string _selectedDefaultSubtitleFormat;
-
-
-    [ObservableProperty]
-    private ObservableCollection<string> _subtitleSaveAsSubtitleFormats;
+    public partial string SelectedDefaultSubtitleFormat { get; set; }
 
     [ObservableProperty]
-    private string _selectedDefaultSaveAsSubtitleFormat;
+    public partial ObservableCollection<string> SubtitleSaveAsSubtitleFormats { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _favoriteSubtitleFormats;
+    public partial string SelectedDefaultSaveAsSubtitleFormat { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<string> FavoriteSubtitleFormats { get; set; }
 
 
     // Shortcuts
@@ -165,61 +163,60 @@ public partial class SettingsPageModel : ObservableObject
 
     // Syntax coloring
     [ObservableProperty]
-    private bool _colorDurationTooShort;
+    public partial bool ColorDurationTooShort { get; set; }
 
     [ObservableProperty]
-    private bool _colorDurationTooLong;
+    public partial bool ColorDurationTooLong { get; set; }
 
     [ObservableProperty]
-    private bool _colorTextTooLong;
+    public partial bool ColorTextTooLong { get; set; }
 
     [ObservableProperty]
-    private bool _colorTextTooWide;
+    public partial bool ColorTextTooWide { get; set; }
 
     [ObservableProperty]
-    private bool _colorTextTooManyLines;
+    public partial bool ColorTextTooManyLines { get; set; }
 
     [ObservableProperty]
-    private bool _colorTimeCodeOverlap;
+    public partial bool ColorTimeCodeOverlap { get; set; }
 
     [ObservableProperty]
-    private bool _colorGapTooShort;
+    public partial bool ColorGapTooShort { get; set; }
 
     [ObservableProperty]
-    private Color _colorErrorColor;
+    public partial Color ColorErrorColor { get; set; }
 
 
     // Toolbar
     [ObservableProperty]
-    private bool _toolbarShowFileNew;
+    public partial bool ToolbarShowFileNew { get; set; }
 
     [ObservableProperty]
-    private bool _toolbarShowFileOpen;
+    public partial bool ToolbarShowFileOpen { get; set; }
 
     [ObservableProperty]
-    private bool _toolbarShowVideoFileOpen;
+    public partial bool ToolbarShowVideoFileOpen { get; set; }
 
     [ObservableProperty]
-    private bool _toolbarShowSave;
+    public partial bool ToolbarShowSave { get; set; }
 
     [ObservableProperty]
-    private bool _toolbarShowSaveAs;
+    public partial bool ToolbarShowSaveAs { get; set; }
 
     [ObservableProperty]
-    private bool _toolbarShowFind;
+    public partial bool ToolbarShowFind { get; set; }
 
     [ObservableProperty]
-    private bool _toolbarShowReplace;
+    public partial bool ToolbarShowReplace { get; set; }
 
     [ObservableProperty]
-    private bool _toolbarShowFixCommonErrors;
+    public partial bool ToolbarShowFixCommonErrors { get; set; }
 
     [ObservableProperty]
-    private bool _toolbarShowSpellCheck;
+    public partial bool ToolbarShowSpellCheck { get; set; }
 
     [ObservableProperty]
-    private bool _toolbarShowHelp;
-
+    public partial bool ToolbarShowHelp { get; set; }
 
     private readonly IPopupService _popupService;
     private SettingsPage.SectionName _sectionName = SettingsPage.SectionName.General;
@@ -229,66 +226,51 @@ public partial class SettingsPageModel : ObservableObject
     public SettingsPageModel(IPopupService popupService)
     {
         _popupService = popupService;
-
-        _searchText = string.Empty;
+        SearchText = string.Empty;
         LeftMenu = new VerticalStackLayout();
         SyntaxErrorColorBox = new BoxView();
         SettingList = new Grid();
         SettingListScrollView = new ScrollView();
-
-        _allSettings = new ObservableCollection<SettingItem>();
-
-        _maxNumberOfLines = new ObservableCollection<int>(Enumerable.Range(1, 5));
-        _selectedMaxNumberOfLines = 2;
-
-        _dialogStyles = new ObservableCollection<DialogStyleDisplay>(DialogStyleDisplay.GetDialogStyles());
-        _selectedDialogStyle = _dialogStyles.First();
-
-        _continuationStyles = new ObservableCollection<ContinuationStyleDisplay>(ContinuationStyleDisplay.GetDialogStyles());
-        _selectedContinuationStyle = _continuationStyles.First();
-
-        _cpsLineLengthStrategies = new ObservableCollection<CpsLineLengthDisplay>(CpsLineLengthDisplay.GetCpsLineLengthStrategies());
-        _selectedCpsLineLengthStrategy = _cpsLineLengthStrategies.First();
-
-        _defaultFrameRates = new ObservableCollection<string>(new List<string> { "23.976", "24", "25", "29.97", "30", "50", "59.94", "60" });
-        _selectedDefaultFrameRate = DefaultFrameRates.First();
-
-        _languageFiltersDisplay = "All";
-
-        _defaultFileEncodings = new ObservableCollection<string>(EncodingHelper.GetEncodings().Select(p => p.DisplayName).ToList());
-        _selectedDefaultFileEncoding = _defaultFileEncodings.First();
-
-        _timeCodeModes = new ObservableCollection<TimeCodeModeDisplay>(TimeCodeModeDisplay.GetTimeCodeModes());
-        _selectedTimeCodeMode = _timeCodeModes.First();
-
-        _splitBehaviors = new ObservableCollection<SplitBehaviorDisplay>(SplitBehaviorDisplay.GetSplitBehaviors());
-        _selectedSplitBehavior = _splitBehaviors.First();
-
-        _subtitleListDoubleClickActions = new ObservableCollection<SubtitleListDoubleClickActionDisplay>(SubtitleListDoubleClickActionDisplay.GetSubtitleListDoubleClickActions());
-        _selectedSubtitleListDoubleClickAction = _subtitleListDoubleClickActions.First();
-
-        _autoBackupIntervals = new ObservableCollection<AutoBackupIntervalDisplay>(AutoBackupIntervalDisplay.GetAutoBackupIntervals());
-        _selectedAutoBackupInterval = _autoBackupIntervals.First();
-
-        _autoBackupDeleteOptions = new ObservableCollection<AutoBackupDeleteDisplay>(AutoBackupDeleteDisplay.GetAutoBackupDeleteOptions());
-        _selectedAutoBackupDeleteOption = _autoBackupDeleteOptions.First();
+        AllSettings = new ObservableCollection<SettingItem>();
+        MaxNumberOfLines = new ObservableCollection<int>(Enumerable.Range(1, 5));
+        SelectedMaxNumberOfLines = 2;
+        DialogStyles = new ObservableCollection<DialogStyleDisplay>(DialogStyleDisplay.GetDialogStyles());
+        SelectedDialogStyle = DialogStyles.First();
+        ContinuationStyles = new ObservableCollection<ContinuationStyleDisplay>(ContinuationStyleDisplay.GetDialogStyles());
+        SelectedContinuationStyle = ContinuationStyles.First();
+        CpsLineLengthStrategies = new ObservableCollection<CpsLineLengthDisplay>(CpsLineLengthDisplay.GetCpsLineLengthStrategies());
+        SelectedCpsLineLengthStrategy = CpsLineLengthStrategies.First();
+        DefaultFrameRates = new ObservableCollection<string>(new List<string> { "23.976", "24", "25", "29.97", "30", "50", "59.94", "60" });
+        SelectedDefaultFrameRate = DefaultFrameRates.First();
+        LanguageFiltersDisplay = "All";
+        DefaultFileEncodings = new ObservableCollection<string>(EncodingHelper.GetEncodings().Select(p => p.DisplayName).ToList());
+        SelectedDefaultFileEncoding = DefaultFileEncodings.First();
+        TimeCodeModes = new ObservableCollection<TimeCodeModeDisplay>(TimeCodeModeDisplay.GetTimeCodeModes());
+        SelectedTimeCodeMode = TimeCodeModes.First();
+        SplitBehaviors = new ObservableCollection<SplitBehaviorDisplay>(SplitBehaviorDisplay.GetSplitBehaviors());
+        SelectedSplitBehavior = SplitBehaviors.First();
+        SubtitleListDoubleClickActions = new ObservableCollection<SubtitleListDoubleClickActionDisplay>(SubtitleListDoubleClickActionDisplay.GetSubtitleListDoubleClickActions());
+        SelectedSubtitleListDoubleClickAction = SubtitleListDoubleClickActions.First();
+        AutoBackupIntervals = new ObservableCollection<AutoBackupIntervalDisplay>(AutoBackupIntervalDisplay.GetAutoBackupIntervals());
+        SelectedAutoBackupInterval = AutoBackupIntervals.First();
+        AutoBackupDeleteOptions = new ObservableCollection<AutoBackupDeleteDisplay>(AutoBackupDeleteDisplay.GetAutoBackupDeleteOptions());
+        SelectedAutoBackupDeleteOption = AutoBackupDeleteOptions.First();
 
         var allSubtitleFormats = SubtitleFormat.AllSubtitleFormats.Select(p => p.Name).ToList();
-        _subtitleFormats = new ObservableCollection<string>(allSubtitleFormats);
-        _selectedDefaultSubtitleFormat = _subtitleFormats.First();
+        SubtitleFormats = new ObservableCollection<string>(allSubtitleFormats);
+        SelectedDefaultSubtitleFormat = SubtitleFormats.First();
 
         var allSaveAsSubtitleFormats = new List<string>(allSubtitleFormats);
         allSaveAsSubtitleFormats.Insert(0, "- Auto - ");
-        _subtitleSaveAsSubtitleFormats = new ObservableCollection<string>(allSaveAsSubtitleFormats);
-        _selectedDefaultSaveAsSubtitleFormat = _subtitleSaveAsSubtitleFormats.First();
-
-        _favoriteSubtitleFormats = new ObservableCollection<string>(allSubtitleFormats.Take(5));
+        SubtitleSaveAsSubtitleFormats = new ObservableCollection<string>(allSaveAsSubtitleFormats);
+        SelectedDefaultSaveAsSubtitleFormat = SubtitleSaveAsSubtitleFormats.First();
+        FavoriteSubtitleFormats = new ObservableCollection<string>(allSubtitleFormats.Take(5));
 
         Shortcuts = ShortcutDisplay.GetShortcuts();
 
         GridShortcutsGeneral = new Grid();
         SettingsItemShortcutsGeneral = new SettingItem("Shortcuts", SettingsPage.SectionName.Shortcuts);
-        _colorErrorColor = Colors.Red;
+        ColorErrorColor = Colors.Red;
     }
 
     public void LeftMenuTapped(object? sender, TappedEventArgs e, SettingsPage.SectionName sectionName)

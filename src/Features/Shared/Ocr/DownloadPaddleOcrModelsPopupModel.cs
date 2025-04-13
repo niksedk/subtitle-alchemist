@@ -16,13 +16,13 @@ public partial class DownloadPaddleOcrModelsPopupModel : ObservableObject
     private readonly IPaddleOcrDownloadService _paddleOcrDownloadService;
 
     [ObservableProperty]
-    private float _progressValue;
+    public partial float ProgressValue { get; set; }
 
     [ObservableProperty]
-    private string _progress;
+    public partial string Progress { get; set; }
 
     [ObservableProperty]
-    private string _error;
+    public partial string Error { get; set; }
 
     private Task? _downloadTask;
     private readonly Timer _timer = new();

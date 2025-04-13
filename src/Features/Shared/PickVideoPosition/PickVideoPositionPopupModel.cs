@@ -13,20 +13,20 @@ public partial class PickVideoPositionPopupModel : ObservableObject
     public MediaElement VideoPlayer { get; set; }
 
     [ObservableProperty]
-    private string _title;
+    public partial string Title { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<DisplayParagraph> _paragraphs;
+    public partial ObservableCollection<DisplayParagraph> Paragraphs { get; set; }
 
     [ObservableProperty]
-    private DisplayParagraph? _selectedParagraph;
+    public partial DisplayParagraph? SelectedParagraph { get; set; }
 
     public PickVideoPositionPopupModel()
     {
         SubtitleList = new();
-        _title = string.Empty;
-        _paragraphs = new ObservableCollection<DisplayParagraph>();
-        _selectedParagraph = null;
+        Title = string.Empty;
+        Paragraphs = new ObservableCollection<DisplayParagraph>();
+        SelectedParagraph = null;
         VideoPlayer = new MediaElement();
     }
 

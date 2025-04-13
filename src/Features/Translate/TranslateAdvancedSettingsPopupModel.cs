@@ -20,16 +20,16 @@ public partial class TranslateAdvancedSettingsPopupModel : ObservableObject
     public IAutoTranslator? AutoTranslator;
 
     [ObservableProperty]
-    private ObservableCollection<string> _lineMergeItems = new();
+    public partial ObservableCollection<string> LineMergeItems { get; set; } = new();
 
     [ObservableProperty]
-    private string? _lineMergeSelectedItem;
+    public partial string? LineMergeSelectedItem { get; set; }
 
     [ObservableProperty]
-    private string _maximumBytes = string.Empty;
+    public partial string MaximumBytes { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _delayInSeconds = string.Empty;
+    public partial string DelayInSeconds { get; set; } = string.Empty;
 
     public TranslateAdvancedSettingsPopupModel()
     {

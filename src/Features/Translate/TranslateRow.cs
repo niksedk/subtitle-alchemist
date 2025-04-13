@@ -5,20 +5,25 @@ namespace SubtitleAlchemist.Features.Translate;
 
 public partial class TranslateRow : ObservableObject
 {
-    [ObservableProperty] private int _number;
+    [ObservableProperty]
+    public partial int Number { get; set; }
 
-    [ObservableProperty] private TimeSpan _startTime;
+    [ObservableProperty]
+    public partial TimeSpan StartTime { get; set; }
 
-    [ObservableProperty] private string _originalText;
+    [ObservableProperty]
+    public partial string OriginalText { get; set; }
 
-    [ObservableProperty] private string _translatedText;
+    [ObservableProperty]
+    public partial string TranslatedText { get; set; }
 
-    [ObservableProperty] private Color  _backgroundColor;
+    [ObservableProperty]
+    public partial Color BackgroundColor { get; set; }
 
     public TranslateRow()
     {
-        _originalText = string.Empty;
-        _translatedText = string.Empty;
-        _backgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
+        OriginalText = string.Empty;
+        TranslatedText = string.Empty;
+        BackgroundColor = (Color)Application.Current!.Resources[ThemeNames.BackgroundColor];
     }
 }

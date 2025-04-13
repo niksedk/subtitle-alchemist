@@ -6,11 +6,8 @@ namespace SubtitleAlchemist.Features.Files.ExportBinary.PacExport
 {
     public partial class ExportPacPopupModel : ObservableObject
     {
-        [ObservableProperty]
-        private ObservableCollection<string> _pacCodePages;
-
-        [ObservableProperty]
-        private string? _selectedPacCodePage;
+        [ObservableProperty] public partial ObservableCollection<string> PacCodePages { get; set; }
+        [ObservableProperty] public partial string? SelectedPacCodePage { get; set; }
 
         public ExportPacPopup? Popup { get; set; }
 

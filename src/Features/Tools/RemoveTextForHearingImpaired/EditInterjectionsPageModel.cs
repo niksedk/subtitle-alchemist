@@ -7,19 +7,23 @@ namespace SubtitleAlchemist.Features.Tools.RemoveTextForHearingImpaired;
 
 public partial class EditInterjectionsPageModel : ObservableObject, IQueryAttributable
 {
-    [ObservableProperty] private string _interjections;
-    [ObservableProperty] private string _skipList;
-    [ObservableProperty] private string _language;
+    [ObservableProperty]
+    public partial string Interjections { get; set; }
 
+    [ObservableProperty]
+    public partial string SkipList { get; set; }
+
+    [ObservableProperty]
+    public partial string Language { get; set; }
     public EditInterjectionsPage? Page { get; set; }
 
     private string _twoLetterLanguageCode;
 
     public EditInterjectionsPageModel()
     {
-        _interjections = string.Empty;
-        _skipList = string.Empty;
-        _language = "en";
+        Interjections = string.Empty;
+        SkipList = string.Empty;
+        Language = "en";
         _twoLetterLanguageCode = "en";
     }
 

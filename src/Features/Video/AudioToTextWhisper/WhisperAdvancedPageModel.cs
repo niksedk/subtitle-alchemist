@@ -17,8 +17,7 @@ public partial class WhisperAdvancedPageModel : ObservableObject, IQueryAttribut
     public string DefaultWhisperEngineName { get; set; } = WhisperEngineCpp.StaticName;
 
     [ObservableProperty]
-    private string _currentParameters = Se.Settings.Tools.AudioToText.WhisperCustomCommandLineArguments;
-
+    public partial string CurrentParameters { get; set; } = Se.Settings.Tools.AudioToText.WhisperCustomCommandLineArguments;
     public VerticalStackLayout LeftMenu { get; set; } = new();
     public Editor EditorCppHelpText { get; set; } = new();
     public Editor EditorConstMeHelpText { get; set; } = new();

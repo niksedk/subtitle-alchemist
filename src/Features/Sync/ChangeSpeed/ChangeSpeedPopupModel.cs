@@ -10,37 +10,37 @@ namespace SubtitleAlchemist.Features.Sync.ChangeSpeed
         public Entry EntrySpeedInPercent { get; set; } = new();
 
         [ObservableProperty]
-        private double _speedPercent;
+        public partial double SpeedPercent { get; set; }
 
         [ObservableProperty]
-        private bool _modeCustom;
+        public partial bool ModeCustom { get; set; }
 
         [ObservableProperty]
-        private bool _modeFromDropFrame;
+        public partial bool ModeFromDropFrame { get; set; }
 
         [ObservableProperty]
-        private bool _modeToDropFrame;
+        public partial bool ModeToDropFrame { get; set; }
 
         [ObservableProperty]
-        private bool _allLines;
+        public partial bool AllLines { get; set; }
 
         [ObservableProperty]
-        private bool _selectedLinesOnly;
+        public partial bool SelectedLinesOnly { get; set; }
 
         [ObservableProperty]
-        private bool _allowOverlap;
+        public partial bool AllowOverlap { get; set; }
 
         private Subtitle _subtitle;
 
         public ChangeSpeedPopupModel()
         {
-            _speedPercent = 100;
-            _modeCustom = true;
-            _modeFromDropFrame = false;
-            _modeToDropFrame = false;
-            _allLines = true;
-            _selectedLinesOnly = false;
-            _allowOverlap = false;
+            SpeedPercent = 100;
+            ModeCustom = true;
+            ModeFromDropFrame = false;
+            ModeToDropFrame = false;
+            AllLines = true;
+            SelectedLinesOnly = false;
+            AllowOverlap = false;
 
             _subtitle = new Subtitle();
         }

@@ -20,13 +20,13 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
         public Label LabelTitle { get; set; } = new();
 
         [ObservableProperty]
-        private float _progressValue;
+        public partial float ProgressValue { get; set; }
 
         [ObservableProperty]
-        private string _progress;
+        public partial string Progress { get; set; }
 
         [ObservableProperty]
-        private string _error;
+        public partial string Error { get; set; }
 
         private Task? _downloadTask;
         private readonly Timer _timer = new();

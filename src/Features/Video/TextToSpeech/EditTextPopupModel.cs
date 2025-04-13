@@ -8,11 +8,11 @@ public partial class EditTextPopupModel : ObservableObject
     public EditTextPopup? Popup { get; set; }
 
     [ObservableProperty]
-    private string? _text;
+    public partial string? Text { get; set; }
 
     public EditTextPopupModel()
     {
-        _text = string.Empty;
+        Text = string.Empty;
     }
 
     private void Close(EditTextPopupResult? result)

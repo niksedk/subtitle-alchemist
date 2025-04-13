@@ -19,41 +19,40 @@ namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 public partial class FixCommonErrorsPageModel : ObservableObject, IQueryAttributable, IFixCallbacks
 {
     [ObservableProperty]
-    private string _searchText = string.Empty;
+    public partial string SearchText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private ObservableCollection<LanguageDisplayItem> _languages = new();
+    public partial ObservableCollection<LanguageDisplayItem> Languages { get; set; } = new();
 
     [ObservableProperty]
-    private LanguageDisplayItem? _selectedLanguage;
+    public partial LanguageDisplayItem? SelectedLanguage { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<FixRuleDisplayItem> _fixRules = new();
+    public partial ObservableCollection<FixRuleDisplayItem> FixRules { get; set; } = new();
 
     [ObservableProperty]
-    private ObservableCollection<FixDisplayItem> _fixes = new();
+    public partial ObservableCollection<FixDisplayItem> Fixes { get; set; } = new();
 
     [ObservableProperty]
-    private ObservableCollection<DisplayParagraph> _paragraphs = new();
+    public partial ObservableCollection<DisplayParagraph> Paragraphs { get; set; } = new();
 
     [ObservableProperty]
-    private DisplayParagraph? _selectedParagraph;
+    public partial DisplayParagraph? SelectedParagraph { get; set; }
 
     [ObservableProperty]
-    private string _editText = string.Empty;
+    public partial string EditText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private TimeSpan _editShow;
+    public partial TimeSpan EditShow { get; set; }
 
     [ObservableProperty]
-    private TimeSpan _editDuration;
+    public partial TimeSpan EditDuration { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _profiles = new();
+    public partial ObservableCollection<string> Profiles { get; set; } = new();
 
     [ObservableProperty]
-    private string? _selectedProfile;
-
+    public partial string? SelectedProfile { get; set; }
     public FixCommonErrorsPage? Page { get; set; }
     public Grid? Step1Grid { get; set; }
     public Grid? Step2Grid { get; set; }

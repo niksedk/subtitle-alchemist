@@ -4,18 +4,17 @@ namespace SubtitleAlchemist.Features.Video.BurnIn;
 
 public partial class BurnInJobItem : ObservableObject
 {
-    [ObservableProperty] 
-    private string _inputVideoFileName;
+    [ObservableProperty]
+    public partial string InputVideoFileName { get; set; }
 
     [ObservableProperty]
-    private string _inputVideoFileNameShort;
+    public partial string InputVideoFileNameShort { get; set; }
 
     [ObservableProperty]
-    private string _subtitleFileName;
+    public partial string SubtitleFileName { get; set; }
 
     [ObservableProperty]
-    private string _subtitleFileNameShort;
-
+    public partial string SubtitleFileNameShort { get; set; }
 
     public string OutputVideoFileName { get; set; }
     public string AssaSubtitleFileName { get; set; }
@@ -24,23 +23,22 @@ public partial class BurnInJobItem : ObservableObject
 
 
     [ObservableProperty]
-    private string _resolution;
+    public partial string Resolution { get; set; }
 
     [ObservableProperty]
-    private int _width;
+    public partial int Width { get; set; }
 
     [ObservableProperty]
-    private int _height;
-
+    public partial int Height { get; set; }
     public long TotalFrames { get; set; }
     public double TotalSeconds { get; set; }
     public string VideoBitRate { get; set; }
 
     [ObservableProperty]
-    private string _size;
+    public partial string Size { get; set; }
 
     [ObservableProperty]
-    private string _status;
+    public partial string Status { get; set; }
 
     public void AddSubtitleFileName(string subtitleFileName)
     {
@@ -70,10 +68,10 @@ public partial class BurnInJobItem : ObservableObject
 
     public BurnInJobItem(string inputVideoFileName, int width, int height)
     {
-        _inputVideoFileName = string.Empty;
-        _inputVideoFileNameShort = string.Empty;
-        _subtitleFileName = string.Empty;
-        _subtitleFileNameShort = string.Empty;
+        InputVideoFileName = string.Empty;
+        InputVideoFileNameShort = string.Empty;
+        SubtitleFileName = string.Empty;
+        SubtitleFileNameShort = string.Empty;
         AddInputVideoFileName(inputVideoFileName);
         Width = width;
         Height = height;

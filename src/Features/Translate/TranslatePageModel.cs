@@ -18,16 +18,16 @@ namespace SubtitleAlchemist.Features.Translate;
 public partial class TranslatePageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private ObservableCollection<TranslateRow> _lines;
+    public partial ObservableCollection<TranslateRow> Lines { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<DisplayParagraph> _paragraphs;
+    public partial ObservableCollection<DisplayParagraph> Paragraphs { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<IAutoTranslator> _autoTranslators;
+    public partial ObservableCollection<IAutoTranslator> AutoTranslators { get; set; }
 
     [ObservableProperty]
-    private IAutoTranslator _selectedAutoTranslator;
+    public partial IAutoTranslator SelectedAutoTranslator { get; set; }
 
     private bool _translationInProgress;
     private bool _abort;
@@ -77,23 +77,22 @@ public partial class TranslatePageModel : ObservableObject, IQueryAttributable
     private Subtitle _targetSubtitle = new();
 
     [ObservableProperty]
-    private ObservableCollection<TranslationPair> _sourceLanguages = new();
+    public partial ObservableCollection<TranslationPair> SourceLanguages { get; set; } = new();
 
     [ObservableProperty]
-    private ObservableCollection<TranslationPair> _targetLanguages = new();
+    public partial ObservableCollection<TranslationPair> TargetLanguages { get; set; } = new();
 
     [ObservableProperty]
-    private TranslationPair? _sourceLanguage;
+    public partial TranslationPair? SourceLanguage { get; set; }
 
     [ObservableProperty]
-    private TranslationPair? _targetLanguage;
+    public partial TranslationPair? TargetLanguage { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _formalities = new();
+    public partial ObservableCollection<string> Formalities { get; set; } = new();
 
     [ObservableProperty]
-    private string? _selectedFormality;
-
+    public partial string? SelectedFormality { get; set; }
     public Picker SourceLanguagePicker { get; set; } = new();
     public Picker TargetLanguagePicker { get; set; } = new();
 

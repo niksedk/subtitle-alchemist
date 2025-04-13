@@ -9,17 +9,17 @@ public partial class AudioSettingsPopupModel : ObservableObject
     public AudioSettingsPopup? Popup { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _encodings;
+    public partial ObservableCollection<string> Encodings { get; set; }
 
     [ObservableProperty]
-    private string? _selectedEncoding;
+    public partial string? SelectedEncoding { get; set; }
 
     [ObservableProperty]
-    private bool _isStereo;
+    public partial bool IsStereo { get; set; }
 
     public AudioSettingsPopupModel()
     {
-        _encodings = new ObservableCollection<string>
+        Encodings = new ObservableCollection<string>
         {
             "copy",
             "aac",
@@ -30,9 +30,8 @@ public partial class AudioSettingsPopupModel : ObservableObject
             "libmp3lame",
             "libopus",
         };
-
-        _selectedEncoding = _encodings[0];
-        _isStereo = false;
+        SelectedEncoding = Encodings[0];
+        IsStereo = false;
     }
 
     private void Close()

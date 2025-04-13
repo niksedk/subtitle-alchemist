@@ -85,28 +85,28 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
     public MenuFlyoutSubItem MenuFlyoutItemReopen { get; set; } = new();
 
     [ObservableProperty]
-    private string _selectedLineInfo;
+    public partial string SelectedLineInfo { get; set; }
 
     [ObservableProperty]
-    private string _statusText;
+    public partial string StatusText { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<DisplayParagraph> _paragraphs;
+    public partial ObservableCollection<DisplayParagraph> Paragraphs { get; set; }
 
     [ObservableProperty]
-    private string _currentText;
+    public partial string CurrentText { get; set; }
 
     [ObservableProperty]
-    private TimeSpan _currentStart;
+    public partial TimeSpan CurrentStart { get; set; }
 
     [ObservableProperty]
-    private TimeSpan _currentDuration;
+    public partial TimeSpan CurrentDuration { get; set; }
 
     [ObservableProperty]
-    private TimeSpan _currentEnd;
+    public partial TimeSpan CurrentEnd { get; set; }
 
     [ObservableProperty]
-    private DisplayParagraph? _selectedParagraph;
+    public partial DisplayParagraph? SelectedParagraph { get; set; }
 
     private bool _loading = true;
 
@@ -156,16 +156,16 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
         SubtitleListBorder = new Border();
         _timer = new System.Timers.Timer(19);
         _timerAutoBackup = new System.Timers.Timer(60_0 * 5); //TODO: use settings
-        _statusText = string.Empty;
-        _selectedLineInfo = string.Empty;
+        StatusText = string.Empty;
+        SelectedLineInfo = string.Empty;
         _videoFileName = string.Empty;
         _subtitleFileName = string.Empty;
         _subtitle = new Subtitle();
-        _paragraphs = new ObservableCollection<DisplayParagraph>();
-        _currentText = string.Empty;
-        _currentStart = new TimeSpan();
-        _currentEnd = new TimeSpan();
-        _currentDuration = new TimeSpan();
+        Paragraphs = new ObservableCollection<DisplayParagraph>();
+        CurrentText = string.Empty;
+        CurrentStart = new TimeSpan();
+        CurrentEnd = new TimeSpan();
+        CurrentDuration = new TimeSpan();
         _audioVisualizer = new AudioVisualizer { Margin = 10 };
         ListViewAndEditBox = new Grid();
 

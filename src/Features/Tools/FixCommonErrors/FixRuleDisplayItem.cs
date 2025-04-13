@@ -11,17 +11,16 @@ namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 public partial class FixRuleDisplayItem : ObservableObject
 {
     [ObservableProperty]
-    private string _name;
+    public partial string Name { get; set; }
 
     [ObservableProperty]
-    private string _example;
+    public partial string Example { get; set; }
 
-    [ObservableProperty] 
-    private bool _isSelected;
+    [ObservableProperty]
+    public partial bool IsSelected { get; set; }
 
-    [ObservableProperty] 
-    private int _sortOrder;
-
+    [ObservableProperty]
+    public partial int SortOrder { get; set; }
     public string FixCommonErrorFunctionName { get; set; }
 
     public FixRuleDisplayItem()

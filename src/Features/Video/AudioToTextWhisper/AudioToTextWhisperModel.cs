@@ -26,28 +26,27 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper;
 public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private float _progressValue;
+    public partial float ProgressValue { get; set; }
 
     [ObservableProperty]
-    private string _elapsedText = string.Empty;
+    public partial string ElapsedText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _estimatedText = string.Empty;
+    public partial string EstimatedText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private IWhisperEngine? _selectedWhisperEngine;
+    public partial IWhisperEngine? SelectedWhisperEngine { get; set; }
 
     public readonly List<IWhisperEngine> WhisperEngines = new();
 
     [ObservableProperty]
-    private string _reDownloadWhisper = string.Empty;
+    public partial string ReDownloadWhisper { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private ObservableCollection<WhisperLanguage> _languages = new();
+    public partial ObservableCollection<WhisperLanguage> Languages { get; set; } = new();
 
     [ObservableProperty]
-    private ObservableCollection<WhisperModelDisplay> _models = new();
-
+    public partial ObservableCollection<WhisperModelDisplay> Models { get; set; } = new();
 
     public Label TitleLabel { get; set; } = new();
     public Picker PickerEngine { get; set; } = new();

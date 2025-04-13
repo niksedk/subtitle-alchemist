@@ -27,144 +27,142 @@ namespace SubtitleAlchemist.Features.Video.TransparentSubtitles;
 public partial class TransparentSubPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private string _videoFileName;
+    public partial string VideoFileName { get; set; }
 
     [ObservableProperty]
-    private string _videoFileSize;
+    public partial string VideoFileSize { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _fontNames;
+    public partial ObservableCollection<string> FontNames { get; set; }
 
     [ObservableProperty]
-    private string _selectedFontName;
+    public partial string SelectedFontName { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<double> _fontFactors;
+    public partial ObservableCollection<double> FontFactors { get; set; }
 
     [ObservableProperty]
-    private double _selectedFontFactor;
+    public partial double SelectedFontFactor { get; set; }
 
     [ObservableProperty]
-    private string _fontSizeText;
+    public partial string FontSizeText { get; set; }
 
     [ObservableProperty]
-    private bool _fontIsBold;
+    public partial bool FontIsBold { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<decimal> _fontOutlines;
+    public partial ObservableCollection<decimal> FontOutlines { get; set; }
 
     [ObservableProperty]
-    private decimal _selectedFontOutline;
+    public partial decimal SelectedFontOutline { get; set; }
 
     [ObservableProperty]
-    private string _fontOutlineText;
+    public partial string FontOutlineText { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<decimal> _fontShadowWidths;
+    public partial ObservableCollection<decimal> FontShadowWidths { get; set; }
 
     [ObservableProperty]
-    private decimal _selectedFontShadowWidth;
+    public partial decimal SelectedFontShadowWidth { get; set; }
 
     [ObservableProperty]
-    private string _fontShadowText;
+    public partial string FontShadowText { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<FontBoxItem> _fontBoxTypes;
+    public partial ObservableCollection<FontBoxItem> FontBoxTypes { get; set; }
 
     [ObservableProperty]
-    private FontBoxItem _selectedFontBoxType;
+    public partial FontBoxItem SelectedFontBoxType { get; set; }
 
     [ObservableProperty]
-    private Color _fontTextColor;
+    public partial Color FontTextColor { get; set; }
 
     [ObservableProperty]
-    private Color _fontBoxColor;
+    public partial Color FontBoxColor { get; set; }
 
     [ObservableProperty]
-    private Color _fontOutlineColor;
+    public partial Color FontOutlineColor { get; set; }
 
     [ObservableProperty]
-    private Color _fontShadowColor;
+    public partial Color FontShadowColor { get; set; }
 
     [ObservableProperty]
-    private int _fontMarginHorizontal;
+    public partial int FontMarginHorizontal { get; set; }
 
     [ObservableProperty]
-    private int _fontMarginVertical;
+    public partial int FontMarginVertical { get; set; }
 
     [ObservableProperty]
-    private bool _fontFixRtl;
+    public partial bool FontFixRtl { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<AlignmentItem> _fontAlignments;
+    public partial ObservableCollection<AlignmentItem> FontAlignments { get; set; }
 
     [ObservableProperty]
-    private AlignmentItem _selectedFontAlignment;
+    public partial AlignmentItem SelectedFontAlignment { get; set; }
 
     [ObservableProperty]
-    private string _fontAssaInfo;
+    public partial string FontAssaInfo { get; set; }
 
     [ObservableProperty]
-    private int _videoWidth;
+    public partial int VideoWidth { get; set; }
 
     [ObservableProperty]
-    private int _videoHeight;
+    public partial int VideoHeight { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<double> _frameRates;
+    public partial ObservableCollection<double> FrameRates { get; set; }
 
     [ObservableProperty]
-    private double _selectedFrameRate;
+    public partial double SelectedFrameRate { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _videoExtension;
+    public partial ObservableCollection<string> VideoExtension { get; set; }
 
     [ObservableProperty]
-    private int _selectedVideoExtension;
+    public partial int SelectedVideoExtension { get; set; }
 
     [ObservableProperty]
-    private string _outputSourceFolder;
+    public partial string OutputSourceFolder { get; set; }
 
     [ObservableProperty]
-    private bool _useOutputFolderVisible;
+    public partial bool UseOutputFolderVisible { get; set; }
 
     [ObservableProperty]
-    private bool _useSourceFolderVisible;
+    public partial bool UseSourceFolderVisible { get; set; }
 
     [ObservableProperty]
-    private bool _isCutActive;
+    public partial bool IsCutActive { get; set; }
 
     [ObservableProperty]
-    private TimeSpan _cutFrom;
+    public partial TimeSpan CutFrom { get; set; }
 
     [ObservableProperty]
-    private TimeSpan _cutTo;
-
-
-    [ObservableProperty]
-    private bool _useTargetFileSize;
+    public partial TimeSpan CutTo { get; set; }
 
     [ObservableProperty]
-    private int _targetFileSize;
+    public partial bool UseTargetFileSize { get; set; }
 
     [ObservableProperty]
-    private string _buttonModeText;
+    public partial int TargetFileSize { get; set; }
 
     [ObservableProperty]
-    private string _progressText;
+    public partial string ButtonModeText { get; set; }
 
     [ObservableProperty]
-    private double _progressValue;
+    public partial string ProgressText { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<BurnInJobItem> _jobItems;
+    public partial double ProgressValue { get; set; }
 
     [ObservableProperty]
-    private BurnInJobItem? _selectedJobItem;
+    public partial ObservableCollection<BurnInJobItem> JobItems { get; set; }
 
     [ObservableProperty]
-    private bool _isSubtitleLoaded;
+    public partial BurnInJobItem? SelectedJobItem { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsSubtitleLoaded { get; set; }
     public TransparentSubPage? Page { get; set; }
     public MediaElement VideoPlayer { get; set; }
     public Label LabelHelp { get; set; }
@@ -207,13 +205,12 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
     {
         _popupService = popupService;
         _fileHelper = fileHelper;
-
-        _fontBoxColor = Colors.Wheat;
-        _fontOutlineColor = Colors.Black;
-        _fontShadowColor = Colors.Black;
-        _videoExtension = new();
-        _outputSourceFolder = string.Empty;
-        _progressText = string.Empty;
+        FontBoxColor = Colors.Wheat;
+        FontOutlineColor = Colors.Black;
+        FontShadowColor = Colors.Black;
+        VideoExtension = new();
+        OutputSourceFolder = string.Empty;
+        ProgressText = string.Empty;
         VideoPlayer = new();
         LabelHelp = new();
         ButtonGenerate = new();
@@ -225,8 +222,8 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         ImagePreview = new();
         BatchView = new();
         LabelOutputFolder = new();
-        _videoFileName = string.Empty;
-        _videoFileSize = string.Empty;
+        VideoFileName = string.Empty;
+        VideoFileSize = string.Empty;
         EntryWidth = new();
         EntryHeight = new();
         LabelX = new();
@@ -234,8 +231,7 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
         LabelVideoFileSize = new();
         FontAssaView = new();
         FontPropertiesView = new();
-
-        _frameRates = new ObservableCollection<double>()
+        FrameRates = new ObservableCollection<double>()
         {
             23.976,
             24,
@@ -247,51 +243,38 @@ public partial class TransparentSubPageModel : ObservableObject, IQueryAttributa
             60,
             120,
         };
-        _selectedFrameRate = 24;
-
-        _fontNames = new ObservableCollection<string>(FontHelper.GetSystemFonts());
-        _selectedFontName = _fontNames.First();
-
-        // font factors between 0-1
-        _fontFactors = new ObservableCollection<double>(
+        SelectedFrameRate = 24;
+        FontNames = new ObservableCollection<string>(FontHelper.GetSystemFonts());
+        SelectedFontName = FontNames.First();
+        FontFactors = new ObservableCollection<double>(
             Enumerable.Range(200, 1000)
             .Select(i => Math.Round(i * 0.0005, 3))
             .ToList().Distinct());
-        _selectedFontFactor = 0.4;
-        _fontSizeText = string.Empty;
-
-        _fontTextColor = Colors.WhiteSmoke;
-
-        _fontOutlineText = "Outline";
-        _fontOutlines = new ObservableCollection<decimal>(Enumerable.Range(0, 50).Select(p => (decimal)p));
-        _selectedFontOutline = 2.0m;
-
-        _fontShadowText = "Shadow";
-        _fontShadowWidths = new ObservableCollection<decimal>(Enumerable.Range(0, 50).Select(p => (decimal)p));
-        _selectedFontShadowWidth = 2.0m;
-
-        _fontBoxTypes = new ObservableCollection<FontBoxItem>
+        SelectedFontFactor = 0.4;
+        FontSizeText = string.Empty;
+        FontTextColor = Colors.WhiteSmoke;
+        FontOutlineText = "Outline";
+        FontOutlines = new ObservableCollection<decimal>(Enumerable.Range(0, 50).Select(p => (decimal)p));
+        SelectedFontOutline = 2.0m;
+        FontShadowText = "Shadow";
+        FontShadowWidths = new ObservableCollection<decimal>(Enumerable.Range(0, 50).Select(p => (decimal)p));
+        SelectedFontShadowWidth = 2.0m;
+        FontBoxTypes = new ObservableCollection<FontBoxItem>
         {
             new(FontBoxType.None, "None"),
             new(FontBoxType.OneBox, "One box"),
             new(FontBoxType.BoxPerLine, "Box per line"),
         };
-        _selectedFontBoxType = _fontBoxTypes[0];
-
-        _fontMarginHorizontal = 10;
-        _fontMarginVertical = 10;
-
-        _fontAlignments = new ObservableCollection<AlignmentItem>(AlignmentItem.Alignments);
-        _selectedFontAlignment = AlignmentItem.Alignments[7];
-
-        _fontAssaInfo = string.Empty;
-
-        _videoWidth = 1920;
-        _videoHeight = 1080;
-
-        _jobItems = new ObservableCollection<BurnInJobItem>();
-
-        _buttonModeText = "Batch mode";
+        SelectedFontBoxType = FontBoxTypes[0];
+        FontMarginHorizontal = 10;
+        FontMarginVertical = 10;
+        FontAlignments = new ObservableCollection<AlignmentItem>(AlignmentItem.Alignments);
+        SelectedFontAlignment = AlignmentItem.Alignments[7];
+        FontAssaInfo = string.Empty;
+        VideoWidth = 1920;
+        VideoHeight = 1080;
+        JobItems = new ObservableCollection<BurnInJobItem>();
+        ButtonModeText = "Batch mode";
 
         _log = new StringBuilder();
 

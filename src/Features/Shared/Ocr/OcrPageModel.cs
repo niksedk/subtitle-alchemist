@@ -19,128 +19,127 @@ namespace SubtitleAlchemist.Features.Shared.Ocr;
 public partial class OcrPageModel : ObservableObject, IQueryAttributable
 {
     [ObservableProperty]
-    private ObservableCollection<OcrEngineItem> _ocrEngines;
+    public partial ObservableCollection<OcrEngineItem> OcrEngines { get; set; }
 
     [ObservableProperty]
-    private OcrEngineItem? _selectedOcrEngine;
+    public partial OcrEngineItem? SelectedOcrEngine { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<OcrSubtitleItem> _ocrSubtitleItems;
+    public partial ObservableCollection<OcrSubtitleItem> OcrSubtitleItems { get; set; }
 
     [ObservableProperty]
-    private OcrSubtitleItem? _selectedOcrSubtitleItem;
+    public partial OcrSubtitleItem? SelectedOcrSubtitleItem { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<int> _startFromNumbers;
+    public partial ObservableCollection<int> StartFromNumbers { get; set; }
 
     [ObservableProperty]
-    private int _selectedStartFromNumber;
+    public partial int SelectedStartFromNumber { get; set; }
 
     [ObservableProperty]
-    private ImageSource? _currentImageSource;
+    public partial ImageSource? CurrentImageSource { get; set; }
 
     [ObservableProperty]
-    private string _currentBitmapInfo;
+    public partial string CurrentBitmapInfo { get; set; }
 
     [ObservableProperty]
-    private string _currentText;
+    public partial string CurrentText { get; set; }
 
     [ObservableProperty]
-    private bool _isRunActive;
+    public partial bool IsRunActive { get; set; }
 
     [ObservableProperty]
-    private bool _isPauseActive;
+    public partial bool IsPauseActive { get; set; }
 
     [ObservableProperty]
-    private bool _isOkAndCancelActive;
+    public partial bool IsOkAndCancelActive { get; set; }
 
     [ObservableProperty]
-    private bool _isInspectVisible;
+    public partial bool IsInspectVisible { get; set; }
 
     [ObservableProperty]
-    private bool _isInspectActive;
+    public partial bool IsInspectActive { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _nOcrDatabases;
+    public partial ObservableCollection<string> NOcrDatabases { get; set; }
 
     [ObservableProperty]
-    private string? _selectedNOcrDatabase;
+    public partial string? SelectedNOcrDatabase { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<int> _nOcrMaxWrongPixelsList;
+    public partial ObservableCollection<int> NOcrMaxWrongPixelsList { get; set; }
 
     [ObservableProperty]
-    private int _selectedNOcrMaxWrongPixels;
+    public partial int SelectedNOcrMaxWrongPixels { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<int> _nOcrPixelsAreSpaceList;
+    public partial ObservableCollection<int> NOcrPixelsAreSpaceList { get; set; }
 
     [ObservableProperty]
-    private int _selectedNOcrPixelsAreSpace;
+    public partial int SelectedNOcrPixelsAreSpace { get; set; }
 
     [ObservableProperty]
-    private string _progressText;
+    public partial string ProgressText { get; set; }
 
     [ObservableProperty]
-    private double _progressValue;
+    public partial double ProgressValue { get; set; }
 
     [ObservableProperty]
-    private bool _isProgressVisible;
+    public partial bool IsProgressVisible { get; set; }
 
     [ObservableProperty]
-    private bool _nOcrDrawUnknownText;
+    public partial bool NOcrDrawUnknownText { get; set; }
 
     [ObservableProperty]
-    private string _ollamaModel;
+    public partial string OllamaModel { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<string> _ollamaLanguages;
+    public partial ObservableCollection<string> OllamaLanguages { get; set; }
 
     [ObservableProperty]
-    private string _ollamaLanguage;
+    public partial string OllamaLanguage { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<OcrLanguage> _googleVisionLanguages;
+    public partial ObservableCollection<OcrLanguage> GoogleVisionLanguages { get; set; }
 
     [ObservableProperty]
-    private OcrLanguage? _selectedGoogleVisionLanguage;
+    public partial OcrLanguage? SelectedGoogleVisionLanguage { get; set; }
 
     [ObservableProperty]
-    private string _googleVisionApiKey;
+    public partial string GoogleVisionApiKey { get; set; }
 
     [ObservableProperty]
-    private string _googleVisionLanguage;
+    public partial string GoogleVisionLanguage { get; set; }
 
     [ObservableProperty]
-    private bool _isNOcrVisible;
+    public partial bool IsNOcrVisible { get; set; }
 
     [ObservableProperty]
-    private bool _isPaddleOcrOcrVisible;
+    public partial bool IsPaddleOcrOcrVisible { get; set; }
 
     [ObservableProperty]
-    private bool _isOllamaOcrVisible;
+    public partial bool IsOllamaOcrVisible { get; set; }
 
     [ObservableProperty]
-    private bool _isTesseractVisible;
+    public partial bool IsTesseractVisible { get; set; }
 
     [ObservableProperty]
-    private bool _isGoogleVisionVisible;
+    public partial bool IsGoogleVisionVisible { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<TesseractDictionary> _tesseractDictionaryItems;
+    public partial ObservableCollection<TesseractDictionary> TesseractDictionaryItems { get; set; }
 
     [ObservableProperty]
-    private TesseractDictionary? _selectedTesseractDictionaryItem;
+    public partial TesseractDictionary? SelectedTesseractDictionaryItem { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<OcrLanguage2> _paddleLanguageItems;
+    public partial ObservableCollection<OcrLanguage2> PaddleLanguageItems { get; set; }
 
     [ObservableProperty]
-    private OcrLanguage2? _selectedPaddleLanguageItem;
+    public partial OcrLanguage2? SelectedPaddleLanguageItem { get; set; }
 
     [ObservableProperty]
-    private bool _paddleUseGpu;
-
+    public partial bool PaddleUseGpu { get; set; }
     public OcrPage? Page { get; set; }
     public CollectionView ListView { get; set; }
 
@@ -157,44 +156,44 @@ public partial class OcrPageModel : ObservableObject, IQueryAttributable
 
     public OcrPageModel(INOcrCaseFixer nOcrCaseFixer, IPopupService popupService)
     {
-        _ollamaModel = string.Empty;
+        OllamaModel = string.Empty;
         _nOcrCaseFixer = nOcrCaseFixer;
         _popupService = popupService;
-        _ocrEngines = new ObservableCollection<OcrEngineItem>(OcrEngineItem.GetOcrEngines());
-        _selectedOcrEngine = _ocrEngines.FirstOrDefault();
+        OcrEngines = new ObservableCollection<OcrEngineItem>(OcrEngineItem.GetOcrEngines());
+        SelectedOcrEngine = OcrEngines.FirstOrDefault();
         _ocrSubtitle = new BluRayPcsDataList(new List<BluRaySupParser.PcsData>());
-        _ocrSubtitleItems = new ObservableCollection<OcrSubtitleItem>();
-        _currentBitmapInfo = string.Empty;
-        _currentText = string.Empty;
-        _startFromNumbers = new ObservableCollection<int>(Enumerable.Range(1, 2));
-        _nOcrMaxWrongPixelsList = new ObservableCollection<int>(Enumerable.Range(1, 500));
-        _nOcrPixelsAreSpaceList = new ObservableCollection<int>(Enumerable.Range(1, 50));
-        _selectedStartFromNumber = 1;
-        _nOcrDatabases = new ObservableCollection<string>();
+        OcrSubtitleItems = new ObservableCollection<OcrSubtitleItem>();
+        CurrentBitmapInfo = string.Empty;
+        CurrentText = string.Empty;
+        StartFromNumbers = new ObservableCollection<int>(Enumerable.Range(1, 2));
+        NOcrMaxWrongPixelsList = new ObservableCollection<int>(Enumerable.Range(1, 500));
+        NOcrPixelsAreSpaceList = new ObservableCollection<int>(Enumerable.Range(1, 50));
+        SelectedStartFromNumber = 1;
+        NOcrDatabases = new ObservableCollection<string>();
         ListView = new CollectionView();
-        _progressText = string.Empty;
-        _progressValue = 0d;
-        _isProgressVisible = false;
+        ProgressText = string.Empty;
+        ProgressValue = 0d;
+        IsProgressVisible = false;
         _cancellationTokenSource = new CancellationTokenSource();
         _isRunningOcr = false;
         _nOcrDb = null;
         _fileName = string.Empty;
-        _nOcrDrawUnknownText = true;
-        _isOkAndCancelActive = true;
-        _selectedNOcrMaxWrongPixels = 25;
-        _selectedNOcrPixelsAreSpace = 12;
-        _tesseractDictionaryItems = new ObservableCollection<TesseractDictionary>();
-        _ollamaLanguages = new ObservableCollection<string>(Iso639Dash2LanguageCode.List
+        NOcrDrawUnknownText = true;
+        IsOkAndCancelActive = true;
+        SelectedNOcrMaxWrongPixels = 25;
+        SelectedNOcrPixelsAreSpace = 12;
+        TesseractDictionaryItems = new ObservableCollection<TesseractDictionary>();
+        OllamaLanguages = new ObservableCollection<string>(Iso639Dash2LanguageCode.List
             .Select(p => p.EnglishName)
             .OrderBy(p => p));
-        _ollamaLanguage = "English";
-        _googleVisionLanguages = new ObservableCollection<OcrLanguage>();
-        _googleVisionApiKey = string.Empty;
-        _googleVisionLanguage = string.Empty;
+        OllamaLanguage = "English";
+        GoogleVisionLanguages = new ObservableCollection<OcrLanguage>();
+        GoogleVisionApiKey = string.Empty;
+        GoogleVisionLanguage = string.Empty;
         _runOnceChars = new List<SkipOnceChar>();
         _skipOnceChars = new List<SkipOnceChar>();
-        _paddleLanguageItems = new ObservableCollection<OcrLanguage2>(PaddleOcr.GetLanguages());
-        _selectedPaddleLanguageItem = _paddleLanguageItems.FirstOrDefault(p => p.Code == "en");
+        PaddleLanguageItems = new ObservableCollection<OcrLanguage2>(PaddleOcr.GetLanguages());
+        SelectedPaddleLanguageItem = PaddleLanguageItems.FirstOrDefault(p => p.Code == "en");
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)

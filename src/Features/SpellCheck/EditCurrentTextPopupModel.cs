@@ -8,15 +8,15 @@ public partial class EditCurrentTextPopupModel : ObservableObject
     public EditCurrentTextPopup? Popup { get; set; }
 
     [ObservableProperty]
-    private string _title;
+    public partial string Title { get; set; }
 
     [ObservableProperty]
-    private string _text;
+    public partial string Text { get; set; }
 
     public EditCurrentTextPopupModel()
     {
-        _title = string.Empty;
-        _text = string.Empty;
+        Title = string.Empty;
+        Text = string.Empty;
     }
 
     [RelayCommand]

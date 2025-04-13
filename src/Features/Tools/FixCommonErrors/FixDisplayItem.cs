@@ -6,29 +6,28 @@ namespace SubtitleAlchemist.Features.Tools.FixCommonErrors;
 public partial class FixDisplayItem : ObservableObject
 {
     [ObservableProperty]
-    private string _action;
+    public partial string Action { get; set; }
 
     [ObservableProperty]
-    private string _before;
+    public partial string Before { get; set; }
 
     [ObservableProperty]
-    private string _after;
-
-    [ObservableProperty] 
-    private bool _isSelected;
+    public partial string After { get; set; }
 
     [ObservableProperty]
-    private int _number;
+    public partial bool IsSelected { get; set; }
 
+    [ObservableProperty]
+    public partial int Number { get; set; }
     public Paragraph Paragraph { get; set; }
 
     public FixDisplayItem(Paragraph p, int number, string action, string before, string after, bool isChecked)
     {
         Paragraph = p;
-        _number = number;
-        _action = action;
-        _before = before;
-        _after = after;
-        _isSelected = isChecked;
+        Number = number;
+        Action = action;
+        Before = before;
+        After = after;
+        IsSelected = isChecked;
     }
 }
