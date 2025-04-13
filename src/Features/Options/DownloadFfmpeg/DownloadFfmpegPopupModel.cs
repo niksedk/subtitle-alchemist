@@ -16,14 +16,9 @@ namespace SubtitleAlchemist.Features.Options.DownloadFfmpeg
 
         private readonly IFfmpegDownloadService _ffmpegDownloadService;
 
-        [ObservableProperty]
-        private float _progressValue;
-
-        [ObservableProperty]
-        private string _progress;
-
-        [ObservableProperty]
-        private string _error;
+        [ObservableProperty] public partial float ProgressValue { get; set; }
+        [ObservableProperty] public partial string Progress { get; set; }
+        [ObservableProperty] public partial string Error { get; set; }
 
         private Task? _downloadTask;
         private readonly Timer _timer = new();
