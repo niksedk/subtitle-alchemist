@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Nikse.SubtitleEdit.Core.Common;
+using SubtitleAlchemist.Features.Options.DownloadFfmpeg;
 using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Logic.Media;
@@ -38,6 +39,8 @@ public static class WaveFileExtractor
             }
         }
 
+        var ffmpegFileName = DownloadFfmpegPopupModel.GetFfmpegFileName();
+
         if (settings.General.UseFFmpegForWaveExtraction && File.Exists(settings.General.FFmpegLocation) || !Configuration.IsRunningOnWindows)
         {
             encoderName = "FFmpeg";
@@ -63,8 +66,8 @@ public static class WaveFileExtractor
             //-ac 2 means 2 channels
             // "-map 0:a:0" is the first audio stream, "-map 0:a:1" is the second audio stream
 
-            exeFilePath = Se.Settings.General.FfmpegPath;
-            if (!Configuration.IsRunningOnWindows)
+            exeFilePath = ffmpegFileName;
+            if (!File.Exists(exeFilePath))
             {
                 if (Configuration.IsRunningOnLinux)
                 {
