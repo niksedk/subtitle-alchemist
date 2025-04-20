@@ -804,7 +804,10 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
 
             try
             {
-                AudioVisualizer.InvalidateSurface();
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    AudioVisualizer.InvalidateSurface();
+                });
             }
             catch
             {
