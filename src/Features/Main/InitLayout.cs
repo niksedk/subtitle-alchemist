@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Logic;
+using System.Runtime.InteropServices;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -117,12 +118,21 @@ internal static class InitLayout
         mainPage.Content = grid;
     }
 
+    private static int GetToolbarHeight()
+    {
+#if MACCATALYST
+        return 0;
+#endif
+
+        return 50;
+    }
+
     private static void MakeLayout1(MainPage mainPage, MainPageModel pageModel)
     {
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (Row.Toolbar, 50),
+                (Row.Toolbar, GetToolbarHeight()),
                 (Row.ListViewAndVideo, Stars(2)),
                 (Row.WaveForm, Stars(1)),
                 (Row.StatusBar, 30)
@@ -162,7 +172,7 @@ internal static class InitLayout
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (Row.Toolbar, 50),
+                (Row.Toolbar, GetToolbarHeight()),
                 (Row.ListViewAndVideo, Stars(2)),
                 (Row.WaveForm, Stars(1)),
                 (Row.StatusBar, 30)
@@ -201,7 +211,7 @@ internal static class InitLayout
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (Row.Toolbar, 50),
+                (Row.Toolbar, GetToolbarHeight()),
                 (Row.ListViewAndVideo, Stars(2)),
                 (Row.WaveForm, Stars(1)),
                 (Row.StatusBar, 30)
@@ -242,7 +252,7 @@ internal static class InitLayout
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (RowLayout4.Toolbar, 50),
+                (RowLayout4.Toolbar, GetToolbarHeight()),
                 (RowLayout4.Video, Stars(3)),
                 (RowLayout4.ListView, Stars(3)),
                 (RowLayout4.WaveForm, Stars(1)),
@@ -279,7 +289,7 @@ internal static class InitLayout
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (RowLayout5.Toolbar, 50),
+                (RowLayout5.Toolbar, GetToolbarHeight()),
                 (RowLayout5.ListView, Stars(3)),
                 (RowLayout5.WaveForm, Stars(1)),
                 (RowLayout5.StatusBar, 30)
@@ -313,7 +323,7 @@ internal static class InitLayout
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (RowLayout6.Toolbar, 50),
+                (RowLayout6.Toolbar, GetToolbarHeight()),
                 (RowLayout6.ListViewAndVideo, Star),
                 (RowLayout6.StatusBar, 30)
             ),
@@ -349,7 +359,7 @@ internal static class InitLayout
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (RowLayout7.Toolbar, 50),
+                (RowLayout7.Toolbar, GetToolbarHeight()),
                 (RowLayout7.ListView, Stars(3)),
                 (RowLayout7.Video, Stars(1)),
                 (RowLayout7.StatusBar, 30)
@@ -383,7 +393,7 @@ internal static class InitLayout
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (RowLayout8.Toolbar, 50),
+                (RowLayout8.Toolbar, GetToolbarHeight()),
                 (RowLayout8.Video, Stars(1)),
                 (RowLayout8.ListView, Stars(3)),
                 (RowLayout8.StatusBar, 30)
@@ -417,7 +427,7 @@ internal static class InitLayout
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (RowLayout9.Toolbar, 50),
+                (RowLayout9.Toolbar, GetToolbarHeight()),
                 (RowLayout9.VideoAndWaveformAndText, Stars(2)),
                 (RowLayout9.ListView, Stars(3)),
                 (RowLayout9.StatusBar, 30)
@@ -455,7 +465,7 @@ internal static class InitLayout
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (RowLayout10.Toolbar, 50),
+                (RowLayout10.Toolbar, GetToolbarHeight()),
                 (RowLayout10.Video, Stars(3)),
                 (RowLayout10.WaveForm, Stars(1)),
                 (RowLayout10.ListView, Stars(3)),
@@ -491,7 +501,7 @@ internal static class InitLayout
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (RowLayout11.Toolbar, 50),
+                (RowLayout11.Toolbar, GetToolbarHeight()),
                 (RowLayout11.ListView, Star),
                 (RowLayout11.StatusBar, 30)
             ),
