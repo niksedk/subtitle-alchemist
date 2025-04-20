@@ -1580,6 +1580,24 @@ public class AudioVisualizer : SKCanvasView
         _canvas = e.Surface.Canvas;
         _canvas.Clear(SKColors.Black); // clears the canvas for every frame
         _info = e.Info;
+        
+        
+        // Calculate scale factors
+        var scaleX = e.Info.Width / Width;
+        var scaleY = e.Info.Height / Height;
+        var scale = (float)Math.Min(scaleX, scaleY);
+
+        // Calculate translation to center the content
+        var translateX = (float)(e.Info.Width - (Width * scaleX)) / 2.0f;
+        var translateY = (float)(e.Info.Height - (Height * scaleY)) / 2.0f;
+
+        // Apply scaling and translation
+        _canvas.Save();
+        _canvas.Translate(translateX, translateY);
+        _canvas.Scale(scale);
+
+        _info = new SKImageInfo((int)Width, (int)Height);
+
 
         DrawGridLines();
         if (WavePeaks == null)
