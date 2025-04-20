@@ -35,7 +35,7 @@ public sealed class ReplacePopup : Popup
             ColumnSpacing = 0,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
-            WidthRequest = 450,
+            WidthRequest = 500,
         }.BindDynamicTheme();
 
         var labelGoToLineNumber = new Label
@@ -53,8 +53,9 @@ public sealed class ReplacePopup : Popup
         {
             Placeholder = "Search text",
             HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
             WidthRequest = 250,
+            MaximumWidthRequest = 250,
         };
         vm.SearchBar.SetBinding(Entry.TextProperty, nameof(vm.SearchText));
         vm.SearchBar.SearchButtonPressed += vm.SearchButtonPressed;
