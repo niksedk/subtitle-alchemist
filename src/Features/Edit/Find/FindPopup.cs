@@ -9,6 +9,8 @@ public sealed class FindPopup : Popup
     public FindPopup(FindPopupModel vm)
     {
         BindingContext = vm;
+        vm.Popup = this;
+        this.BindDynamicTheme();
 
         CanBeDismissedByTappingOutsideOfPopup = true;
 
@@ -28,7 +30,6 @@ public sealed class FindPopup : Popup
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto },
             },
-            Margin = new Thickness(2),
             Padding = new Thickness(30, 20, 30, 10),
             RowSpacing = 0,
             ColumnSpacing = 0,
@@ -185,9 +186,5 @@ public sealed class FindPopup : Popup
         }.BindDynamicTheme();
 
         Content = windowBorder;
-
-        this.BindDynamicTheme();
-  
-        vm.Popup = this;
     }
 }

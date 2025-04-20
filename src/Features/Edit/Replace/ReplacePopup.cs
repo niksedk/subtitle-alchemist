@@ -30,7 +30,6 @@ public sealed class ReplacePopup : Popup
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto },
             },
-            Margin = new Thickness(2),
             Padding = new Thickness(30, 20, 30, 10),
             RowSpacing = 0,
             ColumnSpacing = 0,

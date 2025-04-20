@@ -25,7 +25,6 @@ public sealed class GoToLineNumberPopup : Popup
             {
                 new ColumnDefinition { Width = GridLength.Auto },
             },
-            Margin = new Thickness(2),
             Padding = new Thickness(30, 20, 30, 10),
             RowSpacing = 20,
             ColumnSpacing = 10,
