@@ -5,7 +5,8 @@
     <dict>
         <!-- App Sandbox must be enabled to distribute a MacCatalyst app through the Mac App Store. -->
         <key>com.apple.security.app-sandbox</key>
-        <true/>
+        <false/>
+        
         <!-- When App Sandbox is enabled, this value is required to open outgoing network connections. -->
         <key>com.apple.security.network.client</key>
         <true/>
@@ -42,5 +43,12 @@
 
 		<key>com.apple.security.cs.disable-library-validation</key>
 		<true/>
+
+        <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+        <true/>
+        
+        <!-- Allow spawning child processes with expanded sandbox -->
+        <key>com.apple.security.automation.apple-events</key>
+        <true/>
 	</dict>
 </plist>
