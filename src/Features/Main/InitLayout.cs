@@ -119,10 +119,6 @@ internal static class InitLayout
 
     private static int GetToolbarHeight()
     {
-#if MACCATALYST
-        return 0;
-#endif
-
         return 50;
     }
 
