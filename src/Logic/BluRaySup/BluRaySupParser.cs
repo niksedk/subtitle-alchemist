@@ -19,9 +19,8 @@
 
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.ContainerFormats.Matroska;
-using System.Text;
 using SkiaSharp;
-using System.Runtime.InteropServices;
+using System.Text;
 
 public class BluRayPoint
 {

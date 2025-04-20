@@ -32,7 +32,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
         MiddleRight,
         BottomLeft,
         BottomCenter,
-        BottomRight, 
+        BottomRight,
     }
 
     public class BluRaySupPicture
@@ -381,7 +381,7 @@ namespace SubtitleAlchemist.Logic.BluRaySup
         public static byte[] CreateSupFrame(BluRaySupPicture pic, SKBitmap bmp, double fps, int bottomMargin, int leftOrRightMargin, BluRayContentAlignment alignment, BluRayPoint? overridePosition = null)
         {
             var bm = bmp.Copy();
-           // bm.SetTransparentTo(Color.FromArgb(0, 0, 0, 0));
+            // bm.SetTransparentTo(Color.FromArgb(0, 0, 0, 0));
             var colorPalette = GetBitmapPalette(bm);
             var pal = new BluRaySupPalette(colorPalette.Count);
             for (var i = 0; i < colorPalette.Count; i++)

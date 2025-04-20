@@ -16,8 +16,6 @@
  * NOTE: Converted to C# and modified by Nikse.dk@gmail.com
  */
 
-using System;
-
 namespace SubtitleAlchemist.Logic.BluRaySup
 {
     /// <summary>
