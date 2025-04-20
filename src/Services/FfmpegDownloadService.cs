@@ -7,7 +7,8 @@ public class FfmpegDownloadService : IFfmpegDownloadService
     private readonly HttpClient _httpClient;
     private const string WindowsUrl = "https://github.com/SubtitleEdit/support-files/releases/download/ffmpeg-2025-03-31/ffmpeg-2025-03-31.zip";
     private const string MacUrl = "https://github.com/SubtitleEdit/support-files/releases/download/ffmpeg-v7-1/ffmpeg-mac-7.1.1.zip";
-
+    private const string MacUrlArm = "https://github.com/SubtitleEdit/support-files/releases/download/ffmpeg-v7-1/ffmpeg711arm.zip";
+    
     public FfmpegDownloadService(HttpClient httpClient)
     {
         _httpClient = httpClient;
@@ -21,6 +22,11 @@ public class FfmpegDownloadService : IFfmpegDownloadService
         }
 
 #if MACCATALYST
+        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+        {
+            return MacUrlArm;
+        }
+
         return MacUrl;
 #endif
 
