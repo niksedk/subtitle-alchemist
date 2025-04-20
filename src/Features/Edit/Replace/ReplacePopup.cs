@@ -35,6 +35,7 @@ public sealed class ReplacePopup : Popup
             ColumnSpacing = 0,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
+            WidthRequest = 450,
         }.BindDynamicTheme();
 
         var labelGoToLineNumber = new Label
