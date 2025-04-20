@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using SubtitleAlchemist.Controls.SubTimeControl;
 using SubtitleAlchemist.Logic;
-using System.Runtime.InteropServices;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace SubtitleAlchemist.Features.Main;
@@ -84,7 +83,7 @@ internal static class InitLayout
         var grid = new Grid
         {
             RowDefinitions = Rows.Define(
-                (Row.Toolbar, 50),
+                (Row.Toolbar, GetToolbarHeight()),
                 (Row.ListViewAndVideo, Stars(2)),
                 (Row.WaveForm, Stars(1)),
                 (Row.StatusBar, 30)
