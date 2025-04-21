@@ -18,9 +18,9 @@ namespace SubtitleAlchemist.Logic.Media
                         { DevicePlatform.Android, new[] { "application/text" } }, // MIME type
                         { DevicePlatform.WinUI, new[] { ".srt", ".ass", ".sup", ".xml", ".sup", ".mkv", ".mks", ".ssa", ".ttml", ".stl" } }, // file extension
                         { DevicePlatform.Tizen, new[] { "*/*" } },
-                        { DevicePlatform.macOS, new[] { "srt", "ass" } }, // UTType values
+                        { DevicePlatform.macOS, new[] { "srt", "ass", "sup", "sub", "xml" } }, // UTType values
                         //{ DevicePlatform.MacCatalyst, new[] { "public.text", "public.plain-text" } },
-                        { DevicePlatform.MacCatalyst, new[] { "srt", "ass" } }
+                        { DevicePlatform.MacCatalyst, new[] { "srt", "ass", "sup", "sub", "xml", "pac", "stl", "ttml", "ssa", "mks" } }
                     });
 
                 var pickOptions = new PickOptions
@@ -52,7 +52,7 @@ namespace SubtitleAlchemist.Logic.Media
                         { DevicePlatform.Android, new[] { "application/text" } }, // MIME type
                         { DevicePlatform.WinUI, new[] { ".srt", ".ass" } }, // file extension
                         { DevicePlatform.Tizen, new[] { "*/*" } },
-                        { DevicePlatform.macOS, new[] { "srt", "ass" } }, // UTType values
+                        { DevicePlatform.macOS, new[] { "srt", "ass", "sup", "sub", "xml" } }, // UTType values
                     });
 
                 var pickOptions = new PickOptions
@@ -86,6 +86,7 @@ namespace SubtitleAlchemist.Logic.Media
                         { DevicePlatform.WinUI, new[] { format.Extension } }, // file extension
                         { DevicePlatform.Tizen, new[] { "*/*" } },
                         { DevicePlatform.macOS, new[] { format.Extension.TrimStart('.') } }, // UTType values
+                        { DevicePlatform.MacCatalyst, new[] { format.Extension.TrimStart('.') } }
                     });
 
                 var pickOptions = new PickOptions
