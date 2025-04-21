@@ -77,60 +77,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<AndroidResource Remove="Resources\Images\dark_theme\**" />
-		<Compile Remove="Resources\Images\dark_theme\**" />
-		<EmbeddedResource Remove="Resources\Images\dark_theme\**" />
-		<MauiCss Remove="Resources\Images\dark_theme\**" />
-		<MauiImage Remove="Resources\Images\dark_theme\**" />
-		<MauiXaml Remove="Resources\Images\dark_theme\**" />
-		<None Remove="Resources\Images\dark_theme\**" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<MauiImage Remove="Resources\Images\layout_01.png" />
-		<MauiImage Remove="Resources\Images\layout_02.png" />
-		<MauiImage Remove="Resources\Images\layout_03.png" />
-		<MauiImage Remove="Resources\Images\layout_04.png" />
-		<MauiImage Remove="Resources\Images\layout_05.png" />
-		<MauiImage Remove="Resources\Images\layout_06.png" />
-		<MauiImage Remove="Resources\Images\layout_07.png" />
-		<MauiImage Remove="Resources\Images\layout_08.png" />
-		<MauiImage Remove="Resources\Images\layout_09.png" />
-		<MauiImage Remove="Resources\Images\layout_10.png" />
-		<MauiImage Remove="Resources\Images\layout_11.png" />
-		<MauiImage Remove="Resources\Images\layout_12.png" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Remove="Resources\Images\theme_dark_open.png" />
-		<None Remove="Resources\Raw\Dictionaries.zip" />
-		<None Remove="Resources\Raw\HunspellDictionaries.xml" />
-		<None Remove="Resources\Raw\layout_01.png" />
-		<None Remove="Resources\Raw\layout_02.png" />
-		<None Remove="Resources\Raw\layout_03.png" />
-		<None Remove="Resources\Raw\layout_04.png" />
-		<None Remove="Resources\Raw\layout_05.png" />
-		<None Remove="Resources\Raw\layout_06.png" />
-		<None Remove="Resources\Raw\layout_07.png" />
-		<None Remove="Resources\Raw\layout_08.png" />
-		<None Remove="Resources\Raw\layout_09.png" />
-		<None Remove="Resources\Raw\layout_10.png" />
-		<None Remove="Resources\Raw\layout_11.png" />
-		<None Remove="Resources\Raw\layout_12.png" />
-		<None Remove="Resources\Raw\PurfviewFasterWhisper.txt" />
-		<None Remove="Resources\Raw\PurfviewFasterWhisperXXL.txt" />
-		<None Remove="Resources\Raw\WhisperConst-me.txt" />
-		<None Remove="Resources\Raw\WhisperCpp.txt" />
-		<None Remove="Resources\Raw\WhisperOpenAi.txt" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
-		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="5.1.0" />
+		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="6.0.0" />
 		<PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="6.0.2" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="HunspellSharp" Version="1.0.3" />
-		<PackageReference Include="libse" Version="4.0.10" />
+		<PackageReference Include="libse" Version="4.1.0-alpha1" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.60" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.60" />
@@ -140,6 +92,7 @@
 		<PackageReference Include="SharpHook" Version="5.3.9" />
 		<PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
 		<PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="3.116.1" />
+		<PackageReference Include="System.Drawing.Common" Version="9.0.4" />
 		<PackageReference Include="WeCantSpell.Hunspell" Version="6.0.0" />
 	</ItemGroup>
 

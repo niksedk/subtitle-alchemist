@@ -119,11 +119,8 @@ public partial class ExportImagePageModel : ObservableObject, IQueryAttributable
 
     private void LoadFonts()
     {
-#pragma warning disable CA1416 // Validate platform compatibility
-        var installedFonts = new InstalledFontCollection();
-        var fontFamilies = installedFonts.Families;
-#pragma warning restore CA1416 // Validate platform compatibility
-        FontNames = new ObservableCollection<string>(fontFamilies.Select(f => f.Name).OrderBy(f => f));
+        var fontFamilies = FontHelper.GetSystemFonts();
+        FontNames = new ObservableCollection<string>(fontFamilies.OrderBy(f => f));
         SelectedFontName = FontNames.First();
     }
 

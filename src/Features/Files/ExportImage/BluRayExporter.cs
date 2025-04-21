@@ -1,5 +1,5 @@
-﻿using SkiaSharp;
-using SubtitleAlchemist.Logic.BluRaySup;
+﻿using Nikse.SubtitleEdit.Core.BluRaySup;
+using SkiaSharp;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Media;
 

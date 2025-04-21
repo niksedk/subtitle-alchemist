@@ -1,13 +1,13 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Nikse.SubtitleEdit.Core.BluRaySup;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.VobSub.Ocr.Service;
 using SkiaSharp;
 using SubtitleAlchemist.Controls.PickerControl;
 using SubtitleAlchemist.Features.Main;
 using SubtitleAlchemist.Logic;
-using SubtitleAlchemist.Logic.BluRaySup;
 using SubtitleAlchemist.Logic.Config;
 using SubtitleAlchemist.Logic.Ocr;
 using System.Collections.ObjectModel;
