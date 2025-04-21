@@ -16,11 +16,10 @@ namespace SubtitleAlchemist.Logic.Media
                     {
                         { DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // UTType values
                         { DevicePlatform.Android, new[] { "application/text" } }, // MIME type
-                        { DevicePlatform.WinUI, new[] { ".srt", ".ass", ".sup", ".xml", ".sup", ".mkv", ".mks", ".ssa", ".ttml", ".stl" } }, // file extension
+                        { DevicePlatform.WinUI, new[] { ".srt", ".ass", ".sup", ".xml", ".sup", ".mkv", ".mks", ".ssa", ".ttml", ".stl", ".pac" } }, // file extension
                         { DevicePlatform.Tizen, new[] { "*/*" } },
-                        { DevicePlatform.macOS, new[] { "srt", "ass", "sup", "sub", "xml" } }, // UTType values
-                        //{ DevicePlatform.MacCatalyst, new[] { "public.text", "public.plain-text" } },
-                        { DevicePlatform.MacCatalyst, new[] { "srt", "ass", "sup", "sub", "xml", "pac", "stl", "ttml", "ssa", "mks" } }
+                        { DevicePlatform.macOS, new[] { "srt", "ass", "sup", "sub", "xml", "pac", "stl", "ttml", "ssa", "ttml", "mks" } },
+                        { DevicePlatform.MacCatalyst, new[] { "srt", "ass", "sup", "sub", "xml", "pac", "stl", "ttml", "ssa", "ttml", "mks" } },
                     });
 
                 var pickOptions = new PickOptions
@@ -52,7 +51,8 @@ namespace SubtitleAlchemist.Logic.Media
                         { DevicePlatform.Android, new[] { "application/text" } }, // MIME type
                         { DevicePlatform.WinUI, new[] { ".srt", ".ass" } }, // file extension
                         { DevicePlatform.Tizen, new[] { "*/*" } },
-                        { DevicePlatform.macOS, new[] { "srt", "ass", "sup", "sub", "xml" } }, // UTType values
+                        { DevicePlatform.macOS, new[] { "srt", "ass", "sup", "sub", "xml", "pac", "stl", "ttml", "ssa", "ttml", "mks" } },
+                        { DevicePlatform.MacCatalyst, new[] { "srt", "ass", "sup", "sub", "xml", "pac", "stl", "ttml", "ssa", "ttml", "mks" } },
                     });
 
                 var pickOptions = new PickOptions

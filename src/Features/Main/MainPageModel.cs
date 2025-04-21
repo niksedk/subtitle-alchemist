@@ -1237,13 +1237,13 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
                 {
                     subtitle = new Subtitle();
                     f.LoadSubtitle(subtitle, null, subtitleFileName);
+                    subtitle.OriginalFormat = f;
                     break; // format found, exit the loop
                 }
             }
 
             if (subtitle == null)
             {
-
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
                     var message = "Unknown format?";
@@ -1258,7 +1258,7 @@ public partial class MainPageModel : ObservableObject, IQueryAttributable
         }
 
         _subtitle = subtitle;
-        if (SubtitleFormatPicker != null)
+        if (SubtitleFormatPicker != null && subtitle.OriginalFormat != null)
         {
             SubtitleFormatPicker.SelectedItem = subtitle.OriginalFormat.Name;
         }
