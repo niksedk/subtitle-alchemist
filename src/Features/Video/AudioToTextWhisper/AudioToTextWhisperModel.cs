@@ -151,10 +151,12 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         _windowHandle = IntPtr.Zero;
 
         WhisperEngines.Add(new WhisperEngineCpp());
+#if WINDOWS        
         WhisperEngines.Add(new WhisperEnginePurfviewFasterWhisperXxl());
         WhisperEngines.Add(new WhisperEngineOpenAi());
         WhisperEngines.Add(new WhisperEngineConstMe());
-
+#endif
+        
         _timerWhisper.Interval = 100;
         _timerWhisper.Elapsed += OnTimerWhisperOnElapsed;
 
