@@ -1263,7 +1263,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         // "-map 0:a:0" is the first audio stream, "-map 0:a:1" is the second audio stream
 
         var exeFilePath = Se.Settings.General.FfmpegPath;
-        if (!Configuration.IsRunningOnWindows)
+        if (!File.Exists(exeFilePath))
         {
             exeFilePath = "ffmpeg";
         }

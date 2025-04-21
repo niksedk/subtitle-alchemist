@@ -127,6 +127,10 @@ public class WhisperEngineCpp : IWhisperEngine
 
     public string GetExecutableFileName()
     {
-        return "main.exe";
+#if MACCATALYST
+        return "whisper-cli";
+#endif        
+        
+        return "whisper-cli.exe";
     }
 }
