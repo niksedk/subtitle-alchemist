@@ -27,7 +27,7 @@ public sealed class FindPopup : Popup
             },
             ColumnDefinitions =
             {
-                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = 250 },
                 new ColumnDefinition { Width = GridLength.Auto },
             },
             Padding = new Thickness(30, 20, 30, 10),
