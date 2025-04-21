@@ -882,7 +882,7 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             _settings.WhisperCustomCommandLineArguments = string.Empty;
         }
 
-        var translateToEnglish = translate ? WhisperHelper.GetWhisperTranslateParameter() : string.Empty;
+        var translateToEnglish = translate ? GetWhisperTranslateParameter(engine) : string.Empty;
         if (language.ToLowerInvariant() == "english" || language.ToLowerInvariant() == "en")
         {
             language = "en";
@@ -916,10 +916,12 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         SeLogger.WhisperInfo($"{w} {parameters}");
 
         var process = new Process { StartInfo = new ProcessStartInfo(w, parameters) { WindowStyle = ProcessWindowStyle.Hidden, CreateNoWindow = true } };
+#if WINDOWS        
         if (!string.IsNullOrEmpty(Se.Settings.General.FfmpegPath) && process.StartInfo.EnvironmentVariables["Path"] != null)
         {
             process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"]?.TrimEnd(';') + ";" + Path.GetDirectoryName(Se.Settings.General.FfmpegPath);
         }
+#endif
 
         var whisperFolder = engine.GetAndCreateWhisperFolder();
         if (!string.IsNullOrEmpty(whisperFolder))
@@ -935,10 +937,12 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
             }
         }
 
+#if WINDOWS        
         if (!string.IsNullOrEmpty(whisperFolder) && process.StartInfo.EnvironmentVariables["Path"] != null)
         {
             process.StartInfo.EnvironmentVariables["Path"] = process.StartInfo.EnvironmentVariables["Path"]?.TrimEnd(';') + ";" + whisperFolder;
         }
+#endif
 
         if (_settings.WhisperChoice != WhisperChoice.Cpp &&
             _settings.WhisperChoice != WhisperChoice.CppCuBlas &&
@@ -969,6 +973,12 @@ public partial class AudioToTextWhisperModel : ObservableObject, IQueryAttributa
         }
 
         return process;
+    }
+    
+    public static string GetWhisperTranslateParameter(IWhisperEngine engine)
+    {
+        return engine.Choice != WhisperEngineCpp.StaticName && 
+               engine.Choice != WhisperEngineConstMe.StaticName ? "--task translate " : "--translate ";
     }
 
     private void ShowProgressBar()

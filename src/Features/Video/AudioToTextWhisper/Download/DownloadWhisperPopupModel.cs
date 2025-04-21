@@ -202,6 +202,14 @@ namespace SubtitleAlchemist.Features.Video.AudioToTextWhisper.Download
             _downloadStream.Position = 0;
             _zipUnpacker.UnpackZipStream(_downloadStream, folder, skipFolderLevel, false, new List<string>(), null);
             _downloadStream.Dispose();
+            
+#if MACCATALYST
+            var cppPath = Path.Combine(folder, "whisper-cli");
+            if (File.Exists(cppPath))
+            {       
+                MacHelper.MakeExecutable(folder);
+            }
+#endif            
         }
 
         private void Close()
