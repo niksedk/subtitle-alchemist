@@ -91,7 +91,7 @@
 		<PackageReference Include="SharpCompress" Version="0.39.0" />
 		<PackageReference Include="SharpHook" Version="5.3.9" />
 		<PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
-		<PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="3.116.1" />
+		<PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="3.119.0" />
 		<PackageReference Include="System.Drawing.Common" Version="9.0.4" />
 		<PackageReference Include="WeCantSpell.Hunspell" Version="6.0.0" />
 	</ItemGroup>
