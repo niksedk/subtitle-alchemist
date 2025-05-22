@@ -3,6 +3,7 @@ using MauiCursor;
 using Nikse.SubtitleEdit.Core.Common;
 using Nikse.SubtitleEdit.Core.Forms;
 using SharpHook;
+using SharpHook.Data;
 using SharpHook.Native;
 using SkiaSharp;
 using SkiaSharp.Views.Maui.Controls;

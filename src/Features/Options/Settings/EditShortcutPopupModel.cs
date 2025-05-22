@@ -55,7 +55,7 @@ public partial class EditShortcutPopupModel : ObservableObject
     {
         var result = new List<string>();
 
-        var keyCodeType = typeof(SharpHook.Native.KeyCode);
+        var keyCodeType = typeof(SharpHook.Data.KeyCode);
         var keyNames = Enum.GetNames(keyCodeType).Where(p => !IsObsolete(keyCodeType, p)).Select(p => p.Remove(0, 2)).ToList();
 
         foreach (var keyName in keyNames)

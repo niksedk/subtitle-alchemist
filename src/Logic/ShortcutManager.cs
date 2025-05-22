@@ -1,5 +1,5 @@
 ﻿using SharpHook;
-using SharpHook.Native;
+using SharpHook.Data;
 using SubtitleAlchemist.Logic.Config;
 
 namespace SubtitleAlchemist.Logic;

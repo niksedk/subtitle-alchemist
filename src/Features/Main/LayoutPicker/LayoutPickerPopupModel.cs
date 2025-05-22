@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using SharpHook;
+using SharpHook.Data;
 using SharpHook.Native;
 using SubtitleAlchemist.Logic;
 using SubtitleAlchemist.Logic.Config;
